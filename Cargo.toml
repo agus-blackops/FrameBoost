@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/frameboost-core",
+    "crates/frameboost-gpu",
+    "crates/frameboost-sim",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+repository = "https://github.com/agus-blackops/FrameBoost"
+
+[workspace.dependencies]
+frameboost-core = { path = "crates/frameboost-core", version = "0.1.0" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"

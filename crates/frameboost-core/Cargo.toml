@@ -1,0 +1,10 @@
+[package]
+name = "frameboost-core"
+description = "Adaptive frame-boost control loop and CPU reference reconstruction for FrameBoost"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

@@ -1,0 +1,11 @@
+[package]
+name = "frameboost-sim"
+description = "Headless harness that drives the FrameBoost controller through scripted scenarios"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+frameboost-core.workspace = true

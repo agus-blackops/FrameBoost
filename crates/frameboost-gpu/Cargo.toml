@@ -1,0 +1,14 @@
+[package]
+name = "frameboost-gpu"
+description = "wgpu backend and WGSL shaders for FrameBoost"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+frameboost-core.workspace = true
+wgpu = "26"
+bytemuck = { version = "1", features = ["derive"] }
+pollster = "0.4"
