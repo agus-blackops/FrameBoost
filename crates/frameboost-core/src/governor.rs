@@ -32,9 +32,26 @@
 //! # [`PerfGovernor`] — the half loss scaling does not have
 //!
 //! Loss scaling answers only to numerics. A renderer also has to hit a frame
-//! budget. This governor watches smoothed frame time and asks for a rung, with
-//! a wide deadband between "over budget" and "enough headroom to give some
-//! back" so it settles instead of oscillating.
+//! budget. This governor watches smoothed frame time and asks for a rung.
+//!
+//! It asks by inverting the cost model rather than by stepping blindly toward
+//! the budget, and that is not a refinement — a bang-bang controller cannot be
+//! made to work here at all. Adjacent rungs on the [`LADDER`](crate::level::LADDER)
+//! differ in cost by factors from 1.26 to 1.76, so any deadband narrow enough
+//! to be useful is narrower than the step it is damping: the governor
+//! overshoots the budget going up, undershoots it coming down, and hunts
+//! between two rungs forever. Widening the deadband past 1.76 instead would
+//! mean holding a rung until frame time fell below 57% of target, wasting most
+//! of the headroom the boost just bought.
+//!
+//! So the governor estimates what a native frame would cost —
+//! `measured / relative_cost(active_rung)` — and picks the *least* aggressive
+//! rung whose predicted cost fits the budget. Systematic error in the cost
+//! model largely cancels, because the estimate is measured through the same
+//! model it is then applied to; what has to be right is the *ratios* between
+//! rungs, not their absolute values. A dwell requirement keeps noise from
+//! flipping the choice, and movement is one rung at a time so the picture never
+//! lurches.
 //!
 //! # Arbitration: quality vetoes performance
 //!
@@ -207,6 +224,22 @@ impl QualityGovernor {
 
     /// Score one frame and update the ceiling.
     pub fn evaluate(&mut self, level: u8, signals: &Signals) -> Verdict {
+        if level == 0 {
+            // Native. The frame on screen is exactly what the renderer drew;
+            // there is no reconstruction to distrust, so there is nothing to
+            // score. Scoring it anyway is not merely pointless, it is a trap:
+            // difficult content pins the ceiling at 0, every subsequent frame
+            // is rejected for a reconstruction that never happened, and the
+            // controller can never climb out because climbing requires the
+            // clean frames it is refusing to grant itself.
+            //
+            // The streak still advances, so the ceiling recovers and rung 1
+            // gets probed again once the cooldown lapses. Content changes;
+            // giving up on it permanently would be its own bug.
+            self.advance_clean();
+            return Verdict::Present { confidence: 1.0 };
+        }
+
         let r = rung(level);
         let confidence = signals.confidence(r, &self.cfg.weights);
 
@@ -244,6 +277,14 @@ impl QualityGovernor {
             };
         }
 
+        self.advance_clean();
+        Verdict::Present {
+            confidence: confidence.value,
+        }
+    }
+
+    /// Credit one clean frame toward getting the ceiling back.
+    fn advance_clean(&mut self) {
         if self.cooldown > 0 {
             // Probation. The clean streak does not start accumulating until the
             // cooldown expires, so the two are sequential rather than
@@ -253,16 +294,12 @@ impl QualityGovernor {
             // the cooldown.
             self.cooldown -= 1;
             self.clean_streak = 0;
-        } else {
-            self.clean_streak = self.clean_streak.saturating_add(1);
-            if self.clean_streak >= self.cfg.growth_interval {
-                self.ceiling = (self.ceiling + 1).min(self.cfg.max_level.min(MAX_LEVEL));
-                self.clean_streak = 0;
-            }
+            return;
         }
-
-        Verdict::Present {
-            confidence: confidence.value,
+        self.clean_streak = self.clean_streak.saturating_add(1);
+        if self.clean_streak >= self.cfg.growth_interval {
+            self.ceiling = (self.ceiling + 1).min(self.cfg.max_level.min(MAX_LEVEL));
+            self.clean_streak = 0;
         }
     }
 
@@ -287,13 +324,14 @@ pub struct PerfConfig {
     pub target_frame_ns: u64,
     /// EMA smoothing factor for frame time, in `0..1`.
     pub ema_alpha: f32,
-    /// Multiple of target above which the frame is considered over budget.
-    pub over_budget: f32,
-    /// Multiple of target below which there is enough headroom to give a rung
-    /// back. The gap between this and `over_budget` is the deadband that keeps
-    /// the governor from hunting.
-    pub headroom: f32,
-    /// Consecutive frames on one side of the deadband before acting.
+    /// How far over target a predicted frame time may sit and still be
+    /// accepted.
+    ///
+    /// Some slack is necessary: without it the governor chases the last
+    /// percent of a budget it can only predict approximately, and takes a rung
+    /// of image quality to do it.
+    pub tolerance: f32,
+    /// Consecutive frames agreeing on a different rung before acting.
     pub dwell_frames: u32,
     /// Highest rung this governor will ask for.
     pub max_level: u8,
@@ -314,11 +352,9 @@ impl Default for PerfConfig {
         PerfConfig {
             target_frame_ns: 16_666_667,
             ema_alpha: 0.10,
-            over_budget: 1.05,
-            // Only give a rung back with real headroom. Handing it back the
-            // moment frame time dips under target guarantees a bounce straight
-            // back over it.
-            headroom: 0.80,
+            tolerance: 1.05,
+            // ~1/3 s at 60 Hz. Long enough that a couple of heavy frames do not
+            // move the resolution, short enough to react within a camera cut.
             dwell_frames: 20,
             max_level: MAX_LEVEL,
         }
@@ -332,8 +368,8 @@ pub struct PerfGovernor {
     ema_ns: f64,
     primed: bool,
     desired: u8,
-    over_count: u32,
-    under_count: u32,
+    dwell: u32,
+    last_want: u8,
 }
 
 impl PerfGovernor {
@@ -344,8 +380,8 @@ impl PerfGovernor {
             ema_ns: cfg.target_frame_ns as f64,
             primed: false,
             desired: 0,
-            over_count: 0,
-            under_count: 0,
+            dwell: 0,
+            last_want: 0,
         }
     }
 
@@ -364,12 +400,28 @@ impl PerfGovernor {
         &self.cfg
     }
 
+    /// Estimated cost of a native frame right now, in nanoseconds.
+    ///
+    /// Measured frame time divided by the cost model's factor for the rung that
+    /// produced it. This is the quantity the whole governor turns on, and it is
+    /// worth exposing: if it swings wildly as rungs change, the cost model's
+    /// ratios are wrong and every decision built on them is guesswork.
+    pub fn estimated_native_ns(&self, active_level: u8) -> f64 {
+        let cost = rung(active_level).relative_cost().max(1e-3) as f64;
+        self.ema_ns / cost
+    }
+
     /// Feed one frame time and update the request.
+    ///
+    /// `active_level` is the rung that produced this frame — which is the
+    /// arbitrated level, not necessarily the one this governor asked for. Using
+    /// the wrong one here corrupts the native-cost estimate and with it every
+    /// prediction.
     ///
     /// `ceiling` caps the request, so that a long spell under a lowered ceiling
     /// does not leave a pent-up demand that snaps several rungs at once the
     /// moment quality relents.
-    pub fn observe(&mut self, frame_ns: u64, ceiling: u8) -> u8 {
+    pub fn observe(&mut self, frame_ns: u64, active_level: u8, ceiling: u8) -> u8 {
         let sample = frame_ns as f64;
         if !self.primed {
             self.ema_ns = sample;
@@ -379,28 +431,39 @@ impl PerfGovernor {
             self.ema_ns += a * (sample - self.ema_ns);
         }
 
-        let target = self.cfg.target_frame_ns as f64;
         let cap = self.cfg.max_level.min(MAX_LEVEL).min(ceiling);
+        let budget = self.cfg.target_frame_ns as f64 * self.cfg.tolerance.max(1.0) as f64;
+        let native = self.estimated_native_ns(active_level);
 
-        if self.ema_ns > target * self.cfg.over_budget as f64 {
-            self.under_count = 0;
-            self.over_count += 1;
-            if self.over_count >= self.cfg.dwell_frames {
-                self.desired = (self.desired + 1).min(cap);
-                self.over_count = 0;
-            }
-        } else if self.ema_ns < target * self.cfg.headroom as f64 {
-            self.over_count = 0;
-            self.under_count += 1;
-            if self.under_count >= self.cfg.dwell_frames {
-                self.desired = self.desired.saturating_sub(1);
-                self.under_count = 0;
-            }
+        // The least aggressive rung that fits. If none fits, take the most
+        // aggressive available and miss the budget honestly — there is nothing
+        // further to trade.
+        let want = (0..=cap)
+            .find(|&l| native * rung(l).relative_cost() as f64 <= budget)
+            .unwrap_or(cap);
+
+        if want == self.desired {
+            self.dwell = 0;
         } else {
-            // Inside the deadband: this is where a healthy system lives.
-            self.over_count = 0;
-            self.under_count = 0;
+            // Reset the dwell if the target itself moved: a rung has to be
+            // wanted consistently, not merely wanted repeatedly.
+            if want != self.last_want {
+                self.dwell = 0;
+            }
+            self.dwell += 1;
+            if self.dwell >= self.cfg.dwell_frames {
+                // One rung at a time, even when the model wants a leap. A large
+                // jump changes render resolution and frame cadence at once, and
+                // is more noticeable than arriving a few frames later.
+                self.desired = if want > self.desired {
+                    self.desired + 1
+                } else {
+                    self.desired - 1
+                };
+                self.dwell = 0;
+            }
         }
+        self.last_want = want;
 
         self.desired = self.desired.min(cap);
         self.desired
@@ -480,7 +543,8 @@ impl BoostController {
     /// target frame time on the very first call.
     pub fn plan(&mut self, last_frame_ns: u64) -> BoostPlan {
         let ceiling = self.quality.ceiling();
-        let desired = self.perf.observe(last_frame_ns, ceiling);
+        // `self.active` still holds the rung that produced `last_frame_ns`.
+        let desired = self.perf.observe(last_frame_ns, self.active, ceiling);
 
         // The veto, in one line.
         self.active = desired.min(ceiling);
@@ -640,14 +704,83 @@ mod tests {
     }
 
     #[test]
-    fn holds_still_inside_the_deadband() {
-        // Between headroom and over-budget the governor must not hunt. A system
-        // that changes render resolution every few frames is worse than one
-        // that picks a slightly wrong rung and commits to it.
+    fn holds_still_when_the_budget_is_met() {
         let mut ctl = controller();
         let target = ctl.perf().config().target_frame_ns;
         run(&mut ctl, 500, target, &Signals::clean());
         assert_eq!(ctl.level(), 0);
+    }
+
+    /// Frame time responds to the rung, as it does in a renderer.
+    fn run_closed_loop(ctl: &mut BoostController, frames: u32, native_ns: u64, s: &Signals) -> Vec<u8> {
+        let mut frame_ns = native_ns;
+        let mut levels = Vec::with_capacity(frames as usize);
+        for _ in 0..frames {
+            let plan = ctl.plan(frame_ns);
+            ctl.resolve(s);
+            frame_ns = (native_ns as f64 * plan.rung.relative_cost() as f64) as u64;
+            levels.push(plan.level);
+        }
+        levels
+    }
+
+    #[test]
+    fn does_not_hunt_between_rungs() {
+        // The reason the governor inverts the cost model instead of stepping
+        // toward the budget. Adjacent rungs differ in cost by up to 1.76x, so a
+        // bang-bang controller overshoots going up and undershoots coming down,
+        // and oscillates between two rungs indefinitely — visibly, because each
+        // flip changes render resolution.
+        for native_ms in [20.0f64, 35.0, 55.0, 70.0, 120.0, 400.0] {
+            let mut ctl = controller();
+            let native_ns = (native_ms * 1e6) as u64;
+            let levels = run_closed_loop(&mut ctl, 2000, native_ns, &Signals::clean());
+            let settled = &levels[1500..];
+            let first = settled[0];
+            assert!(
+                settled.iter().all(|l| *l == first),
+                "hunted at {native_ms} ms native: settled to {:?}",
+                &settled[..40.min(settled.len())]
+            );
+        }
+    }
+
+    #[test]
+    fn settles_on_a_rung_that_actually_meets_the_budget() {
+        // Settling is necessary but not sufficient: it has to settle on the
+        // right rung, and on the *least* aggressive one that works, so no image
+        // quality is given away for headroom nobody asked for.
+        let mut ctl = controller();
+        let native_ns = 70_000_000u64;
+        run_closed_loop(&mut ctl, 2000, native_ns, &Signals::clean());
+
+        let level = ctl.level();
+        let achieved = native_ns as f64 * rung(level).relative_cost() as f64;
+        let budget = ctl.perf().config().target_frame_ns as f64 * 1.05;
+        assert!(achieved <= budget, "rung {level} misses the budget: {achieved} ns");
+
+        if level > 0 {
+            let one_less = native_ns as f64 * rung(level - 1).relative_cost() as f64;
+            assert!(one_less > budget, "rung {} would have done: overshot", level - 1);
+        }
+    }
+
+    #[test]
+    fn the_native_cost_estimate_is_stable_across_rungs() {
+        // The premise of model inversion: measuring at one rung must predict
+        // the others. If this drifts as the ladder is climbed, the cost model's
+        // ratios are wrong and every decision resting on them is a guess.
+        let native_ns = 90_000_000u64;
+        for level in 0..=MAX_LEVEL {
+            let mut perf = PerfGovernor::new(PerfConfig::default());
+            let frame_ns = (native_ns as f64 * rung(level).relative_cost() as f64) as u64;
+            for _ in 0..200 {
+                perf.observe(frame_ns, level, level);
+            }
+            let est = perf.estimated_native_ns(level);
+            let err = (est - native_ns as f64).abs() / native_ns as f64;
+            assert!(err < 0.01, "rung {level} estimated {est} ns, off by {err:.3}");
+        }
     }
 
     #[test]
@@ -685,6 +818,50 @@ mod tests {
         // The whole point: the display gets one honest frame, not two frames
         // one of which is wrong.
         assert_eq!(out.frames_presented, 1);
+    }
+
+    #[test]
+    fn native_frames_are_never_rejected() {
+        // At rung 0 nothing was reconstructed. Judging the frame anyway pins
+        // the ceiling at 0 forever, because escaping requires clean frames the
+        // governor is busy refusing to grant itself.
+        let mut q = QualityGovernor::new(QualityConfig::default());
+        let hopeless = Signals {
+            disocclusion: 1.0,
+            motion_residual: 1.0,
+            luma_shift: 1.0,
+            camera_motion: 1.0,
+            depth_complexity: 1.0,
+            pacing_instability: 1.0,
+        };
+        for _ in 0..500 {
+            assert!(
+                matches!(q.evaluate(0, &hopeless), Verdict::Present { .. }),
+                "native must always present"
+            );
+        }
+        // And it must be able to climb back out and probe rung 1 again.
+        assert!(q.ceiling() > 0, "ceiling never recovered from native");
+    }
+
+    #[test]
+    fn difficult_content_settles_instead_of_collapsing() {
+        // Content a spatial upscaler genuinely cannot handle should park the
+        // controller low and keep it there — probing occasionally, never stuck
+        // in a permanent rejection state.
+        let mut ctl = controller();
+        let unresolvable = Signals {
+            depth_complexity: 1.0,
+            camera_motion: 1.0,
+            ..Signals::clean()
+        };
+        run(&mut ctl, 3000, OVER_BUDGET, &unresolvable);
+        assert!(ctl.level() <= 1, "boosted into content it cannot resolve");
+        assert!(
+            ctl.telemetry().discard_rate() < 0.20,
+            "thrashing rather than settling: {:.2}",
+            ctl.telemetry().discard_rate()
+        );
     }
 
     #[test]

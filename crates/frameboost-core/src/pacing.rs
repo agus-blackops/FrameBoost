@@ -108,6 +108,34 @@ impl FramePacer {
         Self::new((1_000_000_000.0 / fps.max(1.0)) as u64)
     }
 
+    /// Discard the interval history.
+    ///
+    /// Call this whenever something legitimately changes the rendered-frame
+    /// interval — a rung change above all, but equally a resolution change, a
+    /// v-sync toggle, or coming back from a loading screen.
+    ///
+    /// Without it the pacer feeds a false alarm straight back into the
+    /// controller. Changing rung changes frame cost by design, so the interval
+    /// window ends up holding a mix of the old rung's intervals and the new
+    /// one's; the dispersion between them reads as instability, instability
+    /// rejects the frame, the rejection drops the rung, and the drop is another
+    /// interval change. The loop sustains itself indefinitely on nothing but
+    /// its own actions, and every scenario ends up looking the same because the
+    /// controller never stays anywhere long enough for the content to matter.
+    ///
+    /// [`FramePacer::instability`] is meant to report *unexplained* variation
+    /// in render times. Variation the controller itself caused is explained,
+    /// and must not come back to it as evidence.
+    pub fn reset(&mut self) {
+        self.last_render_ns = None;
+        self.filled = 0;
+        self.cursor = 0;
+        // The EMA is kept: it is the best estimate available for the next
+        // interval, and it re-converges. Only the variance window, which is
+        // what would carry the stale intervals into the instability figure, is
+        // thrown away.
+    }
+
     /// Record that a rendered frame completed.
     pub fn on_rendered(&mut self, now_ns: u64) {
         if let Some(prev) = self.last_render_ns {
@@ -271,6 +299,45 @@ mod tests {
             t += if i % 2 == 0 { 8_000_000 } else { 25_000_000 };
         }
         assert!(p.instability() > 0.5, "instability {}", p.instability());
+    }
+
+    #[test]
+    fn a_reset_clears_the_instability_history() {
+        // A rung change is not display jitter, and must not be reported as any.
+        let mut p = FramePacer::for_target_fps(60.0);
+        let mut t = 0u64;
+        for _ in 0..32 {
+            p.on_rendered(t);
+            t += 25_000_000;
+        }
+        // The rung changes: frames get much cheaper.
+        p.reset();
+        for _ in 0..32 {
+            p.on_rendered(t);
+            t += 11_000_000;
+        }
+        assert!(
+            p.instability() < 0.05,
+            "a clean run after a reset still looks unstable: {}",
+            p.instability()
+        );
+    }
+
+    #[test]
+    fn without_a_reset_a_step_change_does_look_unstable() {
+        // The behaviour reset() exists to suppress. Worth pinning down: if this
+        // ever stops being true, reset() has become dead code.
+        let mut p = FramePacer::for_target_fps(60.0);
+        let mut t = 0u64;
+        for _ in 0..12 {
+            p.on_rendered(t);
+            t += 25_000_000;
+        }
+        for _ in 0..6 {
+            p.on_rendered(t);
+            t += 11_000_000;
+        }
+        assert!(p.instability() > 0.3, "{}", p.instability());
     }
 
     #[test]

@@ -368,9 +368,18 @@ pub fn measure_pair(prev: &GBuffer, next: &GBuffer, reference_speed: f32) -> Sig
 
     Signals {
         disocclusion: 0.0,
-        // The residual is already a normalized ratio; scale so that a mean of
-        // ~0.5 (half the frame's luminance unexplained) saturates.
-        motion_residual: (mean_residual * 2.0).clamp(0.0, 1.0),
+        // The raw quantity is a mean of |Δluma| / (|a| + |b|), so it is 0 for
+        // identical images and tends to about 1/3 for unrelated ones — that is
+        // the practical range, not 0..1, and the scaling has to be anchored to
+        // it or the useful part of the signal is squeezed into a sliver.
+        //
+        // Measured on the simulator's scenarios: a clean pair with exact motion
+        // vectors sits near 0.013, and a frame full of content the vectors do
+        // not describe reaches 0.175. Saturating at 0.25 puts the clean case
+        // comfortably inside the deadband and the severe case unambiguously
+        // past rejection, instead of landing both within a rounding error of
+        // the threshold.
+        motion_residual: (mean_residual * 4.0).clamp(0.0, 1.0),
         // Scale so a mean-luma jump of 0.25 saturates — an exposure change that
         // large between adjacent frames is not something to interpolate through.
         luma_shift: (luma_delta * 4.0).clamp(0.0, 1.0),
