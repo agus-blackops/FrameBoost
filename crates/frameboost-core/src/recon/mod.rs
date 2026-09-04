@@ -24,9 +24,9 @@ mod rcas;
 mod reproject;
 
 pub use easu::{easu, EasuConfig};
-pub use interpolate::{interpolate_midpoint, Interpolated, InterpolateConfig};
+pub use interpolate::{interpolate_midpoint, InterpolateConfig, Interpolated};
 pub use rcas::rcas;
-pub use reproject::{reproject, Reprojected, ReprojectConfig};
+pub use reproject::{reproject, ReprojectConfig, Reprojected};
 
 /// Relative difference between two depths, in `0..=1`.
 ///

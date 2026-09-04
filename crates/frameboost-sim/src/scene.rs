@@ -218,12 +218,7 @@ impl Scene {
             + value_noise(wx * 0.77, wy * 0.71, seed ^ 0x2f9d) * 0.15;
         let stripes = 0.12 * ((wx * 0.22).sin() * (wy * 0.17).cos());
         let v = (0.28 + 0.62 * n + stripes).clamp(0.02, 0.98);
-        [
-            v * layer.tint[0],
-            v * layer.tint[1],
-            v * layer.tint[2],
-            1.0,
-        ]
+        [v * layer.tint[0], v * layer.tint[1], v * layer.tint[2], 1.0]
     }
 }
 
@@ -266,10 +261,8 @@ fn lattice(x: i32, y: i32, seed: u32) -> f32 {
 
 /// Wang-style integer hash, mapped to `0..1`.
 fn hash_f(x: u32, y: u32, seed: u32) -> f32 {
-    let mut h = x
-        .wrapping_mul(0x9e3779b1)
-        ^ y.wrapping_mul(0x85ebca6b)
-        ^ seed.wrapping_mul(0xc2b2ae35);
+    let mut h =
+        x.wrapping_mul(0x9e3779b1) ^ y.wrapping_mul(0x85ebca6b) ^ seed.wrapping_mul(0xc2b2ae35);
     h ^= h >> 16;
     h = h.wrapping_mul(0x7feb352d);
     h ^= h >> 15;

@@ -264,7 +264,10 @@ impl Plane {
     /// Read back as an [`ImageBuffer`].
     pub fn read_color(&self, ctx: &GpuContext) -> ImageBuffer {
         let flat = self.read(ctx);
-        let px: Vec<[f32; 4]> = flat.chunks_exact(4).map(|c| [c[0], c[1], c[2], c[3]]).collect();
+        let px: Vec<[f32; 4]> = flat
+            .chunks_exact(4)
+            .map(|c| [c[0], c[1], c[2], c[3]])
+            .collect();
         ImageBuffer::from_vec(self.width, self.height, px)
     }
 

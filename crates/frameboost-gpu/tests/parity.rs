@@ -33,7 +33,11 @@ const EPS_REL: f32 = 2e-3;
 fn context() -> Option<GpuContext> {
     match GpuContext::new() {
         Ok(ctx) => {
-            eprintln!("adapter: {} ({:?})", ctx.adapter_info().name, ctx.adapter_info().backend);
+            eprintln!(
+                "adapter: {} ({:?})",
+                ctx.adapter_info().name,
+                ctx.adapter_info().backend
+            );
             Some(ctx)
         }
         Err(e) => {
@@ -196,11 +200,20 @@ fn reprojection_matches_the_cpu_reference() {
     let gpu_prev = GpuGBuffer::from_cpu(&ctx, &prev);
     let gpu_cur = GpuGBuffer::from_cpu(&ctx, &cur);
     let target = ReconTarget::new(&ctx, 64, 48);
-    let gpu_disocclusion =
-        recon.reproject(&ctx, &gpu_prev, &gpu_cur, &target, ReprojectConfig::default());
+    let gpu_disocclusion = recon.reproject(
+        &ctx,
+        &gpu_prev,
+        &gpu_cur,
+        &target,
+        ReprojectConfig::default(),
+    );
 
     let expected = reproject(&prev, &cur, ReprojectConfig::default());
-    compare("reproject", &expected.color, &target.color().read_color(&ctx));
+    compare(
+        "reproject",
+        &expected.color,
+        &target.color().read_color(&ctx),
+    );
     assert!(
         (expected.disocclusion - gpu_disocclusion).abs() < 1e-5,
         "disocclusion differs: cpu {} vs gpu {}",
@@ -285,7 +298,11 @@ fn signal_measurement_matches_the_cpu_reference() {
     let expected = measure_pair(&prev, &next, reference_speed);
 
     for (name, a, b) in [
-        ("motion_residual", expected.motion_residual, got.motion_residual),
+        (
+            "motion_residual",
+            expected.motion_residual,
+            got.motion_residual,
+        ),
         ("luma_shift", expected.luma_shift, got.luma_shift),
         ("camera_motion", expected.camera_motion, got.camera_motion),
         (

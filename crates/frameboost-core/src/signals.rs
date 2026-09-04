@@ -143,7 +143,13 @@ impl Signals {
     /// places; scoring an out-of-range signal would silently corrupt the
     /// confidence product rather than fail loudly.
     pub fn sanitized(&self) -> Self {
-        let c = |v: f32| if v.is_finite() { v.clamp(0.0, 1.0) } else { 1.0 };
+        let c = |v: f32| {
+            if v.is_finite() {
+                v.clamp(0.0, 1.0)
+            } else {
+                1.0
+            }
+        };
         Signals {
             disocclusion: c(self.disocclusion),
             motion_residual: c(self.motion_residual),
@@ -274,12 +280,12 @@ impl Default for SignalWeights {
             // is sub-pixel detail it cannot resolve: thin geometry, and the
             // shimmer that appears when such geometry moves.
             spatial: [
-                SignalWeight::ignored(),          // disocclusion: no reprojection
-                SignalWeight::ignored(),          // motion residual: not used
-                SignalWeight::ignored(),          // luma shift: harmless
-                SignalWeight::new(0.35, 0.45),    // camera motion: shimmer
-                SignalWeight::new(0.80, 0.35),    // depth complexity: thin geometry
-                SignalWeight::ignored(),          // pacing: no generated frames
+                SignalWeight::ignored(),       // disocclusion: no reprojection
+                SignalWeight::ignored(),       // motion residual: not used
+                SignalWeight::ignored(),       // luma shift: harmless
+                SignalWeight::new(0.35, 0.45), // camera motion: shimmer
+                SignalWeight::new(0.80, 0.35), // depth complexity: thin geometry
+                SignalWeight::ignored(),       // pacing: no generated frames
             ],
             // Frame generation is exposed to all of it. Disocclusion and motion
             // residual carry weights above 1.0: either one, saturated, is on its
@@ -473,7 +479,10 @@ mod tests {
             motion_residual: 0.60,
             ..Signals::clean()
         };
-        assert_eq!(s.confidence(temporal(), &w).dominant, SignalKind::MotionResidual);
+        assert_eq!(
+            s.confidence(temporal(), &w).dominant,
+            SignalKind::MotionResidual
+        );
     }
 
     #[test]

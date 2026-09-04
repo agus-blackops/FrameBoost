@@ -270,10 +270,9 @@ pub fn run(scenario: &Scenario, cfg: &Config) -> RunReport {
             let up = easu(&cur.color, ow, oh, EasuConfig::default());
             let sharp = rcas(&up, 0.5);
             debug_assert!(
-                sharp
-                    .as_slice()
+                sharp.as_slice().iter().all(|c| c
                     .iter()
-                    .all(|c| c.iter().all(|v| v.is_finite() && (-0.01..=1.01).contains(v))),
+                    .all(|v| v.is_finite() && (-0.01..=1.01).contains(v))),
                 "spatial pipeline produced an out-of-range pixel at frame {i}"
             );
         }

@@ -68,9 +68,7 @@
 //! quality recovers, the level climbs back one rung at a time instead of
 //! snapping to whatever the perf side had been demanding all along.
 
-use crate::level::{
-    highest_spatial_level, rung, BoostPlan, BoostRung, MAX_LEVEL,
-};
+use crate::level::{highest_spatial_level, rung, BoostPlan, BoostRung, MAX_LEVEL};
 use crate::signals::{SignalKind, SignalWeights, Signals};
 use crate::telemetry::{Decision, DecisionKind, Telemetry};
 
@@ -491,7 +489,7 @@ impl ControllerConfig {
             output_height,
             quality: QualityConfig::default(),
             perf: PerfConfig::for_target_fps(fps),
-            }
+        }
     }
 }
 
@@ -712,7 +710,12 @@ mod tests {
     }
 
     /// Frame time responds to the rung, as it does in a renderer.
-    fn run_closed_loop(ctl: &mut BoostController, frames: u32, native_ns: u64, s: &Signals) -> Vec<u8> {
+    fn run_closed_loop(
+        ctl: &mut BoostController,
+        frames: u32,
+        native_ns: u64,
+        s: &Signals,
+    ) -> Vec<u8> {
         let mut frame_ns = native_ns;
         let mut levels = Vec::with_capacity(frames as usize);
         for _ in 0..frames {
@@ -757,11 +760,18 @@ mod tests {
         let level = ctl.level();
         let achieved = native_ns as f64 * rung(level).relative_cost() as f64;
         let budget = ctl.perf().config().target_frame_ns as f64 * 1.05;
-        assert!(achieved <= budget, "rung {level} misses the budget: {achieved} ns");
+        assert!(
+            achieved <= budget,
+            "rung {level} misses the budget: {achieved} ns"
+        );
 
         if level > 0 {
             let one_less = native_ns as f64 * rung(level - 1).relative_cost() as f64;
-            assert!(one_less > budget, "rung {} would have done: overshot", level - 1);
+            assert!(
+                one_less > budget,
+                "rung {} would have done: overshot",
+                level - 1
+            );
         }
     }
 
@@ -779,7 +789,10 @@ mod tests {
             }
             let est = perf.estimated_native_ns(level);
             let err = (est - native_ns as f64).abs() / native_ns as f64;
-            assert!(err < 0.01, "rung {level} estimated {est} ns, off by {err:.3}");
+            assert!(
+                err < 0.01,
+                "rung {level} estimated {est} ns, off by {err:.3}"
+            );
         }
     }
 
@@ -967,7 +980,11 @@ mod tests {
         };
         run(&mut ctl, 1500, OVER_BUDGET, &awful);
         assert_eq!(ctl.level(), 0);
-        assert_eq!(ctl.desired(), 0, "perf demand should be pinned to the ceiling");
+        assert_eq!(
+            ctl.desired(),
+            0,
+            "perf demand should be pinned to the ceiling"
+        );
 
         // Now the scene calms down; the climb should be one rung at a time.
         let mut jumps = 0;

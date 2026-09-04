@@ -84,7 +84,11 @@ pub fn rcas(img: &ImageBuffer, sharpness: f32) -> ImageBuffer {
             if denom.abs() > 1e-4 {
                 for c in 0..3 {
                     let sharpened = (lobe * (b[c] + d[c] + f[c] + hh[c]) + e[c]) / denom;
-                    color[c] = if sharpened.is_finite() { sharpened } else { e[c] };
+                    color[c] = if sharpened.is_finite() {
+                        sharpened
+                    } else {
+                        e[c]
+                    };
                 }
             }
             out.set(x, y, color);
@@ -169,7 +173,10 @@ mod tests {
         let src = soft_edge(32, 4);
         let out = rcas(&src, 1.0);
         let (before, after) = (max_gradient(&src, 2), max_gradient(&out, 2));
-        assert!(after > before * 1.02, "no sharpening happened: {before} -> {after}");
+        assert!(
+            after > before * 1.02,
+            "no sharpening happened: {before} -> {after}"
+        );
     }
 
     #[test]

@@ -10,9 +10,9 @@
 //! threshold does not mechanically break them; only a change in *behaviour*
 //! does.
 
+use frameboost_core::SignalKind;
 use frameboost_sim::harness::{Config, Judgement};
 use frameboost_sim::{by_name, run, RunReport};
-use frameboost_core::SignalKind;
 
 fn go(name: &str) -> RunReport {
     let s = by_name(name).unwrap_or_else(|| panic!("no scenario '{name}'"));
@@ -68,7 +68,9 @@ fn a_whip_pan_discards_generated_frames_and_is_recovered_from() {
         .collect();
     assert!(!during.is_empty(), "sailed through a whip pan");
     assert!(
-        during.iter().any(|f| f.dominant == Some(SignalKind::Disocclusion)),
+        during
+            .iter()
+            .any(|f| f.dominant == Some(SignalKind::Disocclusion)),
         "rejected for the wrong reason: {:?}",
         during.iter().map(|f| f.dominant).collect::<Vec<_>>()
     );
@@ -159,7 +161,10 @@ fn thin_geometry_caps_the_ladder_without_collapsing_it() {
         "thrashing: {:.1}% rejected",
         r.telemetry.discard_rate() * 100.0
     );
-    assert_eq!(r.telemetry.worst_signal(), Some(SignalKind::DepthComplexity));
+    assert_eq!(
+        r.telemetry.worst_signal(),
+        Some(SignalKind::DepthComplexity)
+    );
 }
 
 #[test]

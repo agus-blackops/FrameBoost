@@ -150,10 +150,8 @@ pub fn interpolate_midpoint(
                 let dp = prev.depth.at_clamped(px.floor() as i32, py.floor() as i32);
 
                 let depth_ok = soft_validity(relative_depth_delta(dn, dp), cfg.depth_tolerance);
-                let photo_ok = soft_validity(
-                    (luma(cn) - luma(cp)).abs(),
-                    cfg.photo_tolerance.max(1e-4),
-                );
+                let photo_ok =
+                    soft_validity((luma(cn) - luma(cp)).abs(), cfg.photo_tolerance.max(1e-4));
                 let confidence = depth_ok * photo_ok;
 
                 if confidence > 0.0 {

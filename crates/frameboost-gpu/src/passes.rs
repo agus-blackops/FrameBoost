@@ -140,11 +140,7 @@ impl Pass {
             });
             cpass.set_pipeline(&self.pipeline);
             cpass.set_bind_group(0, &bind_group, &[]);
-            cpass.dispatch_workgroups(
-                width.div_ceil(WORKGROUP),
-                height.div_ceil(WORKGROUP),
-                1,
-            );
+            cpass.dispatch_workgroups(width.div_ceil(WORKGROUP), height.div_ceil(WORKGROUP), 1);
         }
         ctx.run(encoder);
     }
@@ -321,11 +317,7 @@ impl Reconstructor {
         );
         self.easu.dispatch(
             ctx,
-            &[
-                entry(0, src.view()),
-                entry(1, dst.view()),
-                buf(2, &params),
-            ],
+            &[entry(0, src.view()), entry(1, dst.view()), buf(2, &params)],
             dst.width(),
             dst.height(),
         );
@@ -344,11 +336,7 @@ impl Reconstructor {
         );
         self.rcas.dispatch(
             ctx,
-            &[
-                entry(0, src.view()),
-                entry(1, dst.view()),
-                buf(2, &params),
-            ],
+            &[entry(0, src.view()), entry(1, dst.view()), buf(2, &params)],
             src.width(),
             src.height(),
         );

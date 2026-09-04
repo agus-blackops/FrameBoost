@@ -167,14 +167,23 @@ fn first_sentence(text: &str) -> String {
 fn print_report(scenario: &Scenario, r: &RunReport) {
     let t = &r.telemetry;
     println!("▸ {}", scenario.name);
-    for line in wrap(&scenario.blurb.split_whitespace().collect::<Vec<_>>().join(" "), 76) {
+    for line in wrap(
+        &scenario
+            .blurb
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" "),
+        76,
+    ) {
         println!("  {line}");
     }
     println!();
 
     // Two aligned strips: the rung over time, and where frames were rejected.
     let (rungs, drops) = timeline(r);
-    let per_col = (r.frames.len() as f64 / TIMELINE_COLUMNS as f64).ceil().max(1.0);
+    let per_col = (r.frames.len() as f64 / TIMELINE_COLUMNS as f64)
+        .ceil()
+        .max(1.0);
     println!("  rung   {rungs}");
     println!("  reject {drops}");
     println!(
@@ -221,7 +230,10 @@ fn print_report(scenario: &Scenario, r: &RunReport) {
         r.mean_frame_ns() / 1e6,
         1000.0 / r.config.target_fps
     );
-    println!("    delivered         {:.1} fps to the display", r.effective_fps());
+    println!(
+        "    delivered         {:.1} fps to the display",
+        r.effective_fps()
+    );
     println!(
         "    rejected          {:.1}%{}",
         t.discard_rate() * 100.0,
@@ -234,9 +246,7 @@ fn print_report(scenario: &Scenario, r: &RunReport) {
         println!("    scene cuts        {}", t.scene_cuts);
     }
     if not_judged > 0 {
-        println!(
-            "    not judged        {not_judged}  (history reset on a resolution change)"
-        );
+        println!("    not judged        {not_judged}  (history reset on a resolution change)");
     }
     println!("    time on rungs     {}", rung_histogram(r));
     println!();
@@ -325,7 +335,7 @@ fn print_comparison(reports: &[RunReport]) {
 fn print_csv(r: &RunReport, with_header: bool) {
     if with_header {
         println!(
-        "scenario,frame,level,ceiling,confidence,judgement,dominant,scene_cut,\
+            "scenario,frame,level,ceiling,confidence,judgement,dominant,scene_cut,\
          disocclusion,motion_residual,luma_shift,camera_motion,depth_complexity,\
          pacing_instability,frame_ms,presented"
         );

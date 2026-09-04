@@ -1,0 +1,89 @@
+name: Release
+
+# Tag a commit to publish binaries:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: frameboost-sim-windows-x86_64.zip
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: frameboost-sim-linux-x86_64.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release -p frameboost-sim
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir staging
+          copy target\release\frameboost-sim.exe staging\
+          copy README.md staging\
+          copy LICENSE staging\
+          Compress-Archive -Path staging\* -DestinationPath ${{ matrix.archive }}
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir staging
+          cp target/release/frameboost-sim staging/
+          cp README.md LICENSE staging/
+          tar -czf ${{ matrix.archive }} -C staging .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            frameboost-sim-windows-x86_64.zip
+            frameboost-sim-linux-x86_64.tar.gz
+          body: |
+            The FrameBoost simulator, prebuilt. No Rust toolchain needed.
+
+            **Windows:** unzip and run `frameboost-sim.exe` from a terminal
+            (PowerShell or cmd) — it prints a report, so double-clicking it
+            opens and closes a window too fast to read.
+
+            ```
+            frameboost-sim.exe
+            frameboost-sim.exe --scenario whip-turn
+            frameboost-sim.exe --scenario fence --csv > fence.csv
+            ```
+
+            This is the headless control-loop harness, not a game overlay:
+            it drives the boost controller over a synthetic renderer and
+            reports what it decided. See the README for what that shows and
+            for why hooking this into an existing game is a different
+            problem.
