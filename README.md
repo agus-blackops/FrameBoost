@@ -295,18 +295,55 @@ staring at a screenshot and arguing about whether the smear looks wrong —
 "the disocclusion mask is inverted along one edge" is not something anyone
 finds that way.
 
-## Running it
+## Building and running
+
+Rust **1.84** or newer — the floor comes from wgpu, not from anything here.
+Nothing else is needed: no CMake, no shader compiler, no vendor SDK. The WGSL
+is compiled at runtime by naga, which ships with wgpu.
+
+**Windows.** Rust on Windows links with MSVC, so the Visual Studio C++ build
+tools have to be present. `rustup-init` detects their absence and offers to
+install them; accepting is the shortest path. A `link.exe not found` error
+later means that step was skipped.
+
+```powershell
+winget install --id Rustlang.Rustup -e
+winget install --id Git.Git -e
+# reopen the terminal so PATH picks both up
+git clone https://github.com/agus-blackops/FrameBoost.git
+cd FrameBoost
+cargo run --release -p frameboost-sim
+```
+
+**macOS / Linux.** `rustup` from https://rustup.rs, then the same three
+commands. On Linux the GPU tests want a Vulkan ICD; Mesa's software one
+(`mesa-vulkan-drivers`) is enough.
 
 ```sh
-cargo test --workspace                       # 108 tests
 cargo run --release -p frameboost-sim        # all six scenarios
 cargo run --release -p frameboost-sim -- --scenario whip-turn --native-ms 90
 cargo run --release -p frameboost-sim -- --scenario fence --csv > fence.csv
+cargo test --workspace                       # 108 tests
 ```
 
-The GPU parity tests need a wgpu adapter and skip themselves without one. A
-software rasteriser is sufficient — these are ordinary compute shaders, and the
-suite runs green under Mesa's llvmpipe.
+The simulator needs no GPU at all. The parity tests do, and skip themselves
+with a printed reason when no adapter is available — so `cargo test` is safe on
+a headless box. wgpu picks DX12 on Windows, Metal on macOS, Vulkan on Linux.
+To see which adapter was chosen:
+
+```sh
+cargo test -p frameboost-gpu -- --nocapture
+```
+
+**A caveat worth knowing before you run those on real silicon.** The parity
+tests have only ever been verified against Mesa's llvmpipe. Real GPUs reassociate
+floating-point arithmetic and use fused multiply-adds far more aggressively
+than a CPU rasteriser does, and the comparison allows 0.2% of magnitude for
+exactly that. That allowance is a considered guess, not a measured one. If
+`easu_matches_with_deringing_disabled` fails on your hardware by a small
+multiple of the allowance, that is the tolerance being too tight rather than a
+broken shader — and it is genuinely useful information, because it is the one
+number in this repository that a CPU could not tell me.
 
 ## Status, and what this is not
 

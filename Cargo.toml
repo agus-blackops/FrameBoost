@@ -9,7 +9,10 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.75"
+# Set by wgpu 26, the highest floor in the tree. frameboost-core itself has no
+# dependencies at all and would build on considerably less, but that has not
+# been tested, so this is the number the workspace actually stands behind.
+rust-version = "1.84"
 license = "MIT"
 repository = "https://github.com/agus-blackops/FrameBoost"
 
