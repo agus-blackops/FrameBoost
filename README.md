@@ -319,6 +319,13 @@ cargo run --release -p frameboost-sim
 commands. On Linux the GPU tests want a Vulkan ICD; Mesa's software one
 (`mesa-vulkan-drivers`) is enough.
 
+There is no platform-specific code anywhere in the workspace, and the whole
+thing — wgpu's DX12 paths included — type-checks clean against
+`x86_64-pc-windows-msvc`. What has *not* been verified is the link step or a
+real run on Windows, because neither has happened yet. The CI matrix in
+`.github/workflows/ci.yml` builds and tests on `windows-latest` and will settle
+it, once GitHub Actions is enabled for the repository.
+
 ```sh
 cargo run --release -p frameboost-sim        # all six scenarios
 cargo run --release -p frameboost-sim -- --scenario whip-turn --native-ms 90
