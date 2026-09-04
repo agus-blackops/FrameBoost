@@ -202,7 +202,7 @@ mod tests {
             for x in 0..32 {
                 for c in 0..3 {
                     let v = out.at(x, y)[c];
-                    assert!(v >= -1e-4 && v <= 1.0 + 1e-4, "({x},{y}) ch{c} = {v}");
+                    assert!((-1e-4..=1.0 + 1e-4).contains(&v), "({x},{y}) ch{c} = {v}");
                 }
             }
         }
@@ -224,7 +224,7 @@ mod tests {
                 for c in 0..3 {
                     let v = out.at(x, y)[c];
                     assert!(v.is_finite(), "({x},{y}) ch{c} = {v}");
-                    assert!(v >= -1e-4 && v <= 1.0 + 1e-4, "({x},{y}) ch{c} = {v}");
+                    assert!((-1e-4..=1.0 + 1e-4).contains(&v), "({x},{y}) ch{c} = {v}");
                 }
             }
         }

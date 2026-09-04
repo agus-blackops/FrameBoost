@@ -145,8 +145,8 @@ impl Scene {
 
                 let mut c = self.shade(wx, wy, &layer, f.seed);
                 if f.flash != 0.0 {
-                    for ch in 0..3 {
-                        c[ch] = (c[ch] + f.flash).clamp(0.0, 1.0);
+                    for ch in c.iter_mut().take(3) {
+                        *ch = (*ch + f.flash).clamp(0.0, 1.0);
                     }
                 }
 

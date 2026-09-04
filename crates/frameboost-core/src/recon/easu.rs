@@ -318,7 +318,7 @@ mod tests {
         for y in 0..out.height() {
             for x in 0..out.width() {
                 let v = luma(out.at(x, y));
-                assert!(v >= 0.1 - 1e-3 && v <= 0.9 + 1e-3, "({x},{y}) rang to {v}");
+                assert!((0.1 - 1e-3..=0.9 + 1e-3).contains(&v), "({x},{y}) rang to {v}");
             }
         }
     }
