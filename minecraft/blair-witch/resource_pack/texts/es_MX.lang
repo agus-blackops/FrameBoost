@@ -1,0 +1,56 @@
+pack.name=§8The Blair Witch§r
+pack.description=Inspirado en The Blair Witch Project (1999). No te pierdas en el bosque.
+
+entity.bw:witch.name=La Bruja de Blair
+entity.bw:corner_man.name=El de la Esquina
+entity.bw:stick_figure.name=Figura de Palos
+entity.bw:rock_cairn.name=Montón de Piedras
+item.spawn_egg.entity.bw:witch.name=Generar Bruja de Blair
+item.spawn_egg.entity.bw:corner_man.name=Generar El de la Esquina
+item.spawn_egg.entity.bw:stick_figure.name=Generar Figura de Palos
+item.spawn_egg.entity.bw:rock_cairn.name=Generar Montón de Piedras
+
+item.bw:camcorder.name=Cámara Hi8
+item.bw:map.name=Mapa de Black Hills
+item.bw:twig_bundle.name=Atado de Ramas
+item.bw:twig_effigy.name=Figura de Palos
+
+bw.title.night=§7NOCHE %s
+bw.title.night_sub=§8Bosque de Black Hills
+bw.title.end=§0.
+bw.title.end_sub=§8La cámara cae al suelo. Sigue grabando.
+bw.hud.night=§7NOCHE %s
+
+bw.msg.children=§7§o...¿eso son niños?
+bw.msg.map_lost=§7Tu mapa ha desaparecido. Alguien lo ha tirado al arroyo.
+bw.msg.cairns=§7Al despertar, hay tres montones de piedras a tu alrededor. Anoche no estaban.
+bw.msg.bundle=§7Hay un atado de ramas en el suelo, junto a ti. Alguien lo ha dejado mientras dormías.
+bw.msg.house=§7Entre los árboles, hacia el §f%s§7, se ve una casa en ruinas. No debería estar ahí.
+bw.msg.free=§7Por fin, una noche lejos de los árboles. El bosque te deja ir... por ahora.
+bw.msg.touched=§4§oAlgo te ha tocado en la oscuridad.
+bw.msg.footage=§8Un año después, se encontró el metraje de §7%s§8.
+bw.msg.intro_1=§8[METRAJE ENCONTRADO]§r §7Cada noche que pases en el bosque, algo te encontrará un poco antes.
+bw.msg.intro_2=§8[METRAJE ENCONTRADO]§r §7Si ves figuras de palos en los árboles, vete. Si ves una casa, no bajes al sótano.
+
+bw.cam.light=§c● REC§r  §7Luz de la cámara encendida.
+bw.cam.static=§c● REC§r  §7§k||||§r §7¿Has visto eso? §k||||
+
+bw.map.read=§7Según el mapa, el pueblo está a §f%s§7 bloques hacia el §f%s§7.
+bw.map.nights=§8Llevas %s noche(s) en el bosque.
+
+bw.bundle.open=§7Dentro del atado hay un trozo de tela de franela... y algo más que no quieres mirar.
+bw.note.1=§7Una nota arrugada: "El arroyo queda al este. Llevamos todo el día caminando al este."
+bw.note.2=§7Una nota arrugada: "Tres montones de piedras junto a la tienda. Tres. Como nosotros."
+bw.note.3=§7Una nota arrugada: "Las figuras cuelgan de todos los árboles. Nadie las oyó colgar."
+bw.note.4=§7Una nota arrugada: "Hemos vuelto al mismo tronco caído. Tercera vez hoy."
+bw.note.5=§7Una nota arrugada: "Se oyen niños riendo en la oscuridad. Aquí no hay niños."
+bw.note.6=§7Una nota arrugada: "Dicen que los ponía mirando a la esquina. Para que no le vieran."
+
+bw.dir.n=norte
+bw.dir.ne=noreste
+bw.dir.e=este
+bw.dir.se=sureste
+bw.dir.s=sur
+bw.dir.sw=suroeste
+bw.dir.w=oeste
+bw.dir.nw=noroeste

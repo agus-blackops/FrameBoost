@@ -1,0 +1,15 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bw:witch",
+      "materials": { "default": "entity_alphablend" },
+      "textures": { "default": "textures/entity/bw/witch" },
+      "geometry": { "default": "geometry.bw.humanoid" },
+      "animations": { "walk": "animation.bw.humanoid.walk", "attack": "animation.bw.humanoid.attack", "drift": "animation.bw.witch.drift" },
+      "scripts": { "animate": ["walk", "drift", { "attack": "variable.attack_time > 0.0" }] },
+      "render_controllers": ["controller.render.bw.default"],
+      "spawn_egg": { "base_color": "#16141a", "overlay_color": "#3a3440" }
+    }
+  }
+}

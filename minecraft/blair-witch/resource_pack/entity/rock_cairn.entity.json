@@ -1,0 +1,24 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bw:rock_cairn",
+      "materials": {
+        "default": "entity"
+      },
+      "textures": {
+        "default": "textures/entity/bw/rock_cairn"
+      },
+      "geometry": {
+        "default": "geometry.bw.rock_cairn"
+      },
+      "render_controllers": [
+        "controller.render.bw.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#807e78",
+        "overlay_color": "#4e6234"
+      }
+    }
+  }
+}

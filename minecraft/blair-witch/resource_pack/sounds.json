@@ -1,0 +1,21 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "bw:witch": {
+        "volume": 0.8,
+        "pitch": [1.0, 1.2],
+        "events": { "ambient": "mob.vex.ambient" }
+      },
+      "bw:stick_figure": {
+        "volume": 1.0,
+        "pitch": [0.8, 1.0],
+        "events": { "hurt": "dig.wood", "death": "random.break" }
+      },
+      "bw:rock_cairn": {
+        "volume": 1.0,
+        "pitch": [0.8, 1.0],
+        "events": { "hurt": "dig.stone", "death": "dig.stone" }
+      }
+    }
+  }
+}

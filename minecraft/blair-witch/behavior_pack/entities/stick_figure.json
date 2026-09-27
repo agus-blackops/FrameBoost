@@ -1,0 +1,30 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bw:stick_figure",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "bw:temporary": {
+        "minecraft:despawn": { "despawn_from_distance": { "min_distance": 48, "max_distance": 96 } }
+      }
+    },
+    "components": {
+      "minecraft:type_family": { "family": ["bw_stick_figure", "bw_sign", "inanimate"] },
+      "minecraft:collision_box": { "width": 0.6, "height": 1.3 },
+      "minecraft:health": { "value": 1, "max": 1 },
+      "minecraft:loot": { "table": "loot_tables/entities/bw_stick_figure.json" },
+      "minecraft:knockback_resistance": { "value": 1.0 },
+      "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0, "breathes_water": true },
+      "minecraft:physics": { "has_gravity": false },
+      "minecraft:pushable": { "is_pushable": false, "is_pushable_by_piston": false }
+    },
+    "events": {
+      "minecraft:entity_spawned": { "add": { "component_groups": ["bw:temporary"] } },
+      "bw:persist": { "remove": { "component_groups": ["bw:temporary"] } }
+    }
+  }
+}

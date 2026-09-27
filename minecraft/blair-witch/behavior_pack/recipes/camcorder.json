@@ -1,0 +1,15 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": { "identifier": "bw:camcorder" },
+    "tags": ["crafting_table"],
+    "pattern": ["IRI", "IGI", "ILI"],
+    "key": {
+      "I": { "item": "minecraft:iron_ingot" },
+      "R": { "item": "minecraft:redstone" },
+      "G": { "item": "minecraft:glass_pane" },
+      "L": { "item": "minecraft:leather" }
+    },
+    "result": { "item": "bw:camcorder" }
+  }
+}

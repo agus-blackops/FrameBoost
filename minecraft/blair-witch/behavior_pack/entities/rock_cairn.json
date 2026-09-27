@@ -1,0 +1,30 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bw:rock_cairn",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "bw:temporary": {
+        "minecraft:despawn": { "despawn_from_distance": { "min_distance": 48, "max_distance": 96 } }
+      }
+    },
+    "components": {
+      "minecraft:type_family": { "family": ["bw_rock_cairn", "bw_sign", "inanimate"] },
+      "minecraft:collision_box": { "width": 0.6, "height": 0.75 },
+      "minecraft:health": { "value": 4, "max": 4 },
+      "minecraft:loot": { "table": "loot_tables/entities/bw_rock_cairn.json" },
+      "minecraft:knockback_resistance": { "value": 1.0 },
+      "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0, "breathes_water": true },
+      "minecraft:physics": { "has_gravity": true },
+      "minecraft:pushable": { "is_pushable": false, "is_pushable_by_piston": false }
+    },
+    "events": {
+      "minecraft:entity_spawned": { "add": { "component_groups": ["bw:temporary"] } },
+      "bw:persist": { "remove": { "component_groups": ["bw:temporary"] } }
+    }
+  }
+}

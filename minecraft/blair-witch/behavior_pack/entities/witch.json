@@ -1,0 +1,65 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "bw:witch",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "bw:vanish": { "minecraft:instant_despawn": {} }
+    },
+    "components": {
+      "minecraft:type_family": { "family": ["bw_witch", "monster", "mob"] },
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:collision_box": { "width": 0.6, "height": 2.3 },
+      "minecraft:scale": { "value": 1.2 },
+      "minecraft:health": { "value": 200, "max": 200 },
+      "minecraft:damage_sensor": { "triggers": [{ "cause": "all", "deals_damage": false }] },
+      "minecraft:fire_immune": {},
+      "minecraft:knockback_resistance": { "value": 1.0 },
+      "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0, "breathes_water": true },
+      "minecraft:attack": { "damage": 6 },
+      "minecraft:movement": { "value": 0.36 },
+      "minecraft:follow_range": { "value": 64, "max": 64 },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:can_climb": {},
+      "minecraft:navigation.walk": {
+        "can_path_over_water": true,
+        "avoid_water": true,
+        "can_open_doors": true,
+        "can_pass_doors": true
+      },
+      "minecraft:annotation.open_door": {},
+      "minecraft:behavior.open_door": { "priority": 5, "close_door_after": false },
+      "minecraft:behavior.float": { "priority": 0 },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 1,
+        "must_see": false,
+        "reselect_targets": true,
+        "within_radius": 64.0,
+        "entity_types": [
+          {
+            "filters": { "test": "is_family", "subject": "other", "value": "player" },
+            "max_dist": 64
+          }
+        ]
+      },
+      "minecraft:behavior.melee_attack": { "priority": 2, "speed_multiplier": 1.3, "track_target": true },
+      "minecraft:behavior.random_stroll": { "priority": 7, "speed_multiplier": 0.8 },
+      "minecraft:ambient_sound_interval": { "value": 6.0, "range": 10.0, "event_name": "ambient" },
+      "minecraft:environment_sensor": {
+        "triggers": [{ "filters": { "test": "is_daytime", "value": true }, "event": "bw:vanish" }]
+      },
+      "minecraft:despawn": { "despawn_from_distance": { "min_distance": 64, "max_distance": 96 } },
+      "minecraft:physics": {},
+      "minecraft:pushable": { "is_pushable": false, "is_pushable_by_piston": true },
+      "minecraft:conditional_bandwidth_optimization": {}
+    },
+    "events": {
+      "bw:vanish": { "add": { "component_groups": ["bw:vanish"] } }
+    }
+  }
+}

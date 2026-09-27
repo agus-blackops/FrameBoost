@@ -1,0 +1,14 @@
+{
+  "format_version": "1.20.80",
+  "minecraft:item": {
+    "description": {
+      "identifier": "bw:twig_bundle",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:icon": { "texture": "bw_twig_bundle" },
+      "minecraft:display_name": { "value": "item.bw:twig_bundle.name" },
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

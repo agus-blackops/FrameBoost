@@ -1,0 +1,15 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bw:corner_man",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/bw/corner_man" },
+      "geometry": { "default": "geometry.bw.humanoid" },
+      "animations": { "stand": "animation.bw.corner_man.stand" },
+      "scripts": { "animate": ["stand"] },
+      "render_controllers": ["controller.render.bw.default"],
+      "spawn_egg": { "base_color": "#5a4a36", "overlay_color": "#2e3a2c" }
+    }
+  }
+}

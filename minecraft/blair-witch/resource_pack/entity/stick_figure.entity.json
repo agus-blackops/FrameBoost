@@ -1,0 +1,15 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "bw:stick_figure",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/bw/stick_figure" },
+      "geometry": { "default": "geometry.bw.stick_figure" },
+      "animations": { "sway": "animation.bw.stick_figure.sway" },
+      "scripts": { "animate": ["sway"] },
+      "render_controllers": ["controller.render.bw.default"],
+      "spawn_egg": { "base_color": "#6b4e33", "overlay_color": "#c2ae82" }
+    }
+  }
+}

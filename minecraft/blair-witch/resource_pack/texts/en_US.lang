@@ -1,0 +1,56 @@
+pack.name=§8The Blair Witch§r
+pack.description=Inspired by The Blair Witch Project (1999). Don't get lost in the woods.
+
+entity.bw:witch.name=The Blair Witch
+entity.bw:corner_man.name=The One in the Corner
+entity.bw:stick_figure.name=Stick Figure
+entity.bw:rock_cairn.name=Rock Cairn
+item.spawn_egg.entity.bw:witch.name=Spawn Blair Witch
+item.spawn_egg.entity.bw:corner_man.name=Spawn The One in the Corner
+item.spawn_egg.entity.bw:stick_figure.name=Spawn Stick Figure
+item.spawn_egg.entity.bw:rock_cairn.name=Spawn Rock Cairn
+
+item.bw:camcorder.name=Hi8 Camcorder
+item.bw:map.name=Black Hills Map
+item.bw:twig_bundle.name=Bundle of Twigs
+item.bw:twig_effigy.name=Stick Figure
+
+bw.title.night=§7NIGHT %s
+bw.title.night_sub=§8Black Hills Forest
+bw.title.end=§0.
+bw.title.end_sub=§8The camera hits the floor. It keeps recording.
+bw.hud.night=§7NIGHT %s
+
+bw.msg.children=§7§o...are those children?
+bw.msg.map_lost=§7Your map is gone. Someone kicked it into the creek.
+bw.msg.cairns=§7You wake to three piles of stones around you. They weren't there last night.
+bw.msg.bundle=§7There's a bundle of twigs on the ground beside you. Someone left it while you slept.
+bw.msg.house=§7Through the trees to the §f%s§7 stands a ruined house. It shouldn't be there.
+bw.msg.free=§7At last, a night away from the trees. The forest lets you go... for now.
+bw.msg.touched=§4§oSomething touched you in the dark.
+bw.msg.footage=§8A year later, §7%s§8's footage was found.
+bw.msg.intro_1=§8[FOUND FOOTAGE]§r §7Every night you spend in the woods, something finds you a little sooner.
+bw.msg.intro_2=§8[FOUND FOOTAGE]§r §7If you see stick figures in the trees, leave. If you see a house, don't go down to the basement.
+
+bw.cam.light=§c● REC§r  §7Camera light on.
+bw.cam.static=§c● REC§r  §7§k||||§r §7Did you see that? §k||||
+
+bw.map.read=§7By the map, town is §f%s§7 blocks to the §f%s§7.
+bw.map.nights=§8You've spent %s night(s) in the woods.
+
+bw.bundle.open=§7Inside the bundle is a scrap of flannel... and something else you don't want to look at.
+bw.note.1=§7A crumpled note: "The creek is east. We've walked east all day."
+bw.note.2=§7A crumpled note: "Three piles of rocks by the tent. Three. Like us."
+bw.note.3=§7A crumpled note: "The figures hang from every tree. Nobody heard them being hung."
+bw.note.4=§7A crumpled note: "We're back at the same fallen log. Third time today."
+bw.note.5=§7A crumpled note: "Children laughing in the dark. There are no children out here."
+bw.note.6=§7A crumpled note: "They say he made them face the corner. So they wouldn't see him."
+
+bw.dir.n=north
+bw.dir.ne=northeast
+bw.dir.e=east
+bw.dir.se=southeast
+bw.dir.s=south
+bw.dir.sw=southwest
+bw.dir.w=west
+bw.dir.nw=northwest
