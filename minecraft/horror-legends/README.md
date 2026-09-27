@@ -27,8 +27,9 @@ comportamiento* (el de recursos se añade solo).
 
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar desde la 1.0.0:** abre el `.mcaddon` nuevo (versión 1.1.0). Si en
-los ajustes de tu mundo sigue apareciendo la 1.0.0, quítala y activa la 1.1.0.
+**Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
+2.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
+quítala y activa la 2.0.0.
 
 ## Cómo funciona
 
@@ -62,23 +63,28 @@ que sacas con un huevo no desaparecen solas.
 - **Invocar (pruebas)**: provoca al momento cualquier evento, para verlo sin
   esperar días.
 
-## Modelos
+## Modelos (versión 2.0.0, rehechos desde cero)
 
-- **Herobrine** y **null**: forma de jugador con la **capa exterior** (pelo,
-  cuello y puños de la ropa). Los ojos brillan en la oscuridad. null suelta
-  fragmentos "rotos" de magenta y cian, y a su alrededor flotan cubos con la
-  textura que falta, que parpadean.
-- **El Hombre de la Niebla**: modelo propio de casi 3 bloques de alto. Tiene
-  piernas con rodilla y pies descalzos, cintura estrecha, pecho encorvado con
-  costillas, cuello, y un cráneo alargado cuya **mandíbula se abre** cuando
-  corre. Los brazos llegan por debajo de las rodillas y tienen codo, mano y
-  dedos largos. Al observar ladea la cabeza y mueve los dedos. Al correr va
-  doblado, con los brazos hacia atrás y la boca abierta.
-- **El Morador de las Cuevas**: modelo propio sobre **cuatro patas
-  articuladas** con los codos por encima del lomo, espolones y garras. Tiene
-  la columna con púas, cuello largo y una cabeza con **varios ojos** y una
-  mandíbula que **chasquea** cuando te persigue. Camina en diagonal, como una
-  araña, y respira.
+- **Herobrine**: minero con forma de jugador y capa exterior, **encorvado**,
+  con la cabeza gacha, ojeras, ropa sucia y rota, y **arrastrando un pico
+  viejo** por el suelo. Los ojos brillan en la oscuridad.
+- **null**: un error de renderizado con forma de jugador. El torso está
+  **partido en tres rodajas que no encajan** y se desplazan solas, la cabeza
+  está torcida y un brazo es **más largo que el otro**. Tiene los ojos
+  brillantes y un **halo de píxeles sueltos** y textura que falta.
+- **El Hombre de la Niebla**: 3 bloques de alto, torcido, con un hombro más alto
+  que el otro y la cabeza ladeada. Lleva un **abrigo largo y roído** con mangas
+  deshilachadas y agujeros, cuyos faldones se mueven al andar y **vuelan al
+  correr**. Las **vértebras atraviesan el abrigo** por la espalda. Tiene
+  mandíbula articulada y manos de **cuatro dedos** que le llegan por debajo de
+  las rodillas.
+- **El Morador de las Cuevas**: algo que fue una persona, ahora **a cuatro
+  patas**. Tiene brazos largos plantados delante, **rodillas al revés**, pies
+  largos, costillas marcadas y espinas en el lomo. El cuello es estirado, los
+  **ojos hundidos brillan** y la **mandíbula se abre enorme** cuando ataca.
+- **Bloque corrupto animado**: la textura que falta ahora parpadea y se rasga.
+- Diario, linterna e icono del pack nuevos. El icono muestra a las cuatro
+  criaturas.
 
 ## Estructura
 

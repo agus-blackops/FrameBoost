@@ -39,531 +39,575 @@ def side_x(side, a, b):
     left (+1) side."""
     return -b if side < 0 else a
 
-
 def paint_model(cv, model, fn):
-    """fn(bone, index, face, x, y, fw, fh) -> colour or None, for every cube."""
+    """fn(bone, tag, face, x, y, fw, fh) -> colour or None, for every cube.
+    `tag` is the cube's share key: what part of the body it is."""
     for bone in model.bones:
-        for i, cube in enumerate(bone.cubes):
+        for cube in bone.cubes:
             w, h, d = (int(s) for s in cube.size)
             paint_box(cv, *cube.uv, w, h, d,
-                      lambda face, x, y, fw, fh, b=bone.name, i=i: fn(b, i, face, x, y, fw, fh))
+                      lambda face, x, y, fw, fh, b=bone.name, t=cube.share: fn(b, t, face, x, y, fw, fh))
 
 
-def rows_face(rows, palette, x, y):
-    return palette[rows[y][x]]
+def C(origin, size, tag, **kw):
+    return Cube(origin, size, share=tag, **kw)
 
-
-# =========================================================================== #
-# Models
-# =========================================================================== #
-
-def player_model(identifier="geometry.hl.player", extra=()):
-    """The classic player shape, with the outer skin layer on every part."""
-    return Model(identifier, [
-        Bone("root"),
-        Bone("body", "root", (0, 24, 0), cubes=[
-            Cube((-4, 12, -2), (8, 12, 4), (16, 16)),
-            Cube((-4, 12, -2), (8, 12, 4), (16, 32), 0.25)]),
-        Bone("head", "body", (0, 24, 0), cubes=[
-            Cube((-4, 24, -4), (8, 8, 8), (0, 0)),
-            Cube((-4, 24, -4), (8, 8, 8), (32, 0), 0.5)]),
-        Bone("rightArm", "body", (-5, 22, 0), cubes=[
-            Cube((-8, 12, -2), (4, 12, 4), (40, 16)),
-            Cube((-8, 12, -2), (4, 12, 4), (40, 32), 0.25)]),
-        Bone("leftArm", "body", (5, 22, 0), cubes=[
-            Cube((4, 12, -2), (4, 12, 4), (32, 48)),
-            Cube((4, 12, -2), (4, 12, 4), (48, 48), 0.25)]),
-        Bone("rightLeg", "root", (-1.9, 12, 0), cubes=[
-            Cube((-3.9, 0, -2), (4, 12, 4), (0, 16)),
-            Cube((-3.9, 0, -2), (4, 12, 4), (0, 32), 0.25)]),
-        Bone("leftLeg", "root", (1.9, 12, 0), cubes=[
-            Cube((-0.1, 0, -2), (4, 12, 4), (16, 48)),
-            Cube((-0.1, 0, -2), (4, 12, 4), (0, 48), 0.25)]),
-        *extra,
-    ], bounds=(2.5, 2.5, (0, 1.25, 0)))
-
-
-def null_model():
-    # Fragments of missing texture that hang in the air around it. They use
-    # the unused corner of the head's texture.
-    return player_model("geometry.hl.null", extra=[
-        Bone("glitch", "body", (0, 24, 0), cubes=[
-            Cube((5, 27, -1), (2, 2, 2), (0, 0)),
-            Cube((-9, 17, 1), (2, 2, 2), (0, 0)),
-            Cube((2, 33, 2), (2, 2, 2), (0, 0))]),
-    ])
-
-
-def fog_man_model():
-    """Two and three-quarter blocks of pale, starved man: jointed legs, a
-    hunched chest on a narrow waist, a long skull with a hinged jaw, and arms
-    that reach past his knees."""
-    bones = [
-        Bone("root"),
-        Bone("body", "root", (0, 20, 0), cubes=[Cube((-3, 20, -1.5), (6, 5, 3), (24, 16))]),
-        Bone("chest", "body", (0, 25, 0), rotation=(6, 0, 0), cubes=[Cube((-4, 25, -2), (8, 9, 4), (0, 16))]),
-        Bone("neck", "chest", (0, 34, 0), rotation=(-4, 0, 0), cubes=[Cube((-1, 34, -1), (2, 2, 2), (44, 0))]),
-        Bone("head", "neck", (0, 36, 0), cubes=[Cube((-3, 36, -3), (6, 8, 6), (0, 0))]),
-        Bone("jaw", "head", (0, 36.5, 1.5), rotation=(4, 0, 0), cubes=[Cube((-2.5, 34.5, -3.5), (5, 2, 5), (24, 0))]),
-    ]
-    for side, name in ((-1, "right"), (1, "left")):
-        bones += [
-            Bone(f"{name}Arm", "chest", (5 * side, 33, 0), rotation=(0, 0, -3 * side), cubes=[
-                Cube((side_x(side, 4, 6), 22, -1), (2, 11, 2), (24, 32))]),
-            Bone(f"{name}Forearm", f"{name}Arm", (5 * side, 22, 0), rotation=(-6, 0, 0), cubes=[
-                Cube((side_x(side, 4, 6), 11, -1), (2, 11, 2), (32, 32))]),
-            Bone(f"{name}Hand", f"{name}Forearm", (5 * side, 11, 0), cubes=[
-                Cube((side_x(side, 3.5, 6.5), 8, -1.5), (3, 3, 2), (40, 32)),
-                *[Cube((side_x(side, a, a + 1), 4, -1), (1, 4, 1), (50, 32)) for a in (3.5, 4.5, 5.5)]]),
-            Bone(f"{name}Leg", "root", (2 * side, 20, 0), cubes=[
-                Cube((side_x(side, 0.5, 3.5), 10, -1.5), (3, 10, 3), (0, 32))]),
-            Bone(f"{name}Shin", f"{name}Leg", (2 * side, 10, 0), cubes=[
-                Cube((side_x(side, 0.5, 3.5), 0, -1.5), (3, 10, 3), (12, 32)),
-                Cube((side_x(side, 0.5, 3.5), 0, -3.5), (3, 1, 2), (52, 0))]),
-        ]
-    return Model("geometry.hl.fog_man", bones, bounds=(3.0, 3.5, (0, 1.6, 0)))
-
-
-def cave_dweller_model():
-    """A pale thing that moves on four long, jointed limbs, elbows higher than
-    its spine, with a ridged back and a many-eyed head on a long neck."""
-    spike = lambda x, y, z: Cube((x, y, z), (2, 2, 2), (52, 0))
-    bones = [
-        Bone("root"),
-        Bone("body", "root", (0, 12, 4), cubes=[
-            Cube((-3, 10, 0), (6, 5, 9), (0, 16)),
-            spike(-1, 14.5, 1.5), spike(-1, 14.5, 5)]),
-        Bone("chest", "body", (0, 12.5, 0), rotation=(-8, 0, 0), cubes=[
-            Cube((-4, 10, -9), (8, 6, 9), (0, 32)),
-            spike(-1, 15.5, -3), spike(-1, 15.5, -6.5)]),
-        Bone("neck", "chest", (0, 13.5, -9), rotation=(-12, 0, 0), cubes=[Cube((-1.5, 12, -14), (3, 3, 5), (30, 16))]),
-        Bone("head", "neck", (0, 13.5, -14), rotation=(16, 0, 0), cubes=[Cube((-3.5, 11, -22), (7, 6, 8), (0, 0))]),
-        Bone("jaw", "head", (0, 11.5, -16), rotation=(6, 0, 0), cubes=[Cube((-2.5, 9, -21.5), (5, 2, 6), (30, 0))]),
-    ]
-    limbs = [("front", "chest", 5, 14, -6, 118, 22), ("back", "body", 4, 13, 6, 112, -22)]
-    for pos, parent, px, py, pz, splay, yaw in limbs:
-        for side, name in ((-1, "Right"), (1, "Left")):
-            bones += [
-                Bone(f"{pos}{name}Upper", parent, (px * side, py, pz), rotation=(0, yaw * side, -splay * side), cubes=[
-                    Cube((side_x(side, px - 1, px + 1), py - 10, pz - 1), (2, 10, 2), (48, 16))]),
-                Bone(f"{pos}{name}Lower", f"{pos}{name}Upper", (px * side, py - 10, pz), rotation=(0, 0, (splay - 8) * side), cubes=[
-                    Cube((side_x(side, px - 1, px + 1), py - 28, pz - 1), (2, 18, 2), (56, 16)),
-                    Cube((side_x(side, px - 0.5, px + 0.5), py - 10, pz - 0.5), (1, 3, 1), (60, 0)),
-                    *[Cube((side_x(side, px - 1 + a, px + a), py - 28, pz - 4), (1, 1, 4), (34, 32)) for a in (-0.5, 0.5, 1.5)]]),
-            ]
-    return Model("geometry.hl.cave_dweller", bones, bounds=(3.0, 2.0, (0, 0.8, 0)))
-
-
-MODELS = {
-    "herobrine": player_model(),
-    "null": null_model(),
-    "fog_man": fog_man_model(),
-    "cave_dweller": cave_dweller_model(),
-}
-
-
-# =========================================================================== #
-# Textures
-# =========================================================================== #
 
 def grad(c, y, fh, top=1.06, bottom=0.88):
     return shade(c, top + (bottom - top) * y / max(1, fh - 1))
 
 
-# ---------------------------- Herobrine ------------------------------------ #
+def face_rows(rows, palette, x, y, fallback):
+    c = palette.get(rows[y][x])
+    return fallback() if c is None else c
+
+
+# =========================================================================== #
+# Herobrine: a miner who never left the mine
+# =========================================================================== #
+
+def herobrine_model():
+    """Player proportions with the outer skin layer, stooped, head lowered,
+    dragging a worn pickaxe by the end of the handle."""
+    P = lambda o, s, uv, tag, inflate=0.0: Cube(o, s, uv, inflate, share=tag)
+    return Model("geometry.hl.herobrine", [
+        Bone("root"),
+        Bone("body", "root", (0, 12, 0), rotation=(5, 0, 0), cubes=[
+            P((-4, 12, -2), (8, 12, 4), (16, 16), "body"),
+            P((-4, 12, -2), (8, 12, 4), (16, 32), "body+", 0.25)]),
+        Bone("head", "body", (0, 24, 0), rotation=(8, 0, 0), cubes=[
+            P((-4, 24, -4), (8, 8, 8), (0, 0), "head"),
+            P((-4, 24, -4), (8, 8, 8), (32, 0), "head+", 0.5)]),
+        Bone("rightArm", "body", (-5, 22, 0), rotation=(-5, 0, 0), cubes=[
+            P((-8, 12, -2), (4, 12, 4), (40, 16), "arm"),
+            P((-8, 12, -2), (4, 12, 4), (40, 32), "arm+", 0.25)]),
+        Bone("leftArm", "body", (5, 22, 0), cubes=[
+            P((4, 12, -2), (4, 12, 4), (32, 48), "arm"),
+            P((4, 12, -2), (4, 12, 4), (48, 48), "arm+", 0.25)]),
+        Bone("pickaxe", "rightArm", (-6, 13, 0), rotation=(-18, 0, 0), cubes=[
+            P((-6.5, 3, -0.5), (1, 10, 1), (64, 0), "handle"),
+            P((-6.5, 1, -4.5), (1, 2, 9), (68, 0), "pick"),
+            P((-6.5, 3, -4.5), (1, 1, 1), (88, 0), "tip"),
+            P((-6.5, 3, 3.5), (1, 1, 1), (88, 0), "tip")]),
+        Bone("rightLeg", "root", (-1.9, 12, 0), cubes=[
+            P((-3.9, 0, -2), (4, 12, 4), (0, 16), "leg"),
+            P((-3.9, 0, -2), (4, 12, 4), (0, 32), "leg+", 0.25)]),
+        Bone("leftLeg", "root", (1.9, 12, 0), cubes=[
+            P((-0.1, 0, -2), (4, 12, 4), (16, 48), "leg"),
+            P((-0.1, 0, -2), (4, 12, 4), (0, 48), "leg+", 0.25)]),
+    ], texture=(128, 64), bounds=(2.5, 2.5, (0, 1.25, 0)))
+
 
 def paint_herobrine(seed):
-    """An ordinary miner, except for the eyes."""
     rng = random.Random(seed)
-    cv = Canvas(64, 64)
-    skin, hair, hair_l = (0xB4, 0x85, 0x68), (0x2B, 0x1D, 0x10), (0x42, 0x2E, 0x1A)
-    shirt, shirt_d = (0x00, 0x9E, 0xA2), (0x00, 0x74, 0x78)
-    pants, pants_d = (0x3E, 0x36, 0x96), (0x2C, 0x26, 0x70)
-    shoe, shoe_d = (0x5C, 0x5C, 0x62), (0x3E, 0x3E, 0x44)
+    cv = Canvas(128, 64)
+    skin, hair, hair_l = (0xA8, 0x7C, 0x60), (0x22, 0x17, 0x0D), (0x38, 0x27, 0x16)
+    shirt, dirt = (0x1E, 0x88, 0x8A), (0x5A, 0x48, 0x34)
+    pants, boot = (0x33, 0x2E, 0x7C), (0x48, 0x3E, 0x36)
+    wood, stone = (0x5C, 0x42, 0x2A), (0x70, 0x70, 0x74)
     face = [
         "HHHHHHHH",
         "HHHHHHHH",
-        "HSSSSSSH",
+        "HhSSSShH",
         "SbbSSbbS",
         "SWWSSWWS",
+        "SddSSddS",
         "SSSnnSSS",
-        "SSmMMmSS",
-        "SSSmmSSS",
+        "SSmmmmSS",
     ]
-    fpal = {"H": hair, "S": skin, "b": shade(skin, 0.88), "W": GLOW_WHITE, "n": shade(skin, 0.8),
-            "m": (0x7A, 0x52, 0x3A), "M": (0x5A, 0x38, 0x26)}
+    fpal = {"H": hair, "h": hair_l, "b": shade(skin, 0.7), "W": GLOW_WHITE, "d": shade(skin, 0.78),
+            "n": shade(skin, 0.82), "m": (0x3E, 0x24, 0x1A)}
 
-    def fn(bone, i, face_, x, y, fw, fh):
-        outer = i == 1
-        if bone == "head":
-            if outer:  # hair volume
-                if face_ == "top" and (x in (0, fw - 1) or y in (0, fh - 1)) and rng.random() < 0.5:
-                    return jitter(rng, hair_l, 6)
-                if face_ in ("right", "left", "back") and y < 3 and rng.random() < 0.35:
-                    return jitter(rng, hair_l, 6)
-                if face_ == "front" and y == 0 and x in (0, 1, 6, 7):
-                    return jitter(rng, hair_l, 6)
-                return CLEAR
+    def grime(c, p=0.12):
+        return mix(c, dirt, rng.uniform(0.3, 0.6)) if rng.random() < p else jitter(rng, c, 4)
+
+    def fn(bone, tag, face_, x, y, fw, fh):
+        if tag == "head":
             if face_ == "front":
-                c = fpal[face[y][x]]
-                return c if len(c) == 4 else jitter(rng, c, 4)
+                return face_rows(face, fpal, x, y, lambda: jitter(rng, grad(skin, y, fh), 3))
             if face_ == "top":
-                return jitter(rng, hair_l if rng.random() < 0.2 else hair, 4)
+                return jitter(rng, hair_l if rng.random() < 0.25 else hair, 4)
             if face_ == "bottom":
-                return shade(skin, 0.8)
+                return shade(skin, 0.7)
             if face_ == "back":
-                return jitter(rng, hair if y < 7 else shade(skin, 0.9), 4)
+                return jitter(rng, hair if y < 7 else shade(skin, 0.85), 4)
             back_half = x < 4 if face_ == "right" else x >= 4
             if y < 3 or (back_half and y < 6):
                 return jitter(rng, hair, 4)
-            if y == 4 and not back_half and x in (3, 4):
-                return shade(skin, 0.82)  # ear
-            return jitter(rng, grad(skin, y, fh), 3)
-        if bone == "body":
-            if outer:
-                if y == fh - 1 and face_ not in ("top", "bottom"):
-                    return shirt_d
-                if face_ == "front" and y == 0 and x in (2, 5):
-                    return shirt_d
-                return CLEAR
-            if face_ == "front" and y < 2 and 3 <= x <= 4:
-                return shade(skin, 0.95)  # open collar
+            return jitter(rng, grad(skin, y, fh, 1.0, 0.85), 3)
+        if tag == "head+":  # matted hair falling over the forehead and neck
+            if face_ == "top":
+                return jitter(rng, hair_l, 5) if rng.random() < 0.45 else CLEAR
+            if face_ == "front":
+                return jitter(rng, hair, 4) if (y == 0 or (y == 1 and x in (0, 2, 5, 7))) else CLEAR
+            if face_ != "bottom" and y < 3 + (2 if face_ == "back" else 0) and rng.random() < 0.55:
+                return jitter(rng, hair, 4)
+            return CLEAR
+        if tag == "body":
             if face_ == "bottom":
                 return pants
-            c = grad(shirt, y, fh)
-            if face_ == "front" and x in (2, 5) and 3 <= y <= 10:
-                c = shade(c, 0.9)
-            return jitter(rng, c, 3)
-        if bone in ("rightArm", "leftArm"):
-            if outer:
-                return shirt_d if y == 3 and face_ not in ("top", "bottom") else CLEAR
-            if face_ == "top" or (face_ != "bottom" and y < 4):
-                return jitter(rng, grad(shirt, y, 4), 3)
+            if face_ == "front" and y < 2 and 3 <= x <= 4:
+                return shade(skin, 0.9)
+            c = grad(shirt, y, fh, 1.02, 0.8)
+            if face_ == "front" and x in (2, 5) and 2 < y < fh - 1:
+                c = shade(c, 0.88)
+            return grime(c)
+        if tag == "body+":  # torn, filthy hem
+            if face_ in ("top", "bottom"):
+                return CLEAR
+            if y == fh - 1 and rng.random() < 0.7:
+                return grime(shade(shirt, 0.7), 0.5)
+            return CLEAR
+        if tag == "arm":
+            if face_ == "top" or (face_ != "bottom" and y < 5):
+                return grime(grad(shirt, y, 5, 1.0, 0.85))
             if face_ == "bottom" or y >= 10:
-                return jitter(rng, shade(skin, 0.86), 3)
-            return jitter(rng, grad(skin, y, fh), 3)
-        if bone in ("rightLeg", "leftLeg"):
-            if outer:
-                return pants_d if y == 9 and face_ not in ("top", "bottom") else CLEAR
+                return grime(shade(skin, 0.75), 0.3)  # dirty hands
+            return jitter(rng, grad(skin, y, fh, 1.0, 0.86), 3)
+        if tag == "arm+":
+            return grime(shade(shirt, 0.72), 0.3) if y == 4 and face_ not in ("top", "bottom") and rng.random() < 0.8 else CLEAR
+        if tag == "leg":
             if face_ == "bottom":
-                return shoe_d
-            if face_ != "top" and y >= 10:
-                return jitter(rng, shoe if y == 10 else shoe_d, 3)
-            c = grad(pants, y, 10)
-            if face_ == "front" and x == (3 if bone == "rightLeg" else 0):
-                c = shade(c, 0.88)  # inner seam
-            return jitter(rng, c, 3)
+                return shade(boot, 0.8)
+            if face_ != "top" and y >= 9:
+                return jitter(rng, boot if y < 11 else shade(boot, 0.75), 4)
+            c = grad(pants, y, 9, 1.02, 0.86)
+            if face_ == "front" and 4 <= y <= 6:
+                c = mix(c, (0x70, 0x6A, 0x9A), 0.3)  # worn knees
+            return grime(c, 0.08)
+        if tag == "leg+":
+            return shade(boot, 1.1) if y == 9 and face_ not in ("top", "bottom") else CLEAR
+        if tag == "handle":
+            if y < 3:
+                return jitter(rng, (0x3A, 0x2E, 0x24), 4)  # grip wrap
+            return jitter(rng, shade(wood, 0.85) if (x + y) % 4 == 0 else wood, 5)
+        if tag == "pick":
+            c = jitter(rng, grad(stone, y, fh, 1.1, 0.8), 8)
+            return shade(c, 0.6) if rng.random() < 0.12 else c  # chips
+        if tag == "tip":
+            return (0x48, 0x48, 0x4C)
         return None
 
     paint_model(cv, MODELS["herobrine"], fn)
     return cv
 
 
-# ------------------------------- null -------------------------------------- #
+# =========================================================================== #
+# null: a player-shaped render error
+# =========================================================================== #
+
+def null_model():
+    """Sliced into three torso bands that don't line up, one arm longer than
+    the other, head cocked, and a halo of stray pixels and missing texture."""
+    return Model("geometry.hl.null", [
+        Bone("root"),
+        Bone("rightLeg", "root", (-2, 12, 0), cubes=[C((-4, 0, -2), (4, 12, 4), "leg")]),
+        Bone("leftLeg", "root", (2, 12, 0), cubes=[C((0, 0, -2), (4, 12, 4), "leg")]),
+        Bone("torsoLow", "root", (0, 12, 0), cubes=[C((-4, 12, -2), (8, 4, 4), "slice_low")]),
+        Bone("torsoMid", "torsoLow", (0, 16, 0), cubes=[C((-2, 16, -2), (8, 4, 4), "slice_mid")]),
+        Bone("torsoHigh", "torsoMid", (0, 20, 0), cubes=[C((-5, 20, -2), (8, 4, 4), "slice_high")]),
+        Bone("head", "torsoHigh", (-1, 24, 0), rotation=(0, 0, -9), cubes=[C((-5, 24, -4), (8, 8, 8), "head")]),
+        Bone("rightArm", "torsoHigh", (-6.5, 23, 0), cubes=[C((-8, 11, -1.5), (3, 12, 3), "arm")]),
+        Bone("leftArm", "torsoHigh", (4.5, 23, 0), cubes=[C((3, 5, -1.5), (3, 18, 3), "longarm")]),
+        Bone("halo", "head", (-1, 28, 0), cubes=[
+            C((-8, 30, -1), (1, 1, 1), "px"), C((4, 33, 2), (1, 1, 1), "px"), C((-3, 35, -3), (1, 1, 1), "px"),
+            C((5, 26, -2), (1, 1, 1), "px"), C((-9, 25, 2), (1, 1, 1), "px"), C((1, 34, 3), (1, 1, 1), "px"),
+            C((2, 35, -1), (2, 2, 2), "missing"), C((-10, 28, -2), (2, 2, 2), "missing")]),
+    ], bounds=(2.5, 2.8, (0, 1.4, 0))).pack_uv(64)
+
 
 def paint_null(seed):
-    """A hole in the world shaped like a player, shedding broken pixels."""
     rng = random.Random(seed)
-    cv = Canvas(64, 64)
-    glitch = [(0xF8, 0x00, 0xF8), (0x00, 0xE0, 0xE0), (0x00, 0x00, 0x00)]
-    tears = {}
+    cv = Canvas(*MODELS["null"].texture)
+    magenta, cyan = (0xF8, 0x00, 0xF8), (0x00, 0xE0, 0xE0)
 
-    def fn(bone, i, face_, x, y, fw, fh):
-        if bone == "glitch":
-            return (0xF8, 0x00, 0xF8) if (x + y) % 2 == 0 else (0, 0, 0)
-        if i == 1:  # outer layer: scanline tears
-            if bone == "head" and face_ == "front" and 2 <= y <= 6:
-                return CLEAR  # keep the eyes visible
-            key = (bone, face_, y)
-            if key not in tears:
-                tears[key] = None
-                if rng.random() < 0.13:
-                    start = rng.randint(0, max(0, fw - 2))
-                    tears[key] = (start, start + rng.randint(1, 4), rng.choice(glitch))
-            t = tears[key]
-            return t[2] if t and t[0] <= x < t[1] else CLEAR
-        if bone == "head" and face_ == "front":
-            if y == 4 and x in (1, 6):
-                return GLOW_WHITE
-            if y in (5, 6) and x in (1, 6) and rng.random() < 0.6:
-                return (0x26, 0x26, 0x2A)  # something leaking from the eyes
-        g = rng.randint(5, 20)
+    def void(y):
+        g = rng.randint(4, 12) + (6 if y % 2 else 0)  # scanlines
         return (g, g, g + 2)
+
+    def fn(bone, tag, face_, x, y, fw, fh):
+        if tag == "missing":
+            return magenta if (x + y) % 2 == 0 else (0, 0, 0)
+        if tag == "px":
+            return rng.choice([magenta, cyan, (0xFF, 0xFF, 0xFF)])
+        if tag == "head" and face_ == "front":
+            if y == 4 and x in (2, 5):
+                return GLOW_WHITE
+            if y > 4 and x in (2, 5) and rng.random() < 0.5:
+                return (0x1E, 0x1E, 0x24)
+        if tag.startswith("slice") and face_ not in ("top", "bottom") and y == fh - 1 and rng.random() < 0.3:
+            return rng.choice([magenta, cyan])  # the seams where the slices tore apart
+        if tag == "longarm" and y >= fh - 4 and rng.random() < 0.3:
+            return rng.choice([magenta, cyan, (0xFF, 0xFF, 0xFF)])
+        return void(y)
 
     paint_model(cv, MODELS["null"], fn)
     return cv
 
 
-# ------------------------ The Man From The Fog ----------------------------- #
+# =========================================================================== #
+# The Man From The Fog
+# =========================================================================== #
+
+def fog_man_model():
+    """Three blocks of starved, crooked man in a long rotten coat. Hunched,
+    one shoulder higher than the other, head tilted, a hinged jaw, vertebrae
+    breaking through the back of the coat, and four long fingers on hands
+    that hang below his knees."""
+    bones = [
+        Bone("root"),
+        Bone("body", "root", (0, 21, 0), cubes=[C((-3, 20, -1.5), (6, 4, 3), "pelvis")]),
+        Bone("spine", "body", (0, 24, 0), cubes=[C((-2.5, 24, -1.5), (5, 4, 3), "abdomen")]),
+        Bone("chest", "spine", (0, 28, 0), rotation=(12, 0, -4), cubes=[
+            C((-4, 28, -2), (8, 9, 4), "chest"),
+            C((-4.5, 34, -2.5), (9, 3, 5), "collar"),
+            *[C((-0.5, 29 + 2 * k, 2), (1, 1, 2), "vertebra") for k in range(4)]]),
+        Bone("coatBack", "chest", (0, 36, 2.5), cubes=[C((-4.5, 14, 2), (9, 22, 1), "coat_back")]),
+        Bone("coatRight", "chest", (-3, 36, -2.5), cubes=[C((-4.5, 14, -3), (3, 22, 1), "coat_front")]),
+        Bone("coatLeft", "chest", (3, 36, -2.5), cubes=[C((1.5, 14, -3), (3, 22, 1), "coat_front")]),
+        Bone("neck", "chest", (0, 37, 0), rotation=(-10, 0, 0), cubes=[C((-1, 37, -1), (2, 3, 2), "neck")]),
+        Bone("head", "neck", (0, 40, 0), rotation=(0, 0, 16), cubes=[C((-3, 40, -3), (6, 9, 6), "head")]),
+        Bone("jaw", "head", (0, 40.5, 2), rotation=(5, 0, 0), cubes=[C((-2.5, 38, -3.5), (5, 3, 5), "jaw")]),
+    ]
+    for side, name, shoulder in ((-1, "right", 35), (1, "left", 36)):
+        sx = lambda a, b: side_x(side, a, b)
+        bones += [
+            Bone(f"{name}Arm", "chest", (5 * side, shoulder, 0), rotation=(0, 0, -3 * side), cubes=[
+                C((sx(4, 6), shoulder - 12, -1), (2, 12, 2), "upper_arm"),
+                C((sx(4, 6), shoulder - 10, -1), (2, 10, 2), "sleeve", inflate=0.4)]),
+            Bone(f"{name}Forearm", f"{name}Arm", (5 * side, shoulder - 12, 0), rotation=(-8, 0, 0), cubes=[
+                C((sx(4, 6), shoulder - 24, -1), (2, 12, 2), "forearm")]),
+            Bone(f"{name}Hand", f"{name}Forearm", (5 * side, shoulder - 24, 0), cubes=[
+                C((sx(3, 7), shoulder - 27, -0.5), (4, 3, 1), "palm"),
+                *[C((sx(3 + k, 4 + k), shoulder - 33, -0.5), (1, 6, 1), "finger") for k in range(4)]]),
+            Bone(f"{name}Leg", "root", (2 * side, 21, 0), cubes=[C((sx(0.5, 3.5), 11, -1.5), (3, 10, 3), "thigh")]),
+            Bone(f"{name}Shin", f"{name}Leg", (2 * side, 11, 0), cubes=[
+                C((sx(1, 3), 1, -1), (2, 10, 2), "shin"),
+                C((sx(0.5, 3.5), 0, -3.5), (3, 1, 4), "foot")]),
+        ]
+    return Model("geometry.hl.fog_man", bones, bounds=(3.0, 3.5, (0, 1.6, 0))).pack_uv(128)
+
 
 def paint_fog_man(seed):
     rng = random.Random(seed)
-    cv = Canvas(64, 64)
-    S = (0xC8, 0xC5, 0xBC)
-    S_d = shade(S, 0.78)
-    vein = (0x9A, 0xA4, 0xB2)
-    cloth, cloth_l = (0x2A, 0x2A, 0x2F), (0x3B, 0x3B, 0x42)
-    teeth, mouth = (0xDB, 0xD4, 0xC0), (0x2C, 0x08, 0x0B)
-    rope = (0x5E, 0x50, 0x3C)
+    cv = Canvas(*MODELS["fog_man"].texture)
+    S = (0xBE, 0xBC, 0xB4)
+    S_d = shade(S, 0.76)
+    coat, coat_l, coat_d = (0x2C, 0x2A, 0x2E), (0x3C, 0x39, 0x3E), (0x1C, 0x1B, 0x1E)
+    teeth, mouth, bone_c = (0xD8, 0xD0, 0xBC), (0x2A, 0x08, 0x0A), (0xD6, 0xD0, 0xC0)
 
-    def pale(y, fh, top=1.04, bottom=0.86):
+    def pale(y, fh, top=1.03, bottom=0.84):
         c = jitter(rng, grad(S, y, fh, top, bottom), 4)
         r = rng.random()
         if r < 0.04:
             return shade(c, 0.88)
         if r < 0.055:
-            return mix(c, vein, 0.6)
+            return mix(c, (0x98, 0xA2, 0xB0), 0.6)  # veins
         return c
 
-    head_front = [
-        "SSSSSS",
-        "sSSSSs",
-        "KKssKK",
-        "KKSSKK",
-        "KkSSkK",
-        "SkNNkS",
-        "SSSSSS",
-        "KWKKWK",
-    ]
-    hpal = {"S": None, "s": S_d, "K": BLACK, "k": (0x3A, 0x38, 0x3A), "N": (0x22, 0x1C, 0x1E), "W": teeth}
+    def cloth(y, fh, base=coat):
+        c = jitter(rng, grad(base, y, fh, 1.1, 0.85), 4)
+        return coat_l if rng.random() < 0.08 else c
 
-    def fn(bone, i, face_, x, y, fw, fh):
-        if bone == "head":
+    head = [
+        "SSSSSS",
+        "SsSSsS",
+        "KKSSKK",
+        "KKSSKK",
+        "KKSSKK",
+        "kSnnSk",
+        "SSSSSS",
+        "SKKKKS",
+        "KWKWKW",
+    ]
+    hpal = {"s": S_d, "K": BLACK, "k": (0x3C, 0x3A, 0x3C), "n": (0x22, 0x1C, 0x1E), "W": teeth}
+
+    def fn(bone, tag, face_, x, y, fw, fh):
+        if tag == "head":
             if face_ == "front":
-                c = hpal[head_front[y][x]]
-                return c or pale(y, fh)
+                return face_rows(head, hpal, x, y, lambda: pale(y, fh))
             if face_ == "bottom":
                 return mouth
-            # The grin wraps round the sides of the face.
             near_front = (face_ == "right" and x >= fw - 2) or (face_ == "left" and x <= 1)
-            if y == fh - 1 and near_front:
-                return BLACK
+            if y >= fh - 2 and near_front:
+                return BLACK  # the grin wraps round the face
             return pale(y, fh)
-        if bone == "jaw":
+        if tag == "jaw":
             if face_ == "front":
-                return (teeth if x % 2 == 0 else BLACK) if y == 0 else pale(y, fh)
+                return [lambda: teeth if x % 2 else BLACK, lambda: pale(y, fh), lambda: shade(pale(y, fh), 0.85)][y]()
             if face_ == "top":
                 return mouth
-            if face_ in ("right", "left") and y == 0:
-                return BLACK
             return shade(pale(y, fh), 0.9)
-        if bone == "neck":
-            if face_ == "front" and x in (0, fw - 1):
-                return S_d  # tendons
-            return pale(y, fh)
-        if bone == "chest":
+        if tag == "neck":
+            return S_d if face_ == "front" and x in (0, fw - 1) else pale(y, fh)
+        if tag == "chest":
             c = pale(y, fh)
             if face_ == "front":
-                if y == 0 and x in (1, 2, 5, 6):
-                    return S_d  # collarbones
-                if y in (2, 4, 6) and x not in (3, 4):
-                    return S_d  # ribs
-                if y == 8:
-                    return shade(c, 0.85)
-            if face_ in ("right", "left") and y in (2, 4, 6):
-                return S_d
-            if face_ == "back" and x in (3, 4) and y % 2 == 0:
-                return S_d  # spine
+                if y in (1, 3, 5, 7) and x not in (3, 4):
+                    return S_d  # ribs, seen between the coat flaps
+                if x in (3, 4) and y < 7:
+                    return shade(c, 1.05)  # sternum
             return c
-        if bone == "body":
-            if y < 2 or face_ in ("top",):
-                return pale(y, fh)
-            if y == 2 or face_ == "bottom":
-                return jitter(rng, rope, 6) if face_ != "bottom" else cloth
-            return jitter(rng, cloth_l if rng.random() < 0.2 else cloth, 4)
-        if bone.endswith("Leg"):
+        if tag == "collar":
+            return cloth(y, fh, coat_d)
+        if tag == "vertebra":
+            return jitter(rng, bone_c, 5)
+        if tag == "sleeve":
+            if face_ == "bottom" or (y >= fh - 2 and rng.random() < 0.5):
+                return CLEAR  # frayed cuff
+            return cloth(y, fh)
+        if tag in ("coat_back", "coat_front"):
             if face_ in ("top",):
-                return cloth
-            if rng.random() < 0.07:
-                return pale(y, fh)  # torn through
-            return jitter(rng, cloth_l if x == 1 else cloth, 4)
-        if bone.endswith("Shin"):
-            if i == 1:  # bare foot, grey toes
-                return (0x4A, 0x44, 0x3E) if face_ == "front" else pale(1, 2, 0.9, 0.8)
-            if face_ == "bottom":
-                return (0x55, 0x50, 0x4A)
-            if face_ == "top" or y < 3:
-                return jitter(rng, cloth, 4)
-            if y == 3:
-                return jitter(rng, cloth, 4) if rng.random() < 0.5 else pale(y, fh)  # ragged hem
-            c = pale(y, fh, 1.02, 0.8)
-            if face_ == "front" and x == 1:
-                c = shade(c, 1.06)  # shin bone
-            return shade(c, 0.8) if y == fh - 1 else c
-        if bone.endswith("Forearm"):
-            return S_d if y < 2 and face_ != "top" else pale(y, fh)
-        if bone.endswith("Arm"):
+                return coat_d
+            # Ragged hem and moth holes.
+            if y >= fh - 3 and rng.random() < (y - (fh - 4)) * 0.28:
+                return CLEAR
+            if 4 < y < fh - 4 and rng.random() < 0.02:
+                return CLEAR
+            return cloth(y, fh)
+        if tag in ("pelvis", "abdomen"):
+            if tag == "pelvis":
+                return jitter(rng, (0x26, 0x26, 0x2A), 4)
+            return S_d if face_ == "front" and y % 2 == 0 else pale(y, fh)
+        if tag == "thigh":
+            return jitter(rng, (0x30, 0x2F, 0x35) if x == 1 else (0x26, 0x26, 0x2A), 4)
+        if tag == "shin":
+            c = pale(y, fh, 1.0, 0.78)
+            return shade(c, 1.06) if face_ == "front" and x == 0 else c
+        if tag == "foot":
+            return (0x4A, 0x44, 0x3E) if face_ == "front" else pale(1, 2, 0.88, 0.8)
+        if tag == "upper_arm":
             return pale(y, fh)
-        if bone.endswith("Hand"):
-            if i == 0:
-                return pale(y, fh, 0.96, 0.86)
-            return (0x3A, 0x36, 0x30) if (y == fh - 1 or face_ == "bottom") else pale(y, fh, 0.95, 0.85)
+        if tag == "forearm":
+            return S_d if y < 2 and face_ != "top" else pale(y, fh)
+        if tag == "palm":
+            return pale(y, fh, 0.94, 0.84)
+        if tag == "finger":
+            return (0x2E, 0x2A, 0x26) if (y >= fh - 2 or face_ == "bottom") else pale(y, fh, 0.95, 0.82)
         return None
 
     paint_model(cv, MODELS["fog_man"], fn)
     return cv
 
 
-# ------------------------- The Cave Dweller -------------------------------- #
+# =========================================================================== #
+# The Cave Dweller
+# =========================================================================== #
+
+def cave_dweller_model():
+    """Something that was a person once, now on all fours: long arms planted
+    ahead like a runner's, knees bent the wrong way, a ribcage lifted off the
+    ground, spine ridge, a stretched neck, sunken glowing eyes and a jaw that
+    drops open far too wide."""
+    bones = [
+        Bone("root"),
+        Bone("body", "root", (0, 13, 6), cubes=[
+            C((-3, 10.5, 4), (6, 5, 5), "pelvis"),
+            C((-0.5, 15, 5.5), (1, 2, 1), "ridge")]),
+        Bone("abdomen", "body", (0, 13, 4), cubes=[
+            C((-2.5, 11, -2), (5, 4, 6), "abdomen"),
+            C((-0.5, 14.5, -0.5), (1, 2, 1), "ridge"), C((-0.5, 14.5, 2), (1, 2, 1), "ridge")]),
+        Bone("ribcage", "abdomen", (0, 13, -2), rotation=(-14, 0, 0), cubes=[
+            C((-4, 10, -10), (8, 7, 8), "ribcage"),
+            C((-0.5, 16.5, -4.5), (1, 2, 1), "ridge"), C((-0.5, 16.5, -7.5), (1, 2, 1), "ridge")]),
+        Bone("neck", "ribcage", (0, 15, -10), rotation=(-20, 0, 0), cubes=[C((-1.5, 13.5, -16), (3, 3, 6), "neck")]),
+        Bone("head", "neck", (0, 15, -16), rotation=(26, 0, 0), cubes=[C((-3.5, 14, -23), (7, 5, 7), "skull")]),
+        Bone("jaw", "head", (0, 14.5, -17), rotation=(10, 0, 0), cubes=[C((-3.5, 11, -23), (7, 3, 6), "jaw")]),
+    ]
+    for side, name in ((-1, "Right"), (1, "Left")):
+        sx = lambda a, b: side_x(side, a, b)
+        bones += [
+            # Front limbs: long arms planted ahead, elbows out.
+            Bone(f"arm{name}", "ribcage", (4.5 * side, 15, -7), rotation=(-30, 0, -38 * side), cubes=[
+                C((sx(3.5, 5.5), 2, -8), (2, 13, 2), "upper_arm")]),
+            Bone(f"forearm{name}", f"arm{name}", (4.5 * side, 2, -7), rotation=(58, 0, 34 * side), cubes=[
+                C((sx(3.5, 5.5), -7, -8), (2, 9, 2), "forearm")]),
+            Bone(f"hand{name}", f"forearm{name}", (4.5 * side, -7, -7), rotation=(-28, 0, 4 * side), cubes=[
+                C((sx(3, 6), -8, -9), (3, 1, 3), "palm"),
+                *[C((sx(a, a + 1), -8, -14), (1, 1, 5), "claw") for a in (3, 4, 5)]]),
+            # Hind legs: knees forward, shins back, long feet.
+            Bone(f"thigh{name}", "body", (3.5 * side, 12.5, 7), rotation=(-62, 0, -12 * side), cubes=[
+                C((sx(2, 5), 2.5, 5.5), (3, 10, 3), "thigh")]),
+            Bone(f"shin{name}", f"thigh{name}", (3.5 * side, 2.5, 7), rotation=(100, 0, 8 * side), cubes=[
+                C((sx(2.5, 4.5), -6.5, 6), (2, 9, 2), "shin")]),
+            Bone(f"foot{name}", f"shin{name}", (3.5 * side, -6.5, 7), rotation=(-38, 0, 0), cubes=[
+                C((sx(2, 5), -7.5, 2), (3, 1, 6), "foot")]),
+        ]
+    return Model("geometry.hl.cave_dweller", bones, bounds=(3.0, 2.0, (0, 0.8, 0))).pack_uv(128)
+
 
 def paint_cave_dweller(seed):
     rng = random.Random(seed)
-    cv = Canvas(64, 64)
-    D = (0xA8, 0xA6, 0x9B)
-    D_d = shade(D, 0.72)
-    wet = (0xCE, 0xCC, 0xC2)
-    vein = (0x8C, 0x94, 0x98)
-    teeth, mouth, bone_c = (0xE0, 0xD8, 0xC4), (0x3C, 0x0C, 0x10), (0xDE, 0xD6, 0xC2)
+    cv = Canvas(*MODELS["cave_dweller"].texture)
+    D = (0x9E, 0x9A, 0x8E)
+    D_d = shade(D, 0.68)
+    wet = (0xC6, 0xC2, 0xB6)
+    teeth, mouth = (0xDE, 0xD6, 0xC0), (0x44, 0x0E, 0x12)
+    glow = (0xFF, 0xF0, 0xB0, 60)
 
-    def skin(y, fh, top=1.04, bottom=0.84):
-        c = jitter(rng, grad(D, y, fh, top, bottom), 6)
+    def skin(y, fh, top=1.05, bottom=0.8):
+        c = jitter(rng, grad(D, y, fh, top, bottom), 5)
         r = rng.random()
-        if r < 0.05:
+        if r < 0.06:
             return wet
-        if r < 0.1:
-            return shade(c, 0.84)
+        if r < 0.11:
+            return shade(c, 0.82)
         if r < 0.13:
-            return vein
+            return mix(c, (0x6E, 0x7C, 0x80), 0.5)
         return c
 
-    skull_front = [
-        "SkSSSkS",
+    skull = [
+        "SsSSSsS",
         "KKSSSKK",
-        "KKSkSKK",
-        "SSSSSSS",
+        "KgSSSgK",
         "SSnSnSS",
         "WKWKWKW",
     ]
-    spal = {"S": None, "k": BLACK, "K": BLACK, "n": (0x30, 0x2A, 0x2A), "W": teeth}
+    spal = {"s": D_d, "K": BLACK, "g": glow, "n": (0x2E, 0x28, 0x28), "W": teeth}
 
-    def fn(bone, i, face_, x, y, fw, fh):
-        if bone == "head":
+    def fn(bone, tag, face_, x, y, fw, fh):
+        if tag == "skull":
             if face_ == "front":
-                return spal[skull_front[y][x]] or skin(y, fh)
-            if face_ == "top" and x in (2, 3):
-                return D_d  # ridge
-            if face_ in ("right", "left") and x % 2 == 0 and y < 3:
+                return face_rows(skull, spal, x, y, lambda: skin(y, fh))
+            if face_ == "bottom":
+                return teeth if (x % 2 == 0 and y == fh - 1) else mouth
+            if face_ == "top" and x == fw // 2:
                 return D_d
-            if face_ == "bottom":
-                return mouth
             return skin(y, fh)
-        if bone == "jaw":
+        if tag == "jaw":
             if face_ == "front":
-                return (BLACK if x % 2 == 0 else teeth) if y == 0 else skin(y, fh)
+                return [lambda: BLACK if x % 2 == 0 else teeth, lambda: skin(y, fh), lambda: shade(skin(y, fh), 0.85)][y]()
             if face_ == "top":
-                return mouth
-            if face_ in ("right", "left") and rng.random() < 0.3:
-                return (0x4A, 0x16, 0x18)  # something it ate
-            return skin(y, fh, 0.9, 0.8)
-        if bone == "neck":
-            return D_d if (face_ in ("right", "left", "top", "bottom") and x % 2 == 0) else skin(y, fh)
-        if bone in ("body", "chest"):
-            if i > 0:  # spine spikes
-                return (0x6A, 0x62, 0x54) if face_ == "top" else jitter(rng, bone_c, 5)
-            if face_ == "top":
-                return D_d if x in (fw // 2 - 1, fw // 2) and y % 2 == 0 else skin(y, fh)
+                return (0x6A, 0x1E, 0x22) if 2 <= x <= 4 and y > 1 else mouth  # tongue
+            if face_ in ("right", "left") and y == 0 and rng.random() < 0.5:
+                return (0x4A, 0x16, 0x18)
+            return skin(y, fh, 0.9, 0.78)
+        if tag == "neck":
+            return D_d if face_ in ("right", "left", "top") and x % 2 == 0 else skin(y, fh)
+        if tag == "ribcage":
+            if face_ in ("right", "left") and x % 2 == 0 and 1 <= y <= 5:
+                return D_d  # ribs pressing through the skin
             if face_ == "bottom":
-                return jitter(rng, shade(wet, 0.95), 4)
-            if face_ in ("right", "left") and bone == "chest" and x % 2 == 0 and 1 <= y <= 4:
-                return D_d  # ribs
-            if face_ in ("right", "left") and bone == "body" and y == 2 and rng.random() < 0.7:
-                return D_d  # skin folds
+                return jitter(rng, shade(wet, 0.9), 4)
+            if face_ == "top" and x in (3, 4):
+                return D_d
             return skin(y, fh)
-        if bone.endswith("Upper"):
+        if tag == "abdomen":
+            if face_ in ("right", "left"):
+                return shade(skin(y, fh), 0.8)  # sunken belly
+            return skin(y, fh)
+        if tag == "pelvis":
+            return D_d if face_ in ("right", "left") and y == 1 else skin(y, fh)
+        if tag == "ridge":
+            return (0x5A, 0x52, 0x46) if face_ == "top" else jitter(rng, (0xD6, 0xCE, 0xBA), 5)
+        if tag in ("upper_arm", "thigh"):
             return D_d if y >= fh - 2 else skin(y, fh)
-        if bone.endswith("Lower"):
-            if i == 1:  # elbow spur
-                return (0x5A, 0x52, 0x46) if face_ == "top" else jitter(rng, bone_c, 5)
-            if i > 1:  # claws
-                return BLACK if face_ == "front" else jitter(rng, shade(bone_c, 0.9), 4)
-            if y >= fh - 2 or face_ == "bottom":
-                return (0x2A, 0x26, 0x24)
-            return skin(y, fh, 1.02, 0.55)
+        if tag in ("forearm", "shin"):
+            return skin(y, fh, 1.0, 0.55)
+        if tag in ("palm", "foot"):
+            return skin(0, 2, 0.7, 0.6)
+        if tag == "claw":
+            return BLACK if face_ == "front" or rng.random() < 0.3 else jitter(rng, (0x3A, 0x34, 0x2E), 4)
         return None
 
     paint_model(cv, MODELS["cave_dweller"], fn)
     return cv
 
 
-# ------------------------- Blocks and items -------------------------------- #
+MODELS = {}
+MODELS["herobrine"] = herobrine_model()
+MODELS["null"] = null_model()
+MODELS["fog_man"] = fog_man_model()
+MODELS["cave_dweller"] = cave_dweller_model()
+
+
+# =========================================================================== #
+# Blocks, items, pack icon
+# =========================================================================== #
 
 def paint_corrupted(seed):
-    """The missing-texture checkerboard, with scanline tears."""
+    """The missing-texture checkerboard, four frames tall: the block's tears
+    crawl and it flickers inverted (see flipbook_textures.json)."""
     rng = random.Random(seed)
-    cv = Canvas(16, 16)
-    for y in range(16):
-        shift = rng.choice([0, 0, 0, 0, 2, 3, -2]) if y % 4 == 1 else 0
-        for x in range(16):
-            sx = (x + shift) % 16
-            magenta = ((sx // 8) + (y // 8)) % 2 == 0
-            c = (0xF8, 0x00, 0xF8) if magenta else (0x00, 0x00, 0x00)
-            if rng.random() < 0.03:
-                c = (0x00, 0xE0, 0xE0)
-            cv.set(x, y, c)
+    frames = 4
+    cv = Canvas(16, 16 * frames)
+    for f in range(frames):
+        inverted = f == 2
+        for y in range(16):
+            shift = rng.choice([0, 0, 0, 2, 3, -2, -3]) if rng.random() < 0.3 else 0
+            for x in range(16):
+                sx = (x + shift) % 16
+                magenta = ((sx // 8) + (y // 8)) % 2 == 0
+                c = (0xF8, 0x00, 0xF8) if magenta else (0x00, 0x00, 0x00)
+                if inverted:
+                    c = (0x00, 0xE0, 0xE0) if magenta else (0x10, 0x00, 0x10)
+                if rng.random() < 0.03:
+                    c = (0xFF, 0xFF, 0xFF)
+                cv.set(x, f * 16 + y, c)
     return cv
 
 
 def paint_journal(seed):
+    """A scuffed black notebook with a pale handprint on the cover and a red
+    string bookmark."""
     rng = random.Random(seed)
     cv = Canvas(16, 16)
-    leather, edge = (0x5A, 0x36, 0x22), (0x36, 0x20, 0x12)
+    cover, edge = (0x26, 0x24, 0x28), (0x12, 0x11, 0x14)
     for y in range(1, 15):
         for x in range(2, 14):
-            c = jitter(rng, grad(leather, y - 1, 14, 1.1, 0.85), 6)
+            c = jitter(rng, grad(cover, y - 1, 14, 1.2, 0.85), 5)
             if x in (2, 13) or y in (1, 14):
                 c = edge
+            elif rng.random() < 0.05:
+                c = shade(c, 1.5)  # scuffs
             cv.set(x, y, c)
     for y in range(2, 14):
-        cv.set(13, y, (0xE8, 0xDF, 0xC8) if y % 2 else (0xC8, 0xBE, 0xA4))  # page edges
-        cv.set(3, y, (0x2A, 0x18, 0x0E))                                    # spine
-        if y % 2 == 0:
-            cv.set(4, y, (0xB8, 0xA8, 0x88))                                # stitching
-    cv.rect(12, 7, 3, 2, (0x2A, 0x18, 0x0E))                                # strap
-    cv.set(14, 7, (0xD0, 0xA8, 0x48))                                       # buckle
-    cv.set(14, 8, (0x9A, 0x78, 0x30))
-    eye = [
-        "..####..",
-        ".#....#.",
-        "#..rr..#",
-        ".#.rr.#.",
-        "..####..",
+        cv.set(12, y, (0xE4, 0xDA, 0xC2) if y % 2 else (0xB8, 0xAE, 0x96))  # page edges
+        cv.set(3, y, (0x3A, 0x38, 0x3E))  # spine
+    hand = [
+        ".#.#.#",
+        ".#.#.#",
+        "######",
+        "#####.",
+        ".####.",
+        "..##..",
     ]
-    for y, row in enumerate(eye):
+    for y, row in enumerate(hand):
         for x, ch in enumerate(row):
             if ch == "#":
-                cv.set(5 + x, 5 + y, (0xE0, 0xD6, 0xBC))
-            elif ch == "r":
-                cv.set(5 + x, 5 + y, (0xC0, 0x14, 0x14))
-    cv.set(8, 7, (0x10, 0x04, 0x04))
-    for (x, y) in [(6, 12), (7, 11), (11, 3)]:
-        cv.set(x, y, shade(leather, 1.35))                                  # scratches
+                cv.set(5 + x, 4 + y, jitter(rng, (0xD8, 0xD2, 0xC8), 10))
+    for y in range(9, 16):
+        cv.set(10, y, (0xB0, 0x18, 0x18))  # bookmark
     return cv
 
 
 def paint_flashlight():
+    """A black rubber torch, lit, seen side-on."""
     cv = Canvas(16, 16)
-    body, hi, lo = (0x92, 0x94, 0x9C), (0xCC, 0xCE, 0xD4), (0x46, 0x48, 0x50)
-    for i in range(8):                               # diagonal barrel, bottom-left to top-right
-        x, y = 2 + i, 12 - i
-        cv.set(x, y, hi)
-        cv.set(x + 1, y, body)
-        cv.set(x, y + 1, body)
-        cv.set(x + 1, y + 1, lo)
-        if i % 2 == 0 and i < 5:
-            cv.set(x + 1, y, lo)                     # grip rings
-    cv.set(5, 10, (0xD0, 0x22, 0x22))                # switch
-    cv.rect(9, 2, 4, 4, (0x30, 0x32, 0x38))          # head
-    cv.set(9, 2, (0x60, 0x62, 0x6A))
-    cv.rect(10, 3, 2, 2, (0xFF, 0xE8, 0x70))         # lens
-    cv.set(11, 3, (0xFF, 0xFF, 0xE0))
-    for (x, y, a) in [(13, 1, 160), (14, 0, 110), (13, 2, 120), (12, 0, 110), (15, 0, 70), (14, 2, 70)]:
-        cv.set(x, y, (0xFF, 0xF6, 0xB8, a))          # beam
+    body, hi, lo = (0x2A, 0x2A, 0x30), (0x4E, 0x4E, 0x58), (0x16, 0x16, 0x1A)
+    for x in range(1, 10):
+        cv.set(x, 7, hi)
+        cv.set(x, 8, body)
+        cv.set(x, 9, lo)
+    for x in (3, 5):
+        cv.set(x, 8, lo)  # grip ribs
+    cv.set(6, 6, (0xD0, 0x22, 0x22))  # switch
+    cv.rect(10, 5, 3, 6, body)  # head
+    cv.set(10, 5, hi)
+    cv.rect(11, 6, 1, 4, (0xE0, 0xB0, 0x20))  # yellow ring
+    cv.rect(12, 6, 1, 4, (0xFF, 0xF4, 0xB0))  # lens
+    for x in range(13, 16):
+        spread = x - 12
+        for y in range(8 - spread - 1, 8 + spread + 1):
+            cv.set(x, y, (0xFF, 0xF4, 0xB8, max(40, 150 - spread * 35)))  # beam
     return cv
 
 
-# ----------------------------- Pack icon ----------------------------------- #
+def render_view(name, textures, size, yaw, pitch, pose=None, ppu=None):
+    return render(MODELS[name], textures[name], size=size, yaw=yaw, pitch=pitch, pose=pose, ppu=ppu)
 
-FOG_WATCH_POSE = {"head": (0, 0, 18), "jaw": (6, 0, 0), "chest": (6, 0, 0)}
+
+FOG_WATCH_POSE = {"body": (4, 0, 0), "jaw": (4, 0, 0)}
 
 
 def paint_pack_icon(textures, seed):
@@ -571,27 +615,33 @@ def paint_pack_icon(textures, seed):
     cv = Canvas(128, 128)
     for y in range(128):
         for x in range(128):
-            fog = int(16 + 72 * (y / 127) ** 1.5 + rng.randint(-4, 4))
-            cv.set(x, y, (fog, fog + 2, fog + 4))
-    man = render(MODELS["fog_man"], textures["fog_man"], size=(60, 112), yaw=18, pitch=-6, pose=FOG_WATCH_POSE)
-    cv.paste(man, 40, 10)
-    # Fog swallowing his legs.
-    for y in range(64, 128):
-        t = min(1.0, (y - 64) / 56) * 0.75
+            fog = int(14 + 70 * (y / 127) ** 1.4 + rng.randint(-4, 4))
+            cv.set(x, y, (fog, fog + 2, fog + 5))
+    # Dead trees in the background.
+    for tx, w in ((6, 5), (30, 4), (96, 6), (118, 4)):
+        for y in range(0, 110):
+            for x in range(tx, tx + w):
+                cv.blend(x, y, (0x0C, 0x0D, 0x10), 0.8)
+    # Herobrine, far off between the trees; null glitching at the edge.
+    cv.paste(render_view("herobrine", textures, (20, 30), 15, -4), 12, 52)
+    cv.paste(render_view("null", textures, (28, 44), -30, -4), 98, 44)
+    # The Man From The Fog, close.
+    cv.paste(render_view("fog_man", textures, (64, 116), 22, -6, FOG_WATCH_POSE), 34, 6)
+    # Fog rolling over everything below the waist.
+    for y in range(62, 128):
+        t = min(1.0, (y - 62) / 60) * 0.7
         for x in range(128):
-            cv.blend(x, y, (0x5C, 0x60, 0x64), t)
-    # White eyes in the dark, off to the left.
-    cv.rect(12, 44, 3, 2, (0xFF, 0xFF, 0xFF))
-    cv.rect(19, 44, 3, 2, (0xFF, 0xFF, 0xFF))
-    # A tear of missing texture in the corner.
-    for y in range(0, 22):
-        for x in range(102 + (y % 5), 128):
-            magenta = ((x // 6) + (y // 6)) % 2 == 0
-            cv.set(x, y, (0xF8, 0x00, 0xF8) if magenta else (0, 0, 0))
+            cv.blend(x, y, (0x5A, 0x5E, 0x64), t)
+    # The Cave Dweller crawling out of the dark in the corner.
+    for y in range(92, 128):
+        for x in range(0, 60):
+            if (x / 60) ** 2 + ((128 - y) / 36) ** 2 < 1.0:
+                cv.blend(x, y, (0x06, 0x06, 0x08), 0.85)
+    cv.paste(render_view("cave_dweller", textures, (52, 34), 35, -10), 2, 92)
     for y in range(128):
         for x in range(128):
             if rng.random() < 0.05:
-                cv.set(x, y, jitter(rng, cv.get(x, y), 22))
+                cv.set(x, y, jitter(rng, cv.get(x, y), 20))
     return cv
 
 
@@ -620,6 +670,9 @@ def paint_textures():
     for name, tex in textures.items():
         tex.save(ent / f"{name}.png")
     paint_corrupted(50).save(RP / "textures" / "blocks" / "hl" / "corrupted_block.png")
+    flipbook = [{"flipbook_texture": "textures/blocks/hl/corrupted_block", "atlas_tile": "hl_corrupted",
+                 "ticks_per_frame": 3, "blend_frames": False}]
+    (RP / "textures" / "flipbook_textures.json").write_text(json.dumps(flipbook, indent=2) + "\n", encoding="utf-8")
     items = RP / "textures" / "items" / "hl"
     paint_journal(60).save(items / "journal.png")
     paint_flashlight().save(items / "flashlight.png")
@@ -635,8 +688,9 @@ PREVIEW_POSES = {
     "fog_man": [("watch", FOG_WATCH_POSE),
                 ("sprint", {"body": (30, 0, 0), "chest": (10, 0, 0), "neck": (-20, 0, 0), "head": (-25, 0, 0),
                             "jaw": (30, 0, 0), "rightArm": (70, 0, 0), "leftArm": (20, 0, 0),
+                            "coatBack": (40, 0, 0), "coatRight": (30, 0, 0), "coatLeft": (35, 0, 0),
                             "rightLeg": (-35, 0, 0), "rightShin": (30, 0, 0), "leftLeg": (25, 0, 0), "leftShin": (50, 0, 0)})],
-    "cave_dweller": [("stalk", {}), ("chase", {"jaw": (30, 0, 0), "head": (-10, 0, 0)})],
+    "cave_dweller": [("stalk", {}), ("chase", {"jaw": (38, 0, 0), "head": (-14, 0, 0), "neck": (-6, 0, 0)})],
 }
 
 

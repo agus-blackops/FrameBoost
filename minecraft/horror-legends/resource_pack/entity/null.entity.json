@@ -13,7 +13,7 @@
         "default": "geometry.hl.null"
       },
       "animations": {
-        "look": "animation.hl.humanoid.look_at_target",
+        "look": "animation.hl.look_at_target",
         "glitch": "animation.hl.null.glitch"
       },
       "scripts": {

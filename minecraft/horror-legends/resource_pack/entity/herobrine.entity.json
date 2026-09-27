@@ -10,16 +10,16 @@
         "default": "textures/entity/hl/herobrine"
       },
       "geometry": {
-        "default": "geometry.hl.player"
+        "default": "geometry.hl.herobrine"
       },
       "animations": {
-        "look": "animation.hl.humanoid.look_at_target",
-        "stand": "animation.hl.herobrine.stand"
+        "look": "animation.hl.look_at_target",
+        "idle": "animation.hl.herobrine.idle"
       },
       "scripts": {
         "animate": [
           "look",
-          "stand"
+          "idle"
         ]
       },
       "render_controllers": [

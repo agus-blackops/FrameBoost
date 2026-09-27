@@ -14,7 +14,7 @@
       },
       "animations": {
         "walk": "animation.hl.fog_man.walk",
-        "look": "animation.hl.humanoid.look_at_target",
+        "look": "animation.hl.look_at_target",
         "watch": "animation.hl.fog_man.watch",
         "sprint": "animation.hl.fog_man.sprint",
         "attack": "animation.hl.fog_man.attack"

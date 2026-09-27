@@ -17,9 +17,13 @@ from pixels import Canvas, clamp
 
 
 class Cube:
-    def __init__(self, origin, size, uv, inflate=0.0, pivot=None, rotation=None):
+    """A box. Leave `uv` as None to have Model.pack_uv place it; cubes with the
+    same `share` key are given the same texture region (and so look alike)."""
+
+    def __init__(self, origin, size, uv=None, inflate=0.0, pivot=None, rotation=None, share=None):
         self.origin, self.size, self.uv = origin, size, uv
         self.inflate, self.pivot, self.rotation = inflate, pivot, rotation
+        self.share = share
 
     def to_json(self):
         c = {"origin": list(self.origin), "size": list(self.size), "uv": list(self.uv)}
@@ -53,6 +57,32 @@ class Model:
 
     def bone(self, name):
         return next(b for b in self.bones if b.name == name)
+
+    def pack_uv(self, width=128):
+        """Shelf-pack every cube without a UV into the texture, tallest first,
+        and grow the texture height to the next power of two that fits."""
+        slots = {}
+        for bone in self.bones:
+            for i, cube in enumerate(bone.cubes):
+                if cube.uv is None:
+                    key = cube.share or (bone.name, i)
+                    w, h, d = (int(v) for v in cube.size)
+                    slots.setdefault(key, [(2 * (w + d), h + d), []])[1].append(cube)
+        taken = [(c.uv, c.size) for b in self.bones for c in b.cubes if c.uv is not None]
+        used_h = max((uv[1] + int(sz[1]) + int(sz[2]) for uv, sz in taken), default=0)
+        x, y, row_h = 0, used_h, 0
+        for (w, h), cubes in sorted(slots.values(), key=lambda s: -s[0][1]):
+            if x + w > width:
+                x, y, row_h = 0, y + row_h, 0
+            for cube in cubes:
+                cube.uv = (x, y)
+            x += w
+            row_h = max(row_h, h)
+        height = 16
+        while height < y + row_h:
+            height *= 2
+        self.texture = (width, height)
+        return self
 
     def to_json(self):
         w, h, offset = self.bounds

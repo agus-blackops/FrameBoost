@@ -4,7 +4,7 @@
     "description": {
       "identifier": "hl:cave_dweller",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/hl/cave_dweller"
@@ -13,12 +13,12 @@
         "default": "geometry.hl.cave_dweller"
       },
       "animations": {
-        "walk": "animation.hl.crawler.walk",
-        "breathe": "animation.hl.crawler.breathe",
-        "look": "animation.hl.crawler.look",
-        "twitch": "animation.hl.crawler.twitch",
-        "jaw_idle": "animation.hl.crawler.jaw_idle",
-        "jaw_snap": "animation.hl.crawler.jaw_snap"
+        "walk": "animation.hl.dweller.walk",
+        "breathe": "animation.hl.dweller.breathe",
+        "look": "animation.hl.dweller.look",
+        "twitch": "animation.hl.dweller.twitch",
+        "jaw_idle": "animation.hl.dweller.jaw_idle",
+        "jaw_snap": "animation.hl.dweller.jaw_snap"
       },
       "scripts": {
         "animate": [
