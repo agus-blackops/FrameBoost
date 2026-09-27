@@ -30,6 +30,20 @@
             -1.5
           ]
         },
+        "jaw": {
+          "rotation": [
+            "4.0 + math.sin(query.life_time * 50.0) * 5.0",
+            0,
+            "math.sin(query.life_time * 20.0) * 3.0"
+          ]
+        },
+        "gutHang": {
+          "rotation": [
+            "math.sin(query.life_time * 70.0) * 12.0",
+            0,
+            "math.cos(query.life_time * 55.0) * 8.0"
+          ]
+        },
         "pickaxe": {
           "rotation": [
             "math.sin(query.life_time * 20.0) * 2.0",

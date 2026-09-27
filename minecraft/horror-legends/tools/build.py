@@ -63,127 +63,207 @@ def face_rows(rows, palette, x, y, fallback):
 
 
 # =========================================================================== #
-# Herobrine: a miner who never left the mine
+# Herobrine: what the mine left of a miner
 # =========================================================================== #
 
 def herobrine_model():
-    """Player proportions with the outer skin layer, stooped, head lowered,
-    dragging a worn pickaxe by the end of the handle."""
-    P = lambda o, s, uv, tag, inflate=0.0: Cube(o, s, uv, inflate, share=tag)
+    """Two and a half blocks of what is left of a miner. Stooped, head lowered,
+    the stomach torn open with guts spilling out, a lipless mouth full of
+    teeth over a slack hanging jaw, the left half of the face and the left
+    arm burned raw and blistered, and the spine outside the body, breaking
+    through the back of the shirt from the waist to the skull. Still dragging
+    his pickaxe."""
+    blister = lambda x, y, z: C((x, y, z), (1, 1, 1), "blister")
+    vertebra = lambda y, z=2: C((-1, y, z), (2, 1, 2), "vertebra")
+    spike = lambda y: C((-0.5, y, 4), (1, 1, 1), "spinous")
     return Model("geometry.hl.herobrine", [
         Bone("root"),
-        Bone("body", "root", (0, 12, 0), rotation=(5, 0, 0), cubes=[
-            P((-4, 12, -2), (8, 12, 4), (16, 16), "body"),
-            P((-4, 12, -2), (8, 12, 4), (16, 32), "body+", 0.25)]),
-        Bone("head", "body", (0, 24, 0), rotation=(8, 0, 0), cubes=[
-            P((-4, 24, -4), (8, 8, 8), (0, 0), "head"),
-            P((-4, 24, -4), (8, 8, 8), (32, 0), "head+", 0.5)]),
-        Bone("rightArm", "body", (-5, 22, 0), rotation=(-5, 0, 0), cubes=[
-            P((-8, 12, -2), (4, 12, 4), (40, 16), "arm"),
-            P((-8, 12, -2), (4, 12, 4), (40, 32), "arm+", 0.25)]),
-        Bone("leftArm", "body", (5, 22, 0), cubes=[
-            P((4, 12, -2), (4, 12, 4), (32, 48), "arm"),
-            P((4, 12, -2), (4, 12, 4), (48, 48), "arm+", 0.25)]),
-        Bone("pickaxe", "rightArm", (-6, 13, 0), rotation=(-18, 0, 0), cubes=[
-            P((-6.5, 3, -0.5), (1, 10, 1), (64, 0), "handle"),
-            P((-6.5, 1, -4.5), (1, 2, 9), (68, 0), "pick"),
-            P((-6.5, 3, -4.5), (1, 1, 1), (88, 0), "tip"),
-            P((-6.5, 3, 3.5), (1, 1, 1), (88, 0), "tip")]),
-        Bone("rightLeg", "root", (-1.9, 12, 0), cubes=[
-            P((-3.9, 0, -2), (4, 12, 4), (0, 16), "leg"),
-            P((-3.9, 0, -2), (4, 12, 4), (0, 32), "leg+", 0.25)]),
-        Bone("leftLeg", "root", (1.9, 12, 0), cubes=[
-            P((-0.1, 0, -2), (4, 12, 4), (16, 48), "leg"),
-            P((-0.1, 0, -2), (4, 12, 4), (0, 48), "leg+", 0.25)]),
-    ], texture=(128, 64), bounds=(2.5, 2.5, (0, 1.25, 0)))
+        Bone("rightLeg", "root", (-2, 18, 0), cubes=[
+            C((-4, 0, -2), (4, 18, 4), "leg"), C((-4, 0, -2), (4, 18, 4), "leg+", inflate=0.25)]),
+        Bone("leftLeg", "root", (2, 18, 0), cubes=[
+            C((0, 0, -2), (4, 18, 4), "leg"), C((0, 0, -2), (4, 18, 4), "leg+", inflate=0.25)]),
+        # The belly is hollow: its front sits a pixel back, framed by torn flaps.
+        Bone("body", "root", (0, 18, 0), rotation=(6, 0, 0), cubes=[
+            C((-4, 18, -1), (8, 6, 3), "belly"),
+            C((-4, 18, -2), (1, 6, 1), "wound_edge"), C((3, 18, -2), (1, 6, 1), "wound_edge"),
+            C((-3, 23, -2), (6, 1, 1), "wound_top"),
+            C((-2.5, 19, -1.7), (2, 1, 1), "gut"), C((0.5, 19.5, -1.8), (2, 1, 1), "gut"),
+            C((-1, 20.8, -2.1), (2, 1, 1), "gut"), C((-2, 22, -1.6), (2, 1, 1), "gut"), C((1, 22, -1.9), (2, 1, 1), "gut"),
+            vertebra(19), vertebra(21), vertebra(23)]),
+        Bone("gutHang", "body", (0, 19, -1.5), cubes=[C((-0.5, 14, -2), (1, 5, 1), "gut_hang")]),
+        Bone("chest", "body", (0, 24, 0), rotation=(8, 0, 0), cubes=[
+            C((-4, 24, -2), (8, 8, 4), "chest"), C((-4, 24, -2), (8, 8, 4), "chest+", inflate=0.25),
+            vertebra(25), vertebra(27), vertebra(29), vertebra(31),
+            spike(25.5), spike(27.5), spike(29.5),
+            blister(3, 31.3, -1), blister(4.1, 29, 0.5)]),
+        Bone("head", "chest", (0, 32, 0), rotation=(10, 0, 0), cubes=[
+            C((-4, 32, -4), (8, 8, 8), "head"), C((-4, 32, -4), (8, 8, 8), "head+", inflate=0.5),
+            vertebra(32.5, 3.5),
+            blister(1.5, 35, -4.6), blister(3, 37.5, -4.5), blister(4.1, 35.5, -2), blister(4.1, 38, 1)]),
+        Bone("jaw", "head", (0, 33, 1), rotation=(10, 0, 0), cubes=[C((-3, 31, -4.5), (6, 2, 4), "jaw")]),
+        Bone("rightArm", "chest", (-5.5, 31, 0), rotation=(-5, 0, 0), cubes=[
+            C((-8, 16, -2), (4, 15, 4), "arm_r"), C((-8, 16, -2), (4, 15, 4), "sleeve_r", inflate=0.25)]),
+        Bone("leftArm", "chest", (5.5, 31, 0), cubes=[
+            C((4, 16, -2), (4, 15, 4), "arm_l"),
+            blister(8, 24, -1), blister(8, 19, 1), blister(5, 27, -2.6), blister(8, 28, 0.5)]),
+        Bone("pickaxe", "rightArm", (-6, 17, 0), rotation=(-18, 0, 0), cubes=[
+            C((-6.5, 3, -0.5), (1, 14, 1), "handle"),
+            C((-6.5, 1, -4.5), (1, 2, 9), "pick"),
+            C((-6.5, 3, -4.5), (1, 1, 1), "tip"), C((-6.5, 3, 3.5), (1, 1, 1), "tip")]),
+    ], bounds=(2.5, 3.0, (0, 1.5, 0))).pack_uv(128)
 
 
 def paint_herobrine(seed):
     rng = random.Random(seed)
-    cv = Canvas(128, 64)
-    skin, hair, hair_l = (0xA8, 0x7C, 0x60), (0x22, 0x17, 0x0D), (0x38, 0x27, 0x16)
-    shirt, dirt = (0x1E, 0x88, 0x8A), (0x5A, 0x48, 0x34)
-    pants, boot = (0x33, 0x2E, 0x7C), (0x48, 0x3E, 0x36)
-    wood, stone = (0x5C, 0x42, 0x2A), (0x70, 0x70, 0x74)
-    face = [
-        "HHHHHHHH",
-        "HHHHHHHH",
-        "HhSSSShH",
-        "SbbSSbbS",
-        "SWWSSWWS",
-        "SddSSddS",
-        "SSSnnSSS",
-        "SSmmmmSS",
-    ]
-    fpal = {"H": hair, "h": hair_l, "b": shade(skin, 0.7), "W": GLOW_WHITE, "d": shade(skin, 0.78),
-            "n": shade(skin, 0.82), "m": (0x3E, 0x24, 0x1A)}
+    cv = Canvas(*MODELS["herobrine"].texture)
+    skin, hair, hair_l = (0x9C, 0x86, 0x6E), (0x22, 0x17, 0x0D), (0x38, 0x27, 0x16)
+    burn, crust, raw = (0xA6, 0x2A, 0x22), (0x56, 0x14, 0x10), (0xD2, 0x4C, 0x3C)
+    blister_c = (0xE6, 0xD4, 0xA4)
+    shirt, dirt, blood = (0x1E, 0x84, 0x86), (0x5A, 0x48, 0x34), (0x6A, 0x0E, 0x10)
+    pants, boot = (0x2E, 0x2A, 0x72), (0x44, 0x3A, 0x32)
+    gut, gut_d, cavity = (0xC8, 0x6A, 0x70), (0x94, 0x3E, 0x46), (0x3A, 0x08, 0x0A)
+    bone_c = (0xE0, 0xD8, 0xC2)
 
     def grime(c, p=0.12):
-        return mix(c, dirt, rng.uniform(0.3, 0.6)) if rng.random() < p else jitter(rng, c, 4)
+        r = rng.random()
+        if r < p:
+            return mix(c, dirt, rng.uniform(0.3, 0.6))
+        if r < p + 0.02:
+            return mix(c, blood, 0.6)
+        return jitter(rng, c, 4)
+
+    def burned():
+        r = rng.random()
+        if r < 0.12:
+            return crust
+        if r < 0.22:
+            return raw
+        if r < 0.25:
+            return blister_c
+        return jitter(rng, burn, 10)
+
+    def flesh(y, fh):
+        return jitter(rng, grad(skin, y, fh, 1.0, 0.84), 4)
+
+    # Front of the head. The model's left (burned) side is on the right here.
+    face = [
+        "HHHHrrrr",
+        "HhHHrcrr",
+        "SSSSrbrc",
+        "SbbSrrbr",
+        "SWWSrWWr",
+        "SddSccrr",
+        "TKTTKTTK",
+        "KKKKKKKK",
+    ]
+    fpal = {"H": hair, "h": hair_l, "b": shade(skin, 0.7), "W": GLOW_WHITE, "d": shade(skin, 0.74),
+            "T": (0xD8, 0xCC, 0xA8), "K": (0x14, 0x06, 0x06), "c": crust}
 
     def fn(bone, tag, face_, x, y, fw, fh):
+        left_side = (face_ == "left") or (face_ in ("front", "top", "bottom") and x >= fw // 2) or (face_ == "back" and x < fw // 2)
         if tag == "head":
             if face_ == "front":
-                return face_rows(face, fpal, x, y, lambda: jitter(rng, grad(skin, y, fh), 3))
-            if face_ == "top":
-                return jitter(rng, hair_l if rng.random() < 0.25 else hair, 4)
-            if face_ == "bottom":
-                return shade(skin, 0.7)
-            if face_ == "back":
-                return jitter(rng, hair if y < 7 else shade(skin, 0.85), 4)
-            back_half = x < 4 if face_ == "right" else x >= 4
-            if y < 3 or (back_half and y < 6):
+                ch = face[y][x]
+                if ch == "r":
+                    return burned()
+                if ch == "b" and x >= 4:
+                    return blister_c
+                c = fpal.get(ch)
+                return c if c is not None else flesh(y, fh)
+            if left_side:
+                return burned()  # scalp and cheek burned bald
+            if face_ == "top" or y < 3 or face_ == "back" and y < 6:
                 return jitter(rng, hair, 4)
-            return jitter(rng, grad(skin, y, fh, 1.0, 0.85), 3)
-        if tag == "head+":  # matted hair falling over the forehead and neck
+            return flesh(y, fh)
+        if tag == "head+":  # matted hair, only where it didn't burn off
+            if left_side or face_ == "bottom":
+                return CLEAR
             if face_ == "top":
-                return jitter(rng, hair_l, 5) if rng.random() < 0.45 else CLEAR
+                return jitter(rng, hair_l, 5) if rng.random() < 0.4 else CLEAR
             if face_ == "front":
-                return jitter(rng, hair, 4) if (y == 0 or (y == 1 and x in (0, 2, 5, 7))) else CLEAR
-            if face_ != "bottom" and y < 3 + (2 if face_ == "back" else 0) and rng.random() < 0.55:
-                return jitter(rng, hair, 4)
-            return CLEAR
-        if tag == "body":
-            if face_ == "bottom":
-                return pants
+                return jitter(rng, hair, 4) if y == 0 else CLEAR
+            return jitter(rng, hair, 4) if y < 3 and rng.random() < 0.5 else CLEAR
+        if tag == "jaw":
+            if face_ == "front":
+                if y == 0:
+                    return (0xD8, 0xCC, 0xA8) if x % 3 != 2 else (0x14, 0x06, 0x06)  # lower teeth
+                return burned() if x >= fw // 2 else flesh(y, fh)
+            if face_ == "top":
+                return (0x4A, 0x10, 0x12)  # inside the mouth
+            return burned() if left_side else flesh(y, fh)
+        if tag == "blister":
+            return blister_c if face_ != "bottom" else raw
+        if tag == "belly":
+            if face_ == "front":  # the inside of the open stomach
+                if (x + 2 * y) % 5 in (0, 1) and 0 < y < fh - 1:
+                    return jitter(rng, gut if (x + y) % 2 else gut_d, 8)
+                return jitter(rng, cavity, 6)
+            if face_ == "back":
+                return jitter(rng, (0x7A, 0x1A, 0x18), 6) if x in (3, 4) else grime(shade(shirt, 0.85))
+            return grime(shade(shirt, 0.85)) if face_ != "bottom" else pants
+        if tag == "wound_edge":
+            if face_ == ("right" if x < 0 else "left") or face_ in ("left", "right"):
+                return jitter(rng, (0x8A, 0x1E, 0x1C), 8)  # torn flesh facing the wound
+            if face_ == "front":
+                return grime(shirt, 0.3) if y < 2 else (jitter(rng, blood, 6) if y % 2 else flesh(y, fh))
+            return grime(shade(shirt, 0.85))
+        if tag == "wound_top":
+            return jitter(rng, blood, 8) if face_ in ("bottom", "front") else grime(shirt)
+        if tag in ("gut", "gut_hang"):
+            c = gut if (x + y) % 3 else gut_d
+            return jitter(rng, c, 10) if not (tag == "gut_hang" and y == fh - 1) else blood
+        if tag == "vertebra":
+            return jitter(rng, bone_c, 6) if face_ != "bottom" else (0x7A, 0x1A, 0x18)
+        if tag == "spinous":
+            return jitter(rng, shade(bone_c, 0.92), 5)
+        if tag == "chest":
+            if face_ == "back" and x in (3, 4):
+                return jitter(rng, (0x7A, 0x1A, 0x18), 8)  # where the spine tore out
+            if face_ == "front" and y >= 5:
+                return shade(flesh(y, fh), 0.78) if y % 2 == 0 and x not in (3, 4) else flesh(y, fh)  # ribs
             if face_ == "front" and y < 2 and 3 <= x <= 4:
-                return shade(skin, 0.9)
-            c = grad(shirt, y, fh, 1.02, 0.8)
-            if face_ == "front" and x in (2, 5) and 2 < y < fh - 1:
-                c = shade(c, 0.88)
-            return grime(c)
-        if tag == "body+":  # torn, filthy hem
+                return flesh(y, fh)
+            if left_side and rng.random() < 0.3:
+                return burned()
+            return grime(grad(shirt, y, fh, 1.02, 0.8))
+        if tag == "chest+":  # the shirt, hanging in rags
             if face_ in ("top", "bottom"):
                 return CLEAR
-            if y == fh - 1 and rng.random() < 0.7:
-                return grime(shade(shirt, 0.7), 0.5)
+            if face_ == "back" and 2 <= x <= 5:
+                return CLEAR
+            if y >= 5 and rng.random() < 0.6:
+                return grime(shade(shirt, 0.75), 0.3)
             return CLEAR
-        if tag == "arm":
-            if face_ == "top" or (face_ != "bottom" and y < 5):
-                return grime(grad(shirt, y, 5, 1.0, 0.85))
-            if face_ == "bottom" or y >= 10:
-                return grime(shade(skin, 0.75), 0.3)  # dirty hands
-            return jitter(rng, grad(skin, y, fh, 1.0, 0.86), 3)
-        if tag == "arm+":
-            return grime(shade(shirt, 0.72), 0.3) if y == 4 and face_ not in ("top", "bottom") and rng.random() < 0.8 else CLEAR
+        if tag == "arm_r":
+            if face_ == "top" or (face_ != "bottom" and y < 4):
+                return grime(grad(shirt, y, 4, 1.0, 0.85))
+            if face_ == "bottom" or y >= fh - 2:
+                return grime(shade(skin, 0.7), 0.3)
+            return flesh(y, fh)
+        if tag == "sleeve_r":
+            return grime(shade(shirt, 0.72), 0.3) if y == 3 and face_ not in ("top", "bottom") and rng.random() < 0.8 else CLEAR
+        if tag == "arm_l":  # burned from shoulder to fingers
+            if face_ == "top" or (face_ != "bottom" and y < 2):
+                return grime(shade(shirt, 0.8), 0.4)
+            return burned() if face_ != "bottom" else crust
         if tag == "leg":
             if face_ == "bottom":
                 return shade(boot, 0.8)
-            if face_ != "top" and y >= 9:
-                return jitter(rng, boot if y < 11 else shade(boot, 0.75), 4)
-            c = grad(pants, y, 9, 1.02, 0.86)
-            if face_ == "front" and 4 <= y <= 6:
-                c = mix(c, (0x70, 0x6A, 0x9A), 0.3)  # worn knees
-            return grime(c, 0.08)
+            if face_ != "top" and y >= fh - 3:
+                return jitter(rng, boot if y < fh - 1 else shade(boot, 0.75), 4)
+            c = grad(pants, y, fh - 3, 1.02, 0.86)
+            return mix(c, blood, 0.5) if (y < 5 and rng.random() < 0.06) else jitter(rng, c, 4)
         if tag == "leg+":
-            return shade(boot, 1.1) if y == 9 and face_ not in ("top", "bottom") else CLEAR
+            return shade(boot, 1.1) if y == fh - 4 and face_ not in ("top", "bottom") else CLEAR
         if tag == "handle":
             if y < 3:
-                return jitter(rng, (0x3A, 0x2E, 0x24), 4)  # grip wrap
-            return jitter(rng, shade(wood, 0.85) if (x + y) % 4 == 0 else wood, 5)
+                return jitter(rng, (0x3A, 0x2E, 0x24), 4)
+            return jitter(rng, shade((0x5C, 0x42, 0x2A), 0.85) if (x + y) % 4 == 0 else (0x5C, 0x42, 0x2A), 5)
         if tag == "pick":
-            c = jitter(rng, grad(stone, y, fh, 1.1, 0.8), 8)
-            return shade(c, 0.6) if rng.random() < 0.12 else c  # chips
+            c = jitter(rng, grad((0x70, 0x70, 0x74), y, fh, 1.1, 0.8), 8)
+            if rng.random() < 0.18:
+                return mix(c, blood, 0.7)
+            return shade(c, 0.6) if rng.random() < 0.12 else c
         if tag == "tip":
             return (0x48, 0x48, 0x4C)
         return None

@@ -28,8 +28,8 @@ comportamiento* (el de recursos se añade solo).
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
 
 **Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
-2.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
-quítala y activa la 2.0.0.
+2.1.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
+quítala y activa la 2.1.0.
 
 ## Cómo funciona
 
@@ -65,9 +65,14 @@ que sacas con un huevo no desaparecen solas.
 
 ## Modelos (versión 2.0.0, rehechos desde cero)
 
-- **Herobrine**: minero con forma de jugador y capa exterior, **encorvado**,
-  con la cabeza gacha, ojeras, ropa sucia y rota, y **arrastrando un pico
-  viejo** por el suelo. Los ojos brillan en la oscuridad.
+- **Herobrine** (2.1.0): lo que la mina dejó de un minero. Mide **2,5
+  bloques** y va encorvado. Tiene el **estómago abierto** con los intestinos
+  fuera (uno cuelga y se balancea) y una boca sin labios llena de **dientes**,
+  con la **mandíbula suelta**. La **mitad izquierda de la cara**, el cuero
+  cabelludo y el brazo izquierdo están **quemados en carne viva** y llenos de
+  **ampollas** que sobresalen. La **columna vertebral le sale por la espalda**,
+  de la cintura a la nuca, a través de la camisa rota. Los ojos brillan en la
+  oscuridad y sigue arrastrando su pico, manchado de sangre.
 - **null**: un error de renderizado con forma de jugador. El torso está
   **partido en tres rodajas que no encajan** y se desplazan solas, la cabeza
   está torcida y un brazo es **más largo que el otro**. Tiene los ojos
