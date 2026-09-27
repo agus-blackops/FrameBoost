@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "horror_legends",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "hl_journal": {
+      "textures": "textures/items/hl/journal"
+    },
+    "hl_flashlight": {
+      "textures": "textures/items/hl/flashlight"
+    }
+  }
+}

@@ -1,0 +1,79 @@
+pack.name=§4Horror Legends§r
+pack.description=Horror inspired by The Man From The Fog, Cave Dweller, Herobrine, The Broken Script and other Java mods.
+
+entity.hl:herobrine.name=Herobrine
+entity.hl:null.name=null
+entity.hl:fog_man.name=The Man From The Fog
+entity.hl:cave_dweller.name=The Cave Dweller
+item.spawn_egg.entity.hl:herobrine.name=Spawn Herobrine
+item.spawn_egg.entity.hl:null.name=Spawn null
+item.spawn_egg.entity.hl:fog_man.name=Spawn The Man From The Fog
+item.spawn_egg.entity.hl:cave_dweller.name=Spawn The Cave Dweller
+item.hl:journal.name=Survivor's Journal
+item.hl:flashlight.name=Flashlight
+tile.hl:corrupted_block.name=§dCorrupted Block
+
+hl.intro.1=§8[???]§r §7This world is not as empty as it looks. Every day you stay, something else notices you're here.
+hl.intro.2=§8[???]§r §7Read the §fSurvivor's Journal§7. Craft a §fFlashlight§7 (iron, glowstone dust, redstone). Don't go into the caves alone.
+hl.ambience.whisper=§8§o...%s...
+
+hl.hb.torches=§4Your torches have turned red.
+hl.sign.1=BEHIND\nYOU
+hl.sign.2=I SEE\nYOU
+hl.sign.3=LEAVE
+hl.sign.4=YOU ARE\nNOT ALONE
+hl.sign.5=WHY ARE\nYOU STILL\nHERE?
+hl.sign.6=NO WAY\nOUT
+
+hl.fog.start=§7A thick fog covers everything...
+hl.fog.end=§7The fog lifts.
+hl.fog.chase=§4§lRUN!
+hl.fog.lost=§7You lost him. For now.
+hl.fog.knock=§7§oSomeone is knocking at the door.
+hl.cave.chase=§4§lIt found you.
+hl.flash.dweller=§7The light drives it away.
+hl.flash.fog=§4The light doesn't stop him.
+
+hl.null.crash.title=Minecraft
+hl.null.crash.body=Minecraft is not responding.\n\nIf you close the program, you might lose information.\n\n§8null
+hl.null.crash.wait=Wait
+hl.null.crash.close=Close the program
+hl.null.chat.1=null
+hl.null.chat.2=§knull§r null §knull
+hl.null.chat.3=Why are you still here, %s?
+hl.null.chat.4=This world isn't yours anymore.
+hl.null.chat.5=You shouldn't have installed this.
+hl.null.chat.6=I see you, %s.
+
+hl.j.title=Survivor's Journal
+hl.j.status=§lDay %s§r   ·   Intensity: %s\n
+hl.j.on=§aON
+hl.j.off=§8off
+hl.j.active=§cactive
+hl.j.in_days=§7in %s day(s)
+hl.j.bestiary=Bestiary
+hl.j.bestiary_body=What we know about them. Which isn't much.
+hl.j.settings=Settings
+hl.j.settings_body=Intensity: how long they take to arrive and how often they appear.\n\nLow: twice the days, half the scares.\nNightmare: everything from day one.\n\nSwitch off anything you don't want to see.
+hl.j.summon=Summon (testing)
+hl.j.summon_body=Triggers an event right now, ignoring the day and settings. For testing... or for the brave.
+hl.j.summon_corrupt=Corrupt blocks
+hl.j.close=Close
+hl.j.back=Back
+hl.j.intensity=Intensity
+hl.int.low=Low
+hl.int.normal=Normal
+hl.int.high=High
+hl.int.nightmare=§4Nightmare
+
+hl.threat.ambience=Sounds
+hl.threat.caves=The Cave Dweller
+hl.threat.herobrine=Herobrine
+hl.threat.fog=The Man From The Fog
+hl.threat.null=null
+
+hl.lore.ambience=§lSounds§r\n\nFootsteps behind you. A door opening in an empty house. A chest. The hiss of a creeper that isn't there.\n\nNot everything you hear is there. But sometimes it is.\n\n§7From day 0.
+hl.lore.caves=§lThe Cave Dweller§r\n§8(inspired by Cave Dweller / From The Caves)§r\n\nThe longer you stay underground, the closer it gets. First you hear the cave. Then quick little footsteps in the dark. Then you see it peek out... and hide.\n\nIt crawls through one-block gaps. Watch it too long and it flees. Wait too long and it comes for you.\n\n§eTip:§r shine the Flashlight on it to drive it away. Go back to the surface to calm it down.\n\n§7From day 1.
+hl.lore.herobrine=§lHerobrine§r\n\nA miner like you, except for the eyes. White. No pupils.\n\nYou'll see him far away, standing still, watching you. Stare at him or get close and he's gone. He leaves sand pyramids, leafless trees, 2x2 tunnels in the caves, signs... and sometimes turns your torches into redstone torches.\n\nSometimes he's right behind you.\n\n§eTip:§r don't hit him.\n\n§7From day 2.
+hl.lore.fog=§lThe Man From The Fog§r\n§8(inspired by The Man From The Fog)§r\n\nHe comes with the fog. Tall, pale, arms too long and a grin too wide.\n\nAt first he only watches from afar. Every time you look away, he's closer. At night he knocks on your door... and sometimes doesn't wait for you to open it. If he runs at you, he climbs walls and breaks glass, doors and leaves.\n\n§eTip:§r don't stare at him too long. If he chases you, break line of sight and get far away.\n\n§7From day 4.
+hl.lore.null=§lnull§r\n§8(inspired by The Broken Script)§r\n\nSomething that shouldn't exist in the code. It hides in the corner of your eye, writes in chat, turns blocks into the missing texture, and sometimes pretends the game has frozen.\n\nLook at it and it's gone. Don't look at it... and it's behind you.\n\n§eTip:§r corrupted blocks turn back to normal on their own. They drop nothing if you break them.\n\n§7From day 6.

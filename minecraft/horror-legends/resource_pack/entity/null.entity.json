@@ -1,0 +1,36 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:null",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/null"
+      },
+      "geometry": {
+        "default": "geometry.hl.humanoid"
+      },
+      "animations": {
+        "look": "animation.hl.humanoid.look_at_target",
+        "glitch": "animation.hl.null.glitch",
+        "walk": "animation.hl.humanoid.walk"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look",
+          "glitch"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.null"
+      ],
+      "spawn_egg": {
+        "base_color": "#0a0a0c",
+        "overlay_color": "#f800f8"
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "hl:cave_dweller": {
+        "volume": 0.9,
+        "pitch": [
+          0.45,
+          0.6
+        ],
+        "events": {
+          "ambient": "mob.spider.say",
+          "hurt": "mob.spider.say",
+          "death": "mob.spider.death"
+        }
+      },
+      "hl:fog_man": {
+        "volume": 1.0,
+        "pitch": [
+          0.5,
+          0.6
+        ],
+        "events": {
+          "hurt": "mob.zombie.hurt"
+        }
+      }
+    }
+  }
+}

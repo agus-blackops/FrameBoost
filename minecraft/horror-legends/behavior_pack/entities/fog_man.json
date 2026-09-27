@@ -1,0 +1,203 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hl:fog_man",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "hl:vanish": {
+        "minecraft:instant_despawn": {}
+      },
+      "hl:watching": {
+        "minecraft:mark_variant": {
+          "value": 0
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_fog_man",
+            "hl_watching",
+            "monster",
+            "mob"
+          ]
+        },
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:navigation.walk": {}
+      },
+      "hl:chasing": {
+        "minecraft:mark_variant": {
+          "value": 1
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_fog_man",
+            "hl_chasing",
+            "monster",
+            "mob"
+          ]
+        },
+        "minecraft:movement": {
+          "value": 0.46
+        },
+        "minecraft:attack": {
+          "damage": 8
+        },
+        "minecraft:navigation.climb": {
+          "can_path_over_water": true,
+          "avoid_water": true
+        },
+        "minecraft:can_climb": {},
+        "minecraft:break_blocks": {
+          "breakable_blocks": [
+            "minecraft:glass",
+            "minecraft:glass_pane",
+            "minecraft:leaves",
+            "minecraft:leaves2",
+            "minecraft:oak_leaves",
+            "minecraft:spruce_leaves",
+            "minecraft:birch_leaves",
+            "minecraft:jungle_leaves",
+            "minecraft:acacia_leaves",
+            "minecraft:dark_oak_leaves",
+            "minecraft:mangrove_leaves",
+            "minecraft:cherry_leaves",
+            "minecraft:azalea_leaves",
+            "minecraft:wooden_door",
+            "minecraft:spruce_door",
+            "minecraft:birch_door",
+            "minecraft:jungle_door",
+            "minecraft:acacia_door",
+            "minecraft:dark_oak_door",
+            "minecraft:mangrove_door",
+            "minecraft:cherry_door",
+            "minecraft:bamboo_door",
+            "minecraft:crimson_door",
+            "minecraft:warped_door"
+          ]
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "within_radius": 96.0,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 96
+            }
+          ]
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 2,
+          "speed_multiplier": 1.0,
+          "track_target": true
+        }
+      }
+    },
+    "components": {
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 96,
+          "max_distance": 128
+        }
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:type_family": {
+        "family": [
+          "hl_fog_man",
+          "monster",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.7,
+        "height": 2.5
+      },
+      "minecraft:scale": {
+        "value": 1.35
+      },
+      "minecraft:health": {
+        "value": 120,
+        "max": 120
+      },
+      "minecraft:knockback_resistance": {
+        "value": 0.8
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:follow_range": {
+        "value": 96,
+        "max": 96
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 6,
+        "look_distance": 96,
+        "probability": 1.0,
+        "angle_of_view_horizontal": 360
+      }
+    },
+    "events": {
+      "hl:vanish": {
+        "add": {
+          "component_groups": [
+            "hl:vanish"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:watching"
+          ]
+        }
+      },
+      "hl:chase": {
+        "remove": {
+          "component_groups": [
+            "hl:watching"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:chasing"
+          ]
+        }
+      },
+      "hl:watch": {
+        "remove": {
+          "component_groups": [
+            "hl:chasing"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:watching"
+          ]
+        }
+      }
+    }
+  }
+}

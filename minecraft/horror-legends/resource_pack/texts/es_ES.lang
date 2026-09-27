@@ -1,0 +1,79 @@
+pack.name=§4Horror Legends§r
+pack.description=Terror inspirado en The Man From The Fog, Cave Dweller, Herobrine, The Broken Script y otros mods de Java.
+
+entity.hl:herobrine.name=Herobrine
+entity.hl:null.name=null
+entity.hl:fog_man.name=El Hombre de la Niebla
+entity.hl:cave_dweller.name=El Morador de las Cuevas
+item.spawn_egg.entity.hl:herobrine.name=Generar Herobrine
+item.spawn_egg.entity.hl:null.name=Generar null
+item.spawn_egg.entity.hl:fog_man.name=Generar Hombre de la Niebla
+item.spawn_egg.entity.hl:cave_dweller.name=Generar Morador de las Cuevas
+item.hl:journal.name=Diario del Superviviente
+item.hl:flashlight.name=Linterna
+tile.hl:corrupted_block.name=§dBloque Corrupto
+
+hl.intro.1=§8[???]§r §7Este mundo no está tan vacío como parece. Cada día que pase, algo más se dará cuenta de que estás aquí.
+hl.intro.2=§8[???]§r §7Lee el §fDiario del Superviviente§7. Fabrica una §fLinterna§7 (hierro, polvo de piedra luminosa, redstone). No bajes solo a las cuevas.
+hl.ambience.whisper=§8§o...%s...
+
+hl.hb.torches=§4Tus antorchas se han vuelto rojas.
+hl.sign.1=DETRÁS\nDE TI
+hl.sign.2=TE ESTOY\nVIENDO
+hl.sign.3=VETE
+hl.sign.4=NO ESTÁS\nSOLO
+hl.sign.5=¿POR QUÉ\nSIGUES\nAQUÍ?
+hl.sign.6=NO HAY\nSALIDA
+
+hl.fog.start=§7Una niebla espesa lo cubre todo...
+hl.fog.end=§7La niebla se disipa.
+hl.fog.chase=§4§l¡CORRE!
+hl.fog.lost=§7Le has perdido. Por ahora.
+hl.fog.knock=§7§oAlguien está llamando a la puerta.
+hl.cave.chase=§4§lTe ha encontrado.
+hl.flash.dweller=§7La luz lo ahuyenta.
+hl.flash.fog=§4La luz no le detiene.
+
+hl.null.crash.title=Minecraft
+hl.null.crash.body=Minecraft no responde.\n\nSi cierras el programa, podrías perder información.\n\n§8null
+hl.null.crash.wait=Esperar
+hl.null.crash.close=Cerrar el programa
+hl.null.chat.1=null
+hl.null.chat.2=§knull§r null §knull
+hl.null.chat.3=¿Por qué sigues aquí, %s?
+hl.null.chat.4=Este mundo ya no es tuyo.
+hl.null.chat.5=No deberías haber instalado esto.
+hl.null.chat.6=Te veo, %s.
+
+hl.j.title=Diario del Superviviente
+hl.j.status=§lDía %s§r   ·   Intensidad: %s\n
+hl.j.on=§aSÍ
+hl.j.off=§8desactivado
+hl.j.active=§cactivo
+hl.j.in_days=§7en %s día(s)
+hl.j.bestiary=Bestiario
+hl.j.bestiary_body=Lo que sabemos de ellos. Que no es mucho.
+hl.j.settings=Ajustes
+hl.j.settings_body=Intensidad: cuánto tardan en llegar y cada cuánto aparecen.\n\nBaja: el doble de días, la mitad de sustos.\nPesadilla: todo desde el primer día.\n\nDesactiva lo que no quieras ver.
+hl.j.summon=Invocar (pruebas)
+hl.j.summon_body=Provoca un evento ahora mismo, sin importar el día ni los ajustes. Para probar... o para valientes.
+hl.j.summon_corrupt=Corromper bloques
+hl.j.close=Cerrar
+hl.j.back=Volver
+hl.j.intensity=Intensidad
+hl.int.low=Baja
+hl.int.normal=Normal
+hl.int.high=Alta
+hl.int.nightmare=§4Pesadilla
+
+hl.threat.ambience=Sonidos
+hl.threat.caves=El Morador de las Cuevas
+hl.threat.herobrine=Herobrine
+hl.threat.fog=El Hombre de la Niebla
+hl.threat.null=null
+
+hl.lore.ambience=§lSonidos§r\n\nPasos detrás de ti. Una puerta que se abre en una casa vacía. Un cofre. El siseo de un creeper que no está.\n\nNo todo lo que oyes está ahí. Pero a veces sí.\n\n§7Desde el día 0.
+hl.lore.caves=§lEl Morador de las Cuevas§r\n§8(inspirado en Cave Dweller / From The Caves)§r\n\nCuanto más tiempo pasas bajo tierra, más cerca está. Primero oyes la cueva. Luego, pasitos rápidos en la oscuridad. Luego lo ves asomarse... y se esconde.\n\nSe arrastra por huecos de un bloque. Si lo ves demasiado tiempo, huye. Si esperas demasiado, viene a por ti.\n\n§eConsejo:§r ilumínalo con la Linterna para ahuyentarlo. Sube a la superficie para que se calme.\n\n§7Desde el día 1.
+hl.lore.herobrine=§lHerobrine§r\n\nUn minero como tú, salvo por los ojos. Blancos. Sin pupilas.\n\nLo verás a lo lejos, quieto, mirándote. Si le miras fijamente o te acercas, ya no está. Deja pirámides de arena, árboles sin hojas, túneles de 2x2 en las cuevas, carteles... y a veces convierte tus antorchas en antorchas de redstone.\n\nA veces está justo detrás de ti.\n\n§eConsejo:§r no le pegues.\n\n§7Desde el día 2.
+hl.lore.fog=§lEl Hombre de la Niebla§r\n§8(inspirado en The Man From The Fog)§r\n\nLlega con la niebla. Alto, pálido, con los brazos demasiado largos y una sonrisa demasiado ancha.\n\nAl principio solo mira desde lejos. Cada vez que apartas la vista, está más cerca. De noche llama a tu puerta... y a veces no espera a que le abras. Si corre hacia ti, trepa paredes y rompe cristales, puertas y hojas.\n\n§eConsejo:§r no le mires demasiado. Si te persigue, rompe la línea de visión y aléjate mucho.\n\n§7Desde el día 4.
+hl.lore.null=§lnull§r\n§8(inspirado en The Broken Script)§r\n\nAlgo que no debería existir en el código. Aparece por el rabillo del ojo, escribe en el chat, convierte bloques en la textura que falta y a veces finge que el juego se ha colgado.\n\nSi lo miras, desaparece. Si no lo miras... está detrás de ti.\n\n§eConsejo:§r los bloques corruptos vuelven solos a la normalidad. No sueltan nada si los rompes.\n\n§7Desde el día 6.

@@ -1,0 +1,48 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:fog_man",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/hl/fog_man"
+      },
+      "geometry": {
+        "default": "geometry.hl.humanoid"
+      },
+      "animations": {
+        "walk": "animation.hl.humanoid.walk",
+        "look": "animation.hl.humanoid.look_at_target",
+        "attack": "animation.hl.humanoid.attack",
+        "long_arms": "animation.hl.fog_man.long_arms",
+        "watch": "animation.hl.fog_man.watch",
+        "sprint": "animation.hl.fog_man.sprint"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look",
+          "long_arms",
+          {
+            "watch": "query.mark_variant == 0"
+          },
+          {
+            "sprint": "query.mark_variant == 1"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#c4c2ba",
+        "overlay_color": "#2e2e32"
+      }
+    }
+  }
+}
