@@ -2,9 +2,20 @@
   "resource_pack_name": "blair_witch",
   "texture_name": "atlas.items",
   "texture_data": {
-    "bw_camcorder": { "textures": "textures/items/bw/camcorder" },
-    "bw_map": { "textures": "textures/items/bw/map" },
-    "bw_twig_bundle": { "textures": "textures/items/bw/twig_bundle" },
-    "bw_twig_effigy": { "textures": "textures/items/bw/twig_effigy" }
+    "bw_camcorder": {
+      "textures": "textures/items/bw/camcorder"
+    },
+    "bw_map": {
+      "textures": "textures/items/bw/map"
+    },
+    "bw_twig_bundle": {
+      "textures": "textures/items/bw/twig_bundle"
+    },
+    "bw_twig_effigy": {
+      "textures": "textures/items/bw/twig_effigy"
+    },
+    "bw_dossier": {
+      "textures": "textures/items/bw/dossier"
+    }
   }
 }

@@ -2,30 +2,34 @@
   "format_version": "1.10.0",
   "minecraft:client_entity": {
     "description": {
-      "identifier": "bw:corner_man",
+      "identifier": "bw:josh",
       "materials": {
         "default": "entity_alphatest"
       },
       "textures": {
-        "default": "textures/entity/bw/mike"
+        "default": "textures/entity/bw/josh"
       },
       "geometry": {
         "default": "geometry.bw.humanoid"
       },
       "animations": {
-        "stand": "animation.bw.corner_man.stand"
+        "walk": "animation.bw.humanoid.walk",
+        "look_at_target": "animation.bw.humanoid.look_at_target",
+        "nervous": "animation.bw.crew.nervous"
       },
       "scripts": {
         "animate": [
-          "stand"
+          "walk",
+          "look_at_target",
+          "nervous"
         ]
       },
       "render_controllers": [
         "controller.render.bw.default"
       ],
       "spawn_egg": {
-        "base_color": "#5a4a36",
-        "overlay_color": "#2e3a2c"
+        "base_color": "#9c2222",
+        "overlay_color": "#5a241c"
       }
     }
   }

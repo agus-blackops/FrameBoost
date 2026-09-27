@@ -134,31 +134,82 @@ def paint_witch(seed):
     return cv
 
 
-def paint_corner_man(seed):
-    """Standing in the corner of the basement, face to the wall."""
+def paint_crew(seed, cap, hair, top, pants, boots=(0x2A, 0x20, 0x18)):
+    """One of the film crew: knit cap, field clothes. `top(face, x, y)` paints
+    the shirt or jacket."""
     rng = random.Random(seed)
     cv = Canvas(64, 64)
-    skin, cap = (0xC4, 0x96, 0x78), (0x2E, 0x3A, 0x2C)
-    jacket, jeans, boots = (0x5A, 0x4A, 0x36), (0x33, 0x40, 0x5E), (0x2A, 0x20, 0x18)
-    hair = (0x3A, 0x2A, 0x1E)
+    skin = (0xC4, 0x96, 0x78)
 
     def head(face, x, y):
         if face == "top" or y < 3:
-            c = cap
+            c = cap if y != 2 or face == "top" else shade(cap, 0.75)  # folded brim
         elif face == "back":
             c = hair if y < 6 else skin
         elif face == "front":
-            c = {4: (0x25, 0x20, 0x1C) if x in (2, 5) else skin}.get(y, skin)
+            c = {4: (0x25, 0x20, 0x1C) if x in (2, 5) else skin,
+                 3: hair if x in (0, 7) else skin,
+                 6: shade(skin, 0.8) if 3 <= x <= 4 else skin}.get(y, skin)
         else:
             c = hair if y < 4 else skin
         return jitter(rng, c, 5)
 
     paint_box(cv, *HEAD, head)
-    paint_box(cv, *BODY, lambda f, x, y: jitter(rng, shade(jacket, 0.85) if f == "front" and x in (3, 4) else jacket, 6))
+    paint_box(cv, *BODY, lambda f, x, y: jitter(rng, top(f, x, y), 6))
     for box in ARMS:
-        paint_box(cv, *box, lambda f, x, y: jitter(rng, skin if (f == "bottom" or (f != "top" and y >= 10)) else jacket, 6))
+        paint_box(cv, *box, lambda f, x, y: jitter(rng, skin if (f == "bottom" or (f != "top" and y >= 10)) else top(f, x, y), 6))
     for box in LEGS:
-        paint_box(cv, *box, lambda f, x, y: jitter(rng, boots if (f == "bottom" or (f != "top" and y >= 9)) else jeans, 6))
+        paint_box(cv, *box, lambda f, x, y: jitter(rng, boots if (f == "bottom" or (f != "top" and y >= 9)) else pants, 6))
+    return cv
+
+
+def paint_mike(seed):
+    """Green knit cap, canvas work jacket. He ends up in the corner."""
+    jacket = (0x5A, 0x4A, 0x36)
+    return paint_crew(seed, cap=(0x2E, 0x3A, 0x2C), hair=(0x3A, 0x2A, 0x1E),
+                      top=lambda f, x, y: shade(jacket, 0.85) if f == "front" and x in (3, 4) else jacket,
+                      pants=(0x33, 0x40, 0x5E))
+
+
+def paint_josh(seed):
+    """Red flannel shirt: the same cloth that turns up in the bundle of twigs."""
+    def flannel(f, x, y):
+        a, b = x % 4 == 1, y % 4 == 1
+        if f == "front" and x in (3, 4):
+            return (0x2A, 0x2A, 0x2E)  # dark tee under the open shirt
+        if a and b:
+            return (0x1A, 0x0A, 0x0A)
+        return (0x4A, 0x14, 0x14) if a or b else (0x9C, 0x22, 0x22)
+    return paint_crew(seed, cap=(0x5A, 0x24, 0x1C), hair=(0x2A, 0x1E, 0x16),
+                      top=flannel, pants=(0x8A, 0x7A, 0x5A))
+
+
+def paint_handprint_wall(seed):
+    """Old plaster, grimy, covered in small handprints."""
+    rng = random.Random(seed)
+    cv = Canvas(16, 16)
+    for y in range(16):
+        for x in range(16):
+            c = jitter(rng, (0xA8, 0xA0, 0x8C), 10)
+            if rng.random() < 0.06:
+                c = shade(c, 0.75)
+            cv.set(x, y, c)
+    line(cv, 11, 0, 13, 5, (0x6A, 0x64, 0x56))      # crack
+    line(cv, 13, 5, 12, 9, (0x6A, 0x64, 0x56))
+    hand = [
+        ".#.#.#",
+        ".#.#.#",
+        ".#####",
+        "######",
+        ".#####",
+        "..###.",
+    ]
+    for (hx, hy) in [(1, 1), (9, 7), (2, 10)]:
+        ink = jitter(rng, (0x3A, 0x30, 0x28), 8)
+        for dy, row in enumerate(hand):
+            for dx, ch in enumerate(row):
+                if ch == "#":
+                    cv.set(hx + dx, hy + dy, ink)
     return cv
 
 
@@ -262,6 +313,23 @@ def paint_bundle():
     return cv
 
 
+def paint_dossier(seed):
+    rng = random.Random(seed)
+    cv = Canvas(16, 16)
+    cv.rect(1, 3, 14, 11, (0x8A, 0x6A, 0x3A))           # folder
+    cv.rect(1, 2, 6, 1, (0x8A, 0x6A, 0x3A))             # tab
+    cv.rect(3, 4, 11, 9, (0xE4, 0xDC, 0xC4))            # papers
+    for y in (6, 8, 10):
+        for x in range(4, 13):
+            if rng.random() < 0.8:
+                cv.set(x, y, (0x5A, 0x56, 0x50))
+    cv.rect(10, 4, 3, 3, (0x30, 0x2C, 0x28))            # photo
+    draw_stamp = (0xB0, 0x20, 0x20)
+    line(cv, 4, 12, 8, 12, draw_stamp)
+    cv.rect(1, 13, 14, 1, (0x6A, 0x50, 0x2A))
+    return cv
+
+
 def paint_effigy_icon():
     cv = Canvas(16, 16)
     draw_effigy(cv, 8, 1, 1)
@@ -303,7 +371,9 @@ def paint_pack_icon(seed):
 def paint_textures():
     ent = RP / "textures" / "entity" / "bw"
     paint_witch(10).save(ent / "witch.png")
-    paint_corner_man(20).save(ent / "corner_man.png")
+    paint_mike(20).save(ent / "mike.png")
+    paint_josh(25).save(ent / "josh.png")
+    paint_handprint_wall(35).save(RP / "textures" / "blocks" / "bw" / "handprint_wall.png")
     paint_wood(30).save(ent / "stick_figure.png")
     paint_stone(40).save(ent / "rock_cairn.png")
     items = RP / "textures" / "items" / "bw"
@@ -311,6 +381,7 @@ def paint_textures():
     paint_map(50).save(items / "map.png")
     paint_bundle().save(items / "twig_bundle.png")
     paint_effigy_icon().save(items / "twig_effigy.png")
+    paint_dossier(70).save(items / "dossier.png")
     icon = paint_pack_icon(60)
     icon.save(BP / "pack_icon.png")
     icon.save(RP / "pack_icon.png")

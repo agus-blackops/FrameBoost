@@ -1,0 +1,11 @@
+{
+  "resource_pack_name": "blair_witch",
+  "texture_name": "atlas.terrain",
+  "padding": 8,
+  "num_mip_levels": 4,
+  "texture_data": {
+    "bw_handprint_wall": {
+      "textures": "textures/blocks/bw/handprint_wall"
+    }
+  }
+}
