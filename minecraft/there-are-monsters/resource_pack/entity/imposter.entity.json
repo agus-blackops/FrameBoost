@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "tam:imposter",
+      "materials": { "default": "entity_alphatest" },
+      "textures": {
+        "disguised_0": "textures/entity/tam/imposter_disguised_0",
+        "disguised_1": "textures/entity/tam/imposter_disguised_1",
+        "disguised_2": "textures/entity/tam/imposter_disguised_2",
+        "revealed_0": "textures/entity/tam/imposter_revealed_0",
+        "revealed_1": "textures/entity/tam/imposter_revealed_1",
+        "revealed_2": "textures/entity/tam/imposter_revealed_2"
+      },
+      "geometry": { "default": "geometry.tam.humanoid" },
+      "animations": {
+        "walk": "animation.tam.humanoid.walk",
+        "look_at_target": "animation.tam.humanoid.look_at_target",
+        "attack": "animation.tam.humanoid.attack",
+        "twitch": "animation.tam.face.twitch",
+        "stretch": "animation.tam.face.stretch",
+        "spasm": "animation.tam.body.spasm"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look_at_target",
+          { "twitch": "query.mark_variant == 1" },
+          { "stretch": "query.mark_variant == 1" },
+          { "spasm": "query.mark_variant == 1" },
+          { "attack": "variable.attack_time > 0.0" }
+        ]
+      },
+      "render_controllers": ["controller.render.tam.imposter"],
+      "spawn_egg": { "base_color": "#b8b0a2", "overlay_color": "#0b0808" }
+    }
+  }
+}

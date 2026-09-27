@@ -1,0 +1,29 @@
+pack.name=§4There Are Monsters§r
+pack.description=Inspired by the 2013 film. They look like us. They are not us.
+
+entity.tam:imposter.name=Imposter
+entity.tam:doppelganger.name=Doppelganger
+item.spawn_egg.entity.tam:imposter.name=Spawn Imposter
+item.spawn_egg.entity.tam:doppelganger.name=Spawn Doppelganger
+
+item.tam:camcorder.name=Camcorder
+item.tam:vhs_tape.name=VHS Tape
+
+tam.camcorder.found=§c● REC§r  §f%s§7 imposter(s) caught on tape. §cThey know you know.
+tam.camcorder.danger=§c● REC§r  §7Something on the screen is looking back...
+tam.camcorder.clear=§c● REC§r  §7Nothing strange on the footage. For now.
+
+tam.tape.play=§8[▶ PLAY]§r §7*tape hiss*
+tam.tape.1=§7"...she had my sister's face, but she never blinked. Not once."
+tam.tape.2=§7"They keep smiling. Nobody smiles that long."
+tam.tape.3=§7"Don't stop recording. On camera you can see their real faces."
+tam.tape.4=§7"If someone you know just stands there staring at you... walk away."
+tam.tape.5=§7"I don't know how many of us are left. Or how many are still us."
+tam.tape.6=§7"Your copy doesn't move while you watch it. Don't look away."
+tam.tape.7=§7"In the morning they looked normal again. That's the worst part."
+tam.tape.8=§7"There are monsters. There always were. They just wore our faces."
+
+tam.msg.replaced=§7Nobody saw §f%s§7 again... not the real one, anyway.
+tam.msg.reveal=§4§oTheir face is wrong.
+tam.msg.intro_1=§8[RECOVERED TAPE]§r §7Some people aren't who they seem. If someone stares at you for too long, don't get close.
+tam.msg.intro_2=§8[RECOVERED TAPE]§r §7Get a §fCamcorder§7 (iron, glass pane, redstone). The camera doesn't lie.

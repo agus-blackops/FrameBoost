@@ -1,0 +1,8 @@
+{
+  "resource_pack_name": "there_are_monsters",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "tam_camcorder": { "textures": "textures/items/tam/camcorder" },
+    "tam_vhs_tape": { "textures": "textures/items/tam/vhs_tape" }
+  }
+}

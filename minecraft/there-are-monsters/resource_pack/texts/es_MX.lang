@@ -1,0 +1,29 @@
+pack.name=§4There Are Monsters§r
+pack.description=Inspirado en la película de 2013. Se parecen a nosotros. No son nosotros.
+
+entity.tam:imposter.name=Impostor
+entity.tam:doppelganger.name=Doble
+item.spawn_egg.entity.tam:imposter.name=Generar Impostor
+item.spawn_egg.entity.tam:doppelganger.name=Generar Doble
+
+item.tam:camcorder.name=Videocámara
+item.tam:vhs_tape.name=Cinta VHS
+
+tam.camcorder.found=§c● REC§r  §f%s§7 impostor(es) grabados. §cYa saben que lo sabes.
+tam.camcorder.danger=§c● REC§r  §7Algo te devuelve la mirada en la pantalla...
+tam.camcorder.clear=§c● REC§r  §7Nada raro en la grabación. Por ahora.
+
+tam.tape.play=§8[▶ PLAY]§r §7*zumbido de cinta*
+tam.tape.1=§7"...tenía la cara de mi hermana, pero no parpadeó ni una vez."
+tam.tape.2=§7"Siguen sonriendo. Nadie sonríe tanto tiempo."
+tam.tape.3=§7"No dejes de grabar. En la cámara se les ve la cara de verdad."
+tam.tape.4=§7"Si alguien que conoces se queda quieto mirándote... aléjate."
+tam.tape.5=§7"Ya no sé cuántos de nosotros quedamos. Ni cuántos siguen siendo nosotros."
+tam.tape.6=§7"Tu copia no se mueve mientras la miras. No apartes la vista."
+tam.tape.7=§7"Por la mañana parecían normales otra vez. Eso es lo peor."
+tam.tape.8=§7"Hay monstruos. Siempre los hubo. Solo llevaban nuestras caras."
+
+tam.msg.replaced=§7Nadie volvió a ver a §f%s§7... al menos, no al de verdad.
+tam.msg.reveal=§4§oSu cara no está bien.
+tam.msg.intro_1=§8[CINTA RECUPERADA]§r §7Hay gente que no es quien parece. Si alguien se queda mirándote demasiado tiempo, no te acerques.
+tam.msg.intro_2=§8[CINTA RECUPERADA]§r §7Consigue una §fVideocámara§7 (hierro, panel de cristal, redstone). La cámara no miente.

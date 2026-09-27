@@ -1,0 +1,14 @@
+{
+  "format_version": "1.20.80",
+  "minecraft:item": {
+    "description": {
+      "identifier": "tam:vhs_tape",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:icon": { "texture": "tam_vhs_tape" },
+      "minecraft:display_name": { "value": "item.tam:vhs_tape.name" },
+      "minecraft:max_stack_size": 16
+    }
+  }
+}

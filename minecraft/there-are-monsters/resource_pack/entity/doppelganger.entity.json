@@ -1,0 +1,31 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "tam:doppelganger",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/tam/doppelganger" },
+      "geometry": { "default": "geometry.tam.humanoid" },
+      "animations": {
+        "walk": "animation.tam.humanoid.walk",
+        "look_at_target": "animation.tam.humanoid.look_at_target",
+        "attack": "animation.tam.humanoid.attack",
+        "twitch": "animation.tam.face.twitch",
+        "stretch": "animation.tam.face.stretch",
+        "stare": "animation.tam.body.stare"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look_at_target",
+          "stretch",
+          { "stare": "query.mark_variant == 1" },
+          { "twitch": "query.mark_variant == 0" },
+          { "attack": "variable.attack_time > 0.0" }
+        ]
+      },
+      "render_controllers": ["controller.render.tam.doppelganger"],
+      "spawn_egg": { "base_color": "#dad6ce", "overlay_color": "#1e1d22" }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "tam:imposter": {
+        "volume": 1.0,
+        "pitch": [0.55, 0.7],
+        "events": {
+          "ambient": "mob.villager.idle",
+          "hurt": "mob.villager.hit",
+          "death": "mob.villager.death"
+        }
+      },
+      "tam:doppelganger": {
+        "volume": 0.9,
+        "pitch": [0.4, 0.5],
+        "events": {
+          "ambient": "mob.zombie.say",
+          "hurt": "game.player.hurt",
+          "death": "mob.zombie.death"
+        }
+      }
+    }
+  }
+}

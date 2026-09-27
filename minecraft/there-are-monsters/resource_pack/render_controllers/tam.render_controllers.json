@@ -1,0 +1,27 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.tam.imposter": {
+      "arrays": {
+        "textures": {
+          "Array.skins": [
+            "Texture.disguised_0",
+            "Texture.disguised_1",
+            "Texture.disguised_2",
+            "Texture.revealed_0",
+            "Texture.revealed_1",
+            "Texture.revealed_2"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": ["Array.skins[query.variant + query.mark_variant * 3]"]
+    },
+    "controller.render.tam.doppelganger": {
+      "geometry": "Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": ["Texture.default"]
+    }
+  }
+}
