@@ -149,14 +149,24 @@ def _add(a, b):
     return tuple((a or (0, 0, 0))[i] + (b or (0, 0, 0))[i] for i in range(3))
 
 
-def bone_transforms(model, pose=None):
+def bone_transforms(model, pose=None, model_scale=1.0):
+    """World transform of every bone. A pose entry is either a rotation
+    (x, y, z) added to the bone's own, or {"rotation": ..., "scale": ...}.
+    `model_scale` is the entity's minecraft:scale."""
     pose = pose or {}
-    ident = ([[1, 0, 0], [0, 1, 0], [0, 0, 1]], (0, 0, 0))
+    s = model_scale
+    root = ([[s, 0, 0], [0, s, 0], [0, 0, s]], (0, 0, 0))
     out = {}
     for bone in model.bones:  # parents are always listed before children
-        parent = out[bone.parent] if bone.parent else ident
-        rx, ry, rz = _add(bone.rotation, pose.get(bone.name))
-        local = _about(_mirror(bone.pivot), _rot(rx, ry, rz))
+        parent = out[bone.parent] if bone.parent else root
+        extra = pose.get(bone.name)
+        scale = (1, 1, 1)
+        if isinstance(extra, dict):
+            scale = extra.get("scale", scale)
+            extra = extra.get("rotation")
+        rx, ry, rz = _add(bone.rotation, extra)
+        rot = _mm(_rot(rx, ry, rz), [[scale[0], 0, 0], [0, scale[1], 0], [0, 0, scale[2]]])
+        local = _about(_mirror(bone.pivot), rot)
         out[bone.name] = _compose(parent, local)
     return out
 
@@ -220,10 +230,15 @@ def _fill(canvas, pts, color):
                 canvas.set(px, py, color)
 
 
-def render(model, texture, size=(160, 200), yaw=25, pitch=-15, pose=None, background=(0, 0, 0, 0), light=True):
+def render(model, texture, size=(160, 200), yaw=25, pitch=-15, pose=None, background=(0, 0, 0, 0), light=True,
+           ppu=None, model_scale=1.0):
     """Orthographic render of `model` with `texture` (a Canvas). Yaw turns the
-    model to the viewer's left; negative pitch looks down on it."""
-    transforms = bone_transforms(model, pose)
+    model to the viewer's left; negative pitch looks down on it.
+
+    By default the model is fitted to the canvas. With `ppu` (pixels per model
+    unit, 16 units = 1 block) every model is drawn at the same scale, standing
+    on a baseline 16 pixels above the bottom edge, so sizes can be compared."""
+    transforms = bone_transforms(model, pose, model_scale)
     cam = _mm(_rot(-pitch, 0, 0), _rot(0, yaw, 0))
     quads = []
     for bone in model.bones:
@@ -239,9 +254,12 @@ def render(model, texture, size=(160, 200), yaw=25, pitch=-15, pose=None, backgr
         return canvas
     xs = [-p[0] for _, cp, _, _ in quads for p in cp]
     ys = [-p[1] for _, cp, _, _ in quads for p in cp]
-    scale = min((size[0] - 8) / max(max(xs) - min(xs), 1e-6), (size[1] - 8) / max(max(ys) - min(ys), 1e-6))
-    cx = size[0] / 2 - scale * (max(xs) + min(xs)) / 2
-    cy = size[1] / 2 - scale * (max(ys) + min(ys)) / 2
+    if ppu:
+        scale, cx, cy = ppu, size[0] / 2, size[1] - 16
+    else:
+        scale = min((size[0] - 8) / max(max(xs) - min(xs), 1e-6), (size[1] - 8) / max(max(ys) - min(ys), 1e-6))
+        cx = size[0] / 2 - scale * (max(xs) + min(xs)) / 2
+        cy = size[1] / 2 - scale * (max(ys) + min(ys)) / 2
     lx, ly, lz = (-0.35, 0.65, -0.68)
     for _, cp, c, n in sorted(quads, key=lambda q: -q[0]):
         if c[3] < 255:  # emissive texels ignore lighting
