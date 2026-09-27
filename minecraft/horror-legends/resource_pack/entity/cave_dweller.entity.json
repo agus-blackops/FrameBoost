@@ -10,18 +10,28 @@
         "default": "textures/entity/hl/cave_dweller"
       },
       "geometry": {
-        "default": "geometry.hl.crawler"
+        "default": "geometry.hl.cave_dweller"
       },
       "animations": {
         "walk": "animation.hl.crawler.walk",
+        "breathe": "animation.hl.crawler.breathe",
         "look": "animation.hl.crawler.look",
-        "twitch": "animation.hl.crawler.twitch"
+        "twitch": "animation.hl.crawler.twitch",
+        "jaw_idle": "animation.hl.crawler.jaw_idle",
+        "jaw_snap": "animation.hl.crawler.jaw_snap"
       },
       "scripts": {
         "animate": [
           "walk",
+          "breathe",
           "look",
-          "twitch"
+          "twitch",
+          {
+            "jaw_idle": "query.mark_variant != 1"
+          },
+          {
+            "jaw_snap": "query.mark_variant == 1"
+          }
         ]
       },
       "render_controllers": [

@@ -25,6 +25,9 @@
       "part_visibility": [
         {
           "*": "math.random(0.0, 1.0) > 0.04"
+        },
+        {
+          "glitch": "math.mod(math.floor(query.life_time * 7.0), 3) != 0"
         }
       ]
     }

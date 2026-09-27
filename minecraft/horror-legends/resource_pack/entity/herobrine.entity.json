@@ -10,7 +10,7 @@
         "default": "textures/entity/hl/herobrine"
       },
       "geometry": {
-        "default": "geometry.hl.humanoid"
+        "default": "geometry.hl.player"
       },
       "animations": {
         "look": "animation.hl.humanoid.look_at_target",

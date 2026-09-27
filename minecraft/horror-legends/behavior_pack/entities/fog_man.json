@@ -127,10 +127,7 @@
       },
       "minecraft:collision_box": {
         "width": 0.7,
-        "height": 2.5
-      },
-      "minecraft:scale": {
-        "value": 1.35
+        "height": 1.95
       },
       "minecraft:health": {
         "value": 120,

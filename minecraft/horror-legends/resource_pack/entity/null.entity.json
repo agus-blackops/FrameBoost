@@ -10,16 +10,14 @@
         "default": "textures/entity/hl/null"
       },
       "geometry": {
-        "default": "geometry.hl.humanoid"
+        "default": "geometry.hl.null"
       },
       "animations": {
         "look": "animation.hl.humanoid.look_at_target",
-        "glitch": "animation.hl.null.glitch",
-        "walk": "animation.hl.humanoid.walk"
+        "glitch": "animation.hl.null.glitch"
       },
       "scripts": {
         "animate": [
-          "walk",
           "look",
           "glitch"
         ]

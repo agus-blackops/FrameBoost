@@ -12,9 +12,9 @@ leyendas de la comunidad:
 - **The Broken Script** y la creepypasta de **null** → *null*
 - y los "sustos de sonido" de muchos otros mods de terror
 
-Es un proyecto de fans: **no contiene código ni arte de esos mods**. Todas las
-texturas se generan por código en `tools/build.py` y todo el comportamiento
-está escrito desde cero para Bedrock.
+Es un proyecto de fans: **no contiene código ni arte de esos mods**. Los
+modelos y las texturas se generan por código en `tools/`, y todo el
+comportamiento está escrito desde cero para Bedrock.
 
 ## Instalación
 
@@ -26,6 +26,9 @@ Después, al crear o editar un mundo, activa **Horror Legends** en *Packs de
 comportamiento* (el de recursos se añade solo).
 
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
+
+**Actualizar desde la 1.0.0:** abre el `.mcaddon` nuevo (versión 1.1.0). Si en
+los ajustes de tu mundo sigue apareciendo la 1.0.0, quítala y activa la 1.1.0.
 
 ## Cómo funciona
 
@@ -59,14 +62,35 @@ que sacas con un huevo no desaparecen solas.
 - **Invocar (pruebas)**: provoca al momento cualquier evento, para verlo sin
   esperar días.
 
+## Modelos
+
+- **Herobrine** y **null**: forma de jugador con la **capa exterior** (pelo,
+  cuello y puños de la ropa). Los ojos brillan en la oscuridad. null suelta
+  fragmentos "rotos" de magenta y cian, y a su alrededor flotan cubos con la
+  textura que falta, que parpadean.
+- **El Hombre de la Niebla**: modelo propio de casi 3 bloques de alto. Tiene
+  piernas con rodilla y pies descalzos, cintura estrecha, pecho encorvado con
+  costillas, cuello, y un cráneo alargado cuya **mandíbula se abre** cuando
+  corre. Los brazos llegan por debajo de las rodillas y tienen codo, mano y
+  dedos largos. Al observar ladea la cabeza y mueve los dedos. Al correr va
+  doblado, con los brazos hacia atrás y la boca abierta.
+- **El Morador de las Cuevas**: modelo propio sobre **cuatro patas
+  articuladas** con los codos por encima del lomo, espolones y garras. Tiene
+  la columna con púas, cuello largo y una cabeza con **varios ojos** y una
+  mandíbula que **chasquea** cuando te persigue. Camina en diagonal, como una
+  araña, y respira.
+
 ## Estructura
 
 ```
-behavior_pack/     entidades, bloque corrupto, objetos, recetas, scripts/main.js
-resource_pack/     modelos (humanoide y el cuerpo reptante del Morador),
-                   animaciones, texturas, niebla, sonidos, textos
-tools/build.py     pinta las texturas, valida los JSON y empaqueta
-dist/              HorrorLegends.mcaddon y HorrorLegends_WhatsApp.zip
+behavior_pack/       entidades, bloque corrupto, objetos, recetas, scripts/main.js
+resource_pack/       modelos, animaciones, texturas, niebla, sonidos, textos
+tools/build.py       define los modelos, pinta las texturas, valida y empaqueta
+tools/geometry.py    modelos en Python, comprobación de UV y renderizador 3D
+tools/pixels.py      lienzo PNG y utilidades de pixel art
+dist/                HorrorLegends.mcaddon y HorrorLegends_WhatsApp.zip
 ```
 
 Para regenerar los paquetes: `python3 tools/build.py` (solo Python 3 estándar).
+Con `python3 tools/build.py --preview carpeta` además dibuja cada modelo
+desde tres ángulos, para ver los cambios sin abrir el juego.

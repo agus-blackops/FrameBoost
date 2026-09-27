@@ -10,21 +10,19 @@
         "default": "textures/entity/hl/fog_man"
       },
       "geometry": {
-        "default": "geometry.hl.humanoid"
+        "default": "geometry.hl.fog_man"
       },
       "animations": {
-        "walk": "animation.hl.humanoid.walk",
+        "walk": "animation.hl.fog_man.walk",
         "look": "animation.hl.humanoid.look_at_target",
-        "attack": "animation.hl.humanoid.attack",
-        "long_arms": "animation.hl.fog_man.long_arms",
         "watch": "animation.hl.fog_man.watch",
-        "sprint": "animation.hl.fog_man.sprint"
+        "sprint": "animation.hl.fog_man.sprint",
+        "attack": "animation.hl.fog_man.attack"
       },
       "scripts": {
         "animate": [
           "walk",
           "look",
-          "long_arms",
           {
             "watch": "query.mark_variant == 0"
           },
