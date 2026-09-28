@@ -28,8 +28,8 @@ comportamiento* (el de recursos se añade solo).
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
 
 **Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
-3.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
-quítala y activa la 3.0.0.
+4.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
+quítala y activa la 4.0.0.
 
 ## Cómo funciona
 
@@ -64,52 +64,56 @@ que sacas con un huevo no desaparecen solas.
 - **Invocar (pruebas)**: provoca al momento cualquier evento, para verlo sin
   esperar días.
 
-## Modelos (versión 3.0.0, rediseñados)
+## Modelos (versión 4.0.0, rediseñados)
 
-Todas las criaturas están rediseñadas con **el doble de detalle**: cada
-píxel del modelo lleva ahora 2x2 píxeles de textura (una cara es de 16x16 en
-vez de 8x8), sin cambiar su tamaño en el juego. Y todas tienen piezas nuevas:
+Todas las criaturas tienen **forma nueva** y **texturas nuevas**, pintadas
+con el doble de detalle (cada píxel del modelo lleva 2x2 píxeles de textura) y
+con manchas, piel y tela de aspecto orgánico en lugar de puntitos sueltos.
 
-- **Herobrine**: casi **3 bloques** de lo que la mina dejó de un minero,
-  encorvado y con espasmos. Ahora tiene **rodillas, codos y muñecas**, así
-  que **cojea** al andar arrastrando la pierna izquierda.
-  - el **estómago abierto** y mal cosido: una cavidad con los **intestinos**
-    dentro, uno colgando y la columna vista por dentro;
-  - la mitad izquierda de la cara quemada hasta el **cráneo**, con una
-    **cuenca vacía** donde algo aún brilla, y **ampollas**;
-  - **colmillos** sobre una **mandíbula dislocada** que cuelga de lado y
-    **gotea sangre**;
-  - **costillas rotas** saliendo del pecho y la **columna vertebral fuera del
-    cuerpo** desde la cintura hasta el cráneo;
-  - un **pico clavado en la espalda**, **clavos** en la cabeza, el antebrazo
-    derecho **despellejado** y el brazo izquierdo quemado, lleno de
-    **ampollas** y acabado en **cuatro garras**.
-- **HerobrineGamer788**: un Steve normal con cara detallada (barba, nariz,
-  ojos), capa exterior de pelo y ropa, y un pico en la mano que solo se ve
-  mientras pica o construye. La textura de "algo va mal" le deja los ojos
-  blancos y brillantes.
-- **El Hombre de la Niebla**: cara nueva, larga y pálida, con una **frente
-  pesada** sobre dos **cuencas negras que lloran negro**, **pómulos**, nariz
-  hundida y una **sonrisa llena de dientes** que le llega a las orejas.
-  Abrigo largo con solapas, botones, hombreras y el bajo roído; cinturón,
-  **rodillas huesudas**, pies largos con dedos y manos de **cuatro dedos
-  articulados** más un pulgar.
-- **El Morador de las Cuevas**: cráneo nuevo con **frente**, **hocico**,
-  **orejas**, ojos hundidos que brillan y **dientes como agujas** arriba y
-  abajo. Tiene **omóplatos** que sobresalen, costillas marcadas, hombros,
-  codos y rodillas, **garras curvas** en manos y pies, y una **cola de tres
-  partes** acabada en púa que ondula al moverse.
-- **null**: un jugador que no terminó de cargar. Torso partido en tres
-  rodajas, un **trozo de la cabeza suelto y desplazado**, un **ojo que
-  "sangra" luz**, un corte en la pierna, el brazo largo acabado en **tres
-  dedos**, restos del color de una skin normal entre la estática y un halo de
-  píxeles sueltos y textura que falta.
+- **Herobrine, el minero hueco**: casi 3 bloques, doblado sobre una
+  **joroba enorme**. La **columna vertebral está fuera**, arqueada desde la
+  cintura por encima de los hombros, con púas. La **cabeza cuelga por
+  delante** de un cuello estirado. El **pecho reventado** abre las
+  costillas como una segunda boca alrededor del corazón, y debajo el
+  **estómago abierto** y cosido deja salir los intestinos. La **boca está
+  rajada hasta las orejas**, la mandíbula cuelga suelta y gotea sangre, tiene
+  **colmillos**, la mitad izquierda de la cara quemada hasta el **cráneo** y
+  **ampollas** por todo el lado quemado. Los brazos le llegan a las rodillas:
+  el derecho **despellejado** con un hueso saliendo de la muñeca y
+  arrastrando el pico, y el izquierdo quemado y acabado en **garras de
+  hueso**. Cojea al andar.
+- **El Hombre de la Niebla**: una figura que confundes con un árbol muerto
+  en la niebla. **Piernas como zancos** con rodillas nudosas, una **cintura
+  finísima**, costillas marcadas, un hombro huesudo más alto que el otro y un
+  chal de trapos podridos. Un **cuello largo** sostiene una cabeza pequeña y
+  alargada, **muy ladeada**, con dos **ojos negros enormes** y una
+  **mandíbula que cuelga abierta**. Los brazos le llegan a las espinillas y
+  acaban en **cuatro dedos largos y negros**. A la espalda lleva un
+  **sudario hecho jirones**. Piel gris y húmeda con venas azules.
+- **El Morador de las Cuevas**: ahora se mueve **como una araña**. El cuerpo
+  va colgado bajo, entre cuatro extremidades larguísimas con **codos y
+  rodillas por encima del lomo**, y avanza correteando. El cráneo es plano y
+  largo, con una **corona de púas**, **cuatro ojos hundidos que brillan** y
+  una mandíbula llena de **dientes de aguja** que se abre demasiado. Tiene
+  garras en manos y pies, omóplatos marcados, espinas en el lomo y piel
+  pálida y babosa.
+- **null**: un jugador que el juego no consiguió montar. **Cada parte flota
+  separada** de la siguiente: piernas, tres rodajas de torso que no encajan,
+  brazos rotos en trozos y la cabeza girada al revés sobre el cuello. Un
+  brazo tiene tres trozos y arrastra tres dedos por el suelo. Alrededor lleva
+  la **caja de colisión de F3+B**: el marco blanco, la **línea roja** a la
+  altura de los ojos y la **línea azul** de la mirada, que le salen de los
+  ojos. Sigue teniendo el halo de píxeles sueltos y textura que falta, y
+  restos de una skin normal en la oscuridad.
+- **HerobrineGamer788**: sigue siendo **un Steve normal**, con textura
+  repintada en el estilo nuevo, capa exterior y el pico que solo se ve cuando
+  pica o construye. La textura de "algo va mal" le deja los ojos blancos.
 - **Bloque corrupto animado**: la textura que falta parpadea y se rasga.
-- **Animaciones**: todas las criaturas respiran; el Hombre de la Niebla y el
-  Morador reaccionan al daño y atacan con impulso; se mueven el pelo, los
-  faldones, la cola, los intestinos y las gotas de sangre; Herobrine tiene
-  espasmos y cojea; HerobrineGamer788 anda, se agacha, pica, salta y se queda
-  mirando como un jugador.
+- **Animaciones**: todas las criaturas respiran. El Morador **corretea como
+  una araña**. Herobrine cojea y tiene espasmos. El Hombre de la Niebla y el
+  Morador reaccionan al daño y atacan con impulso. Se mueven el pelo, los
+  jirones, los intestinos y las gotas de sangre. HerobrineGamer788 anda, se
+  agacha, pica, salta y se queda mirando como un jugador.
 
 ## Estructura
 

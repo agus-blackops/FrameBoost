@@ -168,27 +168,18 @@ ANIMATIONS = {
     # ------------------------------------------------------------------ #
     # The Cave Dweller
     # ------------------------------------------------------------------ #
+    # A skitter: each long limb swings round (y) and lifts (z) in turn, so
+    # the hands and feet stay on the ground while they push.
     "animation.hl.dweller.walk": {"loop": True, "bones": {
-        "armRight": {"rotation": [cos(40, 24.0), 0, 0]},
-        "forearmRight": {"rotation": [f"-{lift(40, 22.0)}", 0, 0]},
-        "handRight": {"rotation": [lift(40, 16.0), 0, 0]},
-        "armLeft": {"rotation": [cos(40, -24.0), 0, 0]},
-        "forearmLeft": {"rotation": [f"-{lift(40, 22.0, -1)}", 0, 0]},
-        "handLeft": {"rotation": [lift(40, 16.0, -1), 0, 0]},
-        "thighLeft": {"rotation": [cos(40, -22.0), 0, 0]},
-        "shinLeft": {"rotation": [lift(40, 18.0), 0, 0]},
-        "thighRight": {"rotation": [cos(40, 22.0), 0, 0]},
-        "shinRight": {"rotation": [lift(40, 18.0, -1), 0, 0]},
-        "body": {"position": [0, f"math.abs(math.sin({D} * 40.0)) * 0.7 * {S}", 0],
+        "armRight": {"rotation": [0, cos(40, 16.0), lift(40, 14.0)]},
+        "armLeft": {"rotation": [0, cos(40, 16.0), f"-{lift(40, 14.0, -1)}"]},
+        "thighRight": {"rotation": [0, cos(40, -16.0), lift(40, 12.0, -1)]},
+        "thighLeft": {"rotation": [0, cos(40, -16.0), f"-{lift(40, 12.0)}"]},
+        "body": {"position": [0, f"math.abs(math.sin({D} * 40.0)) * 0.5 * {S}", 0],
                  "rotation": [0, 0, f"math.sin({D} * 40.0) * 3.0 * {S}"]},
-        "tail1": {"rotation": [0, f"math.sin({D} * 40.0) * 14.0 * {S}", 0]},
-        "tail2": {"rotation": [0, f"math.sin({D} * 40.0 - 40.0) * 20.0 * {S}", 0]},
-        "tail3": {"rotation": [0, f"math.sin({D} * 40.0 - 80.0) * 26.0 * {S}", 0]}}},
+        "head": {"rotation": [0, f"math.sin({D} * 40.0) * 6.0 * {S}", 0]}}},
     "animation.hl.dweller.idle": {"loop": True, "bones": {
-        "ribcage": {"scale": breathe(120.0, 0.04)},
-        "tail1": {"rotation": [0, f"math.sin({T} * 40.0) * 8.0", 0]},
-        "tail2": {"rotation": [f"math.sin({T} * 55.0) * 6.0", f"math.sin({T} * 40.0 - 30.0) * 14.0", 0]},
-        "tail3": {"rotation": [f"math.sin({T} * 55.0 - 30.0) * 8.0", f"math.sin({T} * 40.0 - 60.0) * 20.0", 0]}}},
+        "ribcage": {"scale": breathe(120.0, 0.04)}}},
     "animation.hl.dweller.look": {"loop": True, "bones": {
         "neck": {"rotation": ["query.target_x_rotation * 0.4", "query.target_y_rotation * 0.4", 0]},
         "head": {"rotation": ["query.target_x_rotation * 0.4", "query.target_y_rotation * 0.5", 0]}}},

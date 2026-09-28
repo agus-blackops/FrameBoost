@@ -5,7 +5,7 @@
     "description": "pack.description",
     "uuid": "95cc20cd-1272-4a55-8a97-f2b1dfd18e3f",
     "version": [
-      3,
+      4,
       0,
       0
     ],
@@ -20,7 +20,7 @@
       "type": "data",
       "uuid": "71d0f013-b17b-4635-843d-5f11ba161bba",
       "version": [
-        3,
+        4,
         0,
         0
       ]
@@ -30,7 +30,7 @@
       "language": "javascript",
       "uuid": "f5f688e4-5e67-4aa8-b2b1-6f1b1cbdb1e0",
       "version": [
-        3,
+        4,
         0,
         0
       ],
@@ -41,7 +41,7 @@
     {
       "uuid": "d3e97fe4-9ba2-4c1e-87f5-b8766ad714c2",
       "version": [
-        3,
+        4,
         0,
         0
       ]
