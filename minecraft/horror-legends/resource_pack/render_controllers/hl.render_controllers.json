@@ -30,6 +30,25 @@
           "halo": "math.mod(math.floor(query.life_time * 7.0), 3) != 0"
         }
       ]
+    },
+    "controller.render.hl.fake_player": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "query.property('hl:eyes') ? Texture.eyes : Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "tool": "query.property('hl:state') == 'swing'"
+        }
+      ]
     }
   }
 }

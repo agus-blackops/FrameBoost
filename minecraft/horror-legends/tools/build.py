@@ -20,8 +20,9 @@ import sys
 import zipfile
 from pathlib import Path
 
+from animations import ANIMATIONS
 from geometry import Bone, Cube, Model, render
-from pixels import Canvas, jitter, mix, paint_box, shade
+from pixels import Canvas, box_faces, jitter, mix, paint_box, shade
 
 ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
@@ -57,6 +58,31 @@ def grad(c, y, fh, top=1.06, bottom=0.88):
     return shade(c, top + (bottom - top) * y / max(1, fh - 1))
 
 
+def bake(cv, model):
+    """Pixel-art ambient occlusion: darken the rim of every face a little,
+    lift top faces and sink bottom ones. Outer skin layers and anything
+    emissive or transparent are left alone."""
+    done = set()
+    for bone in model.bones:
+        for cube in bone.cubes:
+            if cube.inflate:
+                continue
+            w, h, d = (int(v) for v in cube.size)
+            for face, (x0, y0, fw, fh) in box_faces(*cube.uv, w, h, d).items():
+                if (x0, y0, fw, fh) in done or fw < 3 or fh < 3:
+                    continue
+                done.add((x0, y0, fw, fh))
+                lift = {"top": 1.05, "bottom": 0.9}.get(face, 1.0)
+                for y in range(fh):
+                    for x in range(fw):
+                        c = cv.get(x0 + x, y0 + y)
+                        if c[3] != 255:
+                            continue
+                        edges = (x in (0, fw - 1)) + (y in (0, fh - 1))
+                        cv.set(x0 + x, y0 + y, shade(c, lift * (1.0 - 0.07 * edges)))
+    return cv
+
+
 def face_rows(rows, palette, x, y, fallback):
     c = palette.get(rows[y][x])
     return fallback() if c is None else c
@@ -67,62 +93,79 @@ def face_rows(rows, palette, x, y, fallback):
 # =========================================================================== #
 
 def herobrine_model():
-    """Two and a half blocks of what is left of a miner. Stooped, head lowered,
-    the stomach torn open with guts spilling out, a lipless mouth full of
-    teeth over a slack hanging jaw, the left half of the face and the left
-    arm burned raw and blistered, and the spine outside the body, breaking
-    through the back of the shirt from the waist to the skull. Still dragging
-    his pickaxe."""
-    blister = lambda x, y, z: C((x, y, z), (1, 1, 1), "blister")
-    vertebra = lambda y, z=2: C((-1, y, z), (2, 1, 2), "vertebra")
-    spike = lambda y: C((-0.5, y, 4), (1, 1, 1), "spinous")
+    """Almost three blocks of what the mine left of a miner. Stooped and
+    twitching. The stomach is torn open and stitched badly, guts spilling out
+    and one loop hanging. The burned left half of the face has fallen away to
+    the skull, with an empty socket where something still glows; the jaw is
+    dislocated, hanging sideways under a row of fangs, dripping. Broken ribs
+    jut out of the chest, the spine runs outside the body from the waist to
+    the skull, a pickaxe head is buried in his back, nails are driven into his
+    scalp, and his burned left hand ends in claws. He still drags his own
+    pickaxe."""
+    o = 2  # everything above the legs sits two pixels higher than a player
+    blister = lambda x, y, z: C((x, y + o, z), (1, 1, 1), "blister")
+    vertebra = lambda y, z=2: C((-1, y + o, z), (2, 1, 2), "vertebra")
+    spike = lambda y: C((-0.5, y + o, 4), (1, 1, 1), "spinous")
+    rib = lambda x, y, z, length: C((x, y + o, z), (1, 1, length), "rib")
     return Model("geometry.hl.herobrine", [
         Bone("root"),
-        Bone("rightLeg", "root", (-2, 18, 0), cubes=[
-            C((-4, 0, -2), (4, 18, 4), "leg"), C((-4, 0, -2), (4, 18, 4), "leg+", inflate=0.25)]),
-        Bone("leftLeg", "root", (2, 18, 0), cubes=[
-            C((0, 0, -2), (4, 18, 4), "leg"), C((0, 0, -2), (4, 18, 4), "leg+", inflate=0.25)]),
+        Bone("rightLeg", "root", (-2, 20, 0), cubes=[
+            C((-4, 0, -2), (4, 20, 4), "leg"), C((-4, 0, -2), (4, 20, 4), "leg+", inflate=0.25)]),
+        Bone("leftLeg", "root", (2, 20, 0), cubes=[
+            C((0, 0, -2), (4, 20, 4), "leg"), C((0, 0, -2), (4, 20, 4), "leg+", inflate=0.25)]),
         # The belly is hollow: its front sits a pixel back, framed by torn flaps.
-        Bone("body", "root", (0, 18, 0), rotation=(6, 0, 0), cubes=[
-            C((-4, 18, -1), (8, 6, 3), "belly"),
-            C((-4, 18, -2), (1, 6, 1), "wound_edge"), C((3, 18, -2), (1, 6, 1), "wound_edge"),
-            C((-3, 23, -2), (6, 1, 1), "wound_top"),
-            C((-2.5, 19, -1.7), (2, 1, 1), "gut"), C((0.5, 19.5, -1.8), (2, 1, 1), "gut"),
-            C((-1, 20.8, -2.1), (2, 1, 1), "gut"), C((-2, 22, -1.6), (2, 1, 1), "gut"), C((1, 22, -1.9), (2, 1, 1), "gut"),
+        Bone("body", "root", (0, 18 + o, 0), rotation=(7, 0, 0), cubes=[
+            C((-4, 18 + o, -1), (8, 6, 3), "belly"),
+            C((-4, 18 + o, -2), (1, 6, 1), "wound_edge"), C((3, 18 + o, -2), (1, 6, 1), "wound_edge"),
+            C((-3, 23 + o, -2), (6, 1, 1), "wound_top"),
+            C((-2.5, 19 + o, -1.7), (2, 1, 1), "gut"), C((0.5, 19.5 + o, -1.8), (2, 1, 1), "gut"),
+            C((-1, 20.8 + o, -2.1), (2, 1, 1), "gut"), C((-2, 22 + o, -1.6), (2, 1, 1), "gut"), C((1, 22 + o, -1.9), (2, 1, 1), "gut"),
             vertebra(19), vertebra(21), vertebra(23)]),
-        Bone("gutHang", "body", (0, 19, -1.5), cubes=[C((-0.5, 14, -2), (1, 5, 1), "gut_hang")]),
-        Bone("chest", "body", (0, 24, 0), rotation=(8, 0, 0), cubes=[
-            C((-4, 24, -2), (8, 8, 4), "chest"), C((-4, 24, -2), (8, 8, 4), "chest+", inflate=0.25),
+        Bone("gutHang", "body", (0, 19 + o, -1.5), cubes=[C((-0.5, 13 + o, -2), (1, 6, 1), "gut_hang")]),
+        Bone("chest", "body", (0, 24 + o, 0), rotation=(9, 0, -3), cubes=[
+            C((-4, 24 + o, -2), (8, 8, 4), "chest"), C((-4, 24 + o, -2), (8, 8, 4), "chest+", inflate=0.25),
             vertebra(25), vertebra(27), vertebra(29), vertebra(31),
             spike(25.5), spike(27.5), spike(29.5),
+            rib(1, 25, -4.5, 3), rib(2.5, 26.5, -4, 2), rib(-2.5, 25.5, -4, 2),
+            # A pickaxe head buried in his back, handle snapped off.
+            C((0.5, 29 + o, 2.5), (7, 1, 1), "lodged_pick", pivot=(4, 29.5 + o, 3), rotation=(0, 0, 32)),
+            C((3.5, 29 + o, 3), (1, 1, 4), "lodged_handle", pivot=(4, 29.5 + o, 3), rotation=(25, 0, 0)),
             blister(3, 31.3, -1), blister(4.1, 29, 0.5)]),
-        Bone("head", "chest", (0, 32, 0), rotation=(10, 0, 0), cubes=[
-            C((-4, 32, -4), (8, 8, 8), "head"), C((-4, 32, -4), (8, 8, 8), "head+", inflate=0.5),
+        Bone("head", "chest", (0, 32 + o, 0), rotation=(12, 0, 6), cubes=[
+            C((-4, 32 + o, -4), (8, 8, 8), "head"), C((-4, 32 + o, -4), (8, 8, 8), "head+", inflate=0.5),
             vertebra(32.5, 3.5),
-            blister(1.5, 35, -4.6), blister(3, 37.5, -4.5), blister(4.1, 35.5, -2), blister(4.1, 38, 1)]),
-        Bone("jaw", "head", (0, 33, 1), rotation=(10, 0, 0), cubes=[C((-3, 31, -4.5), (6, 2, 4), "jaw")]),
-        Bone("rightArm", "chest", (-5.5, 31, 0), rotation=(-5, 0, 0), cubes=[
-            C((-8, 16, -2), (4, 15, 4), "arm_r"), C((-8, 16, -2), (4, 15, 4), "sleeve_r", inflate=0.25)]),
-        Bone("leftArm", "chest", (5.5, 31, 0), cubes=[
-            C((4, 16, -2), (4, 15, 4), "arm_l"),
+            C((1.5, 35 + o, -4.4), (2, 2, 1), "cheekbone"),  # skull showing through
+            C((-2, 30.5 + o, -4.3), (1, 2, 1), "fang"), C((1, 30.5 + o, -4.3), (1, 2, 1), "fang"),
+            C((-2.5, 40 + o, -1), (1, 1, 1), "nail"), C((-1, 40 + o, 1.5), (1, 1, 1), "nail"),
+            blister(3, 37.5, -4.5), blister(4.1, 35.5, -2), blister(4.1, 38, 1)]),
+        # Dislocated: hanging open and off to one side.
+        Bone("jaw", "head", (0, 33 + o, 1), rotation=(22, 0, 14), cubes=[C((-3, 31 + o, -4.5), (6, 2, 4), "jaw")]),
+        Bone("dripL", "jaw", (1.5, 31 + o, -4), cubes=[C((1, 27 + o, -4.2), (1, 4, 1), "drip")]),
+        Bone("dripR", "jaw", (-1.5, 31 + o, -4), cubes=[C((-2, 28.5 + o, -4.2), (1, 2.5, 1), "drip")]),
+        Bone("rightArm", "chest", (-5.5, 31 + o, 0), rotation=(-5, 0, 0), cubes=[
+            C((-8, 15 + o, -2), (4, 16, 4), "arm_r"), C((-8, 15 + o, -2), (4, 16, 4), "sleeve_r", inflate=0.25)]),
+        Bone("leftArm", "chest", (5.5, 31 + o, 0), rotation=(-8, 0, -4), cubes=[
+            C((4, 15 + o, -2), (4, 16, 4), "arm_l"),
+            *[C((a, 11 + o, -1.5), (1, 4, 1), "claw") for a in (4.2, 5.6, 7)],
             blister(8, 24, -1), blister(8, 19, 1), blister(5, 27, -2.6), blister(8, 28, 0.5)]),
-        Bone("pickaxe", "rightArm", (-6, 17, 0), rotation=(-18, 0, 0), cubes=[
-            C((-6.5, 3, -0.5), (1, 14, 1), "handle"),
+        Bone("pickaxe", "rightArm", (-6, 16 + o, 0), rotation=(-18, 0, 0), cubes=[
+            C((-6.5, 3, -0.5), (1, 15, 1), "handle"),
             C((-6.5, 1, -4.5), (1, 2, 9), "pick"),
             C((-6.5, 3, -4.5), (1, 1, 1), "tip"), C((-6.5, 3, 3.5), (1, 1, 1), "tip")]),
-    ], bounds=(2.5, 3.0, (0, 1.5, 0))).pack_uv(128)
+    ], bounds=(2.5, 3.2, (0, 1.6, 0))).pack_uv(128)
 
 
 def paint_herobrine(seed):
     rng = random.Random(seed)
     cv = Canvas(*MODELS["herobrine"].texture)
-    skin, hair, hair_l = (0x9C, 0x86, 0x6E), (0x22, 0x17, 0x0D), (0x38, 0x27, 0x16)
+    skin, hair, hair_l = (0x96, 0x80, 0x68), (0x22, 0x17, 0x0D), (0x38, 0x27, 0x16)
     burn, crust, raw = (0xA6, 0x2A, 0x22), (0x56, 0x14, 0x10), (0xD2, 0x4C, 0x3C)
     blister_c = (0xE6, 0xD4, 0xA4)
     shirt, dirt, blood = (0x1E, 0x84, 0x86), (0x5A, 0x48, 0x34), (0x6A, 0x0E, 0x10)
     pants, boot = (0x2E, 0x2A, 0x72), (0x44, 0x3A, 0x32)
     gut, gut_d, cavity = (0xC8, 0x6A, 0x70), (0x94, 0x3E, 0x46), (0x3A, 0x08, 0x0A)
-    bone_c = (0xE0, 0xD8, 0xC2)
+    bone_c, muscle = (0xE0, 0xD8, 0xC2), (0xB0, 0x3A, 0x3A)
+    thread = (0x1A, 0x14, 0x10)
 
     def grime(c, p=0.12):
         r = rng.random()
@@ -145,19 +188,20 @@ def paint_herobrine(seed):
     def flesh(y, fh):
         return jitter(rng, grad(skin, y, fh, 1.0, 0.84), 4)
 
-    # Front of the head. The model's left (burned) side is on the right here.
+    # Front of the head. The model's left (burned) side is on the right here:
+    # skull showing (B), an empty socket (K) with a glint deep inside (g).
     face = [
         "HHHHrrrr",
-        "HhHHrcrr",
-        "SSSSrbrc",
-        "SbbSrrbr",
-        "SWWSrWWr",
-        "SddSccrr",
+        "HhHHrBBr",
+        "SSSSrBBc",
+        "SbbSrKKr",
+        "SWWSrKgr",
+        "SddScKKr",
         "TKTTKTTK",
         "KKKKKKKK",
     ]
-    fpal = {"H": hair, "h": hair_l, "b": shade(skin, 0.7), "W": GLOW_WHITE, "d": shade(skin, 0.74),
-            "T": (0xD8, 0xCC, 0xA8), "K": (0x14, 0x06, 0x06), "c": crust}
+    fpal = {"H": hair, "h": hair_l, "b": shade(skin, 0.7), "W": GLOW_WHITE, "d": shade(skin, 0.7),
+            "T": (0xD8, 0xCC, 0xA8), "K": (0x10, 0x04, 0x04), "c": crust, "B": bone_c, "g": (0xFF, 0xE8, 0xE8, 40)}
 
     def fn(bone, tag, face_, x, y, fw, fh):
         left_side = (face_ == "left") or (face_ in ("front", "top", "bottom") and x >= fw // 2) or (face_ == "back" and x < fw // 2)
@@ -166,12 +210,10 @@ def paint_herobrine(seed):
                 ch = face[y][x]
                 if ch == "r":
                     return burned()
-                if ch == "b" and x >= 4:
-                    return blister_c
                 c = fpal.get(ch)
                 return c if c is not None else flesh(y, fh)
             if left_side:
-                return burned()  # scalp and cheek burned bald
+                return bone_c if (face_ == "left" and 2 <= x <= 4 and 2 <= y <= 4) else burned()
             if face_ == "top" or y < 3 or face_ == "back" and y < 6:
                 return jitter(rng, hair, 4)
             return flesh(y, fh)
@@ -183,18 +225,33 @@ def paint_herobrine(seed):
             if face_ == "front":
                 return jitter(rng, hair, 4) if y == 0 else CLEAR
             return jitter(rng, hair, 4) if y < 3 and rng.random() < 0.5 else CLEAR
+        if tag == "cheekbone":
+            return jitter(rng, bone_c, 5) if face_ != "back" else raw
+        if tag == "fang":
+            return (0xD8, 0xCC, 0xA8) if y < fh - 1 else (0xB8, 0xA8, 0x80)
+        if tag == "nail":
+            return (0x6A, 0x6A, 0x70) if face_ == "top" else (0x4A, 0x3A, 0x34)
         if tag == "jaw":
             if face_ == "front":
                 if y == 0:
-                    return (0xD8, 0xCC, 0xA8) if x % 3 != 2 else (0x14, 0x06, 0x06)  # lower teeth
+                    return (0xD8, 0xCC, 0xA8) if x % 3 != 2 else (0x10, 0x04, 0x04)
                 return burned() if x >= fw // 2 else flesh(y, fh)
             if face_ == "top":
-                return (0x4A, 0x10, 0x12)  # inside the mouth
+                return (0x4A, 0x10, 0x12)
             return burned() if left_side else flesh(y, fh)
+        if tag == "drip":
+            return jitter(rng, blood if y < fh - 1 else (0x4A, 0x06, 0x08), 6)
         if tag == "blister":
             return blister_c if face_ != "bottom" else raw
+        if tag == "rib":
+            return jitter(rng, bone_c, 5) if face_ != "back" else blood
+        if tag in ("lodged_pick",):
+            c = jitter(rng, (0x6A, 0x6A, 0x6E), 8)
+            return mix(c, blood, 0.6) if rng.random() < 0.3 else c
+        if tag == "lodged_handle":
+            return jitter(rng, (0x4E, 0x38, 0x24), 5) if face_ != "back" else (0x8A, 0x70, 0x50)  # splintered end
         if tag == "belly":
-            if face_ == "front":  # the inside of the open stomach
+            if face_ == "front":
                 if (x + 2 * y) % 5 in (0, 1) and 0 < y < fh - 1:
                     return jitter(rng, gut if (x + y) % 2 else gut_d, 8)
                 return jitter(rng, cavity, 6)
@@ -202,12 +259,16 @@ def paint_herobrine(seed):
                 return jitter(rng, (0x7A, 0x1A, 0x18), 6) if x in (3, 4) else grime(shade(shirt, 0.85))
             return grime(shade(shirt, 0.85)) if face_ != "bottom" else pants
         if tag == "wound_edge":
-            if face_ == ("right" if x < 0 else "left") or face_ in ("left", "right"):
-                return jitter(rng, (0x8A, 0x1E, 0x1C), 8)  # torn flesh facing the wound
+            if face_ in ("left", "right"):
+                return jitter(rng, (0x8A, 0x1E, 0x1C), 8)
             if face_ == "front":
-                return grime(shirt, 0.3) if y < 2 else (jitter(rng, blood, 6) if y % 2 else flesh(y, fh))
+                if y % 2 == 0:
+                    return thread  # crude stitches across the wound's edge
+                return grime(shirt, 0.3) if y < 2 else flesh(y, fh)
             return grime(shade(shirt, 0.85))
         if tag == "wound_top":
+            if face_ == "front" and x % 2 == 0:
+                return thread
             return jitter(rng, blood, 8) if face_ in ("bottom", "front") else grime(shirt)
         if tag in ("gut", "gut_hang"):
             c = gut if (x + y) % 3 else gut_d
@@ -218,15 +279,15 @@ def paint_herobrine(seed):
             return jitter(rng, shade(bone_c, 0.92), 5)
         if tag == "chest":
             if face_ == "back" and x in (3, 4):
-                return jitter(rng, (0x7A, 0x1A, 0x18), 8)  # where the spine tore out
+                return jitter(rng, (0x7A, 0x1A, 0x18), 8)
             if face_ == "front" and y >= 5:
-                return shade(flesh(y, fh), 0.78) if y % 2 == 0 and x not in (3, 4) else flesh(y, fh)  # ribs
+                return shade(flesh(y, fh), 0.78) if y % 2 == 0 and x not in (3, 4) else flesh(y, fh)
             if face_ == "front" and y < 2 and 3 <= x <= 4:
                 return flesh(y, fh)
             if left_side and rng.random() < 0.3:
                 return burned()
             return grime(grad(shirt, y, fh, 1.02, 0.8))
-        if tag == "chest+":  # the shirt, hanging in rags
+        if tag == "chest+":
             if face_ in ("top", "bottom"):
                 return CLEAR
             if face_ == "back" and 2 <= x <= 5:
@@ -239,13 +300,17 @@ def paint_herobrine(seed):
                 return grime(grad(shirt, y, 4, 1.0, 0.85))
             if face_ == "bottom" or y >= fh - 2:
                 return grime(shade(skin, 0.7), 0.3)
+            if y >= 9:  # the forearm is flayed: bare muscle in strips
+                return jitter(rng, muscle if x % 2 else shade(muscle, 0.7), 8)
             return flesh(y, fh)
         if tag == "sleeve_r":
             return grime(shade(shirt, 0.72), 0.3) if y == 3 and face_ not in ("top", "bottom") and rng.random() < 0.8 else CLEAR
-        if tag == "arm_l":  # burned from shoulder to fingers
+        if tag == "arm_l":
             if face_ == "top" or (face_ != "bottom" and y < 2):
                 return grime(shade(shirt, 0.8), 0.4)
             return burned() if face_ != "bottom" else crust
+        if tag == "claw":
+            return (0x16, 0x10, 0x0E) if y >= fh - 2 else (0x3A, 0x2A, 0x22)
         if tag == "leg":
             if face_ == "bottom":
                 return shade(boot, 0.8)
@@ -286,7 +351,8 @@ def null_model():
         Bone("torsoLow", "root", (0, 12, 0), cubes=[C((-4, 12, -2), (8, 4, 4), "slice_low")]),
         Bone("torsoMid", "torsoLow", (0, 16, 0), cubes=[C((-2, 16, -2), (8, 4, 4), "slice_mid")]),
         Bone("torsoHigh", "torsoMid", (0, 20, 0), cubes=[C((-5, 20, -2), (8, 4, 4), "slice_high")]),
-        Bone("head", "torsoHigh", (-1, 24, 0), rotation=(0, 0, -9), cubes=[C((-5, 24, -4), (8, 8, 8), "head")]),
+        Bone("head", "torsoHigh", (-1, 24, 0), rotation=(0, 0, -9), cubes=[
+            C((-5, 24, -4), (8, 8, 8), "head"), C((-5, 24, -4), (8, 8, 8), "head+", inflate=0.5)]),
         Bone("rightArm", "torsoHigh", (-6.5, 23, 0), cubes=[C((-8, 11, -1.5), (3, 12, 3), "arm")]),
         Bone("leftArm", "torsoHigh", (4.5, 23, 0), cubes=[C((3, 5, -1.5), (3, 18, 3), "longarm")]),
         Bone("halo", "head", (-1, 28, 0), cubes=[
@@ -305,7 +371,18 @@ def paint_null(seed):
         g = rng.randint(4, 12) + (6 if y % 2 else 0)  # scanlines
         return (g, g, g + 2)
 
+    tears = {}
+
     def fn(bone, tag, face_, x, y, fw, fh):
+        if tag == "head+":  # a band of static that crawls across the face
+            if face_ == "front" and 3 <= y <= 5:
+                return CLEAR
+            key = (face_, y)
+            if key not in tears:
+                start = rng.randint(0, fw - 2)
+                tears[key] = (start, start + rng.randint(1, 4), rng.choice([magenta, cyan])) if rng.random() < 0.18 else None
+            t = tears[key]
+            return t[2] if t and t[0] <= x < t[1] else CLEAR
         if tag == "missing":
             return magenta if (x + y) % 2 == 0 else (0, 0, 0)
         if tag == "px":
@@ -342,12 +419,17 @@ def fog_man_model():
             C((-4, 28, -2), (8, 9, 4), "chest"),
             C((-4.5, 34, -2.5), (9, 3, 5), "collar"),
             *[C((-0.5, 29 + 2 * k, 2), (1, 1, 2), "vertebra") for k in range(4)]]),
-        Bone("coatBack", "chest", (0, 36, 2.5), cubes=[C((-4.5, 14, 2), (9, 22, 1), "coat_back")]),
+        Bone("coatBack", "chest", (0, 36, 2.5), cubes=[
+            C((-4.5, 14, 2), (9, 22, 1), "coat_back"),
+            *[C((x, 10, 2), (1, 4, 1), "fringe") for x in (-4, -1.5, 1, 3.5)]]),
         Bone("coatRight", "chest", (-3, 36, -2.5), cubes=[C((-4.5, 14, -3), (3, 22, 1), "coat_front")]),
         Bone("coatLeft", "chest", (3, 36, -2.5), cubes=[C((1.5, 14, -3), (3, 22, 1), "coat_front")]),
         Bone("neck", "chest", (0, 37, 0), rotation=(-10, 0, 0), cubes=[C((-1, 37, -1), (2, 3, 2), "neck")]),
         Bone("head", "neck", (0, 40, 0), rotation=(0, 0, 16), cubes=[C((-3, 40, -3), (6, 9, 6), "head")]),
         Bone("jaw", "head", (0, 40.5, 2), rotation=(5, 0, 0), cubes=[C((-2.5, 38, -3.5), (5, 3, 5), "jaw")]),
+        # A few long, lank strands of black hair from the back of the scalp.
+        Bone("hair", "head", (0, 48, 3), rotation=(12, 0, 0), cubes=[
+            C((-2, 39, 2.5), (1, 9, 1), "strand"), C((0.5, 37, 2.5), (1, 11, 1), "strand"), C((2, 40, 2.2), (1, 8, 1), "strand")]),
     ]
     for side, name, shoulder in ((-1, "right", 35), (1, "left", 36)):
         sx = lambda a, b: side_x(side, a, b)
@@ -436,6 +518,10 @@ def paint_fog_man(seed):
             if face_ == "bottom" or (y >= fh - 2 and rng.random() < 0.5):
                 return CLEAR  # frayed cuff
             return cloth(y, fh)
+        if tag == "strand":
+            return jitter(rng, (0x14, 0x13, 0x16) if y % 3 else (0x24, 0x22, 0x26), 3)
+        if tag == "fringe":
+            return CLEAR if (y == fh - 1 and rng.random() < 0.5) else cloth(y, fh)
         if tag in ("coat_back", "coat_front"):
             if face_ in ("top",):
                 return coat_d
@@ -513,6 +599,10 @@ def cave_dweller_model():
             Bone(f"foot{name}", f"shin{name}", (3.5 * side, -6.5, 7), rotation=(-38, 0, 0), cubes=[
                 C((sx(2, 5), -7.5, 2), (3, 1, 6), "foot")]),
         ]
+    bones += [
+        Bone("tail1", "body", (0, 12.5, 9), rotation=(-18, 0, 0), cubes=[C((-1, 11.5, 9), (2, 2, 6), "tail1")]),
+        Bone("tail2", "tail1", (0, 12.5, 15), rotation=(22, 0, 0), cubes=[C((-0.5, 12, 15), (1, 1, 7), "tail2")]),
+    ]
     return Model("geometry.hl.cave_dweller", bones, bounds=(3.0, 2.0, (0, 0.8, 0))).pack_uv(128)
 
 
@@ -537,13 +627,13 @@ def paint_cave_dweller(seed):
         return c
 
     skull = [
-        "SsSSSsS",
+        "SkSSSkS",
         "KKSSSKK",
         "KgSSSgK",
         "SSnSnSS",
         "WKWKWKW",
     ]
-    spal = {"s": D_d, "K": BLACK, "g": glow, "n": (0x2E, 0x28, 0x28), "W": teeth}
+    spal = {"s": D_d, "K": BLACK, "k": (0x1A, 0x16, 0x14), "g": glow, "n": (0x2E, 0x28, 0x28), "W": teeth}
 
     def fn(bone, tag, face_, x, y, fw, fh):
         if tag == "skull":
@@ -580,6 +670,8 @@ def paint_cave_dweller(seed):
             return D_d if face_ in ("right", "left") and y == 1 else skin(y, fh)
         if tag == "ridge":
             return (0x5A, 0x52, 0x46) if face_ == "top" else jitter(rng, (0xD6, 0xCE, 0xBA), 5)
+        if tag in ("tail1", "tail2"):
+            return D_d if face_ == "top" and y % 2 == 0 else skin(y, fh, 1.0, 0.7)
         if tag in ("upper_arm", "thigh"):
             return D_d if y >= fh - 2 else skin(y, fh)
         if tag in ("forearm", "shin"):
@@ -594,11 +686,105 @@ def paint_cave_dweller(seed):
     return cv
 
 
+# =========================================================================== #
+# HerobrineGamer788: just another player
+# =========================================================================== #
+
+def fake_player_model():
+    """An ordinary player, outer skin layer and all. The pickaxe in his right
+    hand only shows while he is mining or building."""
+    P = lambda o, s, uv, tag, inflate=0.0: Cube(o, s, uv, inflate, share=tag)
+    return Model("geometry.hl.fake_player", [
+        Bone("root"),
+        Bone("body", "root", (0, 24, 0), cubes=[
+            P((-4, 12, -2), (8, 12, 4), (16, 16), "body"), P((-4, 12, -2), (8, 12, 4), (16, 32), "body+", 0.25)]),
+        Bone("head", "body", (0, 24, 0), cubes=[
+            P((-4, 24, -4), (8, 8, 8), (0, 0), "head"), P((-4, 24, -4), (8, 8, 8), (32, 0), "head+", 0.5)]),
+        Bone("rightArm", "body", (-5, 22, 0), cubes=[
+            P((-8, 12, -2), (4, 12, 4), (40, 16), "arm"), P((-8, 12, -2), (4, 12, 4), (40, 32), "arm+", 0.25)]),
+        Bone("leftArm", "body", (5, 22, 0), cubes=[
+            P((4, 12, -2), (4, 12, 4), (32, 48), "arm"), P((4, 12, -2), (4, 12, 4), (48, 48), "arm+", 0.25)]),
+        Bone("tool", "rightArm", (-6, 13, 0), cubes=[
+            P((-6.5, 12.5, -9), (1, 1, 8), (64, 0), "tool_handle"),
+            P((-6.5, 10, -10), (1, 6, 1), (82, 0), "tool_head")]),
+        Bone("rightLeg", "root", (-1.9, 12, 0), cubes=[
+            P((-3.9, 0, -2), (4, 12, 4), (0, 16), "leg"), P((-3.9, 0, -2), (4, 12, 4), (0, 32), "leg+", 0.25)]),
+        Bone("leftLeg", "root", (1.9, 12, 0), cubes=[
+            P((-0.1, 0, -2), (4, 12, 4), (16, 48), "leg"), P((-0.1, 0, -2), (4, 12, 4), (0, 48), "leg+", 0.25)]),
+    ], texture=(128, 64), bounds=(2.0, 2.2, (0, 1.1, 0)))
+
+
+def paint_fake_player(seed, white_eyes=False):
+    """A plain default-looking miner. The second texture is the same player
+    with the eyes gone white."""
+    rng = random.Random(seed)
+    cv = Canvas(128, 64)
+    skin, hair, hair_l = (0xC6, 0x94, 0x76), (0x3A, 0x26, 0x14), (0x4E, 0x34, 0x1C)
+    shirt, pants, shoe = (0x1C, 0xA2, 0xA6), (0x3E, 0x38, 0x9C), (0x5E, 0x5E, 0x64)
+    face = [
+        "HHHHHHHH",
+        "HHHHHHHH",
+        "HSSSSSSH",
+        "SSSSSSSS",
+        "SWPSSPWS",
+        "SSSnnSSS",
+        "SSmMMmSS",
+        "SSSmmSSS",
+    ]
+    eye = GLOW_WHITE if white_eyes else None
+    fpal = {"H": hair, "S": None, "W": eye or (0xF0, 0xF0, 0xF0), "P": eye or (0x3C, 0x50, 0xA0),
+            "n": shade(skin, 0.84), "m": (0x7E, 0x52, 0x3A), "M": (0x5C, 0x38, 0x26)}
+
+    def fn(bone, tag, face_, x, y, fw, fh):
+        if tag == "head":
+            if face_ == "front":
+                return face_rows(face, fpal, x, y, lambda: jitter(rng, grad(skin, y, fh, 1.02, 0.94), 2))
+            if face_ == "top":
+                return jitter(rng, hair_l if rng.random() < 0.2 else hair, 3)
+            if face_ == "bottom":
+                return shade(skin, 0.85)
+            if face_ == "back":
+                return jitter(rng, hair if y < 7 else shade(skin, 0.9), 3)
+            back_half = x < 4 if face_ == "right" else x >= 4
+            return jitter(rng, hair if (y < 3 or (back_half and y < 5)) else skin, 3)
+        if tag == "head+":
+            if face_ == "top" and (x in (0, fw - 1) or y in (0, fh - 1)) and rng.random() < 0.4:
+                return jitter(rng, hair_l, 4)
+            return CLEAR
+        if tag == "body":
+            if face_ == "bottom":
+                return pants
+            return jitter(rng, grad(shirt, y, fh, 1.04, 0.88), 3)
+        if tag == "body+":
+            return shade(shirt, 0.8) if y == fh - 1 and face_ not in ("top", "bottom") else CLEAR
+        if tag == "arm":
+            if face_ == "top" or (face_ != "bottom" and y < 4):
+                return jitter(rng, shirt, 3)
+            return jitter(rng, grad(skin, y, fh, 1.0, 0.9), 2)
+        if tag == "arm+":
+            return shade(shirt, 0.8) if y == 3 and face_ not in ("top", "bottom") else CLEAR
+        if tag == "leg":
+            if face_ == "bottom" or (face_ != "top" and y >= 10):
+                return jitter(rng, shoe if y == 10 else shade(shoe, 0.8), 3)
+            return jitter(rng, grad(pants, y, 10, 1.04, 0.88), 3)
+        if tag == "leg+":
+            return CLEAR
+        if tag == "tool_handle":
+            return jitter(rng, (0x6A, 0x4C, 0x2E), 4)
+        if tag == "tool_head":
+            return jitter(rng, grad((0xD0, 0xD0, 0xD8), y, fh, 1.1, 0.8), 4)
+        return None
+
+    paint_model(cv, MODELS["fake_player"], fn)
+    return cv
+
+
 MODELS = {}
 MODELS["herobrine"] = herobrine_model()
 MODELS["null"] = null_model()
 MODELS["fog_man"] = fog_man_model()
 MODELS["cave_dweller"] = cave_dweller_model()
+MODELS["fake_player"] = fake_player_model()
 
 
 # =========================================================================== #
@@ -737,6 +923,9 @@ def write_models():
     geo = {"format_version": "1.12.0", "minecraft:geometry": [m.to_json() for m in MODELS.values()]}
     path = RP / "models" / "entity" / "hl.geo.json"
     path.write_text(json.dumps(geo, indent=2) + "\n", encoding="utf-8")
+    anims = {"format_version": "1.8.0", "animations": ANIMATIONS}
+    path = RP / "animations" / "hl.animation.json"
+    path.write_text(json.dumps(anims, indent=2) + "\n", encoding="utf-8")
 
 
 def paint_textures():
@@ -745,7 +934,12 @@ def paint_textures():
         "null": paint_null(20),
         "fog_man": paint_fog_man(30),
         "cave_dweller": paint_cave_dweller(40),
+        "fake_player": paint_fake_player(80),
     }
+    for name, tex in textures.items():
+        bake(tex, MODELS[name])
+    bake(paint_fake_player(80, white_eyes=True), MODELS["fake_player"]).save(
+        RP / "textures" / "entity" / "hl" / "fake_player_eyes.png")
     ent = RP / "textures" / "entity" / "hl"
     for name, tex in textures.items():
         tex.save(ent / f"{name}.png")
@@ -771,6 +965,9 @@ PREVIEW_POSES = {
                             "coatBack": (40, 0, 0), "coatRight": (30, 0, 0), "coatLeft": (35, 0, 0),
                             "rightLeg": (-35, 0, 0), "rightShin": (30, 0, 0), "leftLeg": (25, 0, 0), "leftShin": (50, 0, 0)})],
     "cave_dweller": [("stalk", {}), ("chase", {"jaw": (38, 0, 0), "head": (-14, 0, 0), "neck": (-6, 0, 0)})],
+    "fake_player": [("", {}), ("mining", {"rightArm": (-75, 0, 0), "head": (15, 0, 0)}),
+                    ("sneaking", {"body": (28, 0, 0), "rightLeg": (0, 0, 0), "head": (-10, 0, 0),
+                                  "rightArm": (20, 0, 0), "leftArm": (20, 0, 0)})],
 }
 
 

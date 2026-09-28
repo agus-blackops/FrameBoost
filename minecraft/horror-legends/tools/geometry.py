@@ -18,7 +18,8 @@ from pixels import Canvas, clamp
 
 class Cube:
     """A box. Leave `uv` as None to have Model.pack_uv place it; cubes with the
-    same `share` key are given the same texture region (and so look alike)."""
+    same `share` key and size are given the same texture region (and so look
+    alike)."""
 
     def __init__(self, origin, size, uv=None, inflate=0.0, pivot=None, rotation=None, share=None):
         self.origin, self.size, self.uv = origin, size, uv
@@ -65,8 +66,8 @@ class Model:
         for bone in self.bones:
             for i, cube in enumerate(bone.cubes):
                 if cube.uv is None:
-                    key = cube.share or (bone.name, i)
                     w, h, d = (int(v) for v in cube.size)
+                    key = (cube.share, w, h, d) if cube.share else (bone.name, i)
                     slots.setdefault(key, [(2 * (w + d), h + d), []])[1].append(cube)
         taken = [(c.uv, c.size) for b in self.bones for c in b.cubes if c.uv is not None]
         used_h = max((uv[1] + int(sz[1]) + int(sz[2]) for uv, sz in taken), default=0)

@@ -14,20 +14,22 @@
       },
       "animations": {
         "look": "animation.hl.look_at_target",
-        "idle": "animation.hl.herobrine.idle"
+        "idle": "animation.hl.herobrine.idle",
+        "twitch": "animation.hl.herobrine.twitch"
       },
       "scripts": {
         "animate": [
           "look",
-          "idle"
+          "idle",
+          "twitch"
         ]
       },
       "render_controllers": [
         "controller.render.hl.default"
       ],
       "spawn_egg": {
-        "base_color": "#00a0a4",
-        "overlay_color": "#ffffff"
+        "base_color": "#1e8486",
+        "overlay_color": "#a62a22"
       }
     }
   }

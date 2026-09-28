@@ -28,8 +28,8 @@ comportamiento* (el de recursos se añade solo).
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
 
 **Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
-2.1.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
-quítala y activa la 2.1.0.
+2.2.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
+quítala y activa la 2.2.0.
 
 ## Cómo funciona
 
@@ -39,6 +39,7 @@ días (contados desde que instalas el add-on en el mundo):
 | Día | Amenaza | Qué hace |
 |---|---|---|
 | 0 | **Sonidos** | Pasos detrás de ti, puertas y cofres que se abren, minería lejana, el siseo de un creeper que no está, tu nombre susurrado en el chat. |
+| 1 | **HerobrineGamer788** | Un "jugador" entra a tu mundo (*HerobrineGamer788 se ha unido a la partida*). Parece un Steve normal: te saluda, te sigue, pica bloques, construye, pone antorchas, salta, chatea y te regala comida. Luego **te copia**: pica lo que picas, pone lo que pones, se agacha y salta contigo. Después se vuelve raro: **se congela cuando lo miras y se acerca cuando no**, se le ponen los ojos blancos, su nombre se rompe y tus antorchas se vuelven rojas. Al final **deja de fingir** y aparece Herobrine. Si le pegas cuando ya está raro, no espera más. Como mucho viene una vez al día. |
 | 1 | **El Morador de las Cuevas** | Cuanto más tiempo pasas **bajo tierra**, más sube la tensión: ruidos de cueva, pasitos rápidos en la oscuridad... hasta que aparece. Te acecha, se asoma y huye si lo ves. Si esperas demasiado, **te persigue**. Se arrastra por huecos de 1 bloque. Subir a la superficie lo calma. |
 | 2 | **Herobrine** | Lo ves a lo lejos, quieto, con los ojos blancos brillando. Si lo miras fijamente o te acercas, desaparece. A veces está **justo detrás de ti**. Deja **pirámides de arena**, **árboles sin hojas**, **túneles de 2x2** en las cuevas, **carteles** ("DETRÁS DE TI") y cambia tus antorchas por **antorchas de redstone**. A veces "entra" al chat: *Herobrine se ha unido a la partida*. Si le pegas, te devuelve el golpe. |
 | 4 | **El Hombre de la Niebla** | Llega una **niebla espesa**. Una figura alta y pálida te observa desde lejos... y **cada vez que apartas la vista está más cerca**. Si lo miras demasiado, se va o viene corriendo. De noche **llama a tu puerta** y a veces **la rompe**. Cuando te persigue, trepa paredes y rompe cristales, puertas y hojas. |
@@ -65,14 +66,24 @@ que sacas con un huevo no desaparecen solas.
 
 ## Modelos (versión 2.0.0, rehechos desde cero)
 
-- **Herobrine** (2.1.0): lo que la mina dejó de un minero. Mide **2,5
-  bloques** y va encorvado. Tiene el **estómago abierto** con los intestinos
-  fuera (uno cuelga y se balancea) y una boca sin labios llena de **dientes**,
-  con la **mandíbula suelta**. La **mitad izquierda de la cara**, el cuero
-  cabelludo y el brazo izquierdo están **quemados en carne viva** y llenos de
-  **ampollas** que sobresalen. La **columna vertebral le sale por la espalda**,
-  de la cintura a la nuca, a través de la camisa rota. Los ojos brillan en la
-  oscuridad y sigue arrastrando su pico, manchado de sangre.
+- **Herobrine** (2.2.0): casi **3 bloques** de lo que la mina dejó de un
+  minero, encorvado y con espasmos:
+  - el **estómago abierto** y mal cosido, con los intestinos fuera y uno
+    colgando;
+  - la mitad izquierda de la cara quemada hasta el **cráneo**, con una
+    **cuenca vacía** donde algo aún brilla;
+  - **colmillos** sobre una **mandíbula dislocada** que cuelga de lado y
+    **gotea sangre**;
+  - **costillas rotas** saliendo del pecho y la **columna vertebral fuera del
+    cuerpo**;
+  - un **pico clavado en la espalda**, **clavos** en la cabeza, el antebrazo
+    derecho **despellejado** y el brazo izquierdo quemado, lleno de
+    **ampollas** y acabado en **garras**.
+
+  Sigue arrastrando su propio pico, manchado de sangre.
+- **HerobrineGamer788**: un jugador normal con capa exterior. Tiene una
+  segunda textura con los ojos blancos y brillantes para cuando algo va mal,
+  y un pico en la mano que solo se ve mientras pica o construye.
 - **null**: un error de renderizado con forma de jugador. El torso está
   **partido en tres rodajas que no encajan** y se desplazan solas, la cabeza
   está torcida y un brazo es **más largo que el otro**. Tiene los ojos
@@ -90,6 +101,19 @@ que sacas con un huevo no desaparecen solas.
 - **Bloque corrupto animado**: la textura que falta ahora parpadea y se rasga.
 - Diario, linterna e icono del pack nuevos. El icono muestra a las cuatro
   criaturas.
+- **Pulido (2.2.0)**: todas las texturas llevan sombreado en los bordes de
+  cada cara. El Hombre de la Niebla tiene mechones largos de pelo y flecos en
+  el abrigo, el Morador tiene cola y ojos extra, y null una capa de
+  interferencias en la cabeza.
+- **Animaciones (2.2.0)**:
+  - todas las criaturas respiran;
+  - el Hombre de la Niebla y el Morador reaccionan al recibir daño y atacan
+    con impulso;
+  - se mueven el pelo, los faldones, la cola, los intestinos y las gotas de
+    sangre;
+  - Herobrine tiene espasmos;
+  - HerobrineGamer788 anda, se balancea, se agacha, pica, salta y se queda
+    mirando como un jugador.
 
 ## Estructura
 
@@ -97,6 +121,7 @@ que sacas con un huevo no desaparecen solas.
 behavior_pack/       entidades, bloque corrupto, objetos, recetas, scripts/main.js
 resource_pack/       modelos, animaciones, texturas, niebla, sonidos, textos
 tools/build.py       define los modelos, pinta las texturas, valida y empaqueta
+tools/animations.py  todas las animaciones
 tools/geometry.py    modelos en Python, comprobación de UV y renderizador 3D
 tools/pixels.py      lienzo PNG y utilidades de pixel art
 dist/                HorrorLegends.mcaddon y HorrorLegends_WhatsApp.zip

@@ -1,0 +1,205 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hl:fake_player",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "hl:state": {
+          "type": "enum",
+          "values": [
+            "idle",
+            "sneak",
+            "swing",
+            "stare"
+          ],
+          "default": "idle",
+          "client_sync": true
+        },
+        "hl:eyes": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "hl:vanish": {
+        "minecraft:instant_despawn": {}
+      },
+      "hl:roam": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "can_open_doors": true,
+          "can_pass_doors": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.24
+        },
+        "minecraft:behavior.random_stroll": {
+          "priority": 6,
+          "speed_multiplier": 0.9,
+          "xz_dist": 6
+        }
+      },
+      "hl:follow": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "can_open_doors": true,
+          "can_pass_doors": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.3
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 2,
+          "must_see": false,
+          "reselect_targets": true,
+          "within_radius": 64.0,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 64
+            }
+          ]
+        },
+        "minecraft:behavior.move_towards_target": {
+          "priority": 3,
+          "speed_multiplier": 1.0,
+          "within_radius": 64.0
+        }
+      },
+      "hl:freeze": {
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:navigation.walk": {}
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "hl_fake_player",
+          "hl_haunt"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.6,
+        "height": 1.8
+      },
+      "minecraft:health": {
+        "value": 20,
+        "max": 20
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "all",
+            "deals_damage": false
+          }
+        ]
+      },
+      "minecraft:nameable": {
+        "always_show": true,
+        "allow_name_tag_renaming": false
+      },
+      "minecraft:persistent": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:can_climb": {},
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": true,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:annotation.open_door": {},
+      "minecraft:behavior.open_door": {
+        "priority": 5,
+        "close_door_after": true
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 4,
+        "look_distance": 16,
+        "probability": 0.7
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 7
+      },
+      "minecraft:conditional_bandwidth_optimization": {}
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:roam"
+          ]
+        }
+      },
+      "hl:roam": {
+        "remove": {
+          "component_groups": [
+            "hl:follow",
+            "hl:freeze"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:roam"
+          ]
+        }
+      },
+      "hl:follow": {
+        "remove": {
+          "component_groups": [
+            "hl:roam",
+            "hl:freeze"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:follow"
+          ]
+        }
+      },
+      "hl:freeze": {
+        "remove": {
+          "component_groups": [
+            "hl:roam",
+            "hl:follow"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:freeze"
+          ]
+        }
+      },
+      "hl:vanish": {
+        "add": {
+          "component_groups": [
+            "hl:vanish"
+          ]
+        }
+      }
+    }
+  }
+}

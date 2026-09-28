@@ -1,0 +1,55 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:fake_player",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/fake_player",
+        "eyes": "textures/entity/hl/fake_player_eyes"
+      },
+      "geometry": {
+        "default": "geometry.hl.fake_player"
+      },
+      "animations": {
+        "walk": "animation.hl.player.walk",
+        "idle": "animation.hl.player.idle",
+        "look": "animation.hl.look_at_target",
+        "sneak": "animation.hl.player.sneak",
+        "swing": "animation.hl.player.swing",
+        "stare": "animation.hl.player.stare",
+        "air": "animation.hl.player.air"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look",
+          {
+            "idle": "query.property('hl:state') != 'stare'"
+          },
+          {
+            "sneak": "query.property('hl:state') == 'sneak'"
+          },
+          {
+            "swing": "query.property('hl:state') == 'swing'"
+          },
+          {
+            "stare": "query.property('hl:state') == 'stare'"
+          },
+          {
+            "air": "!query.is_on_ground"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.fake_player"
+      ],
+      "spawn_egg": {
+        "base_color": "#1ca2a6",
+        "overlay_color": "#3e389c"
+      }
+    }
+  }
+}

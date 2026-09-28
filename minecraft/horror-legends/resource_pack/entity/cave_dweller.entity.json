@@ -14,16 +14,18 @@
       },
       "animations": {
         "walk": "animation.hl.dweller.walk",
-        "breathe": "animation.hl.dweller.breathe",
+        "idle": "animation.hl.dweller.idle",
         "look": "animation.hl.dweller.look",
         "twitch": "animation.hl.dweller.twitch",
         "jaw_idle": "animation.hl.dweller.jaw_idle",
-        "jaw_snap": "animation.hl.dweller.jaw_snap"
+        "jaw_snap": "animation.hl.dweller.jaw_snap",
+        "attack": "animation.hl.dweller.attack",
+        "hurt": "animation.hl.dweller.hurt"
       },
       "scripts": {
         "animate": [
           "walk",
-          "breathe",
+          "idle",
           "look",
           "twitch",
           {
@@ -31,6 +33,12 @@
           },
           {
             "jaw_snap": "query.mark_variant == 1"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
           }
         ]
       },
@@ -38,7 +46,7 @@
         "controller.render.hl.default"
       ],
       "spawn_egg": {
-        "base_color": "#c6c2b8",
+        "base_color": "#9e9a8e",
         "overlay_color": "#06060a"
       }
     }

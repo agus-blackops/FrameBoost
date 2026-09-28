@@ -17,7 +17,8 @@
         "look": "animation.hl.look_at_target",
         "watch": "animation.hl.fog_man.watch",
         "sprint": "animation.hl.fog_man.sprint",
-        "attack": "animation.hl.fog_man.attack"
+        "attack": "animation.hl.fog_man.attack",
+        "hurt": "animation.hl.fog_man.hurt"
       },
       "scripts": {
         "animate": [
@@ -31,6 +32,9 @@
           },
           {
             "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
           }
         ]
       },
