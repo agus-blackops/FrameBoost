@@ -15,13 +15,17 @@
       "animations": {
         "look": "animation.hl.look_at_target",
         "idle": "animation.hl.herobrine.idle",
-        "twitch": "animation.hl.herobrine.twitch"
+        "twitch": "animation.hl.herobrine.twitch",
+        "walk": "animation.hl.herobrine.walk"
       },
       "scripts": {
         "animate": [
           "look",
           "idle",
-          "twitch"
+          "twitch",
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          }
         ]
       },
       "render_controllers": [

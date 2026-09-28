@@ -16,6 +16,11 @@ import math
 from pixels import Canvas, clamp
 
 
+def _scaled(v, f):
+    out = [x * f for x in v]
+    return [int(x) if x == int(x) else x for x in out]
+
+
 class Cube:
     """A box. Leave `uv` as None to have Model.pack_uv place it; cubes with the
     same `share` key and size are given the same texture region (and so look
@@ -26,12 +31,25 @@ class Cube:
         self.inflate, self.pivot, self.rotation = inflate, pivot, rotation
         self.share = share
 
-    def to_json(self):
-        c = {"origin": list(self.origin), "size": list(self.size), "uv": list(self.uv)}
+    def to_json(self, f=1.0):
+        c = {"origin": _scaled(self.origin, f), "size": _scaled(self.size, f)}
+        if f == 1.0:
+            c["uv"] = list(self.uv)
+        else:
+            # Scaled models spell out every face: box UV would have to derive
+            # the faces from fractional sizes. Up and down are given the way
+            # Bedrock reads per-face UVs (as Blockbench writes them), so they
+            # land exactly where box UV would put them.
+            w, h, d = (int(v) for v in self.size)
+            c["uv"] = {}
+            for face, (x, y, fw, fh) in faces(*self.uv, w, h, d).items():
+                if face == "down":
+                    y, fh = y + fh, -fh
+                c["uv"][face] = {"uv": _scaled((x, y), f), "uv_size": _scaled((fw, fh), f)}
         if self.inflate:
-            c["inflate"] = self.inflate
+            c["inflate"] = self.inflate * f
         if self.rotation:
-            c["pivot"] = list(self.pivot)
+            c["pivot"] = _scaled(self.pivot, f)
             c["rotation"] = list(self.rotation)
         return c
 
@@ -41,20 +59,27 @@ class Bone:
         self.name, self.parent, self.pivot = name, parent, pivot
         self.rotation, self.cubes = rotation, list(cubes)
 
-    def to_json(self):
-        b = {"name": self.name, "pivot": list(self.pivot)}
+    def to_json(self, f=1.0):
+        b = {"name": self.name, "pivot": _scaled(self.pivot, f)}
         if self.parent:
             b["parent"] = self.parent
         if self.rotation:
             b["rotation"] = list(self.rotation)
         if self.cubes:
-            b["cubes"] = [c.to_json() for c in self.cubes]
+            b["cubes"] = [c.to_json(f) for c in self.cubes]
         return b
 
 
 class Model:
-    def __init__(self, identifier, bones, texture=(64, 64), bounds=(2.0, 3.0, (0, 1.5, 0))):
+    """`detail` is how many texels the texture has per model unit. A model
+    with detail 2 is built (and painted, checked and rendered) at twice its
+    real size and written out at its real size, with the texture size in the
+    JSON halved: the game spreads the full-resolution image over the UVs, so
+    every face gets twice the pixels without anything else changing."""
+
+    def __init__(self, identifier, bones, texture=(64, 64), bounds=(2.0, 3.0, (0, 1.5, 0)), detail=1):
         self.identifier, self.bones, self.texture, self.bounds = identifier, bones, texture, bounds
+        self.detail = detail
 
     def bone(self, name):
         return next(b for b in self.bones if b.name == name)
@@ -87,16 +112,17 @@ class Model:
 
     def to_json(self):
         w, h, offset = self.bounds
+        f = 1.0 / self.detail
         return {
             "description": {
                 "identifier": self.identifier,
-                "texture_width": self.texture[0],
-                "texture_height": self.texture[1],
+                "texture_width": self.texture[0] // self.detail,
+                "texture_height": self.texture[1] // self.detail,
                 "visible_bounds_width": w,
                 "visible_bounds_height": h,
                 "visible_bounds_offset": list(offset),
             },
-            "bones": [b.to_json() for b in self.bones],
+            "bones": [b.to_json(f) for b in self.bones],
         }
 
     def check_uv(self):

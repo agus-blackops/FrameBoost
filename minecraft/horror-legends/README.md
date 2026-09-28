@@ -28,8 +28,8 @@ comportamiento* (el de recursos se añade solo).
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
 
 **Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
-2.2.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
-quítala y activa la 2.2.0.
+3.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
+quítala y activa la 3.0.0.
 
 ## Cómo funciona
 
@@ -64,63 +64,60 @@ que sacas con un huevo no desaparecen solas.
 - **Invocar (pruebas)**: provoca al momento cualquier evento, para verlo sin
   esperar días.
 
-## Modelos (versión 2.0.0, rehechos desde cero)
+## Modelos (versión 3.0.0, rediseñados)
 
-- **Herobrine** (2.2.0): casi **3 bloques** de lo que la mina dejó de un
-  minero, encorvado y con espasmos:
-  - el **estómago abierto** y mal cosido, con los intestinos fuera y uno
-    colgando;
+Todas las criaturas están rediseñadas con **el doble de detalle**: cada
+píxel del modelo lleva ahora 2x2 píxeles de textura (una cara es de 16x16 en
+vez de 8x8), sin cambiar su tamaño en el juego. Y todas tienen piezas nuevas:
+
+- **Herobrine**: casi **3 bloques** de lo que la mina dejó de un minero,
+  encorvado y con espasmos. Ahora tiene **rodillas, codos y muñecas**, así
+  que **cojea** al andar arrastrando la pierna izquierda.
+  - el **estómago abierto** y mal cosido: una cavidad con los **intestinos**
+    dentro, uno colgando y la columna vista por dentro;
   - la mitad izquierda de la cara quemada hasta el **cráneo**, con una
-    **cuenca vacía** donde algo aún brilla;
+    **cuenca vacía** donde algo aún brilla, y **ampollas**;
   - **colmillos** sobre una **mandíbula dislocada** que cuelga de lado y
     **gotea sangre**;
   - **costillas rotas** saliendo del pecho y la **columna vertebral fuera del
-    cuerpo**;
+    cuerpo** desde la cintura hasta el cráneo;
   - un **pico clavado en la espalda**, **clavos** en la cabeza, el antebrazo
     derecho **despellejado** y el brazo izquierdo quemado, lleno de
-    **ampollas** y acabado en **garras**.
-
-  Sigue arrastrando su propio pico, manchado de sangre.
-- **HerobrineGamer788**: un jugador normal con capa exterior. Tiene una
-  segunda textura con los ojos blancos y brillantes para cuando algo va mal,
-  y un pico en la mano que solo se ve mientras pica o construye.
-- **null**: un error de renderizado con forma de jugador. El torso está
-  **partido en tres rodajas que no encajan** y se desplazan solas, la cabeza
-  está torcida y un brazo es **más largo que el otro**. Tiene los ojos
-  brillantes y un **halo de píxeles sueltos** y textura que falta.
-- **El Hombre de la Niebla**: 3 bloques de alto, torcido, con un hombro más alto
-  que el otro y la cabeza ladeada. Lleva un **abrigo largo y roído** con mangas
-  deshilachadas y agujeros, cuyos faldones se mueven al andar y **vuelan al
-  correr**. Las **vértebras atraviesan el abrigo** por la espalda. Tiene
-  mandíbula articulada y manos de **cuatro dedos** que le llegan por debajo de
-  las rodillas.
-- **El Morador de las Cuevas**: algo que fue una persona, ahora **a cuatro
-  patas**. Tiene brazos largos plantados delante, **rodillas al revés**, pies
-  largos, costillas marcadas y espinas en el lomo. El cuello es estirado, los
-  **ojos hundidos brillan** y la **mandíbula se abre enorme** cuando ataca.
-- **Bloque corrupto animado**: la textura que falta ahora parpadea y se rasga.
-- Diario, linterna e icono del pack nuevos. El icono muestra a las cuatro
-  criaturas.
-- **Pulido (2.2.0)**: todas las texturas llevan sombreado en los bordes de
-  cada cara. El Hombre de la Niebla tiene mechones largos de pelo y flecos en
-  el abrigo, el Morador tiene cola y ojos extra, y null una capa de
-  interferencias en la cabeza.
-- **Animaciones (2.2.0)**:
-  - todas las criaturas respiran;
-  - el Hombre de la Niebla y el Morador reaccionan al recibir daño y atacan
-    con impulso;
-  - se mueven el pelo, los faldones, la cola, los intestinos y las gotas de
-    sangre;
-  - Herobrine tiene espasmos;
-  - HerobrineGamer788 anda, se balancea, se agacha, pica, salta y se queda
-    mirando como un jugador.
+    **ampollas** y acabado en **cuatro garras**.
+- **HerobrineGamer788**: un Steve normal con cara detallada (barba, nariz,
+  ojos), capa exterior de pelo y ropa, y un pico en la mano que solo se ve
+  mientras pica o construye. La textura de "algo va mal" le deja los ojos
+  blancos y brillantes.
+- **El Hombre de la Niebla**: cara nueva, larga y pálida, con una **frente
+  pesada** sobre dos **cuencas negras que lloran negro**, **pómulos**, nariz
+  hundida y una **sonrisa llena de dientes** que le llega a las orejas.
+  Abrigo largo con solapas, botones, hombreras y el bajo roído; cinturón,
+  **rodillas huesudas**, pies largos con dedos y manos de **cuatro dedos
+  articulados** más un pulgar.
+- **El Morador de las Cuevas**: cráneo nuevo con **frente**, **hocico**,
+  **orejas**, ojos hundidos que brillan y **dientes como agujas** arriba y
+  abajo. Tiene **omóplatos** que sobresalen, costillas marcadas, hombros,
+  codos y rodillas, **garras curvas** en manos y pies, y una **cola de tres
+  partes** acabada en púa que ondula al moverse.
+- **null**: un jugador que no terminó de cargar. Torso partido en tres
+  rodajas, un **trozo de la cabeza suelto y desplazado**, un **ojo que
+  "sangra" luz**, un corte en la pierna, el brazo largo acabado en **tres
+  dedos**, restos del color de una skin normal entre la estática y un halo de
+  píxeles sueltos y textura que falta.
+- **Bloque corrupto animado**: la textura que falta parpadea y se rasga.
+- **Animaciones**: todas las criaturas respiran; el Hombre de la Niebla y el
+  Morador reaccionan al daño y atacan con impulso; se mueven el pelo, los
+  faldones, la cola, los intestinos y las gotas de sangre; Herobrine tiene
+  espasmos y cojea; HerobrineGamer788 anda, se agacha, pica, salta y se queda
+  mirando como un jugador.
 
 ## Estructura
 
 ```
 behavior_pack/       entidades, bloque corrupto, objetos, recetas, scripts/main.js
 resource_pack/       modelos, animaciones, texturas, niebla, sonidos, textos
-tools/build.py       define los modelos, pinta las texturas, valida y empaqueta
+tools/creatures.py   los modelos de las criaturas y sus texturas
+tools/build.py       objetos, icono, validación y empaquetado
 tools/animations.py  todas las animaciones
 tools/geometry.py    modelos en Python, comprobación de UV y renderizador 3D
 tools/pixels.py      lienzo PNG y utilidades de pixel art

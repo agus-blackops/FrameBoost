@@ -78,7 +78,8 @@ ANIMATIONS = {
     "animation.hl.herobrine.idle": {"loop": True, "bones": {
         "body": {"rotation": [f"math.sin({T} * 25.0) * 1.2", 0, 0]},
         "chest": {"scale": breathe(25.0, 0.025)},
-        "leftArm": {"rotation": [0, 0, f"math.sin({T} * 18.0) * 2.0"]},
+        "leftUpperArm": {"rotation": [0, 0, f"math.sin({T} * 18.0) * 2.0"]},
+        "leftHand": {"rotation": [f"math.sin({T} * 33.0) * 4.0", 0, 0]},
         "jaw": {"rotation": [f"math.sin({T} * 50.0) * 6.0 + {jolt(0.92, 0.0, 12.0)}", 0, f"math.sin({T} * 20.0) * 3.0"]},
         "gutHang": {"rotation": [f"math.sin({T} * 70.0) * 11.0", 0, f"math.cos({T} * 55.0) * 7.0"]},
         "dripL": {"scale": [1.0, f"1.0 + math.sin({T} * 90.0) * 0.28", 1.0]},
@@ -87,7 +88,18 @@ ANIMATIONS = {
     "animation.hl.herobrine.twitch": {"loop": True, "bones": {
         "head": {"rotation": [jolt(0.94, -16.0, 16.0), jolt(0.95, -28.0, 28.0), jolt(0.9, -22.0, 22.0)]},
         "chest": {"rotation": [0, 0, jolt(0.97, -8.0, 8.0)]},
-        "rightArm": {"rotation": [jolt(0.97, -12.0, 12.0), 0, 0]}}},
+        "rightUpperArm": {"rotation": [jolt(0.97, -12.0, 12.0), 0, 0]},
+        "leftForearm": {"rotation": [jolt(0.96, -18.0, 6.0), 0, 0]}}},
+    # A dragging limp: the right leg steps, the left one follows stiff.
+    "animation.hl.herobrine.walk": {"loop": True, "bones": {
+        "rightThigh": {"rotation": [cos(26, 30.0), 0, 0]},
+        "rightShin": {"rotation": [lift(26, 36.0), 0, 0]},
+        "leftThigh": {"rotation": [cos(26, -18.0), 0, 0]},
+        "leftShin": {"rotation": [lift(26, 10.0, -1), 0, 0]},
+        "body": {"rotation": [0, 0, f"math.sin({D} * 26.0) * 5.0 * {S}"]},
+        "leftUpperArm": {"rotation": [cos(26, 16.0), 0, 0]},
+        "rightUpperArm": {"rotation": [cos(26, -8.0), 0, 0]},
+        "head": {"rotation": [f"math.abs(math.sin({D} * 26.0)) * 6.0 * {S}", 0, 0]}}},
 
     # ------------------------------------------------------------------ #
     # null
@@ -170,11 +182,13 @@ ANIMATIONS = {
         "body": {"position": [0, f"math.abs(math.sin({D} * 40.0)) * 0.7 * {S}", 0],
                  "rotation": [0, 0, f"math.sin({D} * 40.0) * 3.0 * {S}"]},
         "tail1": {"rotation": [0, f"math.sin({D} * 40.0) * 14.0 * {S}", 0]},
-        "tail2": {"rotation": [0, f"math.sin({D} * 40.0 - 40.0) * 20.0 * {S}", 0]}}},
+        "tail2": {"rotation": [0, f"math.sin({D} * 40.0 - 40.0) * 20.0 * {S}", 0]},
+        "tail3": {"rotation": [0, f"math.sin({D} * 40.0 - 80.0) * 26.0 * {S}", 0]}}},
     "animation.hl.dweller.idle": {"loop": True, "bones": {
         "ribcage": {"scale": breathe(120.0, 0.04)},
         "tail1": {"rotation": [0, f"math.sin({T} * 40.0) * 8.0", 0]},
-        "tail2": {"rotation": [f"math.sin({T} * 55.0) * 6.0", f"math.sin({T} * 40.0 - 30.0) * 14.0", 0]}}},
+        "tail2": {"rotation": [f"math.sin({T} * 55.0) * 6.0", f"math.sin({T} * 40.0 - 30.0) * 14.0", 0]},
+        "tail3": {"rotation": [f"math.sin({T} * 55.0 - 30.0) * 8.0", f"math.sin({T} * 40.0 - 60.0) * 20.0", 0]}}},
     "animation.hl.dweller.look": {"loop": True, "bones": {
         "neck": {"rotation": ["query.target_x_rotation * 0.4", "query.target_y_rotation * 0.4", 0]},
         "head": {"rotation": ["query.target_x_rotation * 0.4", "query.target_y_rotation * 0.5", 0]}}},
