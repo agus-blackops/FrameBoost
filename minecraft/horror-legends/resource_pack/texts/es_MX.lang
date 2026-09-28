@@ -110,3 +110,16 @@ hl.fake.creepy.5=ya casi
 hl.fake.creepy.6=no hay nadie mas en este mundo
 hl.fake.hit=oye! para
 hl.fake.reveal=ya no tengo que fingir
+
+## 5.0.0: la Presencia, la Noche Roja y los sustos
+hl.threat.presence=La Presencia
+hl.threat.bloodnight=La Noche Roja
+hl.lore.presence=§lLa Presencia§r\n§8(algo en tu casa)§r\n\nNo tiene forma. O no quiere que la veas.\n\nLas luces se apagan una a una y oyes respirar en la oscuridad. Unos pasos te siguen y se paran justo después de que te pares tú; si te das la vuelta, no hay nadie. Alguien llama al cristal de la ventana y te mira desde fuera. Una cajita de música suena en otra habitación. A veces, cuando te despiertas, había alguien de pie junto a tu cama.\n\n§eConsejo:§r las luces vuelven solas. No mires a la ventana demasiado tiempo.\n\n§7Desde el día 3.
+hl.lore.bloodnight=§lLa Noche Roja§r\n§8(no duermas, no mires atrás)§r\n\nCada pocos días, una noche entera se tiñe de rojo. Una niebla de sangre lo cubre todo, el corazón no deja de latir y todo lo que te caza viene el doble de veces.\n\nTermina al amanecer.\n\n§7Desde el día 7, y luego cada 5 días.
+hl.presence.death=%s murió
+hl.presence.death2=§8§o...todavía no.
+hl.blood.title=§4§lLA NOCHE ROJA
+hl.blood.sub=§cNo duermas. No mires atrás.
+hl.blood.end=§7Amanece. Por ahora.
+hl.j.jumpscares=Sustos fuertes
+hl.j.summon_scare=Susto (prueba)

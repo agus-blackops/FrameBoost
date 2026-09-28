@@ -110,3 +110,16 @@ hl.fake.creepy.5=almost
 hl.fake.creepy.6=theres nobody else in this world
 hl.fake.hit=hey! stop
 hl.fake.reveal=i dont have to pretend anymore
+
+## 5.0.0: the Presence, the Red Night and jumpscares
+hl.threat.presence=The Presence
+hl.threat.bloodnight=The Red Night
+hl.lore.presence=§lThe Presence§r\n§8(something in your house)§r\n\nIt has no shape. Or it doesn't want you to see it.\n\nThe lights go out one by one and you hear breathing in the dark. Footsteps follow you and stop just after you stop; turn round and nobody is there. Something taps on the window glass and looks in at you. A music box plays in another room. Sometimes, when you wake up, someone was standing by your bed.\n\n§eTip:§r the lights come back on by themselves. Don't look at the window for too long.\n\n§7From day 3.
+hl.lore.bloodnight=§lThe Red Night§r\n§8(don't sleep, don't look back)§r\n\nEvery few days a whole night turns red. A fog of blood covers everything, your heart won't stop pounding, and everything that hunts you comes twice as often.\n\nIt ends at dawn.\n\n§7From day 7, then every 5 days.
+hl.presence.death=%s died
+hl.presence.death2=§8§o...not yet.
+hl.blood.title=§4§lTHE RED NIGHT
+hl.blood.sub=§cDon't sleep. Don't look back.
+hl.blood.end=§7Dawn. For now.
+hl.j.jumpscares=Jumpscares
+hl.j.summon_scare=Jumpscare (test)

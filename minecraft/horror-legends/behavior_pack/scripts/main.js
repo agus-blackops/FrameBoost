@@ -16,6 +16,17 @@
 //   Null (day 6+)         something broken in the code: it hides in the corner
 //                         of your eye, writes in chat, corrupts blocks into the
 //                         missing texture, and fakes the game freezing
+//   The Presence (day 3+) something in your house: the lights go out one by
+//                         one, footsteps follow you and stop when you stop, a
+//                         face at the window, someone by your bed when you
+//                         wake, a music box, your own death in the chat
+//   The Red Night (day 7+) every few days a night of red fog when everything
+//                         comes twice as often
+//
+// Everything is scored with the add-on's own sounds (resource_pack/sounds/hl):
+// a heartbeat that quickens when something is near or after you, breathing,
+// whispers, static, and a sting with ringing ears for the jumpscares, which
+// can be toned down in the journal.
 //
 // Start days scale with the intensity setting. Every threat can be switched
 // off, and summoned for testing, from the Survivor's Journal.
@@ -40,8 +51,8 @@ const KIND_OF = {
 const ITEM = { journal: "hl:journal", flashlight: "hl:flashlight" };
 const CORRUPTED = "hl:corrupted_block";
 
-const THREATS = ["ambience", "fakeplayer", "caves", "herobrine", "fog", "null"];
-const START_DAY = { ambience: 0, fakeplayer: 1, caves: 1, herobrine: 2, fog: 4, null: 6 };
+const THREATS = ["ambience", "fakeplayer", "caves", "herobrine", "fog", "null", "presence", "bloodnight"];
+const START_DAY = { ambience: 0, fakeplayer: 1, caves: 1, herobrine: 2, fog: 4, null: 6, presence: 3, bloodnight: 7 };
 const INTENSITY = [
   { key: "low", days: 2, chance: 0.5 },
   { key: "normal", days: 1, chance: 1 },
@@ -51,6 +62,7 @@ const INTENSITY = [
 
 const PASSABLE = /air|leaves|grass|fern|flower|vine|snow_layer|bush|sapling|mushroom|dandelion|poppy|tulip|orchid|allium|bluet|daisy|cornflower|lily|berry|moss_carpet|pink_petals|torch/;
 const NATURAL_STONE = /^minecraft:(stone|deepslate|granite|diorite|andesite|tuff|dirt|gravel|calcite|smooth_basalt)$/;
+const LIGHTS = /^minecraft:(soul_)?(torch|lantern)$/;
 const PROTECTED = /chest|barrel|shulker|furnace|smoker|sign|bed|door|hopper|dispenser|dropper|portal|bedrock|spawner|lectern|anvil|beacon|command|structure|jigsaw|water|lava|torch|lantern|campfire|brewing|enchanting|ender|frame|pot|banner|head|skull|crafter|bell|rail|redstone|lever|button|pressure|piston|observer|comparator|repeater|sculk|vault|trial/;
 
 // id -> { entity, kind, playerId, mode, seen, unseen, age, timer }
@@ -59,6 +71,7 @@ const tension = new Map();
 const fogged = new Set();
 const cooldowns = new Map();
 const fog = { active: false, until: 0, respawn: new Map() };
+const blood = { active: false, until: 0, fogged: new Set() };
 
 // --------------------------------------------------------------------------- //
 // Helpers
@@ -276,6 +289,51 @@ function soundBehind(player, sound, dist, pitch = 1, volume = 1) {
   soundAt(player, sound, { x: p.x, y: player.location.y + 1, z: p.z }, pitch, volume);
 }
 
+// Inside the player's view cone, walls or not: for things seen through glass.
+function looksAt(player, target, range, cone) {
+  const eye = player.getHeadLocation();
+  const d = sub({ x: target.location.x, y: target.location.y + 1.6, z: target.location.z }, eye);
+  const dist = length(d);
+  if (dist > range || dist < 0.01) return false;
+  const view = player.getViewDirection();
+  return (d.x * view.x + d.y * view.y + d.z * view.z) / dist >= cone;
+}
+
+function jumpscaresOn() {
+  return worldProp("hl:on_jumpscares", true);
+}
+
+// A proper jumpscare: a sting, a red flash, the screen shaking, the world
+// going dark for a moment and your ears ringing after. With jumpscares off in
+// the journal only a quieter sting is left.
+function scare(player, title, subtitle = " ") {
+  const strong = jumpscaresOn();
+  tryRun(() => player.playSound("hl.stinger", { volume: strong ? 1 : 0.4 }));
+  if (title) {
+    tryRun(() => player.onScreenDisplay.setTitle(title, { subtitle, fadeInDuration: 0, stayDuration: 16, fadeOutDuration: 12 }));
+  }
+  if (!strong) return;
+  tryRun(() =>
+    player.camera.fade({
+      fadeColor: { red: 0.45, green: 0, blue: 0 },
+      fadeTime: { fadeInTime: 0.05, holdTime: 0.2, fadeOutTime: 0.8 },
+    })
+  );
+  tryRun(() => player.runCommand("camerashake add @s 1.2 0.6 rotational"));
+  tryRun(() => player.addEffect("darkness", 80, { showParticles: false }));
+  later(35, () => player.playSound("hl.ringing", { volume: 0.7 }));
+}
+
+// The screen goes black for a blink.
+function blackout(player, seconds = 0.35) {
+  tryRun(() =>
+    player.camera.fade({
+      fadeColor: { red: 0, green: 0, blue: 0 },
+      fadeTime: { fadeInTime: 0.05, holdTime: seconds, fadeOutTime: 0.1 },
+    })
+  );
+}
+
 // --------------------------------------------------------------------------- //
 // Settings and progression (world dynamic properties)
 // --------------------------------------------------------------------------- //
@@ -320,7 +378,7 @@ function active(threat) {
 }
 
 function roll(p) {
-  return Math.random() < p * intensity().chance;
+  return Math.random() < p * intensity().chance * (blood.active ? 2 : 1);
 }
 
 // --------------------------------------------------------------------------- //
@@ -405,7 +463,8 @@ function ambience(player) {
     ["cave", 3],
     ["hiss", 1],
     ["mining", under ? 3 : 0],
-    ["whisper", 1],
+    ["whisper", 2],
+    ["breath", 1],
   ]);
   switch (event) {
     case "footsteps": {
@@ -437,7 +496,11 @@ function ambience(player) {
       for (let i = 0; i < 4; i++) later(i * 12, () => soundBehind(player, "dig.stone", 9, 0.9, 0.8));
       break;
     case "whisper":
-      player.sendMessage(tr("hl.ambience.whisper", player.name));
+      soundBehind(player, "hl.whisper", 2, rand(0.85, 1.05), 0.8);
+      if (Math.random() < 0.5) player.sendMessage(tr("hl.ambience.whisper", player.name));
+      break;
+    case "breath":
+      soundBehind(player, "hl.breath", 1.5, rand(0.85, 1.0), 0.9);
       break;
   }
 }
@@ -615,7 +678,15 @@ function tickHerobrine(e, s, player) {
   if (s.adopted) return;
   if (s.mode === "reveal") {
     faceTowards(e, player.location);
+    if (s.scare && canSee(player, e, 32, 0.8)) {
+      s.scare = false;
+      scare(player, "§4§lHEROBRINE");
+    }
     if (s.age > 20 * 5 || distance(player.location, e.location) < 2) vanish(e);
+    return;
+  }
+  if (s.mode === "window" || s.mode === "bedside") {
+    tickWatcher(e, s, player);
     return;
   }
   const behind = s.mode === "behind";
@@ -624,8 +695,11 @@ function tickHerobrine(e, s, player) {
   const close = distance(player.location, e.location) < (behind ? 1.2 : 14);
   if (s.seen >= (behind ? 1 : 3) || close || s.age > 20 * (behind ? 12 : 25)) {
     if (behind && seen) {
-      player.playSound("ambient.cave", { pitch: 0.7 });
-      player.onScreenDisplay.setTitle(" ", { subtitle: "§f§l. .", fadeInDuration: 0, stayDuration: 10, fadeOutDuration: 10 });
+      if (Math.random() < 0.5) scare(player, " ", "§f§l. .");
+      else {
+        blackout(player);
+        player.playSound("hl.whisper", { pitch: 0.8 });
+      }
     }
     vanish(e);
   }
@@ -639,6 +713,7 @@ function herobrineStrikesBack(e, player) {
   faceTowards(e, player.location);
   tryRun(() => player.addEffect("blindness", 50, { showParticles: false }));
   player.playSound("mob.endermen.stare", { pitch: 0.5 });
+  scare(player);
   tryRun(() => player.applyDamage(6));
   later(25, () => valid(e) && vanish(e));
 }
@@ -665,6 +740,7 @@ function startFog(duration = randInt(3600, 6000)) {
   for (const p of overworldPlayers()) {
     fogOn(p);
     p.onScreenDisplay.setActionBar(tr("hl.fog.start"));
+    p.playSound("hl.drone", { volume: 0.8 });
     fog.respawn.set(p.id, system.currentTick + randInt(200, 500));
   }
 }
@@ -761,7 +837,7 @@ function knock(player) {
   const door = findDoor(player);
   if (!door) return false;
   const at = { x: door.x + 0.5, y: door.y + 1, z: door.z + 0.5 };
-  for (let i = 0; i < 3; i++) later(i * 14, () => soundAt(player, "mob.zombie.wood", at, 1.2, 0.6));
+  soundAt(player, "hl.knock", at, rand(0.85, 1.0), 1);
   player.onScreenDisplay.setActionBar(tr("hl.fog.knock"));
   later(90, () => {
     if (!fog.active || Math.random() > 0.35 || trackedFor(player, "fogMan")?.mode === "chasing") return;
@@ -770,6 +846,7 @@ function knock(player) {
       if (b?.typeId.includes("door") && !b.typeId.includes("trapdoor")) tryRun(() => b.setType("minecraft:air"));
     }
     soundAt(player, "mob.zombie.woodbreak", at, 0.8, 1);
+    scare(player);
     // He comes in from the side of the door away from you.
     const ox = Math.sign(door.x + 0.5 - player.location.x) || 1;
     const oz = Math.sign(door.z + 0.5 - player.location.z) || 1;
@@ -820,7 +897,9 @@ function dwellerChase(e, s, player) {
   tryRun(() => e.triggerEvent("hl:chase"));
   s.mode = "chasing";
   s.timer = 0;
-  soundAt(player, "mob.warden.roar", e.location, 1.3, 1);
+  soundAt(player, "hl.scream", e.location, rand(0.9, 1.1), 1);
+  soundAt(player, "mob.warden.roar", e.location, 1.3, 0.6);
+  tryRun(() => player.addEffect("darkness", 120, { showParticles: false }));
   player.onScreenDisplay.setActionBar(tr("hl.cave.chase"));
 }
 
@@ -847,7 +926,7 @@ function tickDweller(e, s, player) {
   }
   if (s.mode === "chasing") {
     s.timer += 4;
-    if (s.timer % 100 === 0) soundAt(player, "mob.spider.say", e.location, 0.5, 1);
+    if (s.timer % 100 === 0) soundAt(player, Math.random() < 0.5 ? "hl.scream" : "hl.chitter", e.location, rand(0.8, 1.1), 1);
     if (s.timer > 20 * 30) {
       vanish(e, false);
       tension.set(player.id, 0);
@@ -868,7 +947,8 @@ function tickDweller(e, s, player) {
     return;
   }
   if (!seen && s.unseen % 15 === 0 && Math.random() < 0.3) {
-    for (let i = 0; i < 4; i++) later(i * 3, () => soundAt(player, "step.stone", e.location, 1.6, 0.7));
+    if (Math.random() < 0.5) soundAt(player, "hl.chitter", e.location, rand(0.8, 1.2), 0.9);
+    else for (let i = 0; i < 4; i++) later(i * 3, () => soundAt(player, "step.stone", e.location, 1.6, 0.7));
   }
   if (s.unseen >= 150) {
     s.unseen = 0;
@@ -893,6 +973,7 @@ function caveTick(player) {
   if (!under) return;
 
   if (t >= 20 && roll(0.12)) soundBehind(player, "ambient.cave", rand(8, 16), rand(0.7, 1.0), 1);
+  if (t >= 50 && roll(0.06)) soundBehind(player, "hl.whisper", rand(3, 6), rand(0.7, 0.9), 0.7);
   if (t >= 40 && roll(0.12)) {
     // Something small and fast, running past in the dark.
     for (let i = 0; i < 6; i++) later(i * 3, () => soundBehind(player, "step.stone", 10 - i, 1.5, 0.8));
@@ -905,9 +986,9 @@ function caveTick(player) {
 // --------------------------------------------------------------------------- //
 
 function glitch(player) {
-  tryRun(() => player.runCommand("camera @s fade time 0.05 0.35 0.1 color 0 0 0"));
+  blackout(player);
   player.onScreenDisplay.setTitle("§k||||||||||||", { fadeInDuration: 0, stayDuration: 6, fadeOutDuration: 2 });
-  player.playSound("mob.endermen.portal", { pitch: 0.3 });
+  player.playSound("hl.static", { pitch: rand(0.8, 1.1) });
 }
 
 function nullAppears(player, mode = "peripheral") {
@@ -921,8 +1002,8 @@ function nullAppears(player, mode = "peripheral") {
 
 function nullJumpscare(e, player) {
   vanish(e, false);
-  glitch(player);
-  player.onScreenDisplay.setTitle("§4§knull", { subtitle: "§8null", fadeInDuration: 0, stayDuration: 20, fadeOutDuration: 10 });
+  player.playSound("hl.static", { pitch: 0.7 });
+  scare(player, "§4§knull", "§8null");
   player.playSound("mob.endermen.scream", { pitch: 0.5 });
   tryRun(() => player.addEffect("nausea", 100, { showParticles: false }));
   tryRun(() => player.applyDamage(4));
@@ -958,13 +1039,23 @@ function tickNull(e, s, player) {
   if (++s.unseen >= 75) vanish(e, false);
 }
 
-function corruptionList() {
-  const raw = worldProp("hl:corrupt", "");
+// Blocks the add-on changed for a while, with what they were and when they
+// go back: missing-texture corruption, and lights that went out.
+function savedBlocks(key) {
+  const raw = worldProp(key, "");
   return (raw && tryRun(() => JSON.parse(raw))) || [];
 }
 
+function saveBlocks(key, list) {
+  setWorldProp(key, JSON.stringify(list));
+}
+
+function corruptionList() {
+  return savedBlocks("hl:corrupt");
+}
+
 function saveCorruption(list) {
-  setWorldProp("hl:corrupt", JSON.stringify(list));
+  saveBlocks("hl:corrupt", list);
 }
 
 // Blocks in front of the player turn into the missing texture for a while.
@@ -991,7 +1082,13 @@ function corrupt(player) {
 }
 
 function restoreCorruption(force = false) {
-  const list = corruptionList();
+  restoreBlocks("hl:corrupt", CORRUPTED, force);
+}
+
+// Put saved blocks back once their time is up, if nothing else has taken
+// their place since (`marker` is what the add-on left there).
+function restoreBlocks(key, marker, force = false) {
+  const list = savedBlocks(key);
   if (!list.length) return;
   const now = world.getAbsoluteTime();
   const dimension = world.getDimension(OVERWORLD);
@@ -1006,11 +1103,11 @@ function restoreCorruption(force = false) {
       keep.push(entry); // not loaded: try again later
       continue;
     }
-    if (b.typeId !== CORRUPTED) continue; // already broken
+    if (b.typeId !== marker) continue; // broken or built over since
     const perm = tryRun(() => BlockPermutation.resolve(entry.type, entry.st));
     if (!(perm && tryRun(() => (b.setPermutation(perm), true)))) tryRun(() => b.setType(entry.type));
   }
-  if (keep.length !== list.length) saveCorruption(keep);
+  if (keep.length !== list.length) saveBlocks(key, keep);
 }
 
 function fakeCrash(player) {
@@ -1257,6 +1354,7 @@ function fakeReveal(player) {
     glitch(player);
     const hb = spawn(MOB.herobrine, at, player, "herobrine", "reveal");
     if (hb) faceTowards(hb, player.location);
+    scare(player);
     player.onScreenDisplay.setTitle("§4§lHEROBRINE", { subtitle: "§8" + FAKE_NAME, fadeInDuration: 0, stayDuration: 30, fadeOutDuration: 20 });
     player.playSound("mob.endermen.scream", { pitch: 0.4 });
     soundAt(player, "ambient.weather.thunder", at, 0.6, 1);
@@ -1358,6 +1456,303 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block: placed }) => {
 });
 
 // --------------------------------------------------------------------------- //
+// The Presence: something in your house
+// --------------------------------------------------------------------------- //
+
+const stalkers = new Map(); // playerId -> { until, last, look, quiet }
+const bedNights = new Map(); // playerId -> the day it last came to your bed
+
+// The lights go out one by one, furthest first. You hear breathing in the
+// dark. When they come back, sometimes someone is standing in front of you.
+function lightsOut(player) {
+  if (onCooldown(`lights:${player.id}`, 20 * 60)) return false;
+  const { x, y, z } = player.location;
+  const found = [];
+  for (let dx = -10; dx <= 10; dx++)
+    for (let dz = -10; dz <= 10; dz++)
+      for (let dy = -3; dy <= 4; dy++) {
+        const b = block(player.dimension, x + dx, y + dy, z + dz);
+        if (b && LIGHTS.test(b.typeId)) found.push(b);
+      }
+  if (!found.length) return false;
+  found.sort((a, b) => distance(b, player.location) - distance(a, player.location));
+  const lights = found.slice(-12);
+  const dark = randInt(100, 160);
+  const back = world.getAbsoluteTime() + lights.length * 6 + dark;
+  lights.forEach((b, i) =>
+    later(i * 6, () => {
+      const here = block(player.dimension, b.x, b.y, b.z);
+      if (!here || !LIGHTS.test(here.typeId)) return;
+      const type = here.typeId;
+      const st = tryRun(() => here.permutation.getAllStates()) ?? {};
+      if (!tryRun(() => (here.setType("minecraft:air"), true))) return;
+      const list = savedBlocks("hl:lights");
+      list.push({ x: b.x, y: b.y, z: b.z, type, st, at: back });
+      saveBlocks("hl:lights", list);
+      soundAt(player, "random.fizz", { x: b.x + 0.5, y: b.y + 0.5, z: b.z + 0.5 }, 0.6, 0.4);
+    })
+  );
+  const out = lights.length * 6;
+  later(out + 30, () => soundBehind(player, "hl.breath", 1.3, 0.9, 1));
+  later(out + dark, () => {
+    restoreBlocks("hl:lights", "minecraft:air", true);
+    if (Math.random() < 0.45 && !trackedFor(player, "herobrine")) {
+      const at = groundSpot(player, 2.5, 3.5, 0, 25);
+      const e = at && spawn(MOB.herobrine, at, player, "herobrine", "reveal");
+      const s = e && tracked.get(e.id);
+      if (s) s.scare = true;
+    }
+  });
+  return true;
+}
+
+// Footsteps that follow you, stop a step after you stop, and are gone the
+// moment you turn round.
+function stalk(player) {
+  if (stalkers.has(player.id)) return false;
+  stalkers.set(player.id, { until: system.currentTick + 20 * 25, last: { ...player.location }, look: facing(player), quiet: 0 });
+  return true;
+}
+
+function tickStalker(player) {
+  const s = stalkers.get(player.id);
+  if (!s) return;
+  const f = facing(player);
+  const turned = f.x * s.look.x + f.z * s.look.z < -0.2;
+  s.look = f;
+  if (turned) {
+    stalkers.delete(player.id);
+    soundBehind(player, "hl.whisper", 5, 0.8, 0.5);
+    return;
+  }
+  if (system.currentTick > s.until) {
+    stalkers.delete(player.id);
+    soundBehind(player, "hl.breath", 1.2, 0.9, 1);
+    return;
+  }
+  const moved = Math.hypot(player.location.x - s.last.x, player.location.z - s.last.z);
+  s.last = { ...player.location };
+  const step = isUnderground(player) ? "step.stone" : "step.grass";
+  if (moved > 0.35) {
+    s.quiet = 0;
+    soundBehind(player, step, 2.5, 0.85, 0.9);
+  } else if (++s.quiet === 1) {
+    later(9, () => soundBehind(player, step, 2.2, 0.85, 0.9)); // one more step, after you stopped
+  }
+}
+
+// A face at the window, tapping on the glass.
+function windowWatcher(player) {
+  if (trackedFor(player, "herobrine")) return false;
+  const { x, y, z } = player.location;
+  const panes = [];
+  for (let dx = -8; dx <= 8; dx++)
+    for (let dz = -8; dz <= 8; dz++)
+      for (let dy = -1; dy <= 2; dy++) {
+        const b = block(player.dimension, x + dx, y + dy, z + dz);
+        if (b && /glass/.test(b.typeId) && distance(b, player.location) >= 3) panes.push(b);
+      }
+  for (let i = panes.length - 1; i > 0; i--) {
+    const j = randInt(0, i);
+    [panes[i], panes[j]] = [panes[j], panes[i]];
+  }
+  for (const g of panes.slice(0, 16)) {
+    const dx = g.x + 0.5 - x;
+    const dz = g.z + 0.5 - z;
+    const out = Math.abs(dx) > Math.abs(dz) ? { x: g.x + Math.sign(dx), z: g.z } : { x: g.x, z: g.z + Math.sign(dz) };
+    const gy = groundAt(player.dimension, out.x + 0.5, out.z + 0.5, g.y + 1);
+    if (gy === undefined || Math.abs(gy - g.y) > 2) continue;
+    const feet = block(player.dimension, out.x, gy, out.z);
+    const head = block(player.dimension, out.x, gy + 1, out.z);
+    if (!feet || !head || !(feet.isAir || PASSABLE.test(feet.typeId)) || !(head.isAir || PASSABLE.test(head.typeId))) continue;
+    const e = spawn(MOB.herobrine, { x: out.x + 0.5, y: gy, z: out.z + 0.5 }, player, "herobrine", "window");
+    if (!e) continue;
+    const pane = { x: g.x + 0.5, y: g.y + 0.5, z: g.z + 0.5 };
+    for (let k = 0; k < 3; k++) later(k * 9, () => soundAt(player, "hl.knock", pane, 1.8, 0.25));
+    return true;
+  }
+  return false;
+}
+
+// Standing outside the window, or by your bed when you wake: it waits to be
+// seen, and then it is gone.
+function tickWatcher(e, s, player) {
+  faceTowards(e, player.location);
+  const d = distance(player.location, e.location);
+  if (s.mode === "bedside" && tryRun(() => player.isSleeping)) {
+    if (s.age % 80 === 0) soundAt(player, "hl.breath", e.location, 0.8, 0.8);
+    if (s.age > 20 * 60) vanish(e, false);
+    return;
+  }
+  const seen = looksAt(player, e, 32, 0.9);
+  s.seen = seen ? s.seen + 1 : 0;
+  if (s.seen >= 4 || d < 2.2) {
+    if (d < 2.2 || Math.random() < (s.mode === "bedside" ? 0.7 : 0.45)) scare(player, " ", "§4§l. . .");
+    else blackout(player);
+    vanish(e);
+    return;
+  }
+  if (s.age > 20 * 30) vanish(e, false);
+}
+
+function checkSleep(player) {
+  if (!active("presence") || !tryRun(() => player.isSleeping)) return;
+  if (bedNights.get(player.id) === world.getDay()) return;
+  bedNights.set(player.id, world.getDay());
+  if (!roll(0.35) || trackedFor(player, "herobrine")) return;
+  const at = groundSpot(player, 1.5, 2.5, rand(0, 360), 180);
+  if (!at) return;
+  spawn(MOB.herobrine, at, player, "herobrine", "bedside");
+  later(20, () => soundAt(player, "hl.breath", at, 0.85, 1));
+}
+
+function musicBox(player) {
+  const p = offsetFromView(player, rand(5, 9), rand(100, 260));
+  const at = { x: p.x, y: player.location.y + 1, z: p.z };
+  soundAt(player, "hl.musicbox", at, rand(0.92, 1.0), 1);
+  later(240, () => soundAt(player, "hl.whisper", at, 0.8, 0.8));
+  return true;
+}
+
+// Your own death in the chat, and then a correction.
+function fakeDeath(player) {
+  if (onCooldown(`death:${player.id}`, 20 * 600)) return false;
+  player.sendMessage(tr("hl.presence.death", player.name));
+  later(80, () => player.sendMessage(tr("hl.presence.death2")));
+  return true;
+}
+
+function presenceEvent(player) {
+  const night = isNight();
+  const under = isUnderground(player);
+  const event = pick([
+    ["lights", night || under ? 22 : 0],
+    ["stalk", 20],
+    ["window", night ? 18 : 6],
+    ["breath", 12],
+    ["musicbox", night ? 10 : 4],
+    ["voice", 10],
+    ["death", 4],
+  ]);
+  switch (event) {
+    case "lights":
+      return lightsOut(player) || stalk(player);
+    case "stalk":
+      return stalk(player);
+    case "window":
+      return windowWatcher(player) || stalk(player);
+    case "breath":
+      soundBehind(player, "hl.breath", 1.2, rand(0.85, 1.0), 1);
+      return true;
+    case "musicbox":
+      return musicBox(player);
+    case "voice":
+      soundBehind(player, "hl.whisper", 1.5, rand(0.8, 1.0), 1);
+      player.sendMessage(tr("hl.ambience.whisper", player.name));
+      return true;
+    case "death":
+      return fakeDeath(player);
+  }
+  return false;
+}
+
+system.runInterval(() => {
+  for (const player of overworldPlayers()) {
+    tryRun(() => tickStalker(player));
+    tryRun(() => checkSleep(player));
+  }
+}, 6);
+
+// --------------------------------------------------------------------------- //
+// The Red Night
+// --------------------------------------------------------------------------- //
+
+function bloodDue() {
+  if (!active("bloodnight")) return false;
+  const since = hauntDay() - unlockDay("bloodnight");
+  return since >= 0 && since % 5 === 0;
+}
+
+function bloodOn(player) {
+  if (blood.fogged.has(player.id)) return;
+  blood.fogged.add(player.id);
+  tryRun(() => player.runCommand("fog @s push hl:blood hl_blood"));
+}
+
+// Summoned from the journal it also works by day, for a couple of minutes.
+function startBlood(summoned = false) {
+  blood.active = true;
+  blood.until = summoned ? system.currentTick + 20 * 120 : 0;
+  setWorldProp("hl:blood_day", world.getDay());
+  for (const p of overworldPlayers()) {
+    bloodOn(p);
+    tryRun(() => p.onScreenDisplay.setTitle(tr("hl.blood.title"), { subtitle: tr("hl.blood.sub"), fadeInDuration: 20, stayDuration: 70, fadeOutDuration: 30 }));
+    p.playSound("hl.drone", { volume: 1 });
+    later(30, () => p.playSound("hl.stinger", { volume: 0.5, pitch: 0.7 }));
+  }
+}
+
+function endBlood() {
+  blood.active = false;
+  for (const p of world.getAllPlayers()) {
+    if (blood.fogged.has(p.id)) p.onScreenDisplay.setActionBar(tr("hl.blood.end"));
+    tryRun(() => p.runCommand("fog @s remove hl_blood"));
+  }
+  blood.fogged.clear();
+}
+
+function bloodTick() {
+  if (blood.active) {
+    if ((!isNight() && system.currentTick > blood.until) || !enabled("bloodnight")) {
+      endBlood();
+      return;
+    }
+    for (const p of overworldPlayers()) {
+      bloodOn(p);
+      if (Math.random() < 0.3) p.playSound("hl.drone", { volume: 0.7 });
+    }
+    return;
+  }
+  if (isNight() && bloodDue() && worldProp("hl:blood_day", -1) !== world.getDay()) startBlood();
+}
+
+// --------------------------------------------------------------------------- //
+// The heartbeat: faster the closer it is
+// --------------------------------------------------------------------------- //
+
+const heartNext = new Map();
+
+function danger(player) {
+  let level = 0;
+  for (const s of tracked.values()) {
+    if (s.playerId !== player.id || !valid(s.entity)) continue;
+    const d = distance(player.location, s.entity.location);
+    if (s.mode === "chasing" && d < 32) return 2;
+    if ((s.mode === "behind" || s.mode === "window" || s.mode === "bedside") && d < 12) return 2;
+    if (d < 40) level = 1;
+  }
+  if (blood.active || stalkers.has(player.id)) return Math.max(level, 1);
+  if (!level && (tension.get(player.id) ?? 0) >= 60 && isUnderground(player)) level = 1;
+  return level;
+}
+
+system.runInterval(() => {
+  const now = system.currentTick;
+  for (const player of overworldPlayers()) {
+    tryRun(() => {
+      if (now < (heartNext.get(player.id) ?? 0)) return;
+      const level = danger(player);
+      if (!level) {
+        heartNext.set(player.id, now + 20);
+        return;
+      }
+      heartNext.set(player.id, now + (level === 2 ? 14 : 26));
+      player.playSound("hl.heartbeat", { volume: level === 2 ? 1 : 0.55 });
+    });
+  }
+}, 2);
+
+// --------------------------------------------------------------------------- //
 // The director
 // --------------------------------------------------------------------------- //
 
@@ -1392,7 +1787,9 @@ system.runInterval(() => {
 system.runInterval(() => {
   hauntDay();
   tryRun(fogTick);
+  tryRun(bloodTick);
   tryRun(() => restoreCorruption());
+  tryRun(() => restoreBlocks("hl:lights", "minecraft:air"));
   const night = isNight();
   for (const player of overworldPlayers()) {
     tryRun(() => {
@@ -1403,6 +1800,7 @@ system.runInterval(() => {
         fakeJoinGame(player);
       }
       if (active("null") && roll(0.03)) nullEvent(player);
+      if (active("presence") && roll(night ? 0.05 : 0.02)) presenceEvent(player);
     });
   }
 }, 100);
@@ -1538,6 +1936,7 @@ function openSettings(player) {
   for (const t of THREATS) {
     form.button({ rawtext: [{ translate: `hl.threat.${t}` }, { text: ": " }, { translate: enabled(t) ? "hl.j.on" : "hl.j.off" }] });
   }
+  form.button({ rawtext: [{ translate: "hl.j.jumpscares" }, { text: ": " }, { translate: jumpscaresOn() ? "hl.j.on" : "hl.j.off" }] });
   form.button(tr("hl.j.back"));
   show(form, player, (i) => {
     if (i === 0) {
@@ -1554,7 +1953,14 @@ function openSettings(player) {
         if (t === "caves") clearKind("dweller");
         if (t === "fog" && fog.active) endFog();
         if (t === "fakeplayer") fakeLeave();
+        if (t === "presence") {
+          stalkers.clear();
+          restoreBlocks("hl:lights", "minecraft:air", true);
+        }
+        if (t === "bloodnight" && blood.active) endBlood();
       }
+    } else if (i === THREATS.length + 1) {
+      setWorldProp("hl:on_jumpscares", !jumpscaresOn());
     } else {
       return openJournal(player);
     }
@@ -1577,6 +1983,9 @@ function openSummon(player) {
     ["hl.j.summon_corrupt", () => corrupt(player)],
     ["hl.threat.ambience", () => ambience(player)],
     ["hl.threat.fakeplayer", () => fakeAlive() ? fakeReveal(player) : fakeJoinGame(player)],
+    ["hl.threat.presence", () => presenceEvent(player)],
+    ["hl.threat.bloodnight", () => (blood.active ? endBlood() : startBlood(true))],
+    ["hl.j.summon_scare", () => scare(player, "§4§lHEROBRINE")],
   ];
   const form = new ActionFormData().title(tr("hl.j.summon")).body(tr("hl.j.summon_body"));
   for (const [key] of events) form.button(tr(key));
@@ -1592,6 +2001,7 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
   if (!initialSpawn) return;
   // Fog pushed in an earlier session would otherwise linger.
   tryRun(() => player.runCommand("fog @s remove hl_fog"));
+  tryRun(() => player.runCommand("fog @s remove hl_blood"));
   if (tryRun(() => player.getDynamicProperty("hl:intro"))) return;
   tryRun(() => player.setDynamicProperty("hl:intro", true));
   later(100, () => {

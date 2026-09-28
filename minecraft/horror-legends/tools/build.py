@@ -136,10 +136,18 @@ FOG_WATCH_POSE = {"body": (4, 0, 0), "jaw": (4, 0, 0)}
 def paint_pack_icon(textures, seed):
     rng = random.Random(seed)
     cv = Canvas(128, 128)
+    # The Red Night: a blood-red fog under a red moon.
     for y in range(128):
         for x in range(128):
-            fog = int(14 + 70 * (y / 127) ** 1.4 + rng.randint(-4, 4))
-            cv.set(x, y, (fog, fog + 2, fog + 5))
+            fog = 14 + 70 * (y / 127) ** 1.4 + rng.randint(-4, 4)
+            cv.set(x, y, (int(fog * 1.1 + 6), int(fog * 0.35), int(fog * 0.35)))
+    for y in range(4, 30):
+        for x in range(84, 112):
+            r = ((x - 98) ** 2 + (y - 17) ** 2) ** 0.5
+            if r < 11:
+                cv.set(x, y, jitter(rng, (0xC8, 0x22, 0x1C) if rng.random() > 0.15 else (0x9A, 0x14, 0x12), 6))
+            elif r < 16:
+                cv.blend(x, y, (0x8A, 0x10, 0x10), (16 - r) / 12)
     # Dead trees in the background.
     for tx, w in ((6, 5), (30, 4), (96, 6), (118, 4)):
         for y in range(0, 110):
@@ -154,7 +162,7 @@ def paint_pack_icon(textures, seed):
     for y in range(62, 128):
         t = min(1.0, (y - 62) / 60) * 0.7
         for x in range(128):
-            cv.blend(x, y, (0x5A, 0x5E, 0x64), t)
+            cv.blend(x, y, (0x6A, 0x22, 0x22), t)
     # The Cave Dweller crawling out of the dark in the corner.
     for y in range(92, 128):
         for x in range(0, 60):

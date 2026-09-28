@@ -10,7 +10,8 @@ leyendas de la comunidad:
 - **Cave Dweller / From The Caves** → *El Morador de las Cuevas*
 - **Herobrine** (la leyenda de siempre, y los mods tipo *From The Fog*)
 - **The Broken Script** y la creepypasta de **null** → *null*
-- y los "sustos de sonido" de muchos otros mods de terror
+- y los "sustos de sonido" de muchos otros mods de terror, con **sonidos
+  propios**: latidos, respiración, susurros, estática y sustos de verdad
 
 Es un proyecto de fans: **no contiene código ni arte de esos mods**. Los
 modelos y las texturas se generan por código en `tools/`, y todo el
@@ -28,8 +29,8 @@ comportamiento* (el de recursos se añade solo).
 Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
 
 **Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
-4.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
-quítala y activa la 4.0.0.
+5.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
+quítala y activa la 5.0.0.
 
 ## Cómo funciona
 
@@ -42,8 +43,28 @@ días (contados desde que instalas el add-on en el mundo):
 | 1 | **HerobrineGamer788** | Un "jugador" entra a tu mundo (*HerobrineGamer788 se ha unido a la partida*). Parece un Steve normal: te saluda, te sigue, pica bloques, construye, pone antorchas, salta, chatea y te regala comida. Luego **te copia**: pica lo que picas, pone lo que pones, se agacha y salta contigo. Después se vuelve raro: **se congela cuando lo miras y se acerca cuando no**, se le ponen los ojos blancos, su nombre se rompe y tus antorchas se vuelven rojas. Al final **deja de fingir** y aparece Herobrine. Si le pegas cuando ya está raro, no espera más. Como mucho viene una vez al día. |
 | 1 | **El Morador de las Cuevas** | Cuanto más tiempo pasas **bajo tierra**, más sube la tensión: ruidos de cueva, pasitos rápidos en la oscuridad... hasta que aparece. Te acecha, se asoma y huye si lo ves. Si esperas demasiado, **te persigue**. Se arrastra por huecos de 1 bloque. Subir a la superficie lo calma. |
 | 2 | **Herobrine** | Lo ves a lo lejos, quieto, con los ojos blancos brillando. Si lo miras fijamente o te acercas, desaparece. A veces está **justo detrás de ti**. Deja **pirámides de arena**, **árboles sin hojas**, **túneles de 2x2** en las cuevas, **carteles** ("DETRÁS DE TI") y cambia tus antorchas por **antorchas de redstone**. A veces "entra" al chat: *Herobrine se ha unido a la partida*. Si le pegas, te devuelve el golpe. |
+| 3 | **La Presencia** | Algo en tu casa. **Las luces se apagan una a una**, oyes **respirar** en la oscuridad y, cuando vuelven, a veces hay alguien de pie delante de ti. **Unos pasos te siguen** y se paran justo después de que te pares tú (si te das la vuelta, no hay nadie). Alguien **golpea el cristal de la ventana** y te mira desde fuera. Una **cajita de música** suena en otra habitación. Si duermes, puede que al despertar haya **alguien junto a tu cama**. Y a veces lees en el chat que **has muerto**... |
 | 4 | **El Hombre de la Niebla** | Llega una **niebla espesa**. Una figura alta y pálida te observa desde lejos... y **cada vez que apartas la vista está más cerca**. Si lo miras demasiado, se va o viene corriendo. De noche **llama a tu puerta** y a veces **la rompe**. Cuando te persigue, trepa paredes y rompe cristales, puertas y hojas. |
 | 6 | **null** | Aparece por el **rabillo del ojo** y desaparece al mirarlo. Si no lo miras, acaba **detrás de ti**, y al darte la vuelta... Escribe en el chat, convierte bloques en la **textura que falta** (magenta y negro) y a veces finge que **el juego se ha colgado**. Los bloques corruptos vuelven a la normalidad solos. |
+| 7 | **La Noche Roja** | Cada 5 días cae una noche entera de **niebla roja**: *"No duermas. No mires atrás."* El corazón no deja de latir y **todo lo que te caza viene el doble de veces**. Termina al amanecer. |
+
+### Sonidos y sustos
+
+El add-on trae **sus propios sonidos**, creados por código (no son
+grabaciones): **latidos**, **respiración**, **susurros**, **estática**, un
+**golpe de susto**, **pitido en los oídos**, un **zumbido grave**, una **cajita
+de música desafinada** que se va parando, el **chillido** y los **chasquidos**
+del Morador y **golpes en la puerta**.
+
+- **Latidos**: cuando algo está cerca o te persigue, oyes tu corazón. Más
+  rápido cuanto peor va la cosa.
+- **Sustos fuertes**: cuando Herobrine aparece detrás de ti, null te pilla, el
+  Hombre de la Niebla revienta tu puerta o HerobrineGamer788 se revela, la
+  pantalla **se vuelve roja**, **tiembla**, todo **se oscurece** un momento y
+  te **pitan los oídos**. Se pueden desactivar en *Ajustes* (queda un susto
+  más suave).
+- El Morador **chilla** al perseguirte y te deja a oscuras; null suena a
+  **señal rota**; con la niebla llega un **zumbido grave**.
 
 ## Objetos
 
@@ -61,6 +82,7 @@ que sacas con un huevo no desaparecen solas.
 - **Intensidad**: *Baja* (el doble de días, la mitad de sustos), *Normal*,
   *Alta* o *Pesadilla* (todo desde el primer día y muy seguido).
 - **Activar o desactivar** cada amenaza por separado.
+- **Sustos fuertes**: sí o no (pantalla roja, temblor, oscuridad y pitido).
 - **Invocar (pruebas)**: provoca al momento cualquier evento, para verlo sin
   esperar días.
 
@@ -125,6 +147,7 @@ tools/build.py       objetos, icono, validación y empaquetado
 tools/animations.py  todas las animaciones
 tools/geometry.py    modelos en Python, comprobación de UV y renderizador 3D
 tools/pixels.py      lienzo PNG y utilidades de pixel art
+tools/sounds.py      crea los sonidos (necesita numpy y soundfile; ya van generados)
 dist/                HorrorLegends.mcaddon y HorrorLegends_WhatsApp.zip
 ```
 
