@@ -2,20 +2,19 @@
 
 > *Este mundo no está tan vacío como parece.*
 
-Un add-on de terror que, poco a poco, pone tu mundo en tu contra. Está
-inspirado en los mods de terror más conocidos de Minecraft Java y en las
-leyendas de la comunidad:
+Una historia de terror por capítulos que, poco a poco, pone tu mundo en tu
+contra. Tiene un final. Está inspirada en los mods de terror más conocidos de
+Minecraft Java y en las leyendas de la comunidad:
 
 - **The Man From The Fog** → *El Hombre de la Niebla*
 - **Cave Dweller / From The Caves** → *El Morador de las Cuevas*
-- **Herobrine** (la leyenda de siempre, y los mods tipo *From The Fog*)
+- **Herobrine**, la leyenda de siempre, y *HerobrineGamer788*, un jugador que
+  no debería estar en tu mundo
 - **The Broken Script** y la creepypasta de **null** → *null*
-- y los "sustos de sonido" de muchos otros mods de terror, con **sonidos
-  propios**: latidos, respiración, susurros, estática y sustos de verdad
 
-Es un proyecto de fans: **no contiene código ni arte de esos mods**. Los
-modelos y las texturas se generan por código en `tools/`, y todo el
-comportamiento está escrito desde cero para Bedrock.
+Es un proyecto de fans: **no contiene código, arte ni sonido de esos mods**.
+Los modelos, las texturas y los sonidos se generan por código en `tools/`, y
+todo el comportamiento está escrito desde cero para Bedrock.
 
 ## Instalación
 
@@ -24,133 +23,157 @@ comportamiento está escrito desde cero para Bedrock.
   Quien lo reciba lo descomprime y abre el `.mcaddon` de dentro con Minecraft.
 
 Después, al crear o editar un mundo, activa **Horror Legends** en *Packs de
-comportamiento* (el de recursos se añade solo).
+comportamiento* (el de recursos se añade solo). Requiere **Minecraft Bedrock
+1.21.0 o superior**. No necesita experimentos.
 
-Requiere **Minecraft Bedrock 1.21.0 o superior**. No necesita experimentos.
+**Actualizar:** abre el `.mcaddon` nuevo (versión **6.0.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 6.0.0. Los
+días que llevas en el mundo se conservan; los ajustes vuelven a los de fábrica.
 
-**Actualizar desde una versión anterior:** abre el `.mcaddon` nuevo (versión
-5.0.0). Si en los ajustes de tu mundo sigue apareciendo una versión antigua,
-quítala y activa la 5.0.0.
+## La historia
 
-## Cómo funciona
+Cada capítulo abre una amenaza nueva. Se anuncia con un título al caer la
+noche.
 
-Al entrar recibes el **Diario del Superviviente**. El terror va llegando por
-días (contados desde que instalas el add-on en el mundo):
-
-| Día | Amenaza | Qué hace |
+| Día | Capítulo | Qué pasa |
 |---|---|---|
-| 0 | **Sonidos** | Pasos detrás de ti, puertas y cofres que se abren, minería lejana, el siseo de un creeper que no está, tu nombre susurrado en el chat. |
-| 1 | **HerobrineGamer788** | Un "jugador" entra a tu mundo (*HerobrineGamer788 se ha unido a la partida*). Parece un Steve normal: te saluda, te sigue, pica bloques, construye, pone antorchas, salta, chatea y te regala comida. Luego **te copia**: pica lo que picas, pone lo que pones, se agacha y salta contigo. Después se vuelve raro: **se congela cuando lo miras y se acerca cuando no**, se le ponen los ojos blancos, su nombre se rompe y tus antorchas se vuelven rojas. Al final **deja de fingir** y aparece Herobrine. Si le pegas cuando ya está raro, no espera más. Como mucho viene una vez al día. |
-| 1 | **El Morador de las Cuevas** | Cuanto más tiempo pasas **bajo tierra**, más sube la tensión: ruidos de cueva, pasitos rápidos en la oscuridad... hasta que aparece. Te acecha, se asoma y huye si lo ves. Si esperas demasiado, **te persigue**. Se arrastra por huecos de 1 bloque. Subir a la superficie lo calma. |
-| 2 | **Herobrine** | Lo ves a lo lejos, quieto, con los ojos blancos brillando. Si lo miras fijamente o te acercas, desaparece. A veces está **justo detrás de ti**. Deja **pirámides de arena**, **árboles sin hojas**, **túneles de 2x2** en las cuevas, **carteles** ("DETRÁS DE TI") y cambia tus antorchas por **antorchas de redstone**. A veces "entra" al chat: *Herobrine se ha unido a la partida*. Si le pegas, te devuelve el golpe. |
-| 3 | **La Presencia** | Algo en tu casa. **Las luces se apagan una a una**, oyes **respirar** en la oscuridad y, cuando vuelven, a veces hay alguien de pie delante de ti. **Unos pasos te siguen** y se paran justo después de que te pares tú (si te das la vuelta, no hay nadie). Alguien **golpea el cristal de la ventana** y te mira desde fuera. Una **cajita de música** suena en otra habitación. Si duermes, puede que al despertar haya **alguien junto a tu cama**. Y a veces lees en el chat que **has muerto**... |
-| 4 | **El Hombre de la Niebla** | Llega una **niebla espesa**. Una figura alta y pálida te observa desde lejos... y **cada vez que apartas la vista está más cerca**. Si lo miras demasiado, se va o viene corriendo. De noche **llama a tu puerta** y a veces **la rompe**. Cuando te persigue, trepa paredes y rompe cristales, puertas y hojas. |
-| 6 | **null** | Aparece por el **rabillo del ojo** y desaparece al mirarlo. Si no lo miras, acaba **detrás de ti**, y al darte la vuelta... Escribe en el chat, convierte bloques en la **textura que falta** (magenta y negro) y a veces finge que **el juego se ha colgado**. Los bloques corruptos vuelven a la normalidad solos. |
-| 7 | **La Noche Roja** | Cada 5 días cae una noche entera de **niebla roja**: *"No duermas. No mires atrás."* El corazón no deja de latir y **todo lo que te caza viene el doble de veces**. Termina al amanecer. |
+| 0 | **Prólogo: Solo** | Pasos detrás de ti, puertas que se abren, cofres que se cierran, uñas arañando la pared, respiración, tu nombre susurrado. |
+| 1 | **1. El jugador** | **HerobrineGamer788** entra a tu partida. Juega, te regala comida, construye... luego **te copia**, luego se queda quieto cuando lo miras y se acerca cuando no, y al final **deja de fingir**. |
+| 2 | **2. Lo que vive abajo** | Bajo tierra oyes chasquidos, pasitos, susurros. El **Morador de las Cuevas** te acecha, huye si lo pillas mirando y, si esperas demasiado, **te persigue chillando**. Odia la luz. |
+| 3 | **3. Ojos blancos** | **Herobrine** te observa a lo lejos y desaparece si lo miras. A veces está **justo detrás de ti**. Pirámides de arena, árboles sin hojas, túneles, carteles, antorchas rojas. Si le pegas, te devuelve el golpe. |
+| 4 | **4. La Presencia** | Algo en tu casa: **las luces se apagan una a una**, unos **pasos te siguen** y se paran cuando te paras, una **cara en la ventana**, una **cajita de música**, alguien **junto a tu cama** al despertar, tu **propia muerte** en el chat. |
+| 5 | **5. La niebla** | Llega una niebla espesa. El **Hombre de la Niebla** se acerca cada vez que apartas la vista. De noche **llama a tu puerta**... y a veces la rompe. |
+| 6 | **6. El error** | **null** aparece por el rabillo del ojo, corrompe bloques en la textura que falta, escribe en el chat, finge que el juego se cuelga y acaba **detrás de ti**. |
+| 7 | **7. La Noche Roja** | Cada 5 días, una noche de **niebla roja**: todo viene el doble de veces y tus faroles pueden apagarse. |
+| — | **El final** | Junta las **cinco páginas arrancadas**, haz **el ritual** y enfréntate a **Herobrine en su forma verdadera**. |
 
-### Sonidos y sustos
+### El director del miedo
 
-El add-on trae **sus propios sonidos**, creados por código (no son
-grabaciones): **latidos**, **respiración**, **susurros**, **estática**, un
-**golpe de susto**, **pitido en los oídos**, un **zumbido grave**, una **cajita
-de música desafinada** que se va parando, el **chillido** y los **chasquidos**
-del Morador y **golpes en la puerta**.
+Ya no pasan cosas al azar. Tienes un **nivel de miedo** (lo ves en el Diario)
+que sube de noche, bajo tierra, con niebla, con poca vida, en la Noche Roja y
+cuando algo está cerca; un Farol Protector lo baja. El director reparte el
+terror como en una película:
 
-- **Latidos**: cuando algo está cerca o te persigue, oyes tu corazón. Más
-  rápido cuanto peor va la cosa.
-- **Sustos fuertes**: cuando Herobrine aparece detrás de ti, null te pilla, el
-  Hombre de la Niebla revienta tu puerta o HerobrineGamer788 se revela, la
-  pantalla **se vuelve roja**, **tiembla**, todo **se oscurece** un momento y
-  te **pitan los oídos**. Se pueden desactivar en *Ajustes* (queda un susto
-  más suave).
-- El Morador **chilla** al perseguirte y te deja a oscuras; null suena a
-  **señal rota**; con la niebla llega un **zumbido grave**.
+1. **Calma:** algún ruido suelto.
+2. **Tensión:** sustos pequeños cada poco (sonidos, carteles, siluetas a lo lejos).
+3. **Clímax:** un encuentro de verdad, elegido según dónde estás (el Morador
+   en las cuevas, el Hombre de la Niebla en la niebla, la Presencia en casa,
+   Herobrine o null en cualquier parte).
+4. **Respiro:** unos minutos para recuperarte... y vuelta a empezar.
+
+De noche todo va más rápido. Tu **corazón late** cuando algo está cerca, y más
+deprisa cuando te persigue.
+
+### Las cinco páginas
+
+Un superviviente anterior dejó un diario. Cada criatura guarda una de sus
+páginas y la suelta cuando **sobrevives** a ella:
+
+| Página | Cómo se consigue |
+|---|---|
+| I. El jugador | Cuando HerobrineGamer788 se revela, queda en el suelo donde estaba. |
+| II. Lo que vive abajo | Espanta al Morador con la linterna, o sobrevive a una persecución. |
+| III. Ojos blancos | Mira fijamente a Herobrine hasta que desaparezca, tres veces. |
+| IV. La niebla | Sobrevive a una niebla en la que lo hayas visto: al disiparse, cae a tus pies. |
+| V. El error | Mira a null a los ojos dos veces, o sobrevive a su susto. |
+
+**Usa** una página para leerla: se guarda en el Diario.
+
+### El final: el ritual
+
+Con las cinco páginas leídas, el Diario muestra **El Ritual**. De noche y al
+aire libre, dices su nombre: truena, cae una niebla oscura, los rayos rodean el
+lugar y aparece **Herobrine, el Minero Hueco**, con barra de jefe:
+
+- casi **4 bloques**, quemado por dentro con la luz saliendo por las grietas,
+  el **casco de minero** todavía puesto, un **pico fundido en el brazo**, las
+  costillas abiertas alrededor de un **corazón ardiendo** y una **corona de
+  vértebras**;
+- **se teletransporta** detrás de ti, **llama a los rayos**, **invoca**
+  Moradores de las cuevas, **apaga la luz** y, a mitad de vida, **enfurece**:
+  arde más, corre más, te empuja con un rugido y apaga las luces;
+- **la luz de la linterna le quema**: lo ralentiza y lo debilita.
+
+Si ganas: **amanece**, te quedas su **Pico del Minero Hueco**, la maldición
+**duerme tres días** y luego vuelve a empezar (las páginas se dispersan otra
+vez). Si mueres, huyes o sale el sol, se retira: podrás llamarlo otra noche.
 
 ## Objetos
 
 | Objeto | Receta | Uso |
 |---|---|---|
-| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Muestra el día y qué amenazas están activas. Tiene **Bestiario**, **Ajustes** e **Invocar (pruebas)**. |
-| **Linterna** | `I G I / _ R _ / _ I _` (I = lingote de hierro, G = polvo de piedra luminosa, R = redstone) | Visión nocturna 20 s. Si iluminas al **Morador**, huye. Herobrine y null desaparecen. Al Hombre de la Niebla, cuando corre, **no le detiene**. |
-| **Bloque Corrupto** | — | La textura que falta. Lo crea null; vuelve solo a ser el bloque original. |
+| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, capítulo, tu **miedo** y tus páginas. Capítulos, **Bestiario** (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
+| **Linterna** | `I G I / _ R _ / _ I _` (I = hierro, G = polvo de piedra luminosa, R = redstone) | Úsala para encenderla o apagarla. **Ilumina de verdad** lo que tienes delante mientras la llevas en la mano. Espanta al Morador, hace desaparecer a Herobrine, a null y al Hombre de la Niebla cuando solo observa, y quema al jefe. |
+| **Pila** | Redstone + pepita de hierro + lingote de cobre (da 2) | Una pila dura 5 minutos. Si llevas una de repuesto, se cambia sola. |
+| **Farol Protector** | Farol rodeado de 4 fragmentos de amatista (`_ A _ / A F A / _ A _`) | Nada te acecha en su luz: la Presencia no puede entrar, el Morador y null no se acercan, el Hombre de la Niebla no pisa su círculo ni rompe esa puerta y Herobrine no construye nada dentro. Tu miedo baja. **Pero en la Noche Roja algo puede apagarlo.** |
+| **Páginas arrancadas I–V** | Las dejan las criaturas | Úsalas para leerlas. |
+| **Pico del Minero Hueco** | Recompensa del final | Pico muy rápido que hace mucho daño y no se rompe. |
+| **Bloque Corrupto** | — | La textura que falta. Lo crea null y vuelve solo a ser el bloque original. |
 
-Las cuatro criaturas tienen **huevo de generación** en el modo creativo. Las
-que sacas con un huevo no desaparecen solas.
+Todas las criaturas tienen **huevo de generación** en creativo (el jefe
+también: con huevo pelea incluso de día).
 
 ## Ajustes (en el Diario)
 
-- **Intensidad**: *Baja* (el doble de días, la mitad de sustos), *Normal*,
-  *Alta* o *Pesadilla* (todo desde el primer día y muy seguido).
-- **Activar o desactivar** cada amenaza por separado.
-- **Sustos fuertes**: sí o no (pantalla roja, temblor, oscuridad y pitido).
-- **Invocar (pruebas)**: provoca al momento cualquier evento, para verlo sin
-  esperar días.
+- **Intensidad**: *Baja* (el doble de días, menos sustos), *Normal*, *Alta* o
+  *Pesadilla* (todo desde el día 0 y muy seguido).
+- **Activar o desactivar** cada amenaza. Cada una dice en cuántos días llega.
+- **Sustos fuertes**: pantalla roja, temblor, oscuridad y pitido en los oídos.
+  Si los quitas, queda un susto más suave.
+- **Pruebas**: provoca al momento cualquier criatura o evento, te da los
+  objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un
+  día.
 
-## Modelos (versión 4.0.0, rediseñados)
+## Modelos, texturas y sonidos (6.0.0)
 
-Todas las criaturas tienen **forma nueva** y **texturas nuevas**, pintadas
-con el doble de detalle (cada píxel del modelo lleva 2x2 píxeles de textura) y
-con manchas, piel y tela de aspecto orgánico en lugar de puntitos sueltos.
-
-- **Herobrine, el minero hueco**: casi 3 bloques, doblado sobre una
-  **joroba enorme**. La **columna vertebral está fuera**, arqueada desde la
-  cintura por encima de los hombros, con púas. La **cabeza cuelga por
-  delante** de un cuello estirado. El **pecho reventado** abre las
-  costillas como una segunda boca alrededor del corazón, y debajo el
-  **estómago abierto** y cosido deja salir los intestinos. La **boca está
-  rajada hasta las orejas**, la mandíbula cuelga suelta y gotea sangre, tiene
-  **colmillos**, la mitad izquierda de la cara quemada hasta el **cráneo** y
-  **ampollas** por todo el lado quemado. Los brazos le llegan a las rodillas:
-  el derecho **despellejado** con un hueso saliendo de la muñeca y
-  arrastrando el pico, y el izquierdo quemado y acabado en **garras de
-  hueso**. Cojea al andar.
-- **El Hombre de la Niebla**: una figura que confundes con un árbol muerto
-  en la niebla. **Piernas como zancos** con rodillas nudosas, una **cintura
-  finísima**, costillas marcadas, un hombro huesudo más alto que el otro y un
-  chal de trapos podridos. Un **cuello largo** sostiene una cabeza pequeña y
-  alargada, **muy ladeada**, con dos **ojos negros enormes** y una
-  **mandíbula que cuelga abierta**. Los brazos le llegan a las espinillas y
-  acaban en **cuatro dedos largos y negros**. A la espalda lleva un
-  **sudario hecho jirones**. Piel gris y húmeda con venas azules.
-- **El Morador de las Cuevas**: ahora se mueve **como una araña**. El cuerpo
-  va colgado bajo, entre cuatro extremidades larguísimas con **codos y
-  rodillas por encima del lomo**, y avanza correteando. El cráneo es plano y
-  largo, con una **corona de púas**, **cuatro ojos hundidos que brillan** y
-  una mandíbula llena de **dientes de aguja** que se abre demasiado. Tiene
-  garras en manos y pies, omóplatos marcados, espinas en el lomo y piel
-  pálida y babosa.
-- **null**: un jugador que el juego no consiguió montar. **Cada parte flota
-  separada** de la siguiente: piernas, tres rodajas de torso que no encajan,
-  brazos rotos en trozos y la cabeza girada al revés sobre el cuello. Un
-  brazo tiene tres trozos y arrastra tres dedos por el suelo. Alrededor lleva
-  la **caja de colisión de F3+B**: el marco blanco, la **línea roja** a la
-  altura de los ojos y la **línea azul** de la mirada, que le salen de los
-  ojos. Sigue teniendo el halo de píxeles sueltos y textura que falta, y
-  restos de una skin normal en la oscuridad.
-- **HerobrineGamer788**: sigue siendo **un Steve normal**, con textura
-  repintada en el estilo nuevo, capa exterior y el pico que solo se ve cuando
-  pica o construye. La textura de "algo va mal" le deja los ojos blancos.
-- **Bloque corrupto animado**: la textura que falta parpadea y se rasga.
-- **Animaciones**: todas las criaturas respiran. El Morador **corretea como
-  una araña**. Herobrine cojea y tiene espasmos. El Hombre de la Niebla y el
-  Morador reaccionan al daño y atacan con impulso. Se mueven el pelo, los
-  jirones, los intestinos y las gotas de sangre. HerobrineGamer788 anda, se
-  agacha, pica, salta y se queda mirando como un jugador.
+- **Texturas nuevas** para todo, pintadas con **rampas de color por
+  material** (sombras frías, luces cálidas) y tramado, como el pixel art hecho
+  a mano. Tienen el doble de detalle que un modelo normal (una cara es de
+  16x16).
+- **Herobrine**: joroba enorme con la columna fuera, arqueada hasta el
+  cráneo; cabeza colgando delante; pecho reventado; estómago abierto; boca
+  rajada hasta las orejas; mitad de la cara quemada hasta el hueso; ampollas;
+  brazo derecho despellejado con un hueso saliendo de la muñeca y los dedos
+  agarrando el pico; brazo izquierdo quemado con garras de hueso.
+- **El Minero Hueco** (nuevo): el jefe, con dos texturas (en la fase 2 las
+  grietas arden más).
+- **El Hombre de la Niebla**: cabeza más grande y legible, frente, pómulos,
+  cuencas que lloran negro, jirones en los brazos.
+- **El Morador**: como una araña, con mandíbulas en las esquinas de la boca y
+  espolones en los codos.
+- **null**: desmontado, con la caja de F3+B, restos de una skin normal.
+- **HerobrineGamer788**: sigue siendo Steve, repintado.
+- **Iconos nuevos** para el diario, la linterna, la pila, las cinco páginas
+  (cada una con su dibujo), el pico y el Farol Protector (modelo 3D propio).
+- **Sonidos propios**, creados por código: latidos, respiración, susurros,
+  estática, golpe de susto, pitido, dron, cajita de música, chillido y
+  chasquidos del Morador, golpes en la puerta, **tema del jefe**, **páginas**,
+  **clic de la linterna** y **amanecer**.
 
 ## Estructura
 
 ```
-behavior_pack/       entidades, bloque corrupto, objetos, recetas, scripts/main.js
-resource_pack/       modelos, animaciones, texturas, niebla, sonidos, textos
-tools/creatures.py   los modelos de las criaturas y sus texturas
-tools/build.py       objetos, icono, validación y empaquetado
-tools/animations.py  todas las animaciones
-tools/geometry.py    modelos en Python, comprobación de UV y renderizador 3D
-tools/pixels.py      lienzo PNG y utilidades de pixel art
-tools/sounds.py      crea los sonidos (necesita numpy y soundfile; ya van generados)
+behavior_pack/scripts/
+  main.js            engancha todo a Minecraft
+  director.js        miedo y ritmo: cuándo pasa cada cosa
+  lib/               utilidades, estado guardado, criaturas, sustos y latidos
+  threats/           cada amenaza y el jefe
+  items/             linterna, Farol Protector, páginas
+  ui/                el Diario
+tools/
+  build.py           lo genera y comprueba todo y empaqueta
+  content.py         entidades, objetos, bloques, recetas, nieblas, textos
+  lang.py            todos los textos en español e inglés
+  creatures.py       modelos y texturas de las criaturas
+  paint.py           rampas de color y tramado
+  art.py             iconos, bloques e icono del pack
+  animations.py      todas las animaciones
+  sounds.py          crea los sonidos (necesita numpy y soundfile; ya van generados)
+  geometry.py        modelos en Python, comprobación de UV y renderizador 3D
+  pixels.py          lienzo PNG
 dist/                HorrorLegends.mcaddon y HorrorLegends_WhatsApp.zip
 ```
 
 Para regenerar los paquetes: `python3 tools/build.py` (solo Python 3 estándar).
-Con `python3 tools/build.py --preview carpeta` además dibuja cada modelo
-desde tres ángulos, para ver los cambios sin abrir el juego.
+Con `python3 tools/build.py --preview carpeta` además dibuja cada modelo desde
+tres ángulos.

@@ -24,7 +24,8 @@
       }
     },
     "result": {
-      "item": "hl:flashlight"
+      "item": "hl:flashlight",
+      "count": 1
     }
   }
 }

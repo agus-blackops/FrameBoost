@@ -49,6 +49,17 @@
           "tool": "query.property('hl:state') == 'swing'"
         }
       ]
+    },
+    "controller.render.hl.boss": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "query.property('hl:phase') == 2 ? Texture.phase2 : Texture.default"
+      ]
     }
   }
 }

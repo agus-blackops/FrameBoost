@@ -6,6 +6,9 @@
   "texture_data": {
     "hl_corrupted": {
       "textures": "textures/blocks/hl/corrupted_block"
+    },
+    "hl_ward_lantern": {
+      "textures": "textures/blocks/hl/ward_lantern"
     }
   }
 }

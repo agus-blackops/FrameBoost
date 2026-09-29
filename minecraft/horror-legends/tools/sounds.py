@@ -273,6 +273,68 @@ def knock():
     return finish(soft_clip(out, 1.5))
 
 
+
+def boss():
+    """The fight: war drums at 100 bpm under a low dissonant drone, a string
+    stab every two bars. 12 seconds, played in a loop by the script."""
+    length = 12.0
+    n = int(length * RATE)
+    out = np.zeros(n)
+    beat = 60 / 100
+    for i in range(int(length / beat)):
+        at = i * beat
+        m = int(0.5 * RATE)
+        f = 55 * (1 + 1.2 * decay(m, 0.03))
+        drum = sine(f, 0.5) * decay(m, 0.12) + one_pole(noise(0.5), 400) * decay(m, 0.02) * 1.5
+        place(out, drum * (1.0 if i % 4 == 0 else 0.6), at)
+        if i % 2 == 1:
+            m2 = int(0.3 * RATE)
+            tom = sine(110 * (1 + 0.5 * decay(m2, 0.02)), 0.3) * decay(m2, 0.08)
+            place(out, tom * 0.5, at + beat / 2)
+    for f, a in ((41.2, 0.5), (43.6, 0.4), (61.7, 0.3)):
+        out += soft_clip(saw(f, length), 1.5) * a * 0.3
+    for bar in range(0, int(length / (beat * 8))):
+        at = bar * beat * 8
+        m = int(1.2 * RATE)
+        stab = sum(saw(fr, 1.2) for fr in (233.1, 246.9, 349.2, 370.0)) * decay(m, 0.35) * env(m, 0.01, 0.1)
+        place(out, resonator(stab, 1200, 1.5) * 0.4, at)
+    return finish(soft_clip(out, 1.4))
+
+
+def page():
+    """Old paper, turned."""
+    out = np.zeros(int(0.7 * RATE))
+    for at in (0.0, 0.12, 0.3):
+        dur = rng.uniform(0.12, 0.25)
+        m = int(dur * RATE)
+        crackle = resonator(noise(dur), rng.uniform(2500, 4500), 1.5) * env(m, 0.01, dur * 0.7)
+        crackle *= (rng.random(m) > 0.6) * 0.8 + 0.2
+        place(out, crackle, at)
+    return finish(out, 0.7)
+
+
+def click():
+    """A flashlight switch."""
+    m = int(0.12 * RATE)
+    tick = resonator(noise(0.12), 3200, 12) * decay(m, 0.006)
+    thunk = sine(180, 0.12) * decay(m, 0.02) * 0.6
+    return finish(tick + thunk, 0.8)
+
+
+def dawn():
+    """Relief: a warm chord opening up, with bells."""
+    length = 7.0
+    n = int(length * RATE)
+    out = np.zeros(n)
+    for f in (130.8, 196.0, 261.6, 329.6, 392.0, 587.3):
+        out += sine(f * (1 + 0.002 * sine(rng.uniform(0.2, 0.5), length)), length) * 0.25
+    out *= env(n, 2.5, 3.0, 1.2)
+    for k, f in enumerate((1046.5, 1318.5, 1568.0, 2093.0)):
+        m = int(3.0 * RATE)
+        bell = (sine(f, 3.0) + 0.3 * sine(f * 2.76, 3.0)) * decay(m, 0.8) * env(m, 0.003, 0.0)
+        place(out, bell * 0.3, 1.5 + k * 0.6)
+    return finish(out, 0.75)
+
 SOUNDS = {
     # name: (generator, category, min_distance, max_distance, volume)
     "heartbeat": (heartbeat, "hostile", 0.5, 8, 1.0),
@@ -286,6 +348,10 @@ SOUNDS = {
     "scream": (scream, "hostile", 2, 48, 1.0),
     "chitter": (chitter, "hostile", 1, 20, 0.9),
     "knock": (knock, "hostile", 1, 24, 1.0),
+    "boss": (boss, "hostile", 0.5, 16, 0.8),
+    "page": (page, "player", 0.5, 8, 0.9),
+    "click": (click, "player", 0.5, 8, 0.8),
+    "dawn": (dawn, "ambient", 0.5, 16, 1.0),
 }
 
 

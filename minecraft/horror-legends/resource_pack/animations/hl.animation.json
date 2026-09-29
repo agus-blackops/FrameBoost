@@ -373,6 +373,241 @@
         }
       }
     },
+    "animation.hl.boss.idle": {
+      "loop": true,
+      "bones": {
+        "chest": {
+          "scale": [
+            1.0,
+            "1.0 + math.sin(query.life_time * 30.0) * 0.03",
+            1.0
+          ]
+        },
+        "core": {
+          "scale": [
+            "1.0 + math.abs(math.sin(query.life_time * 150.0)) * 0.3",
+            "1.0 + math.abs(math.sin(query.life_time * 150.0)) * 0.3",
+            "1.0 + math.abs(math.sin(query.life_time * 150.0)) * 0.3"
+          ]
+        },
+        "jaw": {
+          "rotation": [
+            "math.sin(query.life_time * 40.0) * 8.0",
+            0,
+            "math.sin(query.life_time * 17.0) * 3.0"
+          ]
+        },
+        "gutHang": {
+          "rotation": [
+            "math.sin(query.life_time * 60.0) * 10.0",
+            0,
+            "math.cos(query.life_time * 45.0) * 6.0"
+          ]
+        },
+        "dripL": {
+          "scale": [
+            1.0,
+            "1.0 + math.sin(query.life_time * 90.0) * 0.3",
+            1.0
+          ]
+        },
+        "spineCrown": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 25.0) * 3.0"
+          ]
+        },
+        "leftHand": {
+          "rotation": [
+            "math.sin(query.life_time * 50.0) * 6.0",
+            0,
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 20.0) * 3.0"
+          ]
+        }
+      }
+    },
+    "animation.hl.boss.walk": {
+      "loop": true,
+      "bones": {
+        "rightThigh": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 24) * 30.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftThigh": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 24) * -30.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightShin": {
+          "rotation": [
+            "math.max(0.0, math.sin(query.modified_distance_moved * 24)) * 30.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftShin": {
+          "rotation": [
+            "math.max(0.0, -math.sin(query.modified_distance_moved * 24)) * 30.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 24) * -18.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 24) * 18.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "body": {
+          "rotation": [
+            0,
+            "math.sin(query.modified_distance_moved * 24.0) * 4.0 * query.modified_move_speed",
+            "math.sin(query.modified_distance_moved * 24.0) * 3.0 * query.modified_move_speed"
+          ]
+        },
+        "head": {
+          "rotation": [
+            "math.abs(math.sin(query.modified_distance_moved * 48.0)) * 4.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.boss.attack": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180.0) * 150.0",
+            0,
+            "math.sin(variable.attack_time * 180.0) * 10.0"
+          ]
+        },
+        "rightForearm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180.0) * 30.0",
+            0,
+            0
+          ]
+        },
+        "chest": {
+          "rotation": [
+            "math.sin(variable.attack_time * 180.0) * 12.0",
+            "-math.sin(variable.attack_time * 180.0) * 15.0",
+            0
+          ]
+        },
+        "jaw": {
+          "rotation": [
+            "math.sin(variable.attack_time * 180.0) * 20.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.boss.cast": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            -150.0,
+            0,
+            "20.0 + math.sin(query.life_time * 400.0) * 4.0"
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            -150.0,
+            0,
+            "-20.0 - math.sin(query.life_time * 400.0) * 4.0"
+          ]
+        },
+        "head": {
+          "rotation": [
+            -25.0,
+            0,
+            0
+          ]
+        },
+        "jaw": {
+          "rotation": [
+            35.0,
+            0,
+            0
+          ]
+        },
+        "core": {
+          "scale": [
+            1.6,
+            1.6,
+            1.6
+          ]
+        },
+        "chest": {
+          "rotation": [
+            -8.0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.boss.rage": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "math.random(0.0, 1.0) > 0.9 ? math.random(-18.0, 18.0) : 0.0",
+            "math.random(0.0, 1.0) > 0.92 ? math.random(-30.0, 30.0) : 0.0",
+            "math.random(0.0, 1.0) > 0.9 ? math.random(-20.0, 20.0) : 0.0"
+          ]
+        },
+        "chest": {
+          "rotation": [
+            0,
+            0,
+            "math.random(0.0, 1.0) > 0.94 ? math.random(-6.0, 6.0) : 0.0"
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "math.random(0.0, 1.0) > 0.93 ? math.random(-15.0, 15.0) : 0.0",
+            0,
+            0
+          ]
+        },
+        "spineCrown": {
+          "scale": [
+            1.0,
+            "1.0 + (math.random(0.0, 1.0) > 0.95 ? math.random(0.0, 0.15) : 0.0)",
+            1.0
+          ]
+        }
+      }
+    },
     "animation.hl.null.glitch": {
       "loop": true,
       "bones": {

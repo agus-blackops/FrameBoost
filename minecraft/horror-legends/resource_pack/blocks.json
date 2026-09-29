@@ -6,5 +6,8 @@
   ],
   "hl:corrupted_block": {
     "sound": "stone"
+  },
+  "hl:ward_lantern": {
+    "sound": "lantern"
   }
 }

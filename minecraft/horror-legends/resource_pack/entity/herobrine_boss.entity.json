@@ -1,0 +1,51 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:herobrine_boss",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/herobrine_boss",
+        "phase2": "textures/entity/hl/herobrine_boss_2"
+      },
+      "geometry": {
+        "default": "geometry.hl.herobrine_boss"
+      },
+      "animations": {
+        "look": "animation.hl.look_at_target",
+        "idle": "animation.hl.boss.idle",
+        "walk": "animation.hl.boss.walk",
+        "attack": "animation.hl.boss.attack",
+        "cast": "animation.hl.boss.cast",
+        "rage": "animation.hl.boss.rage"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "idle",
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "cast": "query.property('hl:cast')"
+          },
+          {
+            "rage": "query.property('hl:phase') == 2"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.boss"
+      ],
+      "spawn_egg": {
+        "base_color": "#140e0c",
+        "overlay_color": "#ff5a1e"
+      }
+    }
+  }
+}

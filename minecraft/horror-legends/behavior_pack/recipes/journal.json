@@ -16,7 +16,8 @@
       }
     ],
     "result": {
-      "item": "hl:journal"
+      "item": "hl:journal",
+      "count": 1
     }
   }
 }

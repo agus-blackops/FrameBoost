@@ -7,6 +7,27 @@
     },
     "hl_flashlight": {
       "textures": "textures/items/hl/flashlight"
+    },
+    "hl_battery": {
+      "textures": "textures/items/hl/battery"
+    },
+    "hl_hollow_pickaxe": {
+      "textures": "textures/items/hl/hollow_pickaxe"
+    },
+    "hl_page_1": {
+      "textures": "textures/items/hl/page_1"
+    },
+    "hl_page_2": {
+      "textures": "textures/items/hl/page_2"
+    },
+    "hl_page_3": {
+      "textures": "textures/items/hl/page_3"
+    },
+    "hl_page_4": {
+      "textures": "textures/items/hl/page_4"
+    },
+    "hl_page_5": {
+      "textures": "textures/items/hl/page_5"
     }
   }
 }

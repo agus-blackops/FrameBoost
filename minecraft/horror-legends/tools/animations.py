@@ -102,6 +102,48 @@ ANIMATIONS = {
         "head": {"rotation": [f"math.abs(math.sin({D} * 26.0)) * 6.0 * {S}", 0, 0]}}},
 
     # ------------------------------------------------------------------ #
+    # The Hollow Miner (the boss)
+    # ------------------------------------------------------------------ #
+    "animation.hl.boss.idle": {"loop": True, "bones": {
+        "chest": {"scale": breathe(30.0, 0.03)},
+        "core": {"scale": [f"1.0 + math.abs(math.sin({T} * 150.0)) * 0.3", f"1.0 + math.abs(math.sin({T} * 150.0)) * 0.3",
+                           f"1.0 + math.abs(math.sin({T} * 150.0)) * 0.3"]},
+        "jaw": {"rotation": [f"math.sin({T} * 40.0) * 8.0", 0, f"math.sin({T} * 17.0) * 3.0"]},
+        "gutHang": {"rotation": [f"math.sin({T} * 60.0) * 10.0", 0, f"math.cos({T} * 45.0) * 6.0"]},
+        "dripL": {"scale": [1.0, f"1.0 + math.sin({T} * 90.0) * 0.3", 1.0]},
+        "spineCrown": {"rotation": [0, 0, f"math.sin({T} * 25.0) * 3.0"]},
+        "leftHand": {"rotation": [f"math.sin({T} * 50.0) * 6.0", 0, 0]},
+        "head": {"rotation": [0, 0, f"math.sin({T} * 20.0) * 3.0"]}}},
+    "animation.hl.boss.walk": {"loop": True, "bones": {
+        "rightThigh": {"rotation": [cos(24, 30.0), 0, 0]},
+        "leftThigh": {"rotation": [cos(24, -30.0), 0, 0]},
+        "rightShin": {"rotation": [lift(24, 30.0), 0, 0]},
+        "leftShin": {"rotation": [lift(24, 30.0, -1), 0, 0]},
+        "rightArm": {"rotation": [cos(24, -18.0), 0, 0]},
+        "leftArm": {"rotation": [cos(24, 18.0), 0, 0]},
+        "body": {"rotation": [0, f"math.sin({D} * 24.0) * 4.0 * {S}", f"math.sin({D} * 24.0) * 3.0 * {S}"]},
+        "head": {"rotation": [f"math.abs(math.sin({D} * 48.0)) * 4.0 * {S}", 0, 0]}}},
+    # The pickaxe arm comes up over his head and down.
+    "animation.hl.boss.attack": {"loop": True, "bones": {
+        "rightArm": {"rotation": [f"-math.sin({A} * 180.0) * 150.0", 0, f"math.sin({A} * 180.0) * 10.0"]},
+        "rightForearm": {"rotation": [f"-math.sin({A} * 180.0) * 30.0", 0, 0]},
+        "chest": {"rotation": [f"math.sin({A} * 180.0) * 12.0", f"-math.sin({A} * 180.0) * 15.0", 0]},
+        "jaw": {"rotation": [f"math.sin({A} * 180.0) * 20.0", 0, 0]}}},
+    # Arms up, head back, the heart flaring: calling something down.
+    "animation.hl.boss.cast": {"loop": True, "bones": {
+        "rightArm": {"rotation": [-150.0, 0, f"20.0 + math.sin({T} * 400.0) * 4.0"]},
+        "leftArm": {"rotation": [-150.0, 0, f"-20.0 - math.sin({T} * 400.0) * 4.0"]},
+        "head": {"rotation": [-25.0, 0, 0]},
+        "jaw": {"rotation": [35.0, 0, 0]},
+        "core": {"scale": [1.6, 1.6, 1.6]},
+        "chest": {"rotation": [-8.0, 0, 0]}}},
+    "animation.hl.boss.rage": {"loop": True, "bones": {
+        "head": {"rotation": [jolt(0.9, -18.0, 18.0), jolt(0.92, -30.0, 30.0), jolt(0.9, -20.0, 20.0)]},
+        "chest": {"rotation": [0, 0, jolt(0.94, -6.0, 6.0)]},
+        "leftArm": {"rotation": [jolt(0.93, -15.0, 15.0), 0, 0]},
+        "spineCrown": {"scale": [1.0, f"1.0 + ({jolt(0.95, 0.0, 0.15)})", 1.0]}}},
+
+    # ------------------------------------------------------------------ #
     # null
     # ------------------------------------------------------------------ #
     "animation.hl.null.glitch": {"loop": True, "bones": {

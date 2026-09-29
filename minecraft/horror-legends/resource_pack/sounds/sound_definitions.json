@@ -132,6 +132,54 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "hl.boss": {
+      "category": "hostile",
+      "min_distance": 0.5,
+      "max_distance": 16,
+      "sounds": [
+        {
+          "name": "sounds/hl/boss",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.page": {
+      "category": "player",
+      "min_distance": 0.5,
+      "max_distance": 8,
+      "sounds": [
+        {
+          "name": "sounds/hl/page",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.click": {
+      "category": "player",
+      "min_distance": 0.5,
+      "max_distance": 8,
+      "sounds": [
+        {
+          "name": "sounds/hl/click",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.dawn": {
+      "category": "ambient",
+      "min_distance": 0.5,
+      "max_distance": 16,
+      "sounds": [
+        {
+          "name": "sounds/hl/dawn",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }
