@@ -286,6 +286,8 @@ crates/
                      reconstruction pass.
   frameboost-gpu/    wgpu + seven WGSL compute shaders. What ships.
   frameboost-sim/    headless closed-loop harness and scenario catalogue.
+  frameboost-ai/     a Claude-powered advisor that tunes the quality governor
+                     using the simulator as its evidence.
 ```
 
 `core` keeps scalar versions of the same passes the shaders implement, and that
@@ -298,7 +300,7 @@ finds that way.
 ## Running it
 
 ```sh
-cargo test --workspace                       # 108 tests
+cargo test --workspace                       # 117 tests
 cargo run --release -p frameboost-sim        # all six scenarios
 cargo run --release -p frameboost-sim -- --scenario whip-turn --native-ms 90
 cargo run --release -p frameboost-sim -- --scenario fence --csv > fence.csv
@@ -307,6 +309,33 @@ cargo run --release -p frameboost-sim -- --scenario fence --csv > fence.csv
 The GPU parity tests need a wgpu adapter and skip themselves without one. A
 software rasteriser is sufficient — these are ordinary compute shaders, and the
 suite runs green under Mesa's llvmpipe.
+
+## Asking Claude to tune it
+
+The quality governor's knobs — `reject_below`, `growth_interval`, the
+cooldowns — are things a title has to tune, not constants. `frameboost-ai`
+hands that job to Claude (`claude-opus-5-5` by default) with the simulator as
+its only source of evidence: it reads the scenario catalogue, runs a baseline,
+runs variants in parallel, and answers with the measurements behind each
+recommendation.
+
+```sh
+export ANTHROPIC_API_KEY=...
+cargo run --release -p frameboost-ai -- "Can whip-turn boost harder without rejecting more frames?"
+cargo run --release -p frameboost-ai                        # interactive; /reset, /exit
+cargo run --release -p frameboost-ai -- --model claude-sonnet-5-5 --effort medium -v "..."
+```
+
+There is no official Rust SDK, so it speaks the Messages API over HTTP:
+adaptive thinking, an explicit `effort` (default `high`), automatic prompt
+caching on an append-only history, and server-side refusal fallback. The
+agent loop is tested offline against a scripted Claude; no key is needed for
+`cargo test`.
+
+What it cannot do is what the simulator cannot do: it has no eyes on the
+image. A lower rejection threshold always looks better in these numbers; the
+ghosting it lets through does not show up in any of them, and the advisor is
+told to say so.
 
 ## Status, and what this is not
 

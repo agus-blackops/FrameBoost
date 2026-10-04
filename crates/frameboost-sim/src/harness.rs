@@ -18,8 +18,8 @@ use frameboost_core::recon::{
 };
 use frameboost_core::signals::measure_pair;
 use frameboost_core::{
-    BoostController, ControllerConfig, DiscardReason, FramePacer, GBuffer, SignalKind, Signals,
-    Telemetry, Verdict,
+    BoostController, ControllerConfig, DiscardReason, FramePacer, GBuffer, QualityConfig,
+    SignalKind, Signals, Telemetry, Verdict,
 };
 
 use crate::scenario::Scenario;
@@ -47,6 +47,9 @@ pub struct Config {
     /// frame time here — so this is about exercising them on real pixels and
     /// checking they stay finite and in range.
     pub full_pipeline: bool,
+    /// Quality governor tuning. The perf governor is derived from
+    /// `target_fps`; this is the half a title is expected to tune.
+    pub quality: QualityConfig,
 }
 
 impl Default for Config {
@@ -57,6 +60,7 @@ impl Default for Config {
             target_fps: 60.0,
             native_frame_ns: 70_000_000,
             full_pipeline: true,
+            quality: QualityConfig::default(),
         }
     }
 }
@@ -200,7 +204,10 @@ pub fn run(scenario: &Scenario, cfg: &Config) -> RunReport {
         Scene::open(ow, oh)
     };
 
-    let mut ctl = BoostController::new(ControllerConfig::for_target_fps(ow, oh, cfg.target_fps));
+    let mut ctl = BoostController::new(ControllerConfig {
+        quality: cfg.quality,
+        ..ControllerConfig::for_target_fps(ow, oh, cfg.target_fps)
+    });
     let mut pacer = FramePacer::for_target_fps(cfg.target_fps);
     let mut prev: Option<GBuffer> = None;
     let mut camera = [0.0f32, 0.0];

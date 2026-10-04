@@ -1,0 +1,19 @@
+[package]
+name = "frameboost-ai"
+description = "A Claude-powered tuning assistant that drives the FrameBoost simulator"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "frameboost-advisor"
+path = "src/main.rs"
+
+[dependencies]
+frameboost-core.workspace = true
+frameboost-sim = { path = "../frameboost-sim", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "3", features = ["json"] }

@@ -128,6 +128,7 @@ impl Options {
             target_fps: self.fps.max(1.0),
             native_frame_ns: (self.native_ms.max(0.1) * 1e6) as u64,
             full_pipeline: !self.no_pipeline,
+            ..Config::default()
         }
     }
 }
