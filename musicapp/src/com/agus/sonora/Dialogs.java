@@ -52,6 +52,34 @@ final class Dialogs {
                 .show();
     }
 
+    static void rename(final Activity a, final String current, final OnName done) {
+        final EditText input = new EditText(a);
+        input.setText(current);
+        input.setSelection(current.length());
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        input.setSingleLine(true);
+        FrameLayout box = new FrameLayout(a);
+        int pad = Ui.dp(a, 20);
+        box.setPadding(pad, Ui.dp(a, 8), pad, 0);
+        box.addView(input);
+        builder(a)
+                .setTitle("Cambiar nombre")
+                .setView(box)
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        String name = input.getText().toString().trim();
+                        if (Library.get(a).renamePlaylist(current, name)) {
+                            if (done != null) done.onName(name);
+                        } else {
+                            Toast.makeText(a, "Ese nombre no está disponible", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .show();
+    }
+
     static void addToPlaylist(final Activity a, final Track t) {
         final Library lib = Library.get(a);
         final List<String> names = lib.playlistNames();

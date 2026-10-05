@@ -283,8 +283,12 @@ public class SmokeTest {
         a.onBackPressed();
         idle();
         layout(root);
-        TextView verTodo = findText(root, "Ver todo");
-        verTodo.performClick();
+        List<View> vt = new ArrayList<>();
+        collect(root, vt);
+        List<TextView> verTodos = new ArrayList<>();
+        for (View v : vt) if (v instanceof TextView && "Ver todo".equals(((TextView) v).getText().toString())) verTodos.add((TextView) v);
+        assertTrue(verTodos.size() >= 2);
+        verTodos.get(1).performClick(); // 0 is "Escuchado recientemente", 1 is the Top 50
         settle();
         layout(root);
         ListView lv = findList(root);

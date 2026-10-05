@@ -52,6 +52,8 @@ public final class Library {
     private List<Track> local = new ArrayList<>();
     private final LinkedHashMap<String, Section> sections = new LinkedHashMap<>();
     private final Map<String, List<Track>> artistTop = new HashMap<>();
+    private final List<String> history = new ArrayList<>();
+    private final List<String> searches = new ArrayList<>();
     private final Map<String, Track> byKey = new HashMap<>();
     private final List<String> liked = new ArrayList<>();
     private final LinkedHashMap<String, List<String>> playlists = new LinkedHashMap<>();
@@ -408,6 +410,19 @@ public final class Library {
         return all;
     }
 
+    /** Online tracks whose metadata must survive a restart: liked, in playlists, or recently played. */
+    private List<Track> persistedRemote() {
+        java.util.LinkedHashSet<String> keys = new java.util.LinkedHashSet<>(liked);
+        for (List<String> l : playlists.values()) keys.addAll(l);
+        keys.addAll(history);
+        List<Track> out = new ArrayList<>();
+        for (String k : keys) {
+            Track t = byKey.get(k);
+            if (t != null && t.remote) out.add(t);
+        }
+        return out;
+    }
+
     private List<Track> savedRemote() {
         java.util.LinkedHashSet<String> keys = new java.util.LinkedHashSet<>(liked);
         for (List<String> l : playlists.values()) keys.addAll(l);
@@ -486,6 +501,53 @@ public final class Library {
         return resolve(liked);
     }
 
+    // ---------------------------------------------------------------- history
+
+    static final int HISTORY_MAX = 50;
+
+    /** Called when a track starts playing; newest first, no duplicates. */
+    public void recordPlayed(Track t) {
+        if (t == null) return;
+        if (!byKey.containsKey(t.key)) byKey.put(t.key, t);
+        history.remove(t.key);
+        history.add(0, t.key);
+        while (history.size() > HISTORY_MAX) history.remove(history.size() - 1);
+        save();
+    }
+
+    public List<Track> recentlyPlayed(int max) {
+        List<Track> all = resolve(history);
+        return all.size() > max ? new ArrayList<>(all.subList(0, max)) : all;
+    }
+
+    public void clearHistory() {
+        history.clear();
+        save();
+        notifyChanged();
+    }
+
+    // ---------------------------------------------------------------- search history
+
+    public List<String> searchHistory() {
+        return new ArrayList<>(searches);
+    }
+
+    public void addSearch(String q) {
+        if (q == null) return;
+        q = q.trim();
+        if (q.length() < 2) return;
+        for (int i = searches.size() - 1; i >= 0; i--) if (searches.get(i).equalsIgnoreCase(q)) searches.remove(i);
+        searches.add(0, q);
+        while (searches.size() > 10) searches.remove(searches.size() - 1);
+        save();
+    }
+
+    public void clearSearchHistory() {
+        searches.clear();
+        save();
+        notifyChanged();
+    }
+
     // ---------------------------------------------------------------- playlists
 
     public List<String> playlistNames() {
@@ -503,6 +565,24 @@ public final class Library {
         name = name.trim();
         if (name.isEmpty() || name.equals("__order") || playlists.containsKey(name)) return false;
         playlists.put(name, new ArrayList<String>());
+        save();
+        notifyChanged();
+        return true;
+    }
+
+    /** @return false if the new name is empty or already taken. */
+    public boolean renamePlaylist(String from, String to) {
+        if (to == null) return false;
+        to = to.trim();
+        if (to.isEmpty() || to.equals("__order") || !playlists.containsKey(from)) return false;
+        if (to.equals(from)) return true;
+        if (playlists.containsKey(to)) return false;
+        LinkedHashMap<String, List<String>> copy = new LinkedHashMap<>();
+        for (Map.Entry<String, List<String>> e : playlists.entrySet()) {
+            copy.put(e.getKey().equals(from) ? to : e.getKey(), e.getValue());
+        }
+        playlists.clear();
+        playlists.putAll(copy);
         save();
         notifyChanged();
         return true;
@@ -563,6 +643,10 @@ public final class Library {
                 for (int i = 0; i < a.length(); i++) keys.add(a.getString(i));
                 playlists.put(name, keys);
             }
+            JSONArray h = new JSONArray(prefs.getString("history", "[]"));
+            for (int i = 0; i < h.length(); i++) history.add(h.getString(i));
+            JSONArray sq = new JSONArray(prefs.getString("searches", "[]"));
+            for (int i = 0; i < sq.length(); i++) searches.add(sq.getString(i));
             JSONObject remote = new JSONObject(prefs.getString("remote", "{}"));
             Iterator<String> it = remote.keys();
             while (it.hasNext()) {
@@ -586,9 +670,11 @@ public final class Library {
             }
             p.put("__order", order);
             JSONObject remote = new JSONObject();
-            for (Track t : savedRemote()) remote.put(t.key, t.toJson());
+            for (Track t : persistedRemote()) remote.put(t.key, t.toJson());
             prefs.edit()
                     .putString("remote", remote.toString())
+                    .putString("history", new JSONArray(history).toString())
+                    .putString("searches", new JSONArray(searches).toString())
                     .putString("liked", new JSONArray(liked).toString())
                     .putString("playlists", p.toString())
                     .apply();

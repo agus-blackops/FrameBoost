@@ -93,6 +93,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         root.addView(buildBottomNav());
         setContentView(root);
 
+        player.restoreSession(); // paused where the user left off
         lib.addListener(this);
         player.addListener(this);
         selectTab(0);
@@ -114,6 +115,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(ticker);
+        player.saveSession();
     }
 
     @Override
@@ -370,6 +372,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     private static final int C_ARTIST = 4;
     private static final int C_ALBUM = 5;
     private static final int C_RECENT = 6;
+    private static final int C_HISTORY = 7;
 
     /** Something that resolves to a list of tracks: a playlist, an artist, an album… */
     private final class Collection {
@@ -407,6 +410,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return section() == null ? "En línea" : section().title;
                 case C_RECENT:
                     return "Agregadas recientemente";
+                case C_HISTORY:
+                    return "Escuchado recientemente";
                 default:
                     return name;
             }
@@ -437,6 +442,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return section() == null ? new ArrayList<Track>() : section().tracks;
                 case C_RECENT:
                     return lib.recentlyAdded(50);
+                case C_HISTORY:
+                    return lib.recentlyPlayed(50);
                 case C_PLAYLIST:
                     return lib.playlist(name);
                 case C_ARTIST: {
@@ -484,8 +491,10 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         if (tracks != null && !tracks.isEmpty()) Covers.load(this, tracks.get(0), img, Ui.dp(this, sizeDp));
         else img.setImageBitmap(col.cover(Ui.dp(this, sizeDp)));
         f.addView(img, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
-        if (col.kind == C_LIKED || col.kind == C_DEVICE || (col.kind == C_ONLINE && tracks == null)) {
+        if (col.kind == C_LIKED || col.kind == C_DEVICE || col.kind == C_HISTORY
+                || (col.kind == C_ONLINE && tracks == null)) {
             int res = col.kind == C_LIKED ? R.drawable.ic_heart
+                    : col.kind == C_HISTORY ? R.drawable.ic_history
                     : col.kind == C_DEVICE ? R.drawable.ic_library : R.drawable.ic_note;
             ImageView glyph = Ui.icon(this, res, Math.max(24, sizeDp / 2), Ui.TEXT);
             if (col.kind != C_LIKED) img.setImageBitmap(Covers.generated(col.title(), Ui.dp(this, sizeDp), false));
@@ -683,6 +692,13 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             }
             col.addView(grid);
 
+            List<Track> played = lib.recentlyPlayed(15);
+            if (!played.isEmpty()) {
+                Collection hc = new Collection(C_HISTORY, null);
+                col.addView(sectionHeader(hc, null));
+                col.addView(trackRow(played, hc));
+            }
+
             List<Track> recent = lib.recentlyAdded(15);
             if (!recent.isEmpty()) {
                 col.addView(sectionTitle("Agregadas recientemente"));
@@ -783,7 +799,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    List<Track> all = source.kind == C_ONLINE ? source.tracks() : tracks;
+                    List<Track> all = source.kind == C_ONLINE || source.kind == C_HISTORY ? source.tracks() : tracks;
                     int i = all.indexOf(tracks.get(index));
                     player.playList(all, Math.max(i, 0), source.title());
                 }
@@ -838,6 +854,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         boolean onlineFailed;
         boolean searching;
         Runnable pending;
+        FrameLayout body;
+        EditText input;
+        String browseSig = "";
         TrackAdapter adapter;
         View browse;
         ListView list;
@@ -854,7 +873,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             box.setBackground(Ui.rounded(Ui.TEXT, Ui.dp(MainActivity.this, 6)));
             box.setPadding(Ui.dp(MainActivity.this, 10), 0, Ui.dp(MainActivity.this, 10), 0);
             box.addView(Ui.icon(MainActivity.this, R.drawable.ic_search, 28, 0xFF121212));
-            final EditText input = new EditText(MainActivity.this);
+            input = new EditText(MainActivity.this);
             input.setHint("¿Qué quieres escuchar?");
             input.setHintTextColor(0xFF6A6A6A);
             input.setTextColor(0xFF121212);
@@ -875,7 +894,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             blp.setMargins(Ui.dp(MainActivity.this, 16), 0, Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 8));
             col.addView(box, blp);
 
-            FrameLayout body = new FrameLayout(MainActivity.this);
+            body = new FrameLayout(MainActivity.this);
             list = new ListView(MainActivity.this);
             list.setDivider(null);
             list.setSelector(Ui.ripple(null));
@@ -890,6 +909,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     hideKeyboard();
+                    lib.addSearch(query);
                     player.playList(adapter.tracks(), position, "Búsqueda: " + query);
                 }
             });
@@ -909,7 +929,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             empty.setGravity(Gravity.CENTER);
             empty.setPadding(Ui.dp(MainActivity.this, 32), Ui.dp(MainActivity.this, 48), Ui.dp(MainActivity.this, 32), 0);
             body.addView(empty, new FrameLayout.LayoutParams(Ui.MATCH, Ui.WRAP));
-            browse = browseGrid();
+            browseSig = lib.searchHistory().toString();
+            browse = browseGrid(input);
             body.addView(browse);
             col.addView(body, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1));
 
@@ -967,6 +988,13 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         void refresh() {
             String q = query.trim();
             boolean idle = q.isEmpty();
+            String sig = lib.searchHistory().toString();
+            if (idle && !sig.equals(browseSig)) { // recent searches changed: redraw the browse page
+                body.removeView(browse);
+                browse = browseGrid(input);
+                body.addView(browse);
+                browseSig = sig;
+            }
             browse.setVisibility(idle ? View.VISIBLE : View.GONE);
             List<Track> res = idle ? new ArrayList<Track>() : lib.search(query);
             if (!idle && q.equals(onlineFor)) {
@@ -991,7 +1019,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         }
     }
 
-    private View browseGrid() {
+    private View browseGrid(final EditText input) {
         List<Collection> cats = new ArrayList<>();
         for (Library.Section sec : lib.sections()) cats.add(new Collection(C_ONLINE, sec.id));
         cats.add(new Collection(C_DEVICE, null));
@@ -1003,6 +1031,44 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             cats.add(new Collection(C_ALBUM, album));
         }
         LinearLayout col = Ui.column(this);
+        List<String> recents = lib.searchHistory();
+        if (!recents.isEmpty()) {
+            LinearLayout head = Ui.row(this);
+            head.setPadding(Ui.dp(this, 16), Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 4));
+            head.addView(Ui.text(this, "Búsquedas recientes", 17, Ui.TEXT, true), Ui.weight(1));
+            TextView clear = Ui.text(this, "Borrar", 13, Ui.SUB, true);
+            clear.setPadding(Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 8));
+            clear.setBackground(Ui.ripple(null));
+            clear.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    lib.clearSearchHistory();
+                }
+            });
+            head.addView(clear);
+            col.addView(head);
+            HorizontalScrollView hs = new HorizontalScrollView(this);
+            hs.setHorizontalScrollBarEnabled(false);
+            LinearLayout chips = Ui.row(this);
+            chips.setPadding(Ui.dp(this, 12), Ui.dp(this, 4), Ui.dp(this, 12), Ui.dp(this, 8));
+            for (final String q : recents) {
+                TextView chip = Ui.text(this, q, 13, Ui.TEXT, false);
+                chip.setPadding(Ui.dp(this, 14), Ui.dp(this, 8), Ui.dp(this, 14), Ui.dp(this, 8));
+                chip.setBackground(Ui.ripple(Ui.rounded(Ui.CARD, Ui.dp(this, 18))));
+                chip.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        input.setText(q);
+                        input.setSelection(q.length());
+                    }
+                });
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                lp.setMargins(Ui.dp(this, 4), 0, Ui.dp(this, 4), 0);
+                chips.addView(chip, lp);
+            }
+            hs.addView(chips);
+            col.addView(hs);
+        }
         TextView t = Ui.text(this, "Explorar todo", 17, Ui.TEXT, true);
         t.setPadding(Ui.dp(this, 16), Ui.dp(this, 12), 0, Ui.dp(this, 8));
         col.addView(t);
@@ -1102,6 +1168,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             if (filter == 0) {
                 items.add(new Collection(C_LIKED, null));
                 items.add(new Collection(C_DEVICE, null));
+                if (!lib.recentlyPlayed(1).isEmpty()) items.add(new Collection(C_HISTORY, null));
                 items.add(new Collection(C_ONLINE, "top"));
                 items.add(new Collection(C_ONLINE, "radio"));
                 for (String n : lib.playlistNames()) items.add(new Collection(C_PLAYLIST, n));
@@ -1164,6 +1231,32 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             col.addView(list, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1));
             return col;
         }
+    }
+
+    private void playlistMenu(View anchor, final String playlist) {
+        PopupMenu pm = new PopupMenu(this, anchor);
+        pm.getMenu().add(0, 1, 0, "Cambiar nombre");
+        pm.getMenu().add(0, 2, 0, "Eliminar playlist");
+        pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == 1) renamePlaylist(playlist);
+                else confirmDelete(playlist);
+                return true;
+            }
+        });
+        pm.show();
+    }
+
+    private void renamePlaylist(final String playlist) {
+        Dialogs.rename(this, playlist, new Dialogs.OnName() {
+            @Override
+            public void onName(String name) {
+                // swap the open page for the renamed one
+                if (stack.size() > 1) stack.pop();
+                push(new DetailScreen(new Collection(C_PLAYLIST, name)));
+            }
+        });
     }
 
     private void confirmDelete(final String playlist) {
@@ -1230,7 +1323,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 top.addView(Ui.iconButton(MainActivity.this, R.drawable.ic_more, 48, Ui.TEXT, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        confirmDelete(col.name);
+                        playlistMenu(v, col.name);
                     }
                 }));
             }

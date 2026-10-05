@@ -1,12 +1,21 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.1, Android 5.0+, ~80 KB).
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.5, Android 5.0+, ~100 KB).
 
-| Inicio | Buscar | Top 50 | Reproduciendo | Radios |
+| Inicio | Reproduciendo | Letra | Cola | Ecualizador |
 |---|---|---|---|---|
-| ![](docs/1-inicio.png) | ![](docs/2-buscar.png) | ![](docs/3-top50.png) | ![](docs/4-reproduciendo.png) | ![](docs/5-radios.png) |
+| ![](docs/1-inicio.png) | ![](docs/4-reproduciendo.png) | ![](docs/6-letra.png) | ![](docs/7-cola.png) | ![](docs/8-ecualizador.png) |
 
 *(Capturas generadas en el simulador con datos de ejemplo; en el teléfono se ven las portadas y listas reales.)*
+
+## Novedades de la 1.5
+- **Letras sincronizadas** (LRCLIB): la línea que suena se ilumina y la pantalla la sigue; toca una línea para saltar a ella. Si solo hay letra sin tiempos, se muestra completa.
+- **Ecualizador**: 10 ajustes (Rock, Pop, Jazz, Clásica, Electrónica, Hip hop, Voz…), una barra por banda de tu dispositivo, refuerzo de graves y sonido envolvente.
+- **Temporizador de apagado**: 5 min a 1 hora o "al terminar esta canción"; baja el volumen suavemente antes de parar.
+- **Velocidad de reproducción**: 0.5× a 2×.
+- **Cola interactiva**: toca para saltar, ✕ para quitar, "Limpiar" para vaciar lo que sigue.
+- **Retoma donde lo dejaste**: al abrir la app vuelve la última cola, en pausa y en el mismo segundo.
+- **Escuchado recientemente** en Inicio y en la biblioteca, **búsquedas recientes**, **cambiar nombre** de playlists y **compartir** canción.
 
 ## Música real
 - **Catálogo de Deezer** (API pública, sin cuenta): Top 50 mundial, Reggaetón, Pop latino, Rock en español,
@@ -33,4 +42,4 @@ sudo apt install aapt dalvik-exchange zipalign apksigner openjdk-21-jdk-headless
 ```
 `sonora-release.jks` es la clave de firma (contraseña `sonora123`); conservarla permite instalar futuras versiones encima.
 
-`test/SmokeTest.java` (con respuestas simuladas de Deezer/radios en `test/Fixtures.java`) es la prueba Robolectric usada para verificar el flujo completo: secciones en línea, reproducción con enlace renovado, radios, búsqueda, artistas, playlists, persistencia y el caso sin conexión.
+`test/` contiene las pruebas Robolectric (23 casos) con respuestas simuladas de Deezer, radios y LRCLIB (`Fixtures.java`): secciones en línea, reproducción con enlace renovado, radios, búsqueda, playlists, persistencia, sin conexión, y todo lo de la 1.5 (temporizador, cola, sesión, historial, letras, ecualizador).

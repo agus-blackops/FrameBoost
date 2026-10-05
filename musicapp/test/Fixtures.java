@@ -25,6 +25,7 @@ public final class Fixtures implements Net.Fetcher {
 
     public final AtomicInteger trackLookups = new AtomicInteger();
     public final List<String> urls = Collections.synchronizedList(new ArrayList<String>());
+    public final AtomicInteger lyricLookups = new AtomicInteger();
     public volatile boolean offline;
     public volatile boolean radioMirrorDown = true;
     public volatile ImageMaker images;
@@ -106,6 +107,25 @@ public final class Fixtures implements Net.Fetcher {
         }
         if (url.contains("api.deezer.com/search") && url.contains("q=error")) {
             return "{\"error\":{\"type\":\"Exception\",\"message\":\"Quota limit exceeded\",\"code\":4}}".getBytes("UTF-8");
+        }
+        if (url.startsWith("https://lrclib.net/api/")) {
+            lyricLookups.incrementAndGet();
+            String dec = java.net.URLDecoder.decode(url, "UTF-8");
+            boolean search = dec.contains("/api/search");
+            if (dec.contains("track_name=Monaco")) {
+                return "{\"instrumental\":true,\"plainLyrics\":null,\"syncedLyrics\":null}".getBytes("UTF-8");
+            }
+            if (dec.contains("track_name=Flowers")) {
+                if (search) return "[]".getBytes("UTF-8");
+                throw new IOException("HTTP 404");
+            }
+            if (dec.contains("track_name=Hips Don't Lie")) {
+                if (!search) throw new IOException("HTTP 404");
+                return "[{\"id\":1,\"trackName\":\"Hips Don't Lie\",\"instrumental\":false,\"plainLyrics\":\"Ladies up in here tonight\\nNo, no, no\",\"syncedLyrics\":null}]".getBytes("UTF-8");
+            }
+            if (search) return "[]".getBytes("UTF-8");
+            return ("{\"id\":7,\"instrumental\":false,\"plainLyrics\":\"uno\\ndos\\ntres\\ncuatro\\ncinco\","
+                    + "\"syncedLyrics\":\"[ar:Someone]\\n[00:00.50] Primera línea\\n[00:04.00] Segunda línea\\n[00:08.25] Tercera línea\\n[00:12.00] \\n[00:16.5] Última línea\"}").getBytes("UTF-8");
         }
         if (url.contains("api.deezer.com/chart")) return deezerList(50, 0).getBytes("UTF-8");
         if (url.contains("api.deezer.com/artist/")) return deezerList(12, 3).getBytes("UTF-8");
