@@ -15,11 +15,11 @@
       </span>
       <div>
         <h1>FrameBoost IA</h1>
-        <p id="model-label" class="sub">Claude</p>
+        <p id="model-label" class="sub">Simulador en tu teléfono</p>
       </div>
     </div>
     <div class="actions">
-      <button id="new-chat" class="icon" aria-label="Nueva conversación" title="Nueva conversación">
+      <button id="new-chat" class="icon" aria-label="Nueva conversación" title="Nueva conversación" hidden>
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
       </button>
       <button id="open-settings" class="icon" aria-label="Ajustes" title="Ajustes">
@@ -28,28 +28,40 @@
     </div>
   </header>
 
-  <main id="log" aria-live="polite">
-    <section id="welcome" class="welcome">
-      <h2>Tu ingeniero de FrameBoost</h2>
-      <p>Claude ajusta y explica el controlador de boost. Cada respuesta se apoya en el
-        simulador real de FrameBoost, que corre aquí mismo en tu teléfono.</p>
-      <div class="chips" id="suggestions">
-        <button class="chip">¿Por qué fence nunca pasa de balanced?</button>
-        <button class="chip">Compara los seis escenarios con los valores por defecto</button>
-        <button class="chip">¿Puede whip-turn hacer más boost sin rechazar más frames?</button>
-        <button class="chip">¿Qué pasa si bajo reject_below a 0.45?</button>
-      </div>
-      <p id="sim-status" class="hint">Cargando el simulador…</p>
-    </section>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="lab" class="on" aria-selected="true">Laboratorio <em>gratis</em></button>
+    <button role="tab" data-tab="chat" aria-selected="false">Chat con Claude</button>
+  </nav>
+
+  <main id="lab" class="view">
+    <p id="lab-loading" class="hint center">Cargando el simulador…</p>
   </main>
 
-  <form id="composer" class="composer">
-    <textarea id="input" rows="1" placeholder="Pregunta sobre FrameBoost…" enterkeyhint="send"></textarea>
-    <button id="send" class="send" type="submit" aria-label="Enviar">
-      <svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      <svg class="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
-    </button>
-  </form>
+  <div id="chat" class="view chat" hidden>
+    <main id="log" aria-live="polite">
+      <section id="welcome" class="welcome">
+        <h2>Chat con Claude</h2>
+        <p>Pregunta con tus palabras y Claude decide qué medir en el simulador.
+          Es opcional: necesita una clave de API de Anthropic, que es de pago.
+          El Laboratorio hace las mediciones, el auto-ajuste y el diagnóstico gratis.</p>
+        <div class="chips" id="suggestions">
+          <button class="chip">¿Por qué fence nunca pasa de balanced?</button>
+          <button class="chip">Compara los seis escenarios con los valores por defecto</button>
+          <button class="chip">¿Puede whip-turn hacer más boost sin rechazar más frames?</button>
+          <button class="chip">¿Qué pasa si bajo reject_below a 0.45?</button>
+        </div>
+        <p id="sim-status" class="hint"></p>
+      </section>
+    </main>
+
+    <form id="composer" class="composer">
+      <textarea id="input" rows="1" placeholder="Pregunta sobre FrameBoost…" enterkeyhint="send"></textarea>
+      <button id="send" class="send" type="submit" aria-label="Enviar">
+        <svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <svg class="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+      </button>
+    </form>
+  </div>
 
   <dialog id="settings" class="sheet">
     <form method="dialog" id="settings-form">
@@ -60,8 +72,9 @@
           <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
           <button type="button" id="toggle-key" class="ghost">Ver</button>
         </div>
-        <small>Se guarda solo en este teléfono y solo se envía a api.anthropic.com.
-          Consíguela en console.anthropic.com.</small>
+        <small>Solo para el Chat con Claude, que es opcional y de pago. El Laboratorio
+          no la necesita. Se guarda solo en este teléfono y solo se envía a
+          api.anthropic.com; se consigue en console.anthropic.com.</small>
       </label>
       <label class="field">
         <span>Modelo</span>

@@ -4,6 +4,7 @@ import DOMPurify from "dompurify";
 
 import { Advisor } from "./agent.js";
 import { Simulator } from "./sim.js";
+import { mountLab } from "./lab/lab.js";
 
 const $ = (id) => document.getElementById(id);
 const log = $("log");
@@ -55,10 +56,47 @@ function makeClient() {
   });
 }
 
+let tab = "lab";
+
 function refreshHeader() {
+  if (tab === "lab") {
+    $("model-label").textContent = "Simulador en tu teléfono · sin conexión";
+    return;
+  }
   const effort = settings.model.startsWith("claude-haiku") ? "" : ` · esfuerzo ${$("effort").querySelector(`[value="${settings.effort}"]`)?.textContent.toLowerCase()}`;
   $("model-label").textContent = `${MODEL_NAMES[settings.model] ?? settings.model}${effort}`;
 }
+
+function chatStatus() {
+  const status = $("sim-status");
+  if (!status || !sim) return;
+  status.textContent = settings.apiKey
+    ? "Listo."
+    : "Para usar el chat, añade tu clave en Ajustes (el engranaje de arriba).";
+}
+
+function showTab(name) {
+  tab = name;
+  for (const b of document.querySelectorAll(".tabs button")) {
+    const on = b.dataset.tab === name;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-selected", String(on));
+  }
+  $("lab").hidden = name !== "lab";
+  $("chat").hidden = name !== "chat";
+  $("new-chat").hidden = name !== "chat";
+  refreshHeader();
+  try {
+    localStorage.setItem("tab", name);
+  } catch {
+    // Not remembered; the lab is the default anyway.
+  }
+}
+
+document.querySelector(".tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-tab]");
+  if (b) showTab(b.dataset.tab);
+});
 
 // ---- rendering ----
 
@@ -346,14 +384,19 @@ $("settings").addEventListener("close", () => {
   };
   saveSettings(settings);
   refreshHeader();
-  const status = $("sim-status");
-  if (status && sim) status.textContent = settings.apiKey ? "Simulador listo." : "Simulador listo. Añade tu clave de API en Ajustes para empezar.";
+  chatStatus();
 });
 
 // ---- boot ----
 
 async function boot() {
-  refreshHeader();
+  let saved = "lab";
+  try {
+    saved = localStorage.getItem("tab") === "chat" ? "chat" : "lab";
+  } catch {
+    // Default tab.
+  }
+  showTab(saved);
   try {
     const [wasm, worker] = await Promise.all([
       fetch("frameboost.wasm").then((r) => r.arrayBuffer()),
@@ -361,12 +404,13 @@ async function boot() {
     ]);
     sim = await Simulator.load(wasm, worker);
     advisor = new Advisor({ client: makeClient(), sim, settings: requestSettings() });
-    const status = $("sim-status");
-    if (status) status.textContent = settings.apiKey ? "Simulador listo." : "Simulador listo. Añade tu clave de API en Ajustes para empezar.";
-    if (!settings.apiKey) openSettings();
+    $("lab-loading").remove();
+    mountLab($("lab"), sim);
+    chatStatus();
   } catch (err) {
-    const status = $("sim-status");
-    if (status) {
+    for (const id of ["lab-loading", "sim-status"]) {
+      const status = $(id);
+      if (!status) continue;
       status.textContent = `No se pudo cargar el simulador: ${err.message}`;
       status.style.color = "var(--bad)";
     }

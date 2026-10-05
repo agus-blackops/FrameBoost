@@ -337,11 +337,19 @@ agent loop is tested offline against a scripted Claude; no key is needed for
 ### On a phone
 
 `android/` packages the same advisor as an Android app (8.0+). The simulator
-is compiled to WebAssembly and runs on the phone, in worker threads; Claude is
-called from a WebView through the official Anthropic JavaScript SDK. The system
-prompt, the tools and the request shape are the Rust ones, so the app and the
-CLI cannot drift apart. You enter your own API key in the app's settings; it is
-kept in the app's private storage and sent only to `api.anthropic.com`.
+is compiled to WebAssembly and runs on the phone, in worker threads, so the
+app's main screen — the *Laboratorio* — needs no account, no key and no
+network: run any scenario with any governor settings, read a plain-language
+diagnosis of the run, compare all six, or auto-tune. The tuner varies one knob
+at a time, combines the winners, and accepts only configurations that reject no
+more frames than the defaults; it only ever *raises* the rejection threshold,
+since lowering it buys numbers with artifacts the simulator cannot see.
+
+The *Chat con Claude* tab is optional. It calls Claude from a WebView through
+the official Anthropic JavaScript SDK, with the Rust system prompt, tools and
+request shape, so the app and the CLI cannot drift apart. It needs your own API
+key, which is kept in the app's private storage and sent only to
+`api.anthropic.com`.
 
 ```sh
 android/build.sh                            # → android/build/frameboost-ia.apk
