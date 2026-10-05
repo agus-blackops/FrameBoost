@@ -4,6 +4,7 @@ members = [
     "crates/frameboost-core",
     "crates/frameboost-ai",
     "crates/frameboost-gpu",
+    "crates/frameboost-wasm",
     "crates/frameboost-sim",
 ]
 

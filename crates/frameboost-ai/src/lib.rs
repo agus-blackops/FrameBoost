@@ -15,9 +15,11 @@
 
 pub mod agent;
 pub mod api;
+#[cfg(feature = "http")]
+pub mod http;
 pub mod tools;
 
 pub use agent::{Advisor, Event, Outcome, Usage, SYSTEM_PROMPT};
-pub use api::{
-    build_request, ApiError, HttpTransport, Request, Settings, Transport, DEFAULT_MODEL,
-};
+pub use api::{build_request, ApiError, Request, Settings, Transport, DEFAULT_MODEL};
+#[cfg(feature = "http")]
+pub use http::HttpTransport;

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.frameboost.advisor">
+
+    <!-- Claude, at api.anthropic.com. Nothing else leaves the phone. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- No backup: the API key lives in the app's private storage. -->
+    <application
+        android:label="FrameBoost IA"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:usesCleartextTraffic="false"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <!-- Rotation and keyboard changes must not recreate the activity:
+             that would reload the page and lose the conversation. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="color-scheme" content="light dark">
+  <title>FrameBoost IA</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+      </span>
+      <div>
+        <h1>FrameBoost IA</h1>
+        <p id="model-label" class="sub">Claude</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="new-chat" class="icon" aria-label="Nueva conversación" title="Nueva conversación">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button id="open-settings" class="icon" aria-label="Ajustes" title="Ajustes">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="log" aria-live="polite">
+    <section id="welcome" class="welcome">
+      <h2>Tu ingeniero de FrameBoost</h2>
+      <p>Claude ajusta y explica el controlador de boost. Cada respuesta se apoya en el
+        simulador real de FrameBoost, que corre aquí mismo en tu teléfono.</p>
+      <div class="chips" id="suggestions">
+        <button class="chip">¿Por qué fence nunca pasa de balanced?</button>
+        <button class="chip">Compara los seis escenarios con los valores por defecto</button>
+        <button class="chip">¿Puede whip-turn hacer más boost sin rechazar más frames?</button>
+        <button class="chip">¿Qué pasa si bajo reject_below a 0.45?</button>
+      </div>
+      <p id="sim-status" class="hint">Cargando el simulador…</p>
+    </section>
+  </main>
+
+  <form id="composer" class="composer">
+    <textarea id="input" rows="1" placeholder="Pregunta sobre FrameBoost…" enterkeyhint="send"></textarea>
+    <button id="send" class="send" type="submit" aria-label="Enviar">
+      <svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <svg class="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+    </button>
+  </form>
+
+  <dialog id="settings" class="sheet">
+    <form method="dialog" id="settings-form">
+      <h2>Ajustes</h2>
+      <label class="field">
+        <span>Clave de API de Anthropic</span>
+        <div class="row">
+          <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+          <button type="button" id="toggle-key" class="ghost">Ver</button>
+        </div>
+        <small>Se guarda solo en este teléfono y solo se envía a api.anthropic.com.
+          Consíguela en console.anthropic.com.</small>
+      </label>
+      <label class="field">
+        <span>Modelo</span>
+        <select id="model">
+          <option value="claude-opus-5-5">Claude Opus 5.5 — el más capaz</option>
+          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 — más rápido</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 — el más económico</option>
+        </select>
+      </label>
+      <label class="field" id="effort-field">
+        <span>Esfuerzo</span>
+        <select id="effort">
+          <option value="low">Bajo</option>
+          <option value="medium">Medio</option>
+          <option value="high">Alto</option>
+          <option value="xhigh">Muy alto</option>
+          <option value="max">Máximo</option>
+        </select>
+        <small>Más esfuerzo: respuestas más cuidadosas, más lentas y más caras.</small>
+      </label>
+      <p id="usage" class="hint"></p>
+      <div class="sheet-actions">
+        <button value="cancel" class="ghost">Cancelar</button>
+        <button value="save" class="primary" id="save-settings">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

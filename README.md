@@ -288,6 +288,8 @@ crates/
   frameboost-sim/    headless closed-loop harness and scenario catalogue.
   frameboost-ai/     a Claude-powered advisor that tunes the quality governor
                      using the simulator as its evidence.
+  frameboost-wasm/   the advisor's tools and request shape as WebAssembly.
+android/             the advisor as an Android app.
 ```
 
 `core` keeps scalar versions of the same passes the shaders implement, and that
@@ -300,7 +302,7 @@ finds that way.
 ## Running it
 
 ```sh
-cargo test --workspace                       # 117 tests
+cargo test --workspace                       # 119 tests
 cargo run --release -p frameboost-sim        # all six scenarios
 cargo run --release -p frameboost-sim -- --scenario whip-turn --native-ms 90
 cargo run --release -p frameboost-sim -- --scenario fence --csv > fence.csv
@@ -331,6 +333,26 @@ adaptive thinking, an explicit `effort` (default `high`), automatic prompt
 caching on an append-only history, and server-side refusal fallback. The
 agent loop is tested offline against a scripted Claude; no key is needed for
 `cargo test`.
+
+### On a phone
+
+`android/` packages the same advisor as an Android app (8.0+). The simulator
+is compiled to WebAssembly and runs on the phone, in worker threads; Claude is
+called from a WebView through the official Anthropic JavaScript SDK. The system
+prompt, the tools and the request shape are the Rust ones, so the app and the
+CLI cannot drift apart. You enter your own API key in the app's settings; it is
+kept in the app's private storage and sent only to `api.anthropic.com`.
+
+```sh
+android/build.sh                            # → android/build/frameboost-ia.apk
+(cd android/web && npm ci && npm test)      # the JS loop against a scripted Claude
+```
+
+No Android SDK, NDK or Gradle is involved: the build assembles the APK from
+pinned, checksummed tools on Maven Central (aapt2, dx, apksig). It needs a JDK,
+Node and the `wasm32-unknown-unknown` Rust target. The first build creates a
+signing key at `android/build/frameboost.p12`; keep it, since Android only
+installs an update signed with the same key.
 
 What it cannot do is what the simulator cannot do: it has no eyes on the
 image. A lower rejection threshold always looks better in these numbers; the

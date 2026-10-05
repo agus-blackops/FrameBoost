@@ -1,0 +1,15 @@
+[package]
+name = "frameboost-wasm"
+description = "The FrameBoost advisor's tools and request shape, compiled to WebAssembly for the mobile app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+frameboost-ai = { path = "../frameboost-ai", version = "0.1.0", default-features = false }
+serde_json = "1"
