@@ -150,7 +150,7 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
         if (t.key.equals(artKey) && art != null) return art;
         artKey = t.key;
         art = Covers.generated(t, 256);
-        if (!t.remote) {
+        {
             final Context app = getApplicationContext();
             new Thread(new Runnable() {
                 @Override

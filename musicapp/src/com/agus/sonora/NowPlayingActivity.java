@@ -30,6 +30,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     private ImageView cover;
     private TextView title;
     private TextView artist;
+    private TextView badge;
     private ImageView like;
     private SeekBar seek;
     private TextView elapsed;
@@ -108,6 +109,10 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         artist = Ui.text(this, "", 15, Ui.SUB, false);
         texts.addView(title);
         texts.addView(artist);
+        badge = Ui.text(this, "", 11, Ui.GREEN, true);
+        badge.setLetterSpacing(0.08f);
+        badge.setPadding(0, Ui.dp(this, 4), 0, 0);
+        texts.addView(badge);
         info.addView(texts, Ui.weight(1));
         like = Ui.iconButton(this, R.drawable.ic_heart_outline, 48, Ui.TEXT, new View.OnClickListener() {
             @Override
@@ -284,6 +289,9 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
                     new int[]{MainActivity.darken(Covers.accent(t)), Ui.BG, Ui.BG}));
         }
         source.setText(player.queueName().isEmpty() ? t.album : player.queueName());
+        badge.setVisibility(t.remote ? View.VISIBLE : View.GONE);
+        badge.setText(t.isLive() ? "● EN VIVO" : "VISTA PREVIA · 30 s");
+        seek.setEnabled(!t.isLive());
         boolean liked = lib.isLiked(t);
         like.setImageResource(liked ? R.drawable.ic_heart : R.drawable.ic_heart_outline);
         like.setColorFilter(liked ? Ui.GREEN : Ui.TEXT);
@@ -299,10 +307,16 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
 
     private void updateProgress() {
         if (dragging) return;
-        int d = player.duration();
+        Track t = player.current();
         int p = player.position();
-        seek.setProgress(d > 0 ? (int) (1000L * p / d) : 0);
         elapsed.setText(Ui.time(p));
+        if (t != null && t.isLive()) {
+            seek.setProgress(1000);
+            remaining.setText("EN VIVO");
+            return;
+        }
+        int d = player.duration();
+        seek.setProgress(d > 0 ? (int) (1000L * p / d) : 0);
         remaining.setText(d > 0 ? "-" + Ui.time(d - p) : "--:--");
     }
 }

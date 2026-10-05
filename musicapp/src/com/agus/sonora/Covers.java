@@ -38,7 +38,7 @@ public final class Covers {
             return value.getByteCount();
         }
     };
-    private static final ExecutorService IO = Executors.newFixedThreadPool(2);
+    private static final ExecutorService IO = Executors.newFixedThreadPool(4);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     private Covers() {
@@ -62,7 +62,7 @@ public final class Covers {
             view.setImageBitmap(hit);
             return;
         }
-        if (t.remote) {
+        if (t.remote && t.artUrl == null) {
             view.setImageBitmap(loadSync(ctx, t, sizePx));
             return;
         }
@@ -90,10 +90,95 @@ public final class Covers {
         String key = t.key + "@" + sizePx;
         Bitmap hit = CACHE.get(key);
         if (hit != null) return hit;
-        Bitmap b = t.remote ? null : embedded(ctx, t, sizePx);
-        if (b == null) b = generated(t, sizePx);
+        Bitmap b;
+        if (t.remote) {
+            String url = sizePx <= 300 && t.artSmall != null ? t.artSmall : t.artUrl;
+            b = url == null ? null : download(ctx, url, sizePx);
+            if (b == null) {
+                // No art or no connection: show a generated cover but try again next time.
+                return url == null ? cacheGenerated(key, t, sizePx) : generated(t, sizePx);
+            }
+            if (t.isLive() && b.getWidth() < sizePx * 0.6f) b = framed(t, b, sizePx); // small station logos
+        } else {
+            b = embedded(ctx, t, sizePx);
+            if (b == null) b = generated(t, sizePx);
+        }
         CACHE.put(key, b);
         return b;
+    }
+
+    private static Bitmap cacheGenerated(String key, Track t, int sizePx) {
+        Bitmap b = generated(t, sizePx);
+        CACHE.put(key, b);
+        return b;
+    }
+
+    /** Fetches an image (disk-cached in the app's cache dir) and decodes it to about sizePx. */
+    private static Bitmap download(Context ctx, String url, int sizePx) {
+        java.io.File dir = new java.io.File(ctx.getCacheDir(), "art");
+        java.io.File f = new java.io.File(dir, Integer.toHexString(url.hashCode()) + "_" + url.length());
+        try {
+            byte[] data;
+            if (f.exists()) {
+                data = readAll(f);
+            } else {
+                data = Net.getBytes(url);
+                dir.mkdirs();
+                java.io.FileOutputStream out = new java.io.FileOutputStream(f);
+                out.write(data);
+                out.close();
+            }
+            Bitmap b = decodeSquare(data, sizePx);
+            if (b == null) f.delete();
+            return b;
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    private static byte[] readAll(java.io.File f) throws java.io.IOException {
+        java.io.FileInputStream in = new java.io.FileInputStream(f);
+        try {
+            byte[] data = new byte[(int) f.length()];
+            int off = 0;
+            while (off < data.length) {
+                int n = in.read(data, off, data.length - off);
+                if (n < 0) break;
+                off += n;
+            }
+            return data;
+        } finally {
+            in.close();
+        }
+    }
+
+    /** A small logo centred on a generated gradient tile. */
+    private static Bitmap framed(Track t, Bitmap logo, int size) {
+        Bitmap b = generated(t.title, size, false);
+        Canvas c = new Canvas(b);
+        int inner = (int) (size * 0.6f);
+        int off = (size - inner) / 2;
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+        c.drawBitmap(logo, null, new android.graphics.Rect(off, off, off + inner, off + inner), p);
+        return b;
+    }
+
+    /** Decodes, centre-crops to a square and scales down to at most sizePx. */
+    static Bitmap decodeSquare(byte[] art, int sizePx) {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(art, 0, art.length, o);
+        if (o.outWidth <= 0 || o.outHeight <= 0) return null;
+        int sample = 1;
+        while (o.outWidth / (sample * 2) >= sizePx && o.outHeight / (sample * 2) >= sizePx) sample *= 2;
+        o = new BitmapFactory.Options();
+        o.inSampleSize = sample;
+        Bitmap raw = BitmapFactory.decodeByteArray(art, 0, art.length, o);
+        if (raw == null) return null;
+        int side = Math.min(raw.getWidth(), raw.getHeight());
+        Bitmap square = Bitmap.createBitmap(raw, (raw.getWidth() - side) / 2,
+                (raw.getHeight() - side) / 2, side, side);
+        return side > sizePx ? Bitmap.createScaledBitmap(square, sizePx, sizePx, true) : square;
     }
 
     private static Bitmap embedded(Context ctx, Track t, int sizePx) {
@@ -101,20 +186,7 @@ public final class Covers {
         try {
             r.setDataSource(ctx, Uri.parse(t.key));
             byte[] art = r.getEmbeddedPicture();
-            if (art == null) return null;
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
-            BitmapFactory.decodeByteArray(art, 0, art.length, o);
-            int sample = 1;
-            while (o.outWidth / (sample * 2) >= sizePx && o.outHeight / (sample * 2) >= sizePx) sample *= 2;
-            o = new BitmapFactory.Options();
-            o.inSampleSize = sample;
-            Bitmap raw = BitmapFactory.decodeByteArray(art, 0, art.length, o);
-            if (raw == null) return null;
-            int side = Math.min(raw.getWidth(), raw.getHeight());
-            Bitmap square = Bitmap.createBitmap(raw, (raw.getWidth() - side) / 2,
-                    (raw.getHeight() - side) / 2, side, side);
-            return side > sizePx ? Bitmap.createScaledBitmap(square, sizePx, sizePx, true) : square;
+            return art == null ? null : decodeSquare(art, sizePx);
         } catch (Throwable e) {
             return null;
         } finally {

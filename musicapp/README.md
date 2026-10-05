@@ -1,14 +1,24 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (Android 5.0+, ~70 KB).
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.1, Android 5.0+, ~80 KB).
 
-| Inicio | Buscar | Biblioteca | Reproduciendo |
-|---|---|---|---|
-| ![](docs/1-inicio.png) | ![](docs/2-buscar.png) | ![](docs/3-biblioteca.png) | ![](docs/4-reproduciendo.png) |
+| Inicio | Buscar | Top 50 | Reproduciendo | Radios |
+|---|---|---|---|---|
+| ![](docs/1-inicio.png) | ![](docs/2-buscar.png) | ![](docs/3-top50.png) | ![](docs/4-reproduciendo.png) | ![](docs/5-radios.png) |
+
+*(Capturas generadas en el simulador con datos de ejemplo; en el teléfono se ven las portadas y listas reales.)*
+
+## Música real
+- **Catálogo de Deezer** (API pública, sin cuenta): Top 50 mundial, Reggaetón, Pop latino, Rock en español,
+  Cumbia y Trap, más búsqueda de cualquier canción o artista y la página de cada artista con sus éxitos.
+  Deezer solo permite **vistas previas de 30 segundos** sin suscripción; los enlaces caducan, así que la app
+  pide uno nuevo justo antes de reproducir.
+- **Radios en vivo** (radio-browser.info): las emisoras más escuchadas de tu país (según el idioma/país del
+  teléfono), con **canciones completas**. También aparecen en la búsqueda.
+- Las canciones y radios que marques con ♥ o guardes en playlists se recuerdan aunque reinicies sin internet.
 
 ## Qué hace
-- **Tu música**: lee las canciones guardadas en el teléfono (MP3, M4A, FLAC…) con portada embebida.
-- **Descubrir en línea**: 16 temas libres (SoundHelix) que se reproducen por streaming.
+- **Tu música**: lee las canciones guardadas en el teléfono (MP3, M4A, FLAC…) con portada embebida; se escuchan completas.
 - Reproducción en segundo plano con notificación multimedia, pantalla de bloqueo, botones de auriculares/Bluetooth.
 - Mini‑reproductor, pantalla completa con barra de progreso, aleatorio, repetir (todo / una), anterior/siguiente.
 - ♥ "Canciones que te gustan", playlists propias (crear, añadir, quitar, eliminar), artistas y álbumes.
@@ -23,4 +33,4 @@ sudo apt install aapt dalvik-exchange zipalign apksigner openjdk-21-jdk-headless
 ```
 `sonora-release.jks` es la clave de firma (contraseña `sonora123`); conservarla permite instalar futuras versiones encima.
 
-`test/SmokeTest.java` es la prueba Robolectric usada para verificar el flujo completo (abrir, reproducir, notificación, búsqueda, playlists, persistencia).
+`test/SmokeTest.java` (con respuestas simuladas de Deezer/radios en `test/Fixtures.java`) es la prueba Robolectric usada para verificar el flujo completo: secciones en línea, reproducción con enlace renovado, radios, búsqueda, artistas, playlists, persistencia y el caso sin conexión.

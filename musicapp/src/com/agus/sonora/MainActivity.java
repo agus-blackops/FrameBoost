@@ -106,6 +106,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         super.onResume();
         handler.post(ticker);
         onPlayerChanged();
+        lib.loadOnline(); // no-op for shelves already loaded or loading
+
     }
 
     @Override
@@ -373,10 +375,26 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     private final class Collection {
         final int kind;
         final String name;
+        final long artistId;
 
         Collection(int kind, String name) {
+            this(kind, name, 0);
+        }
+
+        Collection(int kind, String name, long artistId) {
             this.kind = kind;
             this.name = name;
+            this.artistId = artistId;
+        }
+
+        String count(int n) {
+            Library.Section sec = section();
+            if (sec != null && sec.radio) return n == 1 ? "1 emisora" : n + " emisoras";
+            return Ui.songs(n);
+        }
+
+        Library.Section section() {
+            return kind == C_ONLINE ? lib.section(name) : null;
         }
 
         String title() {
@@ -386,7 +404,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 case C_DEVICE:
                     return "Tu música";
                 case C_ONLINE:
-                    return "Descubrir en línea";
+                    return section() == null ? "En línea" : section().title;
                 case C_RECENT:
                     return "Agregadas recientemente";
                 default:
@@ -402,6 +420,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return "Álbum";
                 case C_DEVICE:
                     return "Canciones del dispositivo";
+                case C_ONLINE:
+                    return section() != null && section().radio ? "Emisoras" : "Playlist";
                 default:
                     return "Playlist";
             }
@@ -414,14 +434,17 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 case C_DEVICE:
                     return lib.localTracks();
                 case C_ONLINE:
-                    return lib.onlineTracks();
+                    return section() == null ? new ArrayList<Track>() : section().tracks;
                 case C_RECENT:
                     return lib.recentlyAdded(50);
                 case C_PLAYLIST:
                     return lib.playlist(name);
                 case C_ARTIST: {
                     List<Track> l = lib.group(false).get(name);
-                    return l == null ? new ArrayList<Track>() : l;
+                    List<Track> out = l == null ? new ArrayList<Track>() : new ArrayList<>(l);
+                    List<Track> top = lib.artistTop(name);
+                    if (top != null) for (Track t : top) if (!out.contains(t)) out.add(t);
+                    return out;
                 }
                 case C_ALBUM: {
                     List<Track> l = lib.group(true).get(name);
@@ -456,11 +479,12 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         FrameLayout f = new FrameLayout(this);
         ImageView img = new ImageView(this);
         img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        List<Track> tracks = col.kind == C_ALBUM || col.kind == C_ARTIST ? col.tracks() : null;
+        List<Track> tracks = col.kind == C_ALBUM || col.kind == C_ARTIST
+                || (col.kind == C_ONLINE && !col.tracks().isEmpty()) ? col.tracks() : null;
         if (tracks != null && !tracks.isEmpty()) Covers.load(this, tracks.get(0), img, Ui.dp(this, sizeDp));
         else img.setImageBitmap(col.cover(Ui.dp(this, sizeDp)));
         f.addView(img, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
-        if (col.kind == C_LIKED || col.kind == C_DEVICE || col.kind == C_ONLINE) {
+        if (col.kind == C_LIKED || col.kind == C_DEVICE || (col.kind == C_ONLINE && tracks == null)) {
             int res = col.kind == C_LIKED ? R.drawable.ic_heart
                     : col.kind == C_DEVICE ? R.drawable.ic_library : R.drawable.ic_note;
             ImageView glyph = Ui.icon(this, res, Math.max(24, sizeDp / 2), Ui.TEXT);
@@ -477,6 +501,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     }
 
     private void open(Collection c) {
+        if (c.kind == C_ARTIST) lib.loadArtistTop(c.name, c.artistId);
+        Library.Section sec = c.section();
+        if (sec != null && sec.state == Library.FAILED) lib.loadSection(sec);
         push(new DetailScreen(c));
     }
 
@@ -488,8 +515,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         m.add(0, 1, 0, lib.isLiked(t) ? "Quitar de Me gusta" : "Añadir a Me gusta");
         m.add(0, 2, 0, "Reproducir a continuación");
         m.add(0, 3, 0, "Añadir a playlist…");
-        m.add(0, 4, 0, "Ir al artista");
-        m.add(0, 5, 0, "Ir al álbum");
+        if (!t.isLive()) m.add(0, 4, 0, "Ir al artista");
+        if (!t.remote) m.add(0, 5, 0, "Ir al álbum");
         if (from != null && from.kind == C_PLAYLIST) m.add(0, 6, 0, "Quitar de esta playlist");
         pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
@@ -506,7 +533,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                         Dialogs.addToPlaylist(MainActivity.this, t);
                         break;
                     case 4:
-                        open(new Collection(C_ARTIST, t.artist));
+                        open(new Collection(C_ARTIST, t.artist, t.artistId));
                         break;
                     case 5:
                         open(new Collection(C_ALBUM, t.album));
@@ -529,6 +556,51 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         TextView t = Ui.text(this, s, 22, Ui.TEXT, true);
         t.setPadding(Ui.dp(this, 16), Ui.dp(this, 24), Ui.dp(this, 16), Ui.dp(this, 12));
         return t;
+    }
+
+    /** Title + subtitle of a home shelf, with "Ver todo" opening the whole list. */
+    private View sectionHeader(final Collection c, String subtitle) {
+        LinearLayout r = Ui.row(this);
+        r.setPadding(Ui.dp(this, 16), Ui.dp(this, 24), Ui.dp(this, 8), Ui.dp(this, 12));
+        LinearLayout texts = Ui.column(this);
+        texts.addView(Ui.text(this, c.title(), 22, Ui.TEXT, true));
+        if (subtitle != null) texts.addView(Ui.text(this, subtitle, 13, Ui.SUB, false));
+        r.addView(texts, Ui.weight(1));
+        TextView all = Ui.text(this, "Ver todo", 13, Ui.SUB, true);
+        all.setPadding(Ui.dp(this, 10), Ui.dp(this, 8), Ui.dp(this, 10), Ui.dp(this, 8));
+        all.setBackground(Ui.ripple(null));
+        all.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(c);
+            }
+        });
+        r.addView(all);
+        return r;
+    }
+
+    /** Placeholder for a shelf that is loading or failed to load. */
+    private View sectionStatus(final Library.Section sec) {
+        LinearLayout box = Ui.row(this);
+        box.setPadding(Ui.dp(this, 16), 0, Ui.dp(this, 16), 0);
+        if (sec.state == Library.FAILED) {
+            box.addView(Ui.text(this, "Sin conexión", 14, Ui.SUB, false), Ui.weight(1));
+            box.addView(pillButton("Reintentar", Ui.CARD, Ui.TEXT, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    lib.loadSection(sec);
+                }
+            }));
+        } else {
+            ProgressBar pb = new ProgressBar(this);
+            pb.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(Ui.GREEN));
+            box.addView(pb, Ui.lp(Ui.dp(this, 24), Ui.dp(this, 24)));
+            TextView t = Ui.text(this, "Cargando…", 14, Ui.SUB, false);
+            t.setPadding(Ui.dp(this, 12), 0, 0, 0);
+            box.addView(t);
+        }
+        box.setMinimumHeight(Ui.dp(this, 56));
+        return box;
     }
 
     private View permissionCard() {
@@ -593,7 +665,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             List<Collection> quick = new ArrayList<>();
             quick.add(new Collection(C_LIKED, null));
             quick.add(new Collection(C_DEVICE, null));
-            quick.add(new Collection(C_ONLINE, null));
+            quick.add(new Collection(C_ONLINE, "top"));
+            quick.add(new Collection(C_ONLINE, "radio"));
             if (!lib.localTracks().isEmpty()) quick.add(new Collection(C_RECENT, null));
             for (String name : lib.playlistNames()) {
                 if (quick.size() >= 6) break;
@@ -610,14 +683,21 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             }
             col.addView(grid);
 
-            // online row
-            col.addView(sectionTitle("Descubrir en línea"));
-            col.addView(trackRow(lib.onlineTracks(), new Collection(C_ONLINE, null)));
-
             List<Track> recent = lib.recentlyAdded(15);
             if (!recent.isEmpty()) {
                 col.addView(sectionTitle("Agregadas recientemente"));
                 col.addView(trackRow(recent, new Collection(C_RECENT, null)));
+            }
+
+            // real music from the internet: charts, genres and live radio
+            for (Library.Section sec : lib.sections()) {
+                Collection c = new Collection(C_ONLINE, sec.id);
+                col.addView(sectionHeader(c, sec.subtitle));
+                if (sec.state == Library.READY) {
+                    col.addView(trackRow(sec.tracks.size() > 20 ? sec.tracks.subList(0, 20) : sec.tracks, c));
+                } else {
+                    col.addView(sectionStatus(sec));
+                }
             }
 
             LinkedHashMap<String, List<Track>> artists = lib.group(false);
@@ -628,7 +708,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
             if (Library.hasAudioPermission(MainActivity.this) && lib.loadedOnce() && lib.localTracks().isEmpty()) {
                 TextView hint = Ui.text(MainActivity.this,
-                        "No encontramos canciones en este teléfono. Copia archivos MP3 a la carpeta Música y aparecerán aquí; mientras tanto, prueba Descubrir en línea.",
+                        "No encontramos canciones guardadas en este teléfono. Copia archivos MP3 a la carpeta Música y aparecerán en \"Tu música\".",
                         14, Ui.SUB, false);
                 hint.setSingleLine(false);
                 hint.setPadding(Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 24), Ui.dp(MainActivity.this, 16), 0);
@@ -703,7 +783,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    player.playList(tracks, index, source.title());
+                    List<Track> all = source.kind == C_ONLINE ? source.tracks() : tracks;
+                    int i = all.indexOf(tracks.get(index));
+                    player.playList(all, Math.max(i, 0), source.title());
                 }
             });
             r.addView(card);
@@ -751,6 +833,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     private final class SearchScreen extends Screen {
         String query = "";
+        List<Track> online = new ArrayList<>();
+        String onlineFor = "";
+        boolean onlineFailed;
+        boolean searching;
+        Runnable pending;
         TrackAdapter adapter;
         View browse;
         ListView list;
@@ -839,22 +926,58 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 public void afterTextChanged(Editable s) {
                     query = s.toString();
                     clear.setVisibility(query.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                    scheduleOnline();
                     refresh();
                 }
             });
             clear.setVisibility(query.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            if (!query.trim().equals(onlineFor)) scheduleOnline();
             refresh();
             return col;
         }
 
+        /** Asks the internet once the user stops typing for a moment. */
+        void scheduleOnline() {
+            if (pending != null) handler.removeCallbacks(pending);
+            final String q = query.trim();
+            if (q.isEmpty()) {
+                searching = false;
+                return;
+            }
+            searching = true;
+            pending = new Runnable() {
+                @Override
+                public void run() {
+                    lib.searchOnline(q, new Library.Results() {
+                        @Override
+                        public void onResults(List<Track> tracks, boolean failed) {
+                            if (!q.equals(query.trim())) return; // stale answer
+                            online = tracks;
+                            onlineFor = q;
+                            onlineFailed = failed;
+                            searching = false;
+                            if (adapter != null && stack.peek() == SearchScreen.this) refresh();
+                        }
+                    });
+                }
+            };
+            handler.postDelayed(pending, 450);
+        }
+
         void refresh() {
-            boolean idle = query.trim().isEmpty();
+            String q = query.trim();
+            boolean idle = q.isEmpty();
             browse.setVisibility(idle ? View.VISIBLE : View.GONE);
             List<Track> res = idle ? new ArrayList<Track>() : lib.search(query);
+            if (!idle && q.equals(onlineFor)) {
+                for (Track t : online) if (!res.contains(t)) res.add(t);
+            }
             adapter.setTracks(res);
             list.setVisibility(idle ? View.GONE : View.VISIBLE);
             empty.setVisibility(!idle && res.isEmpty() ? View.VISIBLE : View.GONE);
-            empty.setText("No se encontró nada para \"" + query.trim() + "\"");
+            if (searching) empty.setText("Buscando \"" + q + "\"…");
+            else if (onlineFailed && q.equals(onlineFor)) empty.setText("No hay conexión a internet. Solo se buscó en tu música.");
+            else empty.setText("No se encontró nada para \"" + q + "\"");
         }
 
         @Override
@@ -870,7 +993,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     private View browseGrid() {
         List<Collection> cats = new ArrayList<>();
-        cats.add(new Collection(C_ONLINE, null));
+        for (Library.Section sec : lib.sections()) cats.add(new Collection(C_ONLINE, sec.id));
         cats.add(new Collection(C_DEVICE, null));
         cats.add(new Collection(C_LIKED, null));
         if (!lib.localTracks().isEmpty()) cats.add(new Collection(C_RECENT, null));
@@ -979,7 +1102,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             if (filter == 0) {
                 items.add(new Collection(C_LIKED, null));
                 items.add(new Collection(C_DEVICE, null));
-                items.add(new Collection(C_ONLINE, null));
+                items.add(new Collection(C_ONLINE, "top"));
+                items.add(new Collection(C_ONLINE, "radio"));
                 for (String n : lib.playlistNames()) items.add(new Collection(C_PLAYLIST, n));
             } else {
                 for (String n : lib.group(filter == 2).keySet()) {
@@ -1016,7 +1140,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     texts.setPadding(Ui.dp(MainActivity.this, 12), 0, 0, 0);
                     texts.addView(Ui.text(MainActivity.this, c.title(), 16, Ui.TEXT, false));
                     int count = c.tracks().size();
-                    String sub = c.kind == C_ARTIST ? "Artista · " + Ui.songs(count) : c.type() + " · " + Ui.songs(count);
+                    String sub = c.kind == C_ARTIST ? "Artista · " + Ui.songs(count) : c.type() + " · " + c.count(count);
                     texts.addView(Ui.text(MainActivity.this, sub, 13, Ui.SUB, false));
                     r.addView(texts, Ui.weight(1));
                     return r;
@@ -1070,6 +1194,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         View emptyView;
         ImageView playBtn;
         ImageView shuffleBtn;
+
+        boolean shownEmpty;
 
         DetailScreen(Collection col) {
             this.col = col;
@@ -1160,8 +1286,16 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             empty.setGravity(Gravity.CENTER);
             empty.setPadding(Ui.dp(MainActivity.this, 32), Ui.dp(MainActivity.this, 32), Ui.dp(MainActivity.this, 32), Ui.dp(MainActivity.this, 32));
             emptyView = empty;
+            empty.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Library.Section sec = col.section();
+                    if (sec != null && sec.state == Library.FAILED) lib.loadSection(sec);
+                }
+            });
             header.addView(empty);
 
+            shownEmpty = col.tracks().isEmpty();
             list.addHeaderView(header, null, false);
             adapter = new TrackAdapter(MainActivity.this, new TrackAdapter.MoreHandler() {
                 @Override
@@ -1192,6 +1326,13 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return "Esta playlist está vacía. Usa ⋮ › \"Añadir a playlist…\" en cualquier canción.";
                 case C_DEVICE:
                     return lib.isLoading() ? "Buscando canciones…" : "No hay canciones en este dispositivo.";
+                case C_ONLINE: {
+                    Library.Section sec = col.section();
+                    if (sec != null && sec.state == Library.FAILED) return "Sin conexión a internet.\nToca aquí para reintentar.";
+                    return "Cargando…";
+                }
+                case C_ARTIST:
+                    return col.artistId > 0 ? "Cargando canciones…" : "Nada por aquí todavía.";
                 default:
                     return "Nada por aquí todavía.";
             }
@@ -1205,9 +1346,14 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         void onLibraryChanged() {
             if (adapter == null) return;
             List<Track> tracks = col.tracks();
+            if (shownEmpty && !tracks.isEmpty() && (col.kind == C_ONLINE || col.kind == C_ARTIST)) {
+                shownEmpty = false;
+                render(); // first results arrived: rebuild so the header shows real cover art
+                return;
+            }
             adapter.setTracks(tracks);
             String len = Ui.totalLength(tracks);
-            subtitle.setText(col.type() + " · " + Ui.songs(tracks.size()) + (len.isEmpty() ? "" : " · " + len));
+            subtitle.setText(col.type() + " · " + col.count(tracks.size()) + (len.isEmpty() ? "" : " · " + len));
             emptyView.setVisibility(tracks.isEmpty() ? View.VISIBLE : View.GONE);
             ((TextView) emptyView).setText(emptyText());
             onPlayerChanged();

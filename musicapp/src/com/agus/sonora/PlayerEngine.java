@@ -55,6 +55,8 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     private boolean playWhenReady;
     private boolean resumeOnFocusGain;
     private int consecutiveErrors;
+    /** Bumped on every load so late async results for an old track are ignored. */
+    private int loadToken;
 
     private final List<Track> queue = new ArrayList<>();
     /** Playback order as indices into {@link #queue}; identity unless shuffling. */
@@ -178,6 +180,11 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     public void play() {
         if (current() == null) return;
         if (mp == null) {
+            if (preparing) { // still fetching the link; start as soon as it arrives
+                playWhenReady = true;
+                notifyChanged();
+                return;
+            }
             load(true);
             return;
         }
@@ -203,7 +210,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
     public void previous() {
         if (current() == null) return;
-        if (position() > 3000 || pos == 0) {
+        if ((position() > 3000 && !current().isLive()) || pos == 0) {
             seekTo(0);
             if (!isActive()) play();
             return;
@@ -213,6 +220,8 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     public void seekTo(int ms) {
+        Track t = current();
+        if (t != null && t.isLive()) return;
         if (mp != null && prepared) {
             mp.seekTo(Math.max(0, ms));
             notifyChanged();
@@ -233,6 +242,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
     /** Stops everything and clears the queue (used by the notification's close button). */
     public void stop() {
+        loadToken++;
         playWhenReady = false;
         releasePlayer();
         abandonFocus();
@@ -276,12 +286,45 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
     private void load(boolean autoplay) {
         releasePlayer();
-        Track t = current();
+        final int token = ++loadToken;
+        final Track t = current();
         if (t == null) {
             notifyChanged();
             return;
         }
         playWhenReady = autoplay;
+        if (autoplay) PlaybackService.ensureStarted(app);
+        if (t.kind == Track.PREVIEW) {
+            // Online song: get a fresh preview link first (they expire), then open it.
+            preparing = true;
+            notifyChanged();
+            Net.POOL.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Exception err = null;
+                    try {
+                        Library.ensureStream(t);
+                    } catch (Exception e) {
+                        err = e;
+                    }
+                    final boolean ok = err == null && t.streamUrl != null;
+                    main.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (token != loadToken) return; // the user moved on meanwhile
+                            if (ok) open(t);
+                            else fail();
+                        }
+                    });
+                }
+            });
+            return;
+        }
+        open(t);
+    }
+
+    /** Creates the MediaPlayer for {@code t} and starts preparing it. */
+    private void open(Track t) {
         mp = new MediaPlayer();
         mp.setAudioAttributes(new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -292,7 +335,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         mp.setOnCompletionListener(this);
         mp.setOnErrorListener(this);
         try {
-            mp.setDataSource(app, Uri.parse(t.key));
+            mp.setDataSource(app, Uri.parse(t.remote ? t.streamUrl : t.key));
             preparing = true;
             mp.prepareAsync();
         } catch (Exception e) {
@@ -301,11 +344,10 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
             main.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (mp == failed) onError(failed, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
+                    if (mp == failed) fail();
                 }
             });
         }
-        if (autoplay) PlaybackService.ensureStarted(app);
         notifyChanged();
     }
 
@@ -348,14 +390,19 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
     @Override
     public boolean onError(MediaPlayer player, int what, int extra) {
-        if (player != mp) return true;
+        if (player == mp) fail();
+        return true;
+    }
+
+    /** The current track can't be played: tell the user and move on to the next one. */
+    private void fail() {
         Track t = current();
         consecutiveErrors++;
         String msg = t == null ? "Error de reproducción"
                 : "No se pudo reproducir \"" + t.title + "\""
-                + (t.remote ? " (¿sin conexión?)" : "");
+                + (t.remote ? " (revisa tu conexión)" : "");
         Toast.makeText(app, msg, Toast.LENGTH_SHORT).show();
-        if (consecutiveErrors < order.size() && pos + 1 < order.size()) {
+        if (consecutiveErrors < Math.min(order.size(), 5) && pos + 1 < order.size()) {
             boolean keepPlaying = playWhenReady;
             pos++;
             load(keepPlaying);
@@ -364,7 +411,6 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
             playWhenReady = false;
             notifyChanged();
         }
-        return true;
     }
 
     // ---------------------------------------------------------------- audio focus
