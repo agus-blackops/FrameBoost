@@ -1,12 +1,19 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.5, Android 5.0+, ~100 KB).
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6, Android 5.0+, ~115 KB).
 
-| Inicio | Reproduciendo | Letra | Cola | Ecualizador |
+| Inicio | Podcasts | Un podcast | Álbum | Episodio |
 |---|---|---|---|---|
-| ![](docs/1-inicio.png) | ![](docs/4-reproduciendo.png) | ![](docs/6-letra.png) | ![](docs/7-cola.png) | ![](docs/8-ecualizador.png) |
+| ![](docs/9-inicio-mas.png) | ![](docs/10-podcasts.png) | ![](docs/11-podcast.png) | ![](docs/12-album.png) | ![](docs/4-reproduciendo.png) |
 
 *(Capturas generadas en el simulador con datos de ejemplo; en el teléfono se ven las portadas y listas reales.)*
+
+## Novedades de la 1.6 (contenido)
+- **Podcasts** (nueva pestaña): populares de tu país (Apple Podcasts), búsqueda, temas, **seguir** programas y **episodios completos** leídos del feed RSS de cada podcast. Se retoma cada episodio donde lo dejaste ("faltan 27 min"), hay una fila "Seguir escuchando" y botones **−15 s / +30 s** en el reproductor. Los enlaces con redirecciones se resuelven antes de reproducir.
+- **Álbumes, artistas, playlists y géneros** de Deezer con su propia página: "Nuevos lanzamientos", "Artistas populares", "Playlists populares" y "Géneros" (el top de cada estilo).
+- **Muchas más radios**: noticias, deportes, rock, pop, latina, clásica, jazz y electrónica.
+- **Más estantes de música**: hip hop, electrónica, jazz, clásica, indie, salsa, bachata, baladas, entrenar, relajarse, fiesta, lo-fi, cumbia y trap.
+- Inicio muestra los estantes principales; el resto carga al abrirlo (Buscar → explorar todo). Tus podcasts seguidos están también en Tu biblioteca.
 
 ## Novedades de la 1.5
 - **Letras sincronizadas** (LRCLIB): la línea que suena se ilumina y la pantalla la sigue; toca una línea para saltar a ella. Si solo hay letra sin tiempos, se muestra completa.
@@ -42,4 +49,4 @@ sudo apt install aapt dalvik-exchange zipalign apksigner openjdk-21-jdk-headless
 ```
 `sonora-release.jks` es la clave de firma (contraseña `sonora123`); conservarla permite instalar futuras versiones encima.
 
-`test/` contiene las pruebas Robolectric (23 casos) con respuestas simuladas de Deezer, radios y LRCLIB (`Fixtures.java`): secciones en línea, reproducción con enlace renovado, radios, búsqueda, playlists, persistencia, sin conexión, y todo lo de la 1.5 (temporizador, cola, sesión, historial, letras, ecualizador).
+`test/` contiene las pruebas Robolectric (39 casos) con respuestas simuladas de Deezer, radios y LRCLIB (`Fixtures.java`): secciones en línea, reproducción con enlace renovado, radios, búsqueda, playlists, persistencia, sin conexión, todo lo de la 1.5 (temporizador, cola, sesión, historial, letras, ecualizador) y lo de la 1.6 (RSS de podcasts, seguir, progreso por episodio, álbumes, géneros, radios).

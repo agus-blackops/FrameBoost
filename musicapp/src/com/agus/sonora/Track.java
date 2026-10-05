@@ -11,6 +11,7 @@ public final class Track {
     public static final int LOCAL = 0;
     public static final int PREVIEW = 1;
     public static final int RADIO = 2;
+    public static final int EPISODE = 3;
 
     /** Stable identity used for likes and playlists: a content:// uri, "dz:<id>" or "radio:<uuid>". */
     public final String key;
@@ -32,6 +33,8 @@ public final class Track {
     /** What the player opens. Deezer preview links expire, so they are refreshed before playing. */
     public volatile String streamUrl;
     public volatile long streamFetchedAt;
+    /** Episodes: the audio link after following redirects (MediaPlayer can't cross http/https redirects). */
+    public volatile String resolvedUrl;
 
     public Track(String key, String title, String artist, String album, long albumId,
                  long durationMs, boolean remote, long dateAdded) {
@@ -66,6 +69,34 @@ public final class Track {
 
     public boolean isLive() {
         return kind == RADIO;
+    }
+
+    public boolean isEpisode() {
+        return kind == EPISODE;
+    }
+
+    /** The link handed to the media player. */
+    public String playUrl() {
+        if (kind == EPISODE && resolvedUrl != null) return resolvedUrl;
+        return streamUrl;
+    }
+
+    /** A podcast episode; {@code publishedMs} goes into dateAdded and is shown as the release date. */
+    static Track episode(String key, String title, String podcast, long durationMs, long publishedMs,
+                         String art, String url) {
+        return new Track(key, EPISODE, title, podcast, podcast, 0, durationMs, publishedMs,
+                art, art, 0, 0, url);
+    }
+
+    /** A track from an album listing, where Deezer omits the album object. */
+    static Track fromDeezerAlbum(JSONObject o, String albumTitle, long albumId, String cover, String smallCover) {
+        JSONObject artist = o.optJSONObject("artist");
+        long id = o.optLong("id");
+        String title = o.optString("title_short", "");
+        if (title.isEmpty()) title = o.optString("title");
+        return new Track("dz:" + id, PREVIEW, title, artist == null ? null : artist.optString("name"),
+                albumTitle, albumId, o.optLong("duration") * 1000L, 0, cover, smallCover, id,
+                artist == null ? 0 : artist.optLong("id"), o.optString("preview"));
     }
 
     /** Builds a track from a Deezer API track object. */

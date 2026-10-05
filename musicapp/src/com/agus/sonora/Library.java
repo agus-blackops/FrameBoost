@@ -15,7 +15,13 @@ import android.provider.MediaStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.util.Xml;
+
+import org.xmlpull.v1.XmlPullParser;
+
+import java.io.StringReader;
 import java.text.Normalizer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,22 +77,96 @@ public final class Library {
 
     // ---------------------------------------------------------------- online catalog
 
-    /** A shelf of online content shown on the home screen (a chart, a genre, radios…). */
+    /** A container of tracks: an album, an artist, a playlist, a genre chart or a podcast. */
+    public static final class Item {
+        public static final int ALBUM = 0;
+        public static final int ARTIST = 1;
+        public static final int PLAYLIST = 2;
+        public static final int GENRE = 3;
+        public static final int PODCAST = 4;
+
+        public final int kind;
+        public final long id;
+        public final String title;
+        public final String subtitle;
+        public final String art;
+        /** Podcasts: the RSS feed; known after a lookup when the listing doesn't carry it. */
+        public volatile String feed;
+
+        public Item(int kind, long id, String title, String subtitle, String art, String feed) {
+            this.kind = kind;
+            this.id = id;
+            this.title = title == null || title.isEmpty() ? "Sin título" : title;
+            this.subtitle = subtitle == null ? "" : subtitle;
+            this.art = art == null || art.isEmpty() || "null".equals(art) ? null : art;
+            this.feed = feed == null || feed.isEmpty() || "null".equals(feed) ? null : feed;
+        }
+
+        public String key() {
+            return kind + ":" + id;
+        }
+
+        JSONObject toJson() {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("kind", kind).put("id", id).put("title", title).put("sub", subtitle)
+                        .put("art", art == null ? "" : art).put("feed", feed == null ? "" : feed);
+            } catch (Exception ignored) {
+            }
+            return o;
+        }
+
+        static Item fromJson(JSONObject o) {
+            return new Item(o.optInt("kind"), o.optLong("id"), o.optString("title"), o.optString("sub"),
+                    o.optString("art"), o.optString("feed"));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof Item && ((Item) o).key().equals(key());
+        }
+
+        @Override
+        public int hashCode() {
+            return key().hashCode();
+        }
+    }
+
+    /** A shelf of online content: a chart, a genre, radios, or a list of albums / artists / podcasts. */
     public static final class Section {
         public final String id;
         public final String title;
         public final String subtitle;
         final String path;
         final boolean radio;
+        /** -1 for a list of tracks, otherwise the kind of {@link Item}s the section holds. */
+        public final int itemKind;
+        /** Featured shelves appear on Home and load at startup; the rest load when opened. */
+        public boolean featured;
         public List<Track> tracks = new ArrayList<>();
+        public List<Item> items = new ArrayList<>();
         public int state = IDLE;
 
         Section(String id, String title, String subtitle, String path, boolean radio) {
+            this(id, title, subtitle, path, radio, -1);
+        }
+
+        Section(String id, String title, String subtitle, String path, boolean radio, int itemKind) {
             this.id = id;
             this.title = title;
             this.subtitle = subtitle;
             this.path = path;
             this.radio = radio;
+            this.itemKind = itemKind;
+        }
+
+        Section featured() {
+            featured = true;
+            return this;
+        }
+
+        public boolean hasItems() {
+            return itemKind >= 0;
         }
     }
 
@@ -103,25 +183,67 @@ public final class Library {
     };
     static final String RADIO_QUERY = "&hidebroken=true&order=clickcount&reverse=true&limit=40";
 
+    static final String APPLE_TOP = "https://rss.applemarketingtools.com/api/v2/{cc}/podcasts/top/30/podcasts.json";
+    static final String APPLE_SEARCH = "https://itunes.apple.com/search?media=podcast&entity=podcast&limit=25";
+    static final String APPLE_LOOKUP = "https://itunes.apple.com/lookup?id=";
+
+    private static String q(String text) {
+        return "/search?q=" + Net.enc(text) + "&order=RANKING&limit=40";
+    }
+
     private void buildOnlineCatalog() {
         String country = Locale.getDefault().getCountry();
         String radioPath = country.length() == 2
                 ? "/json/stations/search?countrycode=" + country + RADIO_QUERY
                 : "/json/stations/search?language=spanish" + RADIO_QUERY;
         addSection(new Section("top", "Top 50 mundial", "Lo más escuchado ahora en Deezer",
-                "/chart/0/tracks?limit=50", false));
+                "/chart/0/tracks?limit=50", false).featured());
         addSection(new Section("radio", "Radios en vivo", "Emisoras reales, canciones completas",
-                radioPath, true));
-        addSection(new Section("reggaeton", "Reggaetón", "Los éxitos del género",
-                "/search?q=reggaeton&order=RANKING&limit=40", false));
-        addSection(new Section("pop", "Pop latino", "Para cantar a todo pulmón",
-                "/search?q=" + Net.enc("pop latino") + "&order=RANKING&limit=40", false));
-        addSection(new Section("rock", "Rock en español", "Clásicos y nuevos",
-                "/search?q=" + Net.enc("rock en español") + "&order=RANKING&limit=40", false));
-        addSection(new Section("cumbia", "Cumbia", "Para mover el esqueleto",
-                "/search?q=cumbia&order=RANKING&limit=40", false));
-        addSection(new Section("trap", "Trap", "Lo que suena en la calle",
-                "/search?q=trap&order=RANKING&limit=40", false));
+                radioPath, true).featured());
+        addSection(new Section("releases", "Nuevos lanzamientos", "Álbumes recién salidos",
+                "/editorial/0/releases?limit=25", false, Item.ALBUM).featured());
+        addSection(new Section("artists", "Artistas populares", "Los más escuchados",
+                "/chart/0/artists?limit=25", false, Item.ARTIST).featured());
+        addSection(new Section("playlists", "Playlists populares", "Listas que están sonando",
+                "/chart/0/playlists?limit=25", false, Item.PLAYLIST).featured());
+        addSection(new Section("reggaeton", "Reggaetón", "Los éxitos del género", q("reggaeton"), false).featured());
+        addSection(new Section("pop", "Pop latino", "Para cantar a todo pulmón", q("pop latino"), false).featured());
+        addSection(new Section("rock", "Rock en español", "Clásicos y nuevos", q("rock en español"), false).featured());
+        addSection(new Section("genres", "Géneros", "Explora el top de cada estilo",
+                "/genre", false, Item.GENRE));
+        addSection(new Section("podcasts", "Podcasts populares", "Episodios completos",
+                APPLE_TOP, false, Item.PODCAST));
+        addSection(new Section("cumbia", "Cumbia", "Para mover el esqueleto", q("cumbia"), false));
+        addSection(new Section("trap", "Trap", "Lo que suena en la calle", q("trap"), false));
+        addSection(new Section("hiphop", "Hip hop", "Rimas y ritmo", q("hip hop"), false));
+        addSection(new Section("electronic", "Electrónica", "Para bailar sin parar", q("electronic dance"), false));
+        addSection(new Section("jazz", "Jazz", "Suave y elegante", q("jazz"), false));
+        addSection(new Section("classical", "Clásica", "Los grandes compositores", q("classical piano"), false));
+        addSection(new Section("indie", "Indie", "Sonidos alternativos", q("indie"), false));
+        addSection(new Section("salsa", "Salsa", "Ritmo caribeño", q("salsa"), false));
+        addSection(new Section("bachata", "Bachata", "Para bailar de a dos", q("bachata"), false));
+        addSection(new Section("ballads", "Baladas", "Para suspirar", q("baladas románticas"), false));
+        addSection(new Section("workout", "Para entrenar", "Energía para el gimnasio", q("workout"), false));
+        addSection(new Section("chill", "Para relajarse", "Calma y buena onda", q("chill"), false));
+        addSection(new Section("party", "Fiesta", "Que no pare la música", q("party hits"), false));
+        addSection(new Section("lofi", "Lo-fi", "Para estudiar o trabajar", q("lofi"), false));
+        String lang = "&language=spanish";
+        addSection(new Section("radio-news", "Radios de noticias", "Actualidad en vivo",
+                "/json/stations/search?tag=news" + lang + RADIO_QUERY, true));
+        addSection(new Section("radio-sports", "Radios de deportes", "Partidos y análisis",
+                "/json/stations/search?tag=sports" + lang + RADIO_QUERY, true));
+        addSection(new Section("radio-rock", "Radios de rock", "Rock las 24 horas",
+                "/json/stations/search?tag=rock" + lang + RADIO_QUERY, true));
+        addSection(new Section("radio-pop", "Radios de pop", "Éxitos del momento",
+                "/json/stations/search?tag=pop" + lang + RADIO_QUERY, true));
+        addSection(new Section("radio-latin", "Radios latinas", "Salsa, cumbia y más",
+                "/json/stations/search?tag=latin" + lang + RADIO_QUERY, true));
+        addSection(new Section("radio-classical", "Radios de clásica", "Música para concentrarse",
+                "/json/stations/search?tag=classical" + RADIO_QUERY, true));
+        addSection(new Section("radio-jazz", "Radios de jazz", "Jazz en vivo",
+                "/json/stations/search?tag=jazz" + RADIO_QUERY, true));
+        addSection(new Section("radio-electronic", "Radios electrónicas", "Beats sin pausa",
+                "/json/stations/search?tag=electronic" + RADIO_QUERY, true));
     }
 
     private void addSection(Section s) {
@@ -136,16 +258,21 @@ public final class Library {
         return sections.get(id);
     }
 
-    /** Loads every section that isn't loaded yet (or failed). */
+    /** Loads the featured shelves that aren't loaded yet (or failed); the others load when opened. */
     public void loadOnline() {
         for (Section s : sections.values()) {
-            if (s.state != READY && s.state != LOADING) loadSection(s);
+            if (s.featured && s.state != READY && s.state != LOADING) loadSection(s);
         }
     }
 
     public void loadSection(final Section s) {
+        if (s.state == LOADING) return;
         s.state = LOADING;
         notifyChanged();
+        if (s.hasItems()) {
+            loadItemsSection(s);
+            return;
+        }
         Net.POOL.execute(new Runnable() {
             @Override
             public void run() {
@@ -180,6 +307,356 @@ public final class Library {
                 });
             }
         });
+    }
+
+    private void loadItemsSection(final Section s) {
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Item> found = null;
+                try {
+                    String body = s.itemKind == Item.PODCAST ? topPodcastsBody() : Net.getString(DEEZER + s.path);
+                    found = parseItems(s.itemKind, body);
+                } catch (Exception ignored) {
+                }
+                final List<Item> result = found;
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result == null || result.isEmpty()) {
+                            s.state = FAILED;
+                        } else {
+                            s.items = result;
+                            s.state = READY;
+                        }
+                        notifyChanged();
+                    }
+                });
+            }
+        });
+    }
+
+    static String country() {
+        String cc = Locale.getDefault().getCountry().toLowerCase(Locale.ROOT);
+        return cc.length() == 2 ? cc : "us";
+    }
+
+    /** Apple's top podcasts for the device's country, falling back to the US chart. */
+    private static String topPodcastsBody() throws Exception {
+        String cc = country();
+        try {
+            return Net.getString(APPLE_TOP.replace("{cc}", cc));
+        } catch (Exception e) {
+            if (cc.equals("us")) throw e;
+            return Net.getString(APPLE_TOP.replace("{cc}", "us"));
+        }
+    }
+
+    static List<Item> parseItems(int kind, String body) throws Exception {
+        JSONObject root = new JSONObject(body);
+        if (root.has("error")) throw new Exception(root.optJSONObject("error").optString("message"));
+        JSONArray data = root.optJSONArray("data");
+        if (data == null) {
+            JSONObject feed = root.optJSONObject("feed");
+            data = feed != null ? feed.optJSONArray("results") : root.optJSONArray("results");
+        }
+        List<Item> out = new ArrayList<>();
+        if (data == null) return out;
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject o = data.optJSONObject(i);
+            if (o == null) continue;
+            Item it;
+            switch (kind) {
+                case Item.ALBUM: {
+                    JSONObject ar = o.optJSONObject("artist");
+                    it = new Item(kind, o.optLong("id"), o.optString("title"),
+                            ar == null ? "" : ar.optString("name"), o.optString("cover_big", o.optString("cover_medium")), null);
+                    break;
+                }
+                case Item.ARTIST:
+                    it = new Item(kind, o.optLong("id"), o.optString("name"), "Artista",
+                            o.optString("picture_big", o.optString("picture_medium")), null);
+                    break;
+                case Item.PLAYLIST: {
+                    int n = o.optInt("nb_tracks");
+                    it = new Item(kind, o.optLong("id"), o.optString("title"),
+                            n > 0 ? n + " canciones" : "Playlist",
+                            o.optString("picture_big", o.optString("picture_medium")), null);
+                    break;
+                }
+                case Item.GENRE:
+                    if (o.optLong("id") <= 0) continue; // "All"
+                    it = new Item(kind, o.optLong("id"), o.optString("name"), "Género",
+                            o.optString("picture_big", o.optString("picture_medium")), null);
+                    break;
+                default: { // podcast: Apple's top chart or search result
+                    long id = o.has("collectionId") ? o.optLong("collectionId") : o.optLong("id");
+                    String art = o.optString("artworkUrl600", "");
+                    if (art.isEmpty()) art = o.optString("artworkUrl100", "").replace("100x100", "600x600");
+                    it = new Item(kind, id, o.has("collectionName") ? o.optString("collectionName") : o.optString("name"),
+                            o.optString("artistName"), art, o.optString("feedUrl", ""));
+                }
+            }
+            if (it.id <= 0 || !seen.add(it.key())) continue;
+            out.add(it);
+        }
+        return out;
+    }
+
+    // ---------------------------------------------------------------- item contents
+
+    private final Map<String, List<Track>> itemTracks = new HashMap<>();
+    private final Map<String, Integer> itemStates = new HashMap<>();
+
+    public List<Track> itemTracks(Item it) {
+        List<Track> l = itemTracks.get(it.key());
+        return l == null ? new ArrayList<Track>() : l;
+    }
+
+    public int itemState(Item it) {
+        Integer s = itemStates.get(it.key());
+        return s == null ? IDLE : s;
+    }
+
+    /** Fetches the songs / episodes of an album, playlist, artist, genre or podcast. */
+    public void loadItemTracks(final Item it) {
+        int now = itemState(it);
+        if (now == LOADING || now == READY) return;
+        itemStates.put(it.key(), LOADING);
+        notifyChanged();
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Track> found = null;
+                try {
+                    switch (it.kind) {
+                        case Item.ALBUM:
+                            found = parseAlbumTracks(Net.getString(DEEZER + "/album/" + it.id + "/tracks?limit=100"), it);
+                            break;
+                        case Item.PLAYLIST:
+                            found = parseDeezer(Net.getString(DEEZER + "/playlist/" + it.id + "/tracks?limit=100"));
+                            break;
+                        case Item.GENRE:
+                            found = parseDeezer(Net.getString(DEEZER + "/chart/" + it.id + "/tracks?limit=50"));
+                            break;
+                        case Item.ARTIST:
+                            found = parseDeezer(Net.getString(DEEZER + "/artist/" + it.id + "/top?limit=50"));
+                            break;
+                        default:
+                            if (it.feed == null) {
+                                JSONArray r = new JSONObject(Net.getString(APPLE_LOOKUP + it.id)).optJSONArray("results");
+                                JSONObject first = r == null ? null : r.optJSONObject(0);
+                                String f = first == null ? "" : first.optString("feedUrl", "");
+                                if (f.isEmpty()) throw new Exception("Sin feed");
+                                it.feed = f;
+                            }
+                            found = parseEpisodes(Net.getString(it.feed), it);
+                    }
+                } catch (Exception ignored) {
+                }
+                final List<Track> result = found;
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result == null || result.isEmpty()) {
+                            itemStates.put(it.key(), FAILED);
+                        } else {
+                            register(result);
+                            itemTracks.put(it.key(), result);
+                            itemStates.put(it.key(), READY);
+                        }
+                        notifyChanged();
+                    }
+                });
+            }
+        });
+    }
+
+    /** Forgets a failed load so it can be retried. */
+    public void retryItem(Item it) {
+        if (itemState(it) == FAILED) {
+            itemStates.remove(it.key());
+            loadItemTracks(it);
+        }
+    }
+
+    static List<Track> parseAlbumTracks(String body, Item album) throws Exception {
+        JSONObject root = new JSONObject(body);
+        if (root.has("error")) throw new Exception(root.optJSONObject("error").optString("message"));
+        JSONArray data = root.optJSONArray("data");
+        List<Track> out = new ArrayList<>();
+        if (data == null) return out;
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject o = data.optJSONObject(i);
+            if (o == null || o.optString("preview", "").isEmpty()) continue;
+            Track t = Track.fromDeezerAlbum(o, album.title, album.id, album.art, album.art);
+            if (!out.contains(t)) out.add(t);
+        }
+        return out;
+    }
+
+    // ---------------------------------------------------------------- podcasts
+
+    private static final String[] PUB_FORMATS = {
+            "EEE, dd MMM yyyy HH:mm:ss Z", "EEE, d MMM yyyy HH:mm:ss Z", "EEE, dd MMM yyyy HH:mm:ss z",
+            "EEE, d MMM yyyy HH:mm:ss z", "dd MMM yyyy HH:mm:ss Z", "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd"
+    };
+
+    static long parsePubDate(String s) {
+        if (s == null) return 0;
+        s = s.trim();
+        for (String f : PUB_FORMATS) {
+            try {
+                return new SimpleDateFormat(f, Locale.US).parse(s).getTime();
+            } catch (Exception ignored) {
+            }
+        }
+        return 0;
+    }
+
+    /** "3723", "62:03" or "1:02:03" to milliseconds. */
+    static long parseDuration(String s) {
+        if (s == null || s.trim().isEmpty()) return 0;
+        try {
+            String[] parts = s.trim().split(":");
+            long total = 0;
+            for (String p : parts) total = total * 60 + (long) Double.parseDouble(p);
+            return total * 1000L;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /** Reads an RSS feed's audio episodes (newest first, at most 100). */
+    static List<Track> parseEpisodes(String xml, Item podcast) throws Exception {
+        XmlPullParser p = Xml.newPullParser();
+        p.setInput(new StringReader(xml.trim()));
+        List<Track> out = new ArrayList<>();
+        String channelArt = podcast.art;
+        boolean inItem = false;
+        String title = null, url = null, type = null, guid = null, pub = null, dur = null, art = null;
+        int event = p.getEventType();
+        while (event != XmlPullParser.END_DOCUMENT && out.size() < 100) {
+            if (event == XmlPullParser.START_TAG) {
+                String n = p.getName();
+                if (n.indexOf(':') >= 0) n = n.substring(n.indexOf(':') + 1); // parsers may or may not split off "itunes:"
+                if ("item".equals(n)) {
+                    inItem = true;
+                    title = url = type = guid = pub = dur = art = null;
+                } else if ("image".equals(n) && p.getAttributeValue(null, "href") != null) {
+                    String href = p.getAttributeValue(null, "href");
+                    if (inItem) art = href;
+                    else if (channelArt == null) channelArt = href;
+                } else if (inItem && "enclosure".equals(n)) {
+                    url = p.getAttributeValue(null, "url");
+                    type = p.getAttributeValue(null, "type");
+                } else if (inItem && "title".equals(n)) {
+                    title = p.nextText();
+                } else if (inItem && "guid".equals(n)) {
+                    guid = p.nextText();
+                } else if (inItem && "pubDate".equals(n)) {
+                    pub = p.nextText();
+                } else if (inItem && "duration".equals(n)) {
+                    dur = p.nextText();
+                }
+            } else if (event == XmlPullParser.END_TAG && "item".equals(p.getName())) {
+                inItem = false;
+                boolean audio = type == null || type.isEmpty() || type.toLowerCase(Locale.ROOT).startsWith("audio");
+                if (url != null && !url.trim().isEmpty() && audio) {
+                    String id = guid != null && !guid.trim().isEmpty() ? guid.trim() : url.trim();
+                    Track t = Track.episode("ep:" + podcast.key() + ":" + id, title == null ? "Episodio" : title.trim(),
+                            podcast.title, parseDuration(dur), parsePubDate(pub),
+                            art != null && !art.isEmpty() ? art : channelArt, url.trim());
+                    if (!out.contains(t)) out.add(t);
+                }
+            }
+            event = p.next();
+        }
+        return out;
+    }
+
+    public interface ItemResults {
+        void onItems(List<Item> items, boolean failed);
+    }
+
+    /** Searches Apple's podcast directory; results on the main thread. */
+    public void searchPodcasts(final String query, final ItemResults cb) {
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Item> found = new ArrayList<>();
+                boolean failed = false;
+                try {
+                    found = parseItems(Item.PODCAST, Net.getString(APPLE_SEARCH + "&country=" + country()
+                            + "&term=" + Net.enc(query)));
+                } catch (Exception e) {
+                    failed = true;
+                }
+                final List<Item> result = found;
+                final boolean fail = failed;
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        cb.onItems(result, fail);
+                    }
+                });
+            }
+        });
+    }
+
+    private final LinkedHashMap<String, Item> followed = new LinkedHashMap<>();
+    /** Episode key -> {position, duration} in ms, oldest first. */
+    private final LinkedHashMap<String, long[]> progress = new LinkedHashMap<>();
+
+    public boolean isFollowing(Item it) {
+        return followed.containsKey(it.key());
+    }
+
+    public void toggleFollow(Item it) {
+        if (followed.remove(it.key()) == null) followed.put(it.key(), it);
+        save();
+        notifyChanged();
+    }
+
+    public List<Item> followedPodcasts() {
+        List<Item> out = new ArrayList<>(followed.values());
+        Collections.reverse(out); // most recently followed first
+        return out;
+    }
+
+    /** Remembers where the user stopped an episode; finished or barely started ones are forgotten. */
+    public void saveProgress(Track t, long pos, long dur) {
+        if (t == null || !t.isEpisode()) return;
+        boolean finished = dur > 0 && pos >= dur - 15000;
+        if (finished) {
+            progress.remove(t.key);
+        } else if (pos >= 5000) {
+            progress.remove(t.key);
+            progress.put(t.key, new long[]{pos, dur});
+        } else {
+            return;
+        }
+        if (!byKey.containsKey(t.key)) byKey.put(t.key, t);
+        save();
+    }
+
+    public long progress(Track t) {
+        long[] p = t == null ? null : progress.get(t.key);
+        return p == null ? 0 : p[0];
+    }
+
+    public long progressDuration(Track t) {
+        long[] p = t == null ? null : progress.get(t.key);
+        return p == null ? 0 : p[1];
+    }
+
+    /** Episodes started but not finished, most recent first. */
+    public List<Track> inProgress(int max) {
+        List<String> keys = new ArrayList<>(progress.keySet());
+        Collections.reverse(keys);
+        List<Track> all = resolve(keys);
+        return all.size() > max ? new ArrayList<>(all.subList(0, max)) : all;
     }
 
     public interface Results {
@@ -249,6 +726,12 @@ public final class Library {
      * while, so they are fetched again right before playing. Called off the main thread.
      */
     static void ensureStream(Track t) throws Exception {
+        if (t.kind == Track.EPISODE) {
+            if (t.resolvedUrl != null && System.currentTimeMillis() - t.streamFetchedAt < 5 * 60 * 1000L) return;
+            t.resolvedUrl = Net.resolve(t.streamUrl);
+            t.streamFetchedAt = System.currentTimeMillis();
+            return;
+        }
         if (t.kind != Track.PREVIEW) return;
         boolean fresh = t.streamUrl != null
                 && System.currentTimeMillis() - t.streamFetchedAt < 60 * 1000L;
@@ -415,6 +898,7 @@ public final class Library {
         java.util.LinkedHashSet<String> keys = new java.util.LinkedHashSet<>(liked);
         for (List<String> l : playlists.values()) keys.addAll(l);
         keys.addAll(history);
+        keys.addAll(progress.keySet());
         List<Track> out = new ArrayList<>();
         for (String k : keys) {
             Track t = byKey.get(k);
@@ -645,6 +1129,18 @@ public final class Library {
             }
             JSONArray h = new JSONArray(prefs.getString("history", "[]"));
             for (int i = 0; i < h.length(); i++) history.add(h.getString(i));
+            JSONArray fo = new JSONArray(prefs.getString("followed", "[]"));
+            for (int i = 0; i < fo.length(); i++) {
+                Item it = Item.fromJson(fo.getJSONObject(i));
+                followed.put(it.key(), it);
+            }
+            JSONObject pr = new JSONObject(prefs.getString("progress", "{}"));
+            Iterator<String> pk = pr.keys();
+            while (pk.hasNext()) {
+                String k = pk.next();
+                JSONArray v = pr.getJSONArray(k);
+                progress.put(k, new long[]{v.getLong(0), v.getLong(1)});
+            }
             JSONArray sq = new JSONArray(prefs.getString("searches", "[]"));
             for (int i = 0; i < sq.length(); i++) searches.add(sq.getString(i));
             JSONObject remote = new JSONObject(prefs.getString("remote", "{}"));
@@ -658,6 +1154,23 @@ public final class Library {
         } catch (Exception ignored) {
             // Corrupt prefs: start empty rather than crash.
         }
+    }
+
+    private String followedJson() {
+        JSONArray a = new JSONArray();
+        for (Item it : followed.values()) a.put(it.toJson());
+        return a.toString();
+    }
+
+    private String progressJson() {
+        JSONObject o = new JSONObject();
+        try {
+            for (Map.Entry<String, long[]> e : progress.entrySet()) {
+                o.put(e.getKey(), new JSONArray().put(e.getValue()[0]).put(e.getValue()[1]));
+            }
+        } catch (Exception ignored) {
+        }
+        return o.toString();
     }
 
     private void save() {
@@ -675,6 +1188,8 @@ public final class Library {
                     .putString("remote", remote.toString())
                     .putString("history", new JSONArray(history).toString())
                     .putString("searches", new JSONArray(searches).toString())
+                    .putString("followed", followedJson())
+                    .putString("progress", progressJson())
                     .putString("liked", new JSONArray(liked).toString())
                     .putString("playlists", p.toString())
                     .apply();

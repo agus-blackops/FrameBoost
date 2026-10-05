@@ -31,7 +31,7 @@ final class Net {
                 c.setConnectTimeout(10000);
                 c.setReadTimeout(15000);
                 c.setInstanceFollowRedirects(true);
-                c.setRequestProperty("User-Agent", "Sonora/1.1 (Android)");
+                c.setRequestProperty("User-Agent", "Sonora/1.6 (Android)");
                 c.setRequestProperty("Accept-Language", java.util.Locale.getDefault().toLanguageTag());
                 try {
                     int code = c.getResponseCode();
@@ -61,6 +61,45 @@ final class Net {
     };
 
     static volatile Fetcher fetcher = HTTP;
+
+    /** Follows redirects without downloading the body; pluggable for tests. */
+    interface Resolver {
+        String resolve(String url) throws IOException;
+    }
+
+    static final Resolver REDIRECTS = new Resolver() {
+        @Override
+        public String resolve(String url) throws IOException {
+            for (int i = 0; i < 8; i++) {
+                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                c.setConnectTimeout(10000);
+                c.setReadTimeout(15000);
+                c.setInstanceFollowRedirects(false);
+                c.setRequestProperty("User-Agent", "Sonora/1.6 (Android)");
+                c.setRequestProperty("Range", "bytes=0-0");
+                try {
+                    int code = c.getResponseCode();
+                    if (code / 100 == 3) {
+                        String loc = c.getHeaderField("Location");
+                        if (loc == null) throw new IOException("HTTP " + code);
+                        url = new URL(new URL(url), loc).toString();
+                        continue;
+                    }
+                    if (code / 100 != 2) throw new IOException("HTTP " + code);
+                    return url;
+                } finally {
+                    c.disconnect();
+                }
+            }
+            throw new IOException("demasiadas redirecciones");
+        }
+    };
+
+    static volatile Resolver resolver = REDIRECTS;
+
+    static String resolve(String url) throws IOException {
+        return resolver.resolve(url);
+    }
 
     static final ExecutorService POOL = Executors.newFixedThreadPool(4);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());

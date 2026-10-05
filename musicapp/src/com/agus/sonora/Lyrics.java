@@ -67,7 +67,7 @@ final class Lyrics {
 
     /** Looks the lyrics up in the background; {@code cb} runs on the main thread. */
     static void load(final Context ctx, final Track t, final Callback cb) {
-        if (t.isLive()) {
+        if (t.isLive() || t.isEpisode()) {
             cb.onLyrics(t, NONE);
             return;
         }

@@ -227,6 +227,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         stack.clear();
         if (index == 0) stack.push(new HomeScreen());
         else if (index == 1) stack.push(new SearchScreen());
+        else if (index == 2) stack.push(new PodcastsScreen());
         else stack.push(new LibraryScreen());
         render();
         for (int i = 0; i < tabViews.size(); i++) {
@@ -246,9 +247,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         LinearLayout nav = Ui.row(this);
         nav.setBackgroundColor(0xF0000000);
         nav.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 6));
-        String[] labels = {"Inicio", "Buscar", "Tu biblioteca"};
-        int[] icons = {R.drawable.ic_home, R.drawable.ic_search, R.drawable.ic_library};
-        for (int i = 0; i < 3; i++) {
+        String[] labels = {"Inicio", "Buscar", "Podcasts", "Tu biblioteca"};
+        int[] icons = {R.drawable.ic_home, R.drawable.ic_search, R.drawable.ic_podcast, R.drawable.ic_library};
+        for (int i = 0; i < labels.length; i++) {
             final int index = i;
             LinearLayout item = Ui.column(this);
             item.setGravity(Gravity.CENTER);
@@ -373,12 +374,23 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     private static final int C_ALBUM = 5;
     private static final int C_RECENT = 6;
     private static final int C_HISTORY = 7;
+    private static final int C_ITEM = 8;
+    private static final int C_RESUME = 9;
 
     /** Something that resolves to a list of tracks: a playlist, an artist, an album… */
     private final class Collection {
         final int kind;
         final String name;
         final long artistId;
+        /** C_ITEM: the album / artist / playlist / genre / podcast this page shows. */
+        final Library.Item item;
+
+        Collection(Library.Item item) {
+            this.kind = C_ITEM;
+            this.name = item.title;
+            this.artistId = 0;
+            this.item = item;
+        }
 
         Collection(int kind, String name) {
             this(kind, name, 0);
@@ -388,11 +400,15 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             this.kind = kind;
             this.name = name;
             this.artistId = artistId;
+            this.item = null;
         }
 
         String count(int n) {
             Library.Section sec = section();
             if (sec != null && sec.radio) return n == 1 ? "1 emisora" : n + " emisoras";
+            if (kind == C_RESUME || (kind == C_ITEM && item.kind == Library.Item.PODCAST)) {
+                return n == 1 ? "1 episodio" : n + " episodios";
+            }
             return Ui.songs(n);
         }
 
@@ -412,6 +428,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return "Agregadas recientemente";
                 case C_HISTORY:
                     return "Escuchado recientemente";
+                case C_RESUME:
+                    return "Seguir escuchando";
                 default:
                     return name;
             }
@@ -427,6 +445,21 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return "Canciones del dispositivo";
                 case C_ONLINE:
                     return section() != null && section().radio ? "Emisoras" : "Playlist";
+                case C_RESUME:
+                    return "Podcasts";
+                case C_ITEM:
+                    switch (item.kind) {
+                        case Library.Item.ALBUM:
+                            return item.subtitle.isEmpty() ? "Álbum" : "Álbum · " + item.subtitle;
+                        case Library.Item.ARTIST:
+                            return "Artista";
+                        case Library.Item.GENRE:
+                            return "Género";
+                        case Library.Item.PODCAST:
+                            return item.subtitle.isEmpty() ? "Podcast" : "Podcast · " + item.subtitle;
+                        default:
+                            return "Playlist";
+                    }
                 default:
                     return "Playlist";
             }
@@ -444,6 +477,10 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return lib.recentlyAdded(50);
                 case C_HISTORY:
                     return lib.recentlyPlayed(50);
+                case C_RESUME:
+                    return lib.inProgress(30);
+                case C_ITEM:
+                    return lib.itemTracks(item);
                 case C_PLAYLIST:
                     return lib.playlist(name);
                 case C_ARTIST: {
@@ -486,13 +523,19 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         FrameLayout f = new FrameLayout(this);
         ImageView img = new ImageView(this);
         img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        List<Track> tracks = col.kind == C_ALBUM || col.kind == C_ARTIST
-                || (col.kind == C_ONLINE && !col.tracks().isEmpty()) ? col.tracks() : null;
-        if (tracks != null && !tracks.isEmpty()) Covers.load(this, tracks.get(0), img, Ui.dp(this, sizeDp));
+        String artUrl = null;
+        Library.Section sec = col.section();
+        if (col.kind == C_ITEM) artUrl = col.item.art;
+        else if (sec != null && sec.hasItems() && !sec.items.isEmpty()) artUrl = sec.items.get(0).art;
+        boolean remoteArt = col.kind == C_ITEM || artUrl != null;
+        List<Track> tracks = !remoteArt && (col.kind == C_ALBUM || col.kind == C_ARTIST
+                || (col.kind == C_ONLINE && !col.tracks().isEmpty())) ? col.tracks() : null;
+        if (remoteArt) Covers.loadUrl(this, artUrl, col.title(), img, Ui.dp(this, sizeDp));
+        else if (tracks != null && !tracks.isEmpty()) Covers.load(this, tracks.get(0), img, Ui.dp(this, sizeDp));
         else img.setImageBitmap(col.cover(Ui.dp(this, sizeDp)));
         f.addView(img, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
         if (col.kind == C_LIKED || col.kind == C_DEVICE || col.kind == C_HISTORY
-                || (col.kind == C_ONLINE && tracks == null)) {
+                || (col.kind == C_ONLINE && tracks == null && !remoteArt)) {
             int res = col.kind == C_LIKED ? R.drawable.ic_heart
                     : col.kind == C_HISTORY ? R.drawable.ic_history
                     : col.kind == C_DEVICE ? R.drawable.ic_library : R.drawable.ic_note;
@@ -502,7 +545,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     Ui.dp(this, Math.max(24, sizeDp / 2)), Gravity.CENTER));
         }
         f.setLayoutParams(Ui.lp(Ui.dp(this, sizeDp), Ui.dp(this, sizeDp)));
-        if (col.kind == C_ARTIST) {
+        if (col.kind == C_ARTIST || (col.kind == C_ITEM && col.item.kind == Library.Item.ARTIST)) {
             f.setBackground(Ui.oval(Ui.CARD));
             f.setClipToOutline(true);
         }
@@ -511,8 +554,13 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     private void open(Collection c) {
         if (c.kind == C_ARTIST) lib.loadArtistTop(c.name, c.artistId);
+        if (c.kind == C_ITEM) lib.loadItemTracks(c.item);
         Library.Section sec = c.section();
-        if (sec != null && sec.state == Library.FAILED) lib.loadSection(sec);
+        if (sec != null && (sec.state == Library.IDLE || sec.state == Library.FAILED)) lib.loadSection(sec);
+        if (sec != null && sec.hasItems()) {
+            push(new ItemsScreen(sec));
+            return;
+        }
         push(new DetailScreen(c));
     }
 
@@ -524,8 +572,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         m.add(0, 1, 0, lib.isLiked(t) ? "Quitar de Me gusta" : "Añadir a Me gusta");
         m.add(0, 2, 0, "Reproducir a continuación");
         m.add(0, 3, 0, "Añadir a playlist…");
-        if (!t.isLive()) m.add(0, 4, 0, "Ir al artista");
+        if (!t.isLive() && !t.isEpisode()) m.add(0, 4, 0, "Ir al artista");
         if (!t.remote) m.add(0, 5, 0, "Ir al álbum");
+
         if (from != null && from.kind == C_PLAYLIST) m.add(0, 6, 0, "Quitar de esta playlist");
         pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
@@ -586,6 +635,298 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         });
         r.addView(all);
         return r;
+    }
+
+    // ================================================================ items (albums, artists, playlists, genres, podcasts)
+
+    /** A horizontal shelf of cover cards that open an item's page. */
+    private View itemRow(List<Library.Item> items) {
+        HorizontalScrollView hs = new HorizontalScrollView(this);
+        hs.setHorizontalScrollBarEnabled(false);
+        LinearLayout r = Ui.row(this);
+        r.setGravity(Gravity.TOP);
+        r.setPadding(Ui.dp(this, 12), 0, Ui.dp(this, 12), 0);
+        for (final Library.Item it : new ArrayList<>(items)) r.addView(itemCard(it));
+        hs.addView(r);
+        return hs;
+    }
+
+    private View itemCard(final Library.Item it) {
+        boolean round = it.kind == Library.Item.ARTIST;
+        int size = round ? 120 : 140;
+        LinearLayout card = Ui.column(this);
+        card.setPadding(Ui.dp(this, 4), 0, Ui.dp(this, 4), 0);
+        if (round) card.setGravity(Gravity.CENTER_HORIZONTAL);
+        ImageView img = new ImageView(this);
+        img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        img.setBackground(round ? Ui.oval(Ui.CARD) : Ui.rounded(Ui.CARD, Ui.dp(this, 6)));
+        img.setClipToOutline(true);
+        Covers.loadUrl(this, it.art, it.title, img, Ui.dp(this, size));
+        card.addView(img, Ui.lp(Ui.dp(this, size), Ui.dp(this, size)));
+        TextView title = Ui.text(this, it.title, 13, Ui.TEXT, true);
+        title.setPadding(0, Ui.dp(this, 8), 0, 0);
+        if (round) title.setGravity(Gravity.CENTER);
+        card.addView(title, Ui.lp(Ui.dp(this, size), Ui.WRAP));
+        if (!round) card.addView(Ui.text(this, it.subtitle, 12, Ui.SUB, false), Ui.lp(Ui.dp(this, size), Ui.WRAP));
+        card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(new Collection(it));
+            }
+        });
+        return card;
+    }
+
+    /** A list row for an item: cover, title and a line of detail. */
+    private View itemListRow(final Library.Item it) {
+        LinearLayout r = Ui.row(this);
+        r.setPadding(Ui.dp(this, 16), Ui.dp(this, 8), Ui.dp(this, 16), Ui.dp(this, 8));
+        r.setBackground(Ui.ripple(null));
+        r.addView(collectionCover(new Collection(it), 60));
+        LinearLayout texts = Ui.column(this);
+        texts.setPadding(Ui.dp(this, 12), 0, 0, 0);
+        texts.addView(Ui.text(this, it.title, 16, Ui.TEXT, false));
+        texts.addView(Ui.text(this, it.subtitle, 13, Ui.SUB, false));
+        r.addView(texts, Ui.weight(1));
+        r.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(new Collection(it));
+            }
+        });
+        return r;
+    }
+
+    /** The full list of a shelf of items ("Ver todo"). */
+    private final class ItemsScreen extends Screen {
+        final Library.Section sec;
+
+        ItemsScreen(Library.Section sec) {
+            this.sec = sec;
+        }
+
+        @Override
+        View create() {
+            LinearLayout col = Ui.column(MainActivity.this);
+            LinearLayout top = Ui.row(MainActivity.this);
+            top.setPadding(Ui.dp(MainActivity.this, 4), Ui.dp(MainActivity.this, 8), Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 4));
+            top.addView(Ui.iconButton(MainActivity.this, R.drawable.ic_back, 48, Ui.TEXT, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            }));
+            LinearLayout titles = Ui.column(MainActivity.this);
+            titles.setPadding(Ui.dp(MainActivity.this, 8), 0, 0, 0);
+            titles.addView(Ui.text(MainActivity.this, sec.title, 22, Ui.TEXT, true));
+            titles.addView(Ui.text(MainActivity.this, sec.subtitle, 12, Ui.SUB, false));
+            top.addView(titles, Ui.weight(1));
+            col.addView(top);
+            LinearLayout list = Ui.column(MainActivity.this);
+            list.setPadding(0, Ui.dp(MainActivity.this, 8), 0, Ui.dp(MainActivity.this, 24));
+            if (sec.state == Library.READY) {
+                for (Library.Item it : sec.items) list.addView(itemListRow(it));
+            } else {
+                list.addView(sectionStatus(sec));
+            }
+            ScrollView sv = new ScrollView(MainActivity.this);
+            sv.addView(list);
+            col.addView(sv, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1));
+            return col;
+        }
+    }
+
+    private static final String[] PODCAST_TOPICS = {
+            "Noticias", "Comedia", "Deportes", "Tecnología", "Historia", "Negocios", "Salud", "Música",
+            "Ciencia", "Crimen real", "Educación", "Cine"};
+
+    /** Podcasts: your shows, what you left half-way, the charts and a search over Apple's directory. */
+    private final class PodcastsScreen extends Screen {
+        String query = "";
+        String resultsFor = "";
+        List<Library.Item> results = new ArrayList<>();
+        boolean searching;
+        boolean failed;
+        Runnable pending;
+        EditText input;
+        LinearLayout resultsBox;
+        ScrollView resultsScroll;
+        View homeView;
+
+        @Override
+        View create() {
+            Library.Section pop = lib.section("podcasts");
+            if (pop.state == Library.IDLE || pop.state == Library.FAILED) lib.loadSection(pop);
+
+            LinearLayout col = Ui.column(MainActivity.this);
+            TextView title = Ui.text(MainActivity.this, "Podcasts", 26, Ui.TEXT, true);
+            title.setPadding(Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 28), 0, Ui.dp(MainActivity.this, 14));
+            col.addView(title);
+
+            LinearLayout box = Ui.row(MainActivity.this);
+            box.setBackground(Ui.rounded(Ui.TEXT, Ui.dp(MainActivity.this, 6)));
+            box.setPadding(Ui.dp(MainActivity.this, 10), 0, Ui.dp(MainActivity.this, 10), 0);
+            box.addView(Ui.icon(MainActivity.this, R.drawable.ic_search, 28, 0xFF121212));
+            input = new EditText(MainActivity.this);
+            input.setHint("Buscar podcasts");
+            input.setHintTextColor(0xFF6A6A6A);
+            input.setTextColor(0xFF121212);
+            input.setBackground(null);
+            input.setSingleLine(true);
+            input.setTextSize(16);
+            input.setText(query);
+            input.setSelection(query.length());
+            box.addView(input, Ui.weight(1));
+            final ImageView clear = Ui.iconButton(MainActivity.this, R.drawable.ic_close, 36, 0xFF121212, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    input.setText("");
+                }
+            });
+            box.addView(clear);
+            LinearLayout.LayoutParams blp = Ui.lp(Ui.MATCH, Ui.dp(MainActivity.this, 48));
+            blp.setMargins(Ui.dp(MainActivity.this, 16), 0, Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 8));
+            col.addView(box, blp);
+
+            FrameLayout body = new FrameLayout(MainActivity.this);
+            homeView = homeContent();
+            body.addView(homeView);
+            resultsBox = Ui.column(MainActivity.this);
+            resultsBox.setPadding(0, Ui.dp(MainActivity.this, 8), 0, Ui.dp(MainActivity.this, 24));
+            resultsScroll = new ScrollView(MainActivity.this);
+            resultsScroll.addView(resultsBox);
+            body.addView(resultsScroll);
+            col.addView(body, new LinearLayout.LayoutParams(Ui.MATCH, 0, 1));
+
+            input.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int a, int b, int c) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int a, int b, int c) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    query = s.toString();
+                    clear.setVisibility(query.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                    schedule();
+                    showResults();
+                }
+            });
+            clear.setVisibility(query.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            if (!query.trim().isEmpty() && !query.trim().equals(resultsFor)) schedule();
+            showResults();
+            return col;
+        }
+
+        /** Your shows, what you were listening to, the charts and topic shortcuts. */
+        View homeContent() {
+            LinearLayout col = Ui.column(MainActivity.this);
+            List<Track> resume = lib.inProgress(10);
+            if (!resume.isEmpty()) {
+                Collection rc = new Collection(C_RESUME, null);
+                col.addView(sectionHeader(rc, "Continúa donde lo dejaste"));
+                col.addView(trackRow(resume, rc));
+            }
+            List<Library.Item> mine = lib.followedPodcasts();
+            if (!mine.isEmpty()) {
+                col.addView(sectionTitle("Tus podcasts"));
+                col.addView(itemRow(mine));
+            }
+            col.addView(sectionTitle("Temas"));
+            HorizontalScrollView hs = new HorizontalScrollView(MainActivity.this);
+            hs.setHorizontalScrollBarEnabled(false);
+            LinearLayout chips = Ui.row(MainActivity.this);
+            chips.setPadding(Ui.dp(MainActivity.this, 12), 0, Ui.dp(MainActivity.this, 12), 0);
+            for (final String topic : PODCAST_TOPICS) {
+                TextView chip = Ui.text(MainActivity.this, topic, 13, Ui.TEXT, false);
+                chip.setPadding(Ui.dp(MainActivity.this, 14), Ui.dp(MainActivity.this, 8), Ui.dp(MainActivity.this, 14), Ui.dp(MainActivity.this, 8));
+                chip.setBackground(Ui.ripple(Ui.rounded(Ui.CARD, Ui.dp(MainActivity.this, 18))));
+                chip.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        input.setText(topic);
+                        input.setSelection(topic.length());
+                    }
+                });
+                LinearLayout.LayoutParams lp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                lp.setMargins(Ui.dp(MainActivity.this, 4), 0, Ui.dp(MainActivity.this, 4), 0);
+                chips.addView(chip, lp);
+            }
+            hs.addView(chips);
+            col.addView(hs);
+            Library.Section pop = lib.section("podcasts");
+            col.addView(sectionHeader(new Collection(C_ONLINE, "podcasts"), pop.subtitle));
+            if (pop.state == Library.READY) {
+                col.addView(itemRow(pop.items.size() > 20 ? pop.items.subList(0, 20) : pop.items));
+            } else {
+                col.addView(sectionStatus(pop));
+            }
+            col.setPadding(0, 0, 0, Ui.dp(MainActivity.this, 24));
+            ScrollView sv = new ScrollView(MainActivity.this);
+            sv.addView(col);
+            return sv;
+        }
+
+        void schedule() {
+            if (pending != null) handler.removeCallbacks(pending);
+            final String q = query.trim();
+            if (q.isEmpty()) {
+                searching = false;
+                return;
+            }
+            searching = true;
+            pending = new Runnable() {
+                @Override
+                public void run() {
+                    lib.searchPodcasts(q, new Library.ItemResults() {
+                        @Override
+                        public void onItems(List<Library.Item> items, boolean fail) {
+                            if (!q.equals(query.trim())) return; // stale
+                            results = items;
+                            resultsFor = q;
+                            failed = fail;
+                            searching = false;
+                            if (stack.peek() == PodcastsScreen.this) showResults();
+                        }
+                    });
+                }
+            };
+            handler.postDelayed(pending, 450);
+        }
+
+        void showResults() {
+            String q = query.trim();
+            boolean idle = q.isEmpty();
+            homeView.setVisibility(idle ? View.VISIBLE : View.GONE);
+            resultsScroll.setVisibility(idle ? View.GONE : View.VISIBLE);
+            resultsBox.removeAllViews();
+            if (idle) return;
+            if (searching && !q.equals(resultsFor)) {
+                resultsBox.addView(statusLine("Buscando \"" + q + "\"…"));
+            } else if (failed) {
+                resultsBox.addView(statusLine("No hay conexión a internet."));
+            } else if (results.isEmpty()) {
+                resultsBox.addView(statusLine("No se encontraron podcasts para \"" + q + "\""));
+            } else {
+                for (Library.Item it : results) resultsBox.addView(itemListRow(it));
+            }
+        }
+
+        TextView statusLine(String msg) {
+            TextView t = Ui.text(MainActivity.this, msg, 15, Ui.SUB, false);
+            t.setSingleLine(false);
+            t.setGravity(Gravity.CENTER);
+            t.setPadding(Ui.dp(MainActivity.this, 32), Ui.dp(MainActivity.this, 48), Ui.dp(MainActivity.this, 32), 0);
+            return t;
+        }
+
+        @Override
+        void onLibraryChanged() {
+            if (query.trim().isEmpty()) render(); // typing must not be interrupted
+        }
     }
 
     /** Placeholder for a shelf that is loading or failed to load. */
@@ -705,16 +1046,34 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 col.addView(trackRow(recent, new Collection(C_RECENT, null)));
             }
 
-            // real music from the internet: charts, genres and live radio
+            List<Track> resume = lib.inProgress(10);
+            if (!resume.isEmpty()) {
+                Collection rc = new Collection(C_RESUME, null);
+                col.addView(sectionHeader(rc, "Podcasts que dejaste a medias"));
+                col.addView(trackRow(resume, rc));
+            }
+            List<Library.Item> mine = lib.followedPodcasts();
+            if (!mine.isEmpty()) {
+                col.addView(sectionTitle("Tus podcasts"));
+                col.addView(itemRow(mine));
+            }
+
+            // real content from the internet: charts, new releases, artists, playlists, radio…
             for (Library.Section sec : lib.sections()) {
+                if (!sec.featured) continue;
                 Collection c = new Collection(C_ONLINE, sec.id);
                 col.addView(sectionHeader(c, sec.subtitle));
-                if (sec.state == Library.READY) {
-                    col.addView(trackRow(sec.tracks.size() > 20 ? sec.tracks.subList(0, 20) : sec.tracks, c));
-                } else {
+                if (sec.state != Library.READY) {
                     col.addView(sectionStatus(sec));
+                } else if (sec.hasItems()) {
+                    col.addView(itemRow(sec.items.size() > 20 ? sec.items.subList(0, 20) : sec.items));
+                } else {
+                    col.addView(trackRow(sec.tracks.size() > 20 ? sec.tracks.subList(0, 20) : sec.tracks, c));
                 }
             }
+            TextView more = Ui.text(MainActivity.this, "Más géneros, radios y podcasts en Buscar", 13, Ui.SUB, false);
+            more.setPadding(Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 20), Ui.dp(MainActivity.this, 16), 0);
+            col.addView(more);
 
             LinkedHashMap<String, List<Track>> artists = lib.group(false);
             if (artists.size() > 1) {
@@ -799,7 +1158,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    List<Track> all = source.kind == C_ONLINE || source.kind == C_HISTORY ? source.tracks() : tracks;
+                    List<Track> all = source.kind == C_ONLINE || source.kind == C_HISTORY || source.kind == C_RESUME
+                            ? source.tracks() : tracks;
                     int i = all.indexOf(tracks.get(index));
                     player.playList(all, Math.max(i, 0), source.title());
                 }
@@ -1142,7 +1502,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
             LinearLayout chips = Ui.row(MainActivity.this);
             chips.setPadding(Ui.dp(MainActivity.this, 12), 0, Ui.dp(MainActivity.this, 12), Ui.dp(MainActivity.this, 8));
-            String[] names = {"Playlists", "Artistas", "Álbumes"};
+            String[] names = {"Playlists", "Artistas", "Álbumes", "Podcasts"};
             for (int i = 0; i < names.length; i++) {
                 final int index = i;
                 boolean on = i == filter;
@@ -1172,6 +1532,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 items.add(new Collection(C_ONLINE, "top"));
                 items.add(new Collection(C_ONLINE, "radio"));
                 for (String n : lib.playlistNames()) items.add(new Collection(C_PLAYLIST, n));
+            } else if (filter == 3) {
+                for (Library.Item it : lib.followedPodcasts()) items.add(new Collection(it));
             } else {
                 for (String n : lib.group(filter == 2).keySet()) {
                     items.add(new Collection(filter == 2 ? C_ALBUM : C_ARTIST, n));
@@ -1207,7 +1569,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     texts.setPadding(Ui.dp(MainActivity.this, 12), 0, 0, 0);
                     texts.addView(Ui.text(MainActivity.this, c.title(), 16, Ui.TEXT, false));
                     int count = c.tracks().size();
-                    String sub = c.kind == C_ARTIST ? "Artista · " + Ui.songs(count) : c.type() + " · " + c.count(count);
+                    String sub = c.kind == C_ARTIST ? "Artista · " + Ui.songs(count)
+                            : c.kind == C_ITEM ? c.type() : c.type() + " · " + c.count(count);
                     texts.addView(Ui.text(MainActivity.this, sub, 13, Ui.SUB, false));
                     r.addView(texts, Ui.weight(1));
                     return r;
@@ -1289,6 +1652,16 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         ImageView shuffleBtn;
 
         boolean shownEmpty;
+        TextView followBtn;
+
+        void updateFollow() {
+            if (followBtn == null) return;
+            boolean on = lib.isFollowing(col.item);
+            followBtn.setText(on ? "Siguiendo" : "Seguir");
+            followBtn.setTextColor(on ? Ui.TEXT : 0xFF000000);
+            followBtn.setBackground(Ui.ripple(on ? Ui.rounded(Ui.CARD, Ui.dp(MainActivity.this, 24))
+                    : Ui.rounded(Ui.TEXT, Ui.dp(MainActivity.this, 24))));
+        }
 
         DetailScreen(Collection col) {
             this.col = col;
@@ -1307,6 +1680,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             if ((col.kind == C_ALBUM || col.kind == C_ARTIST) && !col.tracks().isEmpty()) {
                 accent = Covers.accent(col.tracks().get(0));
             }
+            if (col.kind == C_ITEM) accent = Covers.accent(new Track("x", col.title(), col.title(), col.title(), 0, 0, true, 0));
             header.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                     new int[]{darken(accent), Ui.BG}));
 
@@ -1319,6 +1693,18 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 }
             }));
             top.addView(new View(MainActivity.this), new LinearLayout.LayoutParams(0, 1, 1));
+            if (col.kind == C_ITEM && col.item.kind == Library.Item.PODCAST) {
+                followBtn = pillButton("Seguir", Ui.TEXT, 0xFF000000, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        lib.toggleFollow(col.item);
+                    }
+                });
+                LinearLayout.LayoutParams flp = Ui.lp(Ui.WRAP, Ui.WRAP);
+                flp.setMargins(0, 0, Ui.dp(MainActivity.this, 12), 0);
+                top.addView(followBtn, flp);
+                updateFollow();
+            }
             if (col.kind == C_PLAYLIST) {
                 top.addView(Ui.iconButton(MainActivity.this, R.drawable.ic_more, 48, Ui.TEXT, new View.OnClickListener() {
                     @Override
@@ -1384,6 +1770,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 public void onClick(View v) {
                     Library.Section sec = col.section();
                     if (sec != null && sec.state == Library.FAILED) lib.loadSection(sec);
+                    if (col.kind == C_ITEM) lib.retryItem(col.item);
                 }
             });
             header.addView(empty);
@@ -1426,6 +1813,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 }
                 case C_ARTIST:
                     return col.artistId > 0 ? "Cargando canciones…" : "Nada por aquí todavía.";
+                case C_ITEM:
+                    if (lib.itemState(col.item) == Library.FAILED) {
+                        return "No se pudo cargar. Revisa tu conexión.\nToca aquí para reintentar.";
+                    }
+                    return "Cargando…";
                 default:
                     return "Nada por aquí todavía.";
             }
@@ -1439,13 +1831,14 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         void onLibraryChanged() {
             if (adapter == null) return;
             List<Track> tracks = col.tracks();
-            if (shownEmpty && !tracks.isEmpty() && (col.kind == C_ONLINE || col.kind == C_ARTIST)) {
+            if (shownEmpty && !tracks.isEmpty() && (col.kind == C_ONLINE || col.kind == C_ARTIST || col.kind == C_ITEM)) {
                 shownEmpty = false;
                 render(); // first results arrived: rebuild so the header shows real cover art
                 return;
             }
+            updateFollow();
             adapter.setTracks(tracks);
-            String len = Ui.totalLength(tracks);
+            String len = col.kind == C_ITEM && col.item.kind == Library.Item.PODCAST ? "" : Ui.totalLength(tracks);
             subtitle.setText(col.type() + " · " + col.count(tracks.size()) + (len.isEmpty() ? "" : " · " + len));
             emptyView.setVisibility(tracks.isEmpty() ? View.VISIBLE : View.GONE);
             ((TextView) emptyView).setText(emptyText());

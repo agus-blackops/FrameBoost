@@ -158,7 +158,7 @@ public class SmokeTest {
         Library.Section radio = lib.section("radio");
         assertEquals("radio mirror fallback works", Library.READY, radio.state);
         assertEquals("duplicates and broken stations removed", 5, radio.tracks.size());
-        for (Library.Section s : lib.sections()) assertEquals(s.title, Library.READY, s.state);
+        for (Library.Section s : lib.sections()) assertEquals(s.title, s.featured ? Library.READY : Library.IDLE, s.state);
         assertNotNull(findText(root, "Top 50 mundial"));
         assertNotNull(findText(root, "Radios en vivo"));
         assertNotNull(findText(root, "Reggaetón"));

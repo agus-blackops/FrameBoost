@@ -61,6 +61,8 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     private ImageView timerIcon;
     private ImageView lyricsIcon;
     private TextView speedValue;
+    private TextView skipBack;
+    private TextView skipFwd;
 
     private final Runnable ticker = new Runnable() {
         @Override
@@ -199,7 +201,11 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
                 player.toggleShuffle();
             }
         });
-        controls.addView(shuffle);
+        FrameLayout shuffleBox = new FrameLayout(this);
+        shuffleBox.addView(shuffle, new FrameLayout.LayoutParams(Ui.dp(this, 48), Ui.dp(this, 48)));
+        skipBack = skipButton("−15", -15000);
+        shuffleBox.addView(skipBack, new FrameLayout.LayoutParams(Ui.dp(this, 48), Ui.dp(this, 48)));
+        controls.addView(shuffleBox, Ui.lp(Ui.dp(this, 48), Ui.dp(this, 48)));
         controls.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1));
         controls.addView(Ui.iconButton(this, R.drawable.ic_prev, 56, Ui.TEXT, new View.OnClickListener() {
             @Override
@@ -243,7 +249,11 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
                 player.cycleRepeat();
             }
         });
-        controls.addView(repeat);
+        FrameLayout repeatBox = new FrameLayout(this);
+        repeatBox.addView(repeat, new FrameLayout.LayoutParams(Ui.dp(this, 48), Ui.dp(this, 48)));
+        skipFwd = skipButton("+30", 30000);
+        repeatBox.addView(skipFwd, new FrameLayout.LayoutParams(Ui.dp(this, 48), Ui.dp(this, 48)));
+        controls.addView(repeatBox, Ui.lp(Ui.dp(this, 48), Ui.dp(this, 48)));
         root.addView(controls);
 
         LinearLayout actions = Ui.row(this);
@@ -325,6 +335,21 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     private void close() {
         finish();
         overridePendingTransition(R.anim.stay, R.anim.slide_down);
+    }
+
+    /** Podcast skip button (replaces shuffle / repeat while an episode plays). */
+    private TextView skipButton(String label, final int deltaMs) {
+        TextView t = Ui.text(this, label, 15, Ui.TEXT, true);
+        t.setGravity(Gravity.CENTER);
+        t.setBackground(Ui.ripple(Ui.oval(0x22FFFFFF)));
+        t.setVisibility(View.GONE);
+        t.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                player.skipBy(deltaMs);
+            }
+        });
+        return t;
     }
 
     /** Small icon with a caption underneath, used for the secondary actions row. */
@@ -415,8 +440,9 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         if (!force && t.key.equals(lyricsKey) && lyricsResult != null) return;
         lyricsKey = t.key;
         lyricsResult = null;
-        showLyricsMessage(t.isLive() ? "La radio en vivo no tiene letra" : "Buscando letra…", false);
-        if (t.isLive()) return;
+        showLyricsMessage(t.isLive() ? "La radio en vivo no tiene letra"
+                : t.isEpisode() ? "Los podcasts no tienen letra" : "Buscando letra…", false);
+        if (t.isLive() || t.isEpisode()) return;
         Lyrics.load(this, t, new Lyrics.Callback() {
             @Override
             public void onLyrics(Track track, Lyrics.Result r) {
@@ -559,7 +585,12 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         }
         source.setText(player.queueName().isEmpty() ? t.album : player.queueName());
         badge.setVisibility(t.remote ? View.VISIBLE : View.GONE);
-        badge.setText(t.isLive() ? "● EN VIVO" : "VISTA PREVIA · 30 s");
+        badge.setText(t.isLive() ? "● EN VIVO" : t.isEpisode() ? "PODCAST · EPISODIO COMPLETO" : "VISTA PREVIA · 30 s");
+        boolean episode = t.isEpisode();
+        skipBack.setVisibility(episode ? View.VISIBLE : View.GONE);
+        skipFwd.setVisibility(episode ? View.VISIBLE : View.GONE);
+        shuffle.setVisibility(episode ? View.GONE : View.VISIBLE);
+        repeat.setVisibility(episode ? View.GONE : View.VISIBLE);
         seek.setEnabled(!t.isLive());
         boolean liked = lib.isLiked(t);
         like.setImageResource(liked ? R.drawable.ic_heart : R.drawable.ic_heart_outline);

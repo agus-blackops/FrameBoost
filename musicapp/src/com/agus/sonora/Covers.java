@@ -85,6 +85,38 @@ public final class Covers {
         });
     }
 
+    /** Loads a picture from a URL (cached on disk) with a generated cover as placeholder. */
+    public static void loadUrl(final Context ctx, final String url, final String seed,
+                               final ImageView view, final int sizePx) {
+        final String key = "u:" + url + "@" + sizePx;
+        view.setTag(key);
+        Bitmap hit = url == null ? null : CACHE.get(key);
+        if (hit != null) {
+            view.setImageBitmap(hit);
+            return;
+        }
+        String phKey = "gen:" + seed + "@" + sizePx;
+        Bitmap placeholder = CACHE.get(phKey);
+        if (placeholder == null) CACHE.put(phKey, placeholder = generated(seed, sizePx, true));
+        view.setImageBitmap(placeholder);
+        if (url == null) return;
+        final Context app = ctx.getApplicationContext();
+        IO.execute(new Runnable() {
+            @Override
+            public void run() {
+                final Bitmap b = download(app, url, sizePx);
+                if (b == null) return;
+                CACHE.put(key, b);
+                MAIN.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (key.equals(view.getTag())) view.setImageBitmap(b);
+                    }
+                });
+            }
+        });
+    }
+
     /** Blocking variant for the notification / lock screen. */
     public static Bitmap loadSync(Context ctx, Track t, int sizePx) {
         String key = t.key + "@" + sizePx;

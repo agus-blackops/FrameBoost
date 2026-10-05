@@ -118,6 +118,25 @@ final class Ui {
         return String.format(Locale.ROOT, "%d:%02d", s / 60, s % 60);
     }
 
+    /** "3 oct · 42 min", or "3 oct · faltan 12 min" when the episode was started. */
+    static String episodeInfo(Context c, Track t) {
+        StringBuilder b = new StringBuilder();
+        if (t.dateAdded > 0) {
+            b.append(new java.text.SimpleDateFormat("d MMM", java.util.Locale.getDefault())
+                    .format(new java.util.Date(t.dateAdded)));
+        }
+        long total = t.durationMs;
+        long done = Library.get(c).progress(t);
+        long dur = total > 0 ? total : Library.get(c).progressDuration(t);
+        if (dur > 0) {
+            if (b.length() > 0) b.append(" · ");
+            long minutes = Math.max(1, (done > 0 ? dur - done : dur) / 60000);
+            String span = minutes >= 60 ? (minutes / 60) + " h " + (minutes % 60) + " min" : minutes + " min";
+            b.append(done > 0 ? "faltan " + span : span);
+        }
+        return b.toString();
+    }
+
     static String songs(int n) {
         return n == 1 ? "1 canción" : n + " canciones";
     }

@@ -77,6 +77,9 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     /** Where to start the current track once it is prepared (restored sessions, seeks before load). */
     private int pendingSeek;
     private boolean saveScheduled;
+    /** The track the current MediaPlayer was opened for (to remember podcast progress). */
+    private Track openTrack;
+    private boolean progressTicking;
 
     public static final int SLEEP_OFF = 0;
     public static final int SLEEP_TIMED = 1;
@@ -275,6 +278,32 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         applySpeed(p);
         Track t = current();
         if (t != null) Library.get(app).recordPlayed(t);
+        if (t != null && t.isEpisode()) startProgressTicker();
+    }
+
+    /** Saves the position of a playing podcast episode every 15 seconds. */
+    private void startProgressTicker() {
+        if (progressTicking) return;
+        progressTicking = true;
+        main.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isPlaying() && openTrack != null && openTrack.isEpisode()) {
+                    rememberEpisode();
+                    main.postDelayed(this, 15000);
+                } else {
+                    progressTicking = false;
+                }
+            }
+        }, 15000);
+    }
+
+    private void rememberEpisode() {
+        if (openTrack == null || !openTrack.isEpisode() || mp == null || !prepared) return;
+        try {
+            Library.get(app).saveProgress(openTrack, mp.getCurrentPosition(), mp.getDuration());
+        } catch (Exception ignored) {
+        }
     }
 
     // ---------------------------------------------------------------- sleep timer
@@ -354,6 +383,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     /** Remembers what was playing so the app can pick up where the user left off. */
     public void saveSession() {
         saveScheduled = false;
+        rememberEpisode();
         if (queue.isEmpty() || pos < 0 || pos >= order.size()) {
             prefs.edit().remove("session").apply();
             return;
@@ -437,6 +467,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         playWhenReady = false;
         resumeOnFocusGain = false;
         if (mp != null && prepared && mp.isPlaying()) mp.pause();
+        rememberEpisode();
         notifyChanged();
     }
 
@@ -466,6 +497,15 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
             pendingSeek = Math.max(0, ms); // restored session: applied when playback starts
             notifyChanged();
         }
+    }
+
+    /** Jumps forward or back inside the current track (podcasts: -15 s / +30 s). */
+    public void skipBy(int deltaMs) {
+        if (current() == null) return;
+        int target = position() + deltaMs;
+        int dur = duration();
+        if (dur > 0) target = Math.min(target, dur - 1000);
+        seekTo(Math.max(0, target));
     }
 
     public void toggleShuffle() {
@@ -540,10 +580,11 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
             notifyChanged();
             return;
         }
+        if (seekMs == 0 && t.isEpisode()) pendingSeek = (int) Library.get(app).progress(t); // resume where it was left
         playWhenReady = autoplay;
         if (autoplay) PlaybackService.ensureStarted(app);
-        if (t.kind == Track.PREVIEW) {
-            // Online song: get a fresh preview link first (they expire), then open it.
+        if (t.kind == Track.PREVIEW || t.kind == Track.EPISODE) {
+            // Online song: get a fresh preview link first (they expire); episodes: follow redirects.
             preparing = true;
             notifyChanged();
             Net.POOL.execute(new Runnable() {
@@ -587,7 +628,8 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         mp.setOnCompletionListener(this);
         mp.setOnErrorListener(this);
         try {
-            mp.setDataSource(app, Uri.parse(t.remote ? t.streamUrl : t.key));
+            openTrack = t;
+            mp.setDataSource(app, Uri.parse(t.remote ? t.playUrl() : t.key));
             preparing = true;
             mp.prepareAsync();
         } catch (Exception e) {
@@ -604,6 +646,8 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     private void releasePlayer() {
+        rememberEpisode();
+        openTrack = null;
         prepared = false;
         preparing = false;
         Effects.get(app).detach();
