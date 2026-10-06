@@ -8,6 +8,8 @@ APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6, Android 5.0
 
 *(Capturas generadas en el simulador con datos de ejemplo; en el teléfono se ven las portadas y listas reales.)*
 
+Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
+
 ## Novedades de la 1.6 (contenido)
 - **Podcasts** (nueva pestaña): populares de tu país (Apple Podcasts), búsqueda, temas, **seguir** programas y **episodios completos** leídos del feed RSS de cada podcast. Se retoma cada episodio donde lo dejaste ("faltan 27 min"), hay una fila "Seguir escuchando" y botones **−15 s / +30 s** en el reproductor. Los enlaces con redirecciones se resuelven antes de reproducir.
 - **Álbumes, artistas, playlists y géneros** de Deezer con su propia página: "Nuevos lanzamientos", "Artistas populares", "Playlists populares" y "Géneros" (el top de cada estilo).
