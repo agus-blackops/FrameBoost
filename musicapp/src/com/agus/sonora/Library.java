@@ -141,6 +141,8 @@ public final class Library {
         final boolean radio;
         /** -1 for a list of tracks, otherwise the kind of {@link Item}s the section holds. */
         public final int itemKind;
+        /** Artist shelves built by name: each name is looked up in the catalog (exact matches only). */
+        final String[] names;
         /** Featured shelves appear on Home and load at startup; the rest load when opened. */
         public boolean featured;
         public List<Track> tracks = new ArrayList<>();
@@ -151,7 +153,17 @@ public final class Library {
             this(id, title, subtitle, path, radio, -1);
         }
 
+        Section(String id, String title, String subtitle, String[] artistNames) {
+            this(id, title, subtitle, null, false, Item.ARTIST, artistNames);
+        }
+
         Section(String id, String title, String subtitle, String path, boolean radio, int itemKind) {
+            this(id, title, subtitle, path, radio, itemKind, null);
+        }
+
+        Section(String id, String title, String subtitle, String path, boolean radio, int itemKind,
+                String[] artistNames) {
+            this.names = artistNames;
             this.id = id;
             this.title = title;
             this.subtitle = subtitle;
@@ -187,6 +199,13 @@ public final class Library {
     static final String APPLE_SEARCH = "https://itunes.apple.com/search?media=podcast&entity=podcast&limit=25";
     static final String APPLE_LOOKUP = "https://itunes.apple.com/lookup?id=";
 
+    /** Internet-culture, fandom and game-inspired artists; the ones the catalog doesn't carry are skipped. */
+    static final String[] FANDOM_ARTISTS = {
+            "The Living Tombstone", "Black Gryph0n", "Baasik", "CG5", "NateWantsToBattle", "DAGames",
+            "TryHardNinja", "Rockit Gaming", "Miracle Of Sound", "Random Encounters", "Dan Bull",
+            "Griffinilla", "Jonathan Young", "Jack Stauber"
+    };
+
     private static String q(String text) {
         return "/search?q=" + Net.enc(text) + "&order=RANKING&limit=40";
     }
@@ -209,6 +228,10 @@ public final class Library {
         addSection(new Section("reggaeton", "Reggaetón", "Los éxitos del género", q("reggaeton"), false).featured());
         addSection(new Section("pop", "Pop latino", "Para cantar a todo pulmón", q("pop latino"), false).featured());
         addSection(new Section("rock", "Rock en español", "Clásicos y nuevos", q("rock en español"), false).featured());
+        addSection(new Section("fandom-artists", "Fandoms y gaming",
+                "The Living Tombstone, CG5, Black Gryph0n y más", FANDOM_ARTISTS).featured());
+        addSection(new Section("tls", "The Living Tombstone", "Sus temas más escuchados",
+                "/search?q=" + Net.enc("artist:\"The Living Tombstone\"") + "&order=RANKING&limit=40", false).featured());
         addSection(new Section("genres", "Géneros", "Explora el top de cada estilo",
                 "/genre", false, Item.GENRE));
         addSection(new Section("podcasts", "Podcasts populares", "Episodios completos",
@@ -315,8 +338,12 @@ public final class Library {
             public void run() {
                 List<Item> found = null;
                 try {
-                    String body = s.itemKind == Item.PODCAST ? topPodcastsBody() : Net.getString(DEEZER + s.path);
-                    found = parseItems(s.itemKind, body);
+                    if (s.names != null) {
+                        found = artistsByName(s.names);
+                    } else {
+                        String body = s.itemKind == Item.PODCAST ? topPodcastsBody() : Net.getString(DEEZER + s.path);
+                        found = parseItems(s.itemKind, body);
+                    }
                 } catch (Exception ignored) {
                 }
                 final List<Item> result = found;
@@ -334,6 +361,41 @@ public final class Library {
                 });
             }
         });
+    }
+
+    /**
+     * Looks each artist up in the catalog and keeps only exact name matches (a search for a small
+     * artist can return unrelated ones). Fails only when every lookup failed, e.g. no connection.
+     */
+    static List<Item> artistsByName(String[] names) throws Exception {
+        List<Item> out = new ArrayList<>();
+        Exception last = null;
+        int failures = 0;
+        for (String name : names) {
+            try {
+                Item it = findArtist(name);
+                if (it != null && !out.contains(it)) out.add(it);
+            } catch (Exception e) {
+                last = e;
+                failures++;
+            }
+        }
+        if (failures == names.length && last != null) throw last;
+        return out;
+    }
+
+    static Item findArtist(String name) throws Exception {
+        JSONObject root = new JSONObject(Net.getString(DEEZER + "/search/artist?limit=5&q=" + Net.enc(name)));
+        JSONArray data = root.optJSONArray("data");
+        if (data == null) return null;
+        String want = fold(name);
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject o = data.optJSONObject(i);
+            if (o == null || !fold(o.optString("name")).equals(want) || o.optLong("id") <= 0) continue;
+            return new Item(Item.ARTIST, o.optLong("id"), o.optString("name"), "Artista",
+                    o.optString("picture_big", o.optString("picture_medium")), null);
+        }
+        return null;
     }
 
     static String country() {

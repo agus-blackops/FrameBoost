@@ -605,4 +605,79 @@ public class ContentTest {
         settle();
         assertTrue(p.isPlaying());
     }
+
+    // ------------------------------------------------------------------ fandom artists
+
+    @Test
+    public void fandomArtistsAreLookedUpByExactName() throws Exception {
+        List<Library.Item> found = Library.artistsByName(Library.FANDOM_ARTISTS);
+        assertEquals("only the artists the catalog has", 3, found.size());
+        assertEquals("The Living Tombstone", found.get(0).title);
+        assertEquals("order of the list is kept", "Black Gryph0n", found.get(1).title);
+        assertEquals("CG5", found.get(2).title);
+        for (Library.Item it : found) {
+            assertEquals(Library.Item.ARTIST, it.kind);
+            assertNotEquals("the look-alike (\"Tribute Band\") is never chosen", 8001, it.id);
+            assertNotNull(it.art);
+        }
+        assertEquals("one lookup per name", Library.FANDOM_ARTISTS.length, net.artistLookups.size());
+        assertTrue(net.artistLookups.contains("Baasik")); // asked for, just not found
+    }
+
+    @Test
+    public void lookupMatchesIgnoringCaseAndAccents() throws Exception {
+        Library.Item it = Library.findArtist("the living tombstone");
+        assertNotNull(it);
+        assertEquals("The Living Tombstone", it.title);
+        assertNull(Library.findArtist("Nadie Conocido"));
+    }
+
+    @Test
+    public void fandomShelfOnHomeOpensTheArtistPage() throws Exception {
+        ActivityController<MainActivity> c = openMain();
+        MainActivity a = c.get();
+        View root = a.getWindow().getDecorView();
+        Library lib = Library.get(app);
+        assertNotNull(SmokeTest.findText(root, "Fandoms y gaming"));
+        Library.Section fandom = lib.section("fandom-artists");
+        assertEquals(Library.READY, fandom.state);
+        assertEquals(3, fandom.items.size());
+        assertNotNull(SmokeTest.findPrefix(root, "The Living Tombstone, CG5"));
+        // the artist's own track shelf searches by the exact artist name
+        Library.Section tls = lib.section("tls");
+        assertEquals(Library.READY, tls.state);
+        assertEquals(15, tls.tracks.size());
+        boolean exact = false;
+        for (String u : net.urls) {
+            if (u.contains("/search?q=artist%3A%22The+Living+Tombstone%22")) exact = true;
+        }
+        assertTrue("searched with artist:\"...\"", exact);
+
+        // tapping the artist opens a page with their top songs
+        List<TextView> cards = texts(root, "The Living Tombstone");
+        assertTrue(cards.size() >= 2); // shelf title and artist card
+        View card = cards.get(0); // the artist card comes before the later shelf of the same name
+        while (!card.hasOnClickListeners()) card = (View) card.getParent();
+        card.performClick();
+        settle();
+        SmokeTest.layout(root);
+        Library.Item artist = fandom.items.get(0);
+        assertEquals(12, lib.itemTracks(artist).size());
+        assertTrue(net.urls.contains("https://api.deezer.com/artist/" + artist.id + "/top?limit=50"));
+        a.onBackPressed();
+        c.pause().stop().destroy();
+    }
+
+    @Test
+    public void fandomShelfFailsOnlyWhenEveryLookupFails() throws Exception {
+        net.offline = true;
+        Library lib = Library.get(app);
+        lib.loadSection(lib.section("fandom-artists"));
+        settle();
+        assertEquals(Library.FAILED, lib.section("fandom-artists").state);
+        net.offline = false;
+        lib.loadSection(lib.section("fandom-artists"));
+        settle();
+        assertEquals(Library.READY, lib.section("fandom-artists").state);
+    }
 }

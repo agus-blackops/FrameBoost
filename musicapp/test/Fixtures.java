@@ -25,6 +25,7 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver {
 
     public final AtomicInteger trackLookups = new AtomicInteger();
     public final List<String> urls = Collections.synchronizedList(new ArrayList<String>());
+    public final List<String> artistLookups = Collections.synchronizedList(new ArrayList<String>());
     public final AtomicInteger feedLookups = new AtomicInteger();
     public final AtomicInteger feedFetches = new AtomicInteger();
     public final List<String> resolved = Collections.synchronizedList(new ArrayList<String>());
@@ -207,6 +208,20 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver {
             feedFetches.incrementAndGet();
             if (url.contains("/999.xml")) throw new IOException("HTTP 500");
             return rss("Podcast " + url.substring(url.lastIndexOf('/') + 1)).getBytes("UTF-8");
+        }
+        if (url.contains("api.deezer.com/search/artist")) {
+            if (offline) throw new IOException("offline");
+            String name = java.net.URLDecoder.decode(url.substring(url.indexOf("q=") + 2), "UTF-8");
+            artistLookups.add(name);
+            String[] known = {"The Living Tombstone", "CG5", "Black Gryph0n"};
+            for (String k : known) {
+                if (k.equalsIgnoreCase(name)) {
+                    // a decoy comes first: only the exact name may be picked
+                    return ("{\"data\":[{\"id\":8001,\"name\":\"" + k + " Tribute Band\",\"picture_big\":\"https://cdn.dz.example/ar9/500x500.jpg\"},"
+                            + "{\"id\":" + (7000 + Math.abs(k.hashCode()) % 900) + ",\"name\":\"" + k + "\",\"picture_big\":\"https://cdn.dz.example/ar7/500x500.jpg\"}]}").getBytes("UTF-8");
+                }
+            }
+            return "{\"data\":[{\"id\":8002,\"name\":\"Otro Artista\"}]}".getBytes("UTF-8");
         }
         if (url.contains("api.deezer.com/editorial/0/releases")) return items("album", 6).getBytes("UTF-8");
         if (url.contains("api.deezer.com/chart/0/artists")) return items("artist", 6).getBytes("UTF-8");

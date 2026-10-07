@@ -1,6 +1,6 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6, Android 5.0+, ~115 KB).
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6.1, Android 5.0+, ~115 KB).
 
 | Inicio | Podcasts | Un podcast | Álbum | Episodio |
 |---|---|---|---|---|
@@ -9,6 +9,9 @@ APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6, Android 5.0
 *(Capturas generadas en el simulador con datos de ejemplo; en el teléfono se ven las portadas y listas reales.)*
 
 Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
+
+## Novedades de la 1.6.1
+- **Fandoms y gaming**: estante de artistas de música de internet y de inspiración en videojuegos (The Living Tombstone, CG5, Black Gryph0n, Baasik, NateWantsToBattle, DAGames, TryHardNinja, Rockit Gaming, Miracle Of Sound, Random Encounters, Dan Bull, Griffinilla, Jonathan Young, Jack Stauber) y un estante propio de **The Living Tombstone**. Cada artista se busca por nombre exacto en el catálogo de Deezer; los que no estén se omiten. Se oyen como el resto del catálogo: **vistas previas de 30 s** (la app no incluye archivos de audio). Cualquier otro artista se encuentra con Buscar.
 
 ## Novedades de la 1.6 (contenido)
 - **Podcasts** (nueva pestaña): populares de tu país (Apple Podcasts), búsqueda, temas, **seguir** programas y **episodios completos** leídos del feed RSS de cada podcast. Se retoma cada episodio donde lo dejaste ("faltan 27 min"), hay una fila "Seguir escuchando" y botones **−15 s / +30 s** en el reproductor. Los enlaces con redirecciones se resuelven antes de reproducir.
