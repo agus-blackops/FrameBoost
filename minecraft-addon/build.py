@@ -69,10 +69,14 @@ if __name__ == "__main__":
     for n, f in [("aim_mace", mace), ("titan_sword", sword), ("storm_axe", axe), ("divine_heart", heart), ("immortal_core", core), ("restoration_orb", orb), ("antidote", antidote)]:
         png(f"{ROOT}/RP/textures/items/fb_{n}.png", f())
     out = os.path.join(ROOT, "dist"); os.makedirs(out, exist_ok=True)
-    for ext in ("zip", "mcaddon"):
-        with zipfile.ZipFile(f"{out}/PoderSupremo.{ext}", "w", zipfile.ZIP_DEFLATED) as z:
-            for pack in ("BP", "RP"):
-                for d, _, fs in os.walk(f"{ROOT}/{pack}"):
-                    for f in fs:
-                        p = os.path.join(d, f); z.write(p, os.path.relpath(p, ROOT))
+    mc = f"{out}/PoderSupremo.mcaddon"
+    with zipfile.ZipFile(mc, "w", zipfile.ZIP_DEFLATED) as z:
+        for pack in ("BP", "RP"):
+            for d, _, fs in os.walk(f"{ROOT}/{pack}"):
+                for f in fs:
+                    p = os.path.join(d, f); z.write(p, os.path.relpath(p, ROOT))
+    # el .zip contiene el .mcaddon (+ README)
+    with zipfile.ZipFile(f"{out}/PoderSupremo.zip", "w", zipfile.ZIP_DEFLATED) as z:
+        z.write(mc, "PoderSupremo.mcaddon")
+        z.write(f"{ROOT}/README.md", "README.md")
     print("OK ->", out)
