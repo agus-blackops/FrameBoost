@@ -27,3 +27,10 @@ Kit completo: `/scriptevent fb:kit`
 **El elegido:** `FaultierLocket0` está en la lista `NO_ELEGIDOS` de `BP/scripts/main.js`: los objetos no le obedecen y ve "no es el elegido". Para agregar más, edita la lista o usa `/tag <jugador> add fb_no_elegido`.
 
 Regenerar texturas y zips: `python3 build.py`
+
+## Nivel "más poderoso" (v1.4.0)
+- **Aura del Elegido:** `DiamondHalo9031`, con cualquier objeto del addon encima, tiene Fuerza III, Resistencia II, Regeneración II, Velocidad II, Salto, Visión nocturna, Vida extra y más, siempre.
+- **Armas:** Espada del Titán +80, Hacha de Tormenta +50, y el mazo normal +40 (×3 si golpeas cayendo).
+- **Báculo Supremo:** 150 de daño, 64 bloques, casi sin espera.
+- **Aliados:** duran 5 min, espera 90 s, atacan 2-4 veces más fuerte y de más lejos (Warden 400, Convergencia 200).
+- **Núcleo Inmortal:** se activa con 5 corazones y se recarga en 10 s. **Corazón Divino:** 15 min.

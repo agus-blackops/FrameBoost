@@ -10,16 +10,17 @@ const DUENO = "DiamondHalo9031";
 const BOSS = { PELIGRO_HP: 6, ESPERA: 20 * 60 * 5 };
 
 const AIM = {
-  RANGE: 10,          // bloques de alcance del aim
-  ASSIST_CONE: 40,    // grados de cono (modo aim assist)
-  ASSIST_SMOOTH: 0.35,// suavizado del aim assist (0-1)
+  RANGE: 14,          // bloques de alcance del aim
+  ASSIST_CONE: 60,    // grados de cono (modo aim assist)
+  ASSIST_SMOOTH: 0.6, // suavizado del aim assist (0-1)
   LOCK_SMOOTH: 1.0,   // 1 = aimbot instantáneo (agachado)
   TARGET_PLAYERS: true,
 };
 
 const WEAPONS = {
-  "fb:titan_sword": { bonus: 34, smash: 1 },
-  "fb:storm_axe": { bonus: 22, smash: 1, lightning: true },
+  "fb:titan_sword": { bonus: 80, smash: 2 },
+  "fb:storm_axe": { bonus: 50, smash: 2, lightning: true },
+  "minecraft:mace": { bonus: 40, smash: 3 },
 };
 const MAZO = "minecraft:mace"; // el mazo normal de Minecraft, con aimbot
 const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb", "fb:antidote", "fb:supreme_staff", "fb:jump_orb", "fb:ally_book"];
@@ -104,7 +105,7 @@ system.runInterval(() => {
     // Núcleo Inmortal: pasivo desde el inventario
     if (system.currentTick % 5 === 0 && hasInInventory(p, "fb:immortal_core")) {
       const h = p.getComponent("minecraft:health");
-      if (h && h.currentValue > 0 && h.currentValue <= 6 && !enCooldown(p, "core", 600)) {
+      if (h && h.currentValue > 0 && h.currentValue <= 10 && !enCooldown(p, "core", 200)) {
         h.resetToMaxValue();
         for (const [fx, amp] of [["resistance", 4], ["regeneration", 4], ["fire_resistance", 0], ["absorption", 9]])
           p.addEffect(fx, 600, { amplifier: amp });
@@ -156,12 +157,12 @@ world.beforeEvents.itemUse.subscribe((ev) => {
   if (!esElegido(p)) { ev.cancel = true; system.run(() => rechazar(p)); return; }
   if (id === "fb:supreme_staff") {
     ev.cancel = true;
-    system.run(() => { if (!enCooldown(p, "staff", 10)) rayoSupremo(p); });
+    system.run(() => { if (!enCooldown(p, "staff", 5)) rayoSupremo(p); });
     return;
   }
   if (id === "fb:jump_orb") {
     ev.cancel = true;
-    system.run(() => { if (!enCooldown(p, "jump", 20)) saltoSupremo(p); });
+    system.run(() => { if (!enCooldown(p, "jump", 10)) saltoSupremo(p); });
     return;
   }
   if (id === "fb:ally_book") {
@@ -182,8 +183,8 @@ world.beforeEvents.itemUse.subscribe((ev) => {
   if (id === "fb:divine_heart") {
     ev.cancel = true;
     system.run(() => {
-      if (enCooldown(p, "heart", 200)) return p.onScreenDisplay.setActionBar("§7Corazón Divino recargando...");
-      const dur = 20 * 60 * 5;
+      if (enCooldown(p, "heart", 100)) return p.onScreenDisplay.setActionBar("§7Corazón Divino recargando...");
+      const dur = 20 * 60 * 15;
       for (const [fx, amp] of [["regeneration", 9], ["strength", 9], ["resistance", 3], ["absorption", 9], ["speed", 2], ["saturation", 0], ["health_boost", 9]])
         p.addEffect(fx, dur, { amplifier: amp });
       p.getComponent("minecraft:health")?.resetToMaxValue();
@@ -249,17 +250,17 @@ function restaurarTodo(p) {
 // ───────────── BÁCULO SUPREMO y ORBE DE SALTO ─────────────
 function rayoSupremo(p) {
   const dir = p.getViewDirection(), o = p.getHeadLocation();
-  let alcance = 40;
+  let alcance = 64;
   try { // el rayo se detiene en el primer bloque
-    const b = p.getBlockFromViewDirection({ maxDistance: 40 });
+    const b = p.getBlockFromViewDirection({ maxDistance: 64 });
     if (b) alcance = Math.hypot(b.block.location.x - o.x, b.block.location.y - o.y, b.block.location.z - o.z);
   } catch {}
   for (let d = 1; d < alcance; d += 1) {
     try { p.dimension.spawnParticle("minecraft:blue_flame_particle", { x: o.x + dir.x * d, y: o.y + dir.y * d, z: o.z + dir.z * d }); } catch {}
   }
-  for (const { entity: e, distance } of p.getEntitiesFromViewDirection({ maxDistance: 40 })) {
+  for (const { entity: e, distance } of p.getEntitiesFromViewDirection({ maxDistance: 64 })) {
     if (distance > alcance || e.id === p.id || e.hasTypeFamily("fb_ally")) continue;
-    try { e.applyDamage(60, { cause: EntityDamageCause.entityAttack, damagingEntity: p }); e.dimension.spawnParticle("minecraft:huge_explosion_emitter", e.location); } catch {}
+    try { e.applyDamage(150, { cause: EntityDamageCause.entityAttack, damagingEntity: p }); e.dimension.spawnParticle("minecraft:huge_explosion_emitter", e.location); } catch {}
   }
   p.playSound("random.explode");
 }
@@ -283,13 +284,13 @@ function saltoSupremo(p) {
 // - Los 5 salen juntos cuando FaultierLocket0 le da el "Golpe Supremo" al dueño llevando el Antidote.
 // - Prueba rápida: /scriptevent fb:aliados   (los 5)  o  /scriptevent fb:boss  (solo el Jefe)
 const ALIADOS = {
-  jefe: { tipo: "minecraft:iron_golem", nombre: "§4§lJefe Final", dano: 40, radio: 9 },
-  warden: { tipo: "fb:warden_final", nombre: "§3§lWarden Final", dano: 120, radio: 14, rompeArmadura: true, inmortal: true },
-  clawd: { tipo: "fb:clawd", nombre: "§6Clawd", dano: 30, radio: 10, cura: true },
-  convergencia: { tipo: "fb:convergencia", nombre: "§d§lLa Convergencia", dano: 80, radio: 14, debilita: true },
-  chatgpt: { tipo: "fb:chatgpt_logo", nombre: "§aLogo de ChatGPT", dano: 35, radio: 12, marca: true },
+  jefe: { tipo: "minecraft:iron_golem", nombre: "§4§lJefe Final", dano: 100, radio: 16 },
+  warden: { tipo: "fb:warden_final", nombre: "§3§lWarden Final", dano: 400, radio: 20, rompeArmadura: true, inmortal: true },
+  clawd: { tipo: "fb:clawd", nombre: "§6Clawd", dano: 80, radio: 16, cura: true },
+  convergencia: { tipo: "fb:convergencia", nombre: "§d§lLa Convergencia", dano: 200, radio: 24, debilita: true },
+  chatgpt: { tipo: "fb:chatgpt_logo", nombre: "§aLogo de ChatGPT", dano: 100, radio: 20, marca: true },
 };
-const DURACION_ALIADOS = 20 * 120, ESPERA_ALIADOS = 20 * 60 * 3;
+const DURACION_ALIADOS = 20 * 300, ESPERA_ALIADOS = 20 * 90;
 const ARMADURA = [EquipmentSlot.Head, EquipmentSlot.Chest, EquipmentSlot.Legs, EquipmentSlot.Feet];
 const activos = []; // { kind, e, fin }
 let proximoJefe = 0, proximosAliados = 0, ultimoAtacante = null, ultimoAtaque = 0;
@@ -341,7 +342,7 @@ system.runInterval(() => {
   }
   if (!activos.length) return;
   const ids = new Set(activos.filter((a) => valida(a.e)).map((a) => a.e.id));
-  const monstruos = dueno.dimension.getEntities({ location: dueno.location, maxDistance: 14, families: ["monster"] });
+  const monstruos = dueno.dimension.getEntities({ location: dueno.location, maxDistance: 26, families: ["monster"] });
   for (let i = activos.length - 1; i >= 0; i--) {
     const a = activos[i], def = ALIADOS[a.kind];
     if (!valida(a.e)) { activos.splice(i, 1); continue; }
@@ -370,7 +371,7 @@ system.runInterval(() => {
     }
   }
   dueno.onScreenDisplay.setActionBar(`§6Aliados activos: ${activos.length}`);
-}, 10);
+}, 5);
 
 // ───────────── ANTIDOTE: escudo contra el "Golpe Supremo" ─────────────
 // El Golpe Supremo es el ataque de FaultierLocket0 que quita los poderes del addon.
@@ -415,6 +416,20 @@ function golpeSupremo(dueno) {
   dueno.playSound("random.totem");
   if (ahora >= proximosAliados) invocarTodos(dueno);
 }
+
+// ───────────── AURA DEL ELEGIDO ─────────────
+// DiamondHalo9031, mientras lleve cualquier objeto del addon, recibe poderes permanentes.
+const AURA = [["strength", 3], ["resistance", 2], ["regeneration", 2], ["speed", 2], ["jump_boost", 1], ["night_vision", 0], ["saturation", 0], ["fire_resistance", 0], ["water_breathing", 0], ["health_boost", 4]];
+system.runInterval(() => {
+  const p = world.getAllPlayers().find(esDueno);
+  if (!p) return;
+  const c = p.getComponent("minecraft:inventory")?.container;
+  if (!c) return;
+  let tiene = false;
+  for (let i = 0; i < c.size && !tiene; i++) tiene = ES_MOD(c.getItem(i)?.typeId);
+  if (!tiene) return;
+  for (const [fx, amp] of AURA) { try { p.addEffect(fx, 20 * 30, { amplifier: amp, showParticles: false }); } catch {} }
+}, 100);
 
 // ───────────── KIT: /scriptevent fb:kit ─────────────
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
