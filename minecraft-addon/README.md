@@ -1,7 +1,7 @@
 # Poder Supremo (Minecraft Bedrock addon)
 
 Instalar: abre `dist/PoderSupremo.mcaddon` en Minecraft Bedrock (o descomprime el `.zip` y copia `BP` y `RP` a `development_behavior_packs` / `development_resource_packs`).
-Activa en el mundo **Experimentos → "Beta APIs"** (o "Holiday Creator Features") y ambos packs.
+Activa ambos packs en el mundo (no hace falta ningún experimento). Si algún objeto no aparece, prueba activando "Holiday Creator Features" en Experimentos.
 
 Kit completo: `/scriptevent fb:kit`
 

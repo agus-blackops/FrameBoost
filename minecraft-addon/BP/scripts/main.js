@@ -30,11 +30,11 @@ const esElegido = (p) =>
   !NO_ELEGIDOS.some((n) => n.toLowerCase() === p.name.toLowerCase()) && !p.hasTag("fb_no_elegido");
 
 function heldId(p) {
-  const inv = p.getComponent("inventory")?.container;
+  const inv = p.getComponent("minecraft:inventory")?.container;
   return inv?.getItem(p.selectedSlotIndex)?.typeId;
 }
 function hasInInventory(p, id) {
-  const c = p.getComponent("inventory")?.container;
+  const c = p.getComponent("minecraft:inventory")?.container;
   if (!c) return false;
   for (let i = 0; i < c.size; i++) if (c.getItem(i)?.typeId === id) return true;
   return false;
@@ -57,9 +57,9 @@ function elegirObjetivo(p, cono) {
   const v = p.getViewDirection();
   let best, bestAng = Infinity;
   for (const e of p.dimension.getEntities({ location: head, maxDistance: AIM.RANGE })) {
-    if (e.id === p.id || IGNORE_TYPES.has(e.typeId) || !e.getComponent("health")) continue;
+    if (e.id === p.id || IGNORE_TYPES.has(e.typeId) || !e.getComponent("minecraft:health")) continue;
     if (!AIM.TARGET_PLAYERS && e.typeId === "minecraft:player") continue;
-    if (e.typeId === "minecraft:player" && e.getGameMode?.() === "spectator") continue;
+    if (e.hasTypeFamily("villager") || e.hasTypeFamily("pet")) continue; // no apuntar a aldeanos ni mascotas
     const t = e.location, h = e.getComponent("minecraft:health");
     if (h && h.currentValue <= 0) continue;
     const dx = t.x - head.x, dy = t.y + 0.9 - head.y, dz = t.z - head.z;
@@ -94,7 +94,7 @@ system.runInterval(() => {
 
     // Núcleo Inmortal: pasivo desde el inventario
     if (system.currentTick % 5 === 0 && hasInInventory(p, "fb:immortal_core")) {
-      const h = p.getComponent("health");
+      const h = p.getComponent("minecraft:health");
       if (h && h.currentValue > 0 && h.currentValue <= 6 && !enCooldown(p, "core", 600)) {
         h.resetToMaxValue();
         for (const [fx, amp] of [["resistance", 4], ["regeneration", 4], ["fire_resistance", 0], ["absorption", 9]])
@@ -128,9 +128,9 @@ world.afterEvents.entityHitEntity.subscribe(({ damagingEntity: p, hitEntity: t }
 world.afterEvents.entityHitEntity.subscribe(({ damagingEntity: p, hitEntity: t }) => {
   if (p.typeId !== "minecraft:player" || t.typeId !== "minecraft:player") return;
   if (heldId(p) !== "fb:antidote" || !esElegido(p) || esElegido(t)) return;
-  const inv = p.getComponent("inventory")?.container;
+  const inv = p.getComponent("minecraft:inventory")?.container;
   inv?.setItem(p.selectedSlotIndex, undefined); // un solo uso
-  const eq = t.getComponent("equippable");
+  const eq = t.getComponent("minecraft:equippable");
   for (const s of [EquipmentSlot.Head, EquipmentSlot.Chest, EquipmentSlot.Legs, EquipmentSlot.Feet]) eq?.setEquipment(s, undefined);
   for (const fx of t.getEffects()) t.removeEffect(fx.typeId);
   t.dimension.spawnParticle("minecraft:totem_particle", t.location);
@@ -156,7 +156,7 @@ world.beforeEvents.itemUse.subscribe((ev) => {
       const dur = 20 * 60 * 5;
       for (const [fx, amp] of [["regeneration", 9], ["strength", 9], ["resistance", 3], ["absorption", 9], ["speed", 2], ["saturation", 0], ["health_boost", 9]])
         p.addEffect(fx, dur, { amplifier: amp });
-      p.getComponent("health")?.resetToMaxValue();
+      p.getComponent("minecraft:health")?.resetToMaxValue();
       p.playSound("random.levelup");
       p.onScreenDisplay.setActionBar("§dCorazón Divino: regeneración y fuerza supremas (5 min)");
     });
@@ -180,7 +180,7 @@ system.runInterval(() => {
       let s = snaps.get(e.id);
       if (!s) { s = { type: e.typeId, first: ahora }; snaps.set(e.id, s); }
       s.dim = e.dimension.id; s.loc = e.location; s.seen = ahora; s.name = e.nameTag;
-      if (e.typeId === "minecraft:item") s.stack = e.getComponent("item")?.itemStack;
+      if (e.typeId === "minecraft:item") s.stack = e.getComponent("minecraft:item")?.itemStack;
     }
   }
   for (const [id, s] of snaps) if (ahora - s.seen > 600) snaps.delete(id); // limpieza
@@ -190,15 +190,14 @@ world.afterEvents.entityDie.subscribe((ev) => muertos.add(ev.deadEntity.id));
 
 world.afterEvents.entityRemove.subscribe(({ removedEntityId: id }) => {
   const s = snaps.get(id); snaps.delete(id);
-  if (!s) return;
-  if (muertos.delete(id)) return;                                  // murió
+  const murio = muertos.delete(id);
+  if (!s || murio) return;                                         // sin foto o murió
   const ahora = system.currentTick;
   if (ahora - s.seen > 40) return;                                 // dato viejo / chunk descargado
   if (s.type === "minecraft:item" && ahora - s.first >= ITEM_LIFE) return; // expiró solo
   const cerca = world.getAllPlayers().filter((p) => p.dimension.id === s.dim);
   if (!cerca.length) return;                                       // nadie cerca: probable descarga de chunk
-  if (cerca.some((p) => Math.hypot(p.location.x - s.loc.x, p.location.y - s.loc.y, p.location.z - s.loc.z) > SNAP_RANGE + 8)
-      && cerca.every((p) => Math.hypot(p.location.x - s.loc.x, p.location.z - s.loc.z) > SNAP_RANGE)) return;
+  if (cerca.every((p) => Math.hypot(p.location.x - s.loc.x, p.location.z - s.loc.z) > SNAP_RANGE + 8)) return; // lejos de todos: chunk descargado
   if (s.type === "minecraft:item" && cerca.some((p) => Math.hypot(p.location.x - s.loc.x, p.location.y - s.loc.y, p.location.z - s.loc.z) < 5)) return; // recogido
   borrados.push(s);
   if (borrados.length > MAX_LEDGER) borrados.shift();
@@ -249,7 +248,7 @@ system.runInterval(() => {
   const dueno = world.getAllPlayers().find(esDueno);
   if (!dueno) return;
   if (!jefe && ahora >= proximoJefe) {
-    const h = dueno.getComponent("health");
+    const h = dueno.getComponent("minecraft:health");
     if (h && h.currentValue > 0 && h.currentValue <= BOSS.PELIGRO_HP) invocarJefe(dueno);
   }
   if (!jefe) return;
