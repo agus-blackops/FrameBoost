@@ -1,0 +1,32 @@
+[
+  {
+    "nombre": "Naranja Clawd",
+    "hex": "#D97757",
+    "uso": "Color principal del cuerpo"
+  },
+  {
+    "nombre": "Naranja oscuro",
+    "hex": "#B25A3E",
+    "uso": "Sombras y estados pulsados"
+  },
+  {
+    "nombre": "Arena",
+    "hex": "#D4A27F",
+    "uso": "Acentos suaves"
+  },
+  {
+    "nombre": "Crema",
+    "hex": "#F0EEE6",
+    "uso": "Fondos claros y texto sobre naranja"
+  },
+  {
+    "nombre": "Carbón",
+    "hex": "#1F1E1D",
+    "uso": "Fondos oscuros y ojos"
+  },
+  {
+    "nombre": "Gris cálido",
+    "hex": "#8A8279",
+    "uso": "Texto secundario"
+  }
+]

@@ -1,0 +1,184 @@
+<title>Clawd para Galaxy A51</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: maqueta del teléfono a la izquierda, controles a la derecha; en pantallas angostas se apilan. */
+:root{
+  --bg:#1b1a18; --surface:#262421; --line:#3b3833; --fg:#f1ebe0; --muted:#a0978b;
+  --accent:#d97757; --accent-ink:#1b1a18;
+  --display:'Pixelify Sans',ui-monospace,monospace;
+  --body:'DM Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);padding-inline:16px}
+.wrap{max-width:980px;margin-inline:auto;padding-block:28px 56px;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px}
+h1{font:700 clamp(30px,6vw,46px)/1.05 var(--display);margin:0;color:var(--accent);text-wrap:balance}
+.sub{margin:0;color:var(--muted);font:400 13px/1.4 var(--mono)}
+.stage{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:40px;align-items:start}
+@media (max-width:760px){.stage{grid-template-columns:minmax(0,1fr)}}
+
+.phone{width:min(300px,100%);aspect-ratio:1080/2400;margin-inline:auto;border-radius:36px;background:#0b0b0a;padding:8px;
+  box-shadow:0 0 0 2px #34312c,0 30px 60px -20px rgba(0,0,0,.7)}
+.screen{position:relative;width:100%;height:100%;border-radius:28px;overflow:hidden;background:#000;container-type:inline-size;color:var(--ink,#fff);
+  --ink:#fff;--ink-shadow:0 1px 6px rgba(0,0,0,.45)}
+.screen[data-tone="light"]{--ink:#1f1e1d;--ink-shadow:none}
+.wp{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hole{position:absolute;top:2.4cqw;left:50%;width:4.2cqw;height:4.2cqw;margin-left:-2.1cqw;border-radius:50%;background:#000;z-index:3}
+.status{position:absolute;top:2.4cqw;inset-inline:5cqw;display:flex;justify-content:space-between;font:500 3.4cqw/1 var(--body);text-shadow:var(--ink-shadow);z-index:2}
+.layer{position:absolute;inset:0}
+.clock{position:absolute;top:19cqw;width:100%;text-align:center;text-shadow:var(--ink-shadow)}
+.clock b{display:block;font:400 25cqw/1 var(--body);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.clock span{display:block;margin-top:2cqw;font:500 4.2cqw/1.2 var(--body)}
+.shortcut{position:absolute;bottom:11cqw;width:11cqw;height:11cqw;border-radius:50%;background:rgba(0,0,0,.28);backdrop-filter:blur(4px)}
+.shortcut.l{left:8cqw}.shortcut.r{right:8cqw}
+.gesture{position:absolute;bottom:3cqw;left:50%;width:30cqw;height:1.2cqw;margin-left:-15cqw;border-radius:1cqw;background:var(--ink);opacity:.7}
+.apps{position:absolute;top:16cqw;inset-inline:4cqw;display:grid;grid-template-columns:repeat(4,1fr);gap:5cqw 2cqw}
+.app{display:flex;flex-direction:column;align-items:center;gap:1.4cqw;font:500 2.9cqw/1.1 var(--body);text-shadow:var(--ink-shadow);text-align:center}
+.app img{width:15.5cqw;height:15.5cqw}
+.dock{position:absolute;bottom:8cqw;inset-inline:4cqw;display:flex;justify-content:space-around;padding:2.4cqw;border-radius:7cqw;background:rgba(0,0,0,.25);backdrop-filter:blur(6px)}
+.dock img{width:15.5cqw;height:15.5cqw}
+.boot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#121110}
+
+.controls{display:flex;flex-direction:column;gap:26px;min-width:0}
+.group{display:flex;flex-direction:column;gap:10px}
+h2{margin:0;font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font:500 14px/1 var(--body)}
+.chip img{width:30px;height:56px;border-radius:5px;object-fit:cover;display:block}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{padding:10px 18px;border:0;background:none;font:500 14px/1 var(--body);color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sw{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);text-align:left}
+.sw i{display:block;height:44px}
+.sw span{padding:8px 10px;display:flex;flex-direction:column;gap:2px;font:500 13px/1.2 var(--body)}
+.sw code{font:400 12px/1 var(--mono);color:var(--muted)}
+.hint{margin:0;color:var(--muted);font-size:14px;max-width:60ch}
+.toast{min-height:1.2em;margin:0;font:400 12px/1.2 var(--mono);color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Clawd para Galaxy A51</h1>
+    <p class="sub">1080 × 2400 · pantalla 20:9 · One UI</p>
+  </header>
+
+  <div class="stage">
+    <div class="phone"><div class="screen" id="screen"></div></div>
+
+    <div class="controls">
+      <div class="group"><h2>Fondo</h2><div class="row" id="wps"></div></div>
+      <div class="group"><h2>Pantalla</h2>
+        <div class="seg" id="screens" role="group" aria-label="Pantalla">
+          <button type="button" data-v="lock">Bloqueo</button>
+          <button type="button" data-v="home">Inicio</button>
+          <button type="button" data-v="boot">Arranque</button>
+        </div>
+      </div>
+      <div class="group"><h2>Iconos</h2>
+        <div class="seg" id="icons" role="group" aria-label="Iconos">
+          <button type="button" data-v="naranja">Naranja</button>
+          <button type="button" data-v="oscuro">Oscuro</button>
+        </div>
+      </div>
+      <div class="group"><h2>Paleta</h2>
+        <div class="swatches" id="palette"></div>
+        <p class="toast" id="toast" role="status"></p>
+      </div>
+      <p class="hint">Esto personaliza One UI. No cambia el sistema ni requiere root. Los pasos para aplicarlo están en el README del paquete.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const D = __DATA__;
+const state = { wp: 0, screen: 'lock', icons: 'naranja' };
+try { Object.assign(state, JSON.parse(localStorage.getItem('clawd-a51') || '{}')); } catch (e) {}
+const $ = (s) => document.querySelector(s);
+const el = (tag, attrs = {}, kids = []) => {
+  const n = document.createElement(tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  kids.forEach((c) => n.append(c));
+  return n;
+};
+const save = () => { try { localStorage.setItem('clawd-a51', JSON.stringify(state)); } catch (e) {} };
+if (!D.wallpapers[state.wp]) state.wp = 0;
+
+function now() {
+  const d = new Date();
+  return {
+    t: d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    date: d.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase()),
+  };
+}
+
+function renderScreen() {
+  const wp = D.wallpapers[state.wp];
+  const scr = $('#screen');
+  scr.dataset.tone = wp.tone;
+  scr.replaceChildren();
+  if (state.screen === 'boot') {
+    scr.append(el('img', { class: 'boot', src: D.boot, alt: 'Animación de arranque de Clawd' }));
+    scr.append(el('div', { class: 'hole' }));
+    return;
+  }
+  const n = now();
+  scr.append(el('img', { class: 'wp', src: wp.src, alt: 'Fondo ' + wp.name }));
+  scr.append(el('div', { class: 'hole' }));
+  scr.append(el('div', { class: 'status' }, [el('span', {}, [n.t]), el('span', {}, ['100%'])]));
+  const icons = D.icons[state.icons];
+  if (state.screen === 'lock') {
+    scr.append(el('div', { class: 'clock' }, [el('b', {}, [n.t]), el('span', {}, [n.date])]));
+    scr.append(el('div', { class: 'shortcut l' }), el('div', { class: 'shortcut r' }), el('div', { class: 'gesture' }));
+  } else {
+    const grid = el('div', { class: 'apps' });
+    icons.slice(4).forEach((ic) => grid.append(el('div', { class: 'app' }, [el('img', { src: ic.src, alt: '' }), ic.name])));
+    scr.append(grid);
+    const dock = el('div', { class: 'dock' });
+    icons.slice(0, 4).forEach((ic) => dock.append(el('img', { src: ic.src, alt: ic.name })));
+    scr.append(dock, el('div', { class: 'gesture' }));
+  }
+}
+
+function pressed(group, value) {
+  group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === value)));
+}
+
+function sync() {
+  document.querySelectorAll('#wps .chip').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.i) === state.wp)));
+  pressed($('#screens'), state.screen);
+  pressed($('#icons'), state.icons);
+  renderScreen();
+  save();
+}
+
+D.wallpapers.forEach((w, i) => {
+  const b = el('button', { type: 'button', class: 'chip', 'data-i': i }, [el('img', { src: w.src, alt: '' }), w.name]);
+  b.addEventListener('click', () => { state.wp = i; if (state.screen === 'boot') state.screen = 'lock'; sync(); });
+  $('#wps').append(b);
+});
+$('#screens').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { state.screen = b.dataset.v; sync(); } });
+$('#icons').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { state.icons = b.dataset.v; if (state.screen === 'boot') state.screen = 'home'; sync(); } });
+
+D.palette.forEach((p) => {
+  const b = el('button', { type: 'button', class: 'sw', title: p.use }, [
+    el('i', { style: 'background:' + p.hex }),
+    el('span', {}, [p.name, el('code', {}, [p.hex])]),
+  ]);
+  b.addEventListener('click', async () => {
+    let msg = p.name + ' ' + p.hex;
+    try { await navigator.clipboard.writeText(p.hex); msg = 'Copiado ' + p.hex; } catch (e) {}
+    $('#toast').textContent = msg;
+  });
+  $('#palette').append(b);
+});
+
+sync();
+setInterval(() => { if (state.screen !== 'boot') renderScreen(); }, 30000);
+</script>
