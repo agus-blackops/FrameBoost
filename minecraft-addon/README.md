@@ -12,6 +12,9 @@ Kit completo: `/scriptevent fb:kit`
 | Hacha de Tormenta | +22 de daño y rayo |
 | Corazón Divino (click derecho) | Regeneración X, Fuerza X, Resistencia, Absorción, Velocidad por 5 min |
 | Núcleo Inmortal (en inventario) | Con ≤3 corazones te cura al máximo y da resistencia (cooldown 30 s) |
+| Báculo Supremo (clic derecho) | Rayo de 40 bloques: 60 de daño a todo lo que atraviesa (se detiene en bloques) |
+| Orbe de Salto (clic derecho) | Te teletransporta hasta donde miras (60 bloques) |
+| Libro de Aliados (clic derecho, solo DiamondHalo9031) | Invoca a los 5 aliados cuando quieras (espera 3 min) |
 | Orbe de Restauración (clic derecho) | Devuelve los objetos y mobs que desaparecieron sin morir, sin ser recogidos y sin expirar |
 | Antidote (golpear) | Un solo uso: si golpeas a `FaultierLocket0` le quita toda la armadura y todos los efectos. Contra otros jugadores no hace nada y no se gasta |
 

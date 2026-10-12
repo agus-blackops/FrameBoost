@@ -22,7 +22,7 @@ const WEAPONS = {
   "fb:storm_axe": { bonus: 22, smash: 1, lightning: true },
 };
 const MAZO = "minecraft:mace"; // el mazo normal de Minecraft, con aimbot
-const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb", "fb:antidote"];
+const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb", "fb:antidote", "fb:supreme_staff", "fb:jump_orb", "fb:ally_book"];
 const IGNORE_TYPES = new Set(["minecraft:item", "minecraft:xp_orb", "minecraft:armor_stand", "minecraft:arrow", "minecraft:lightning_bolt"]);
 
 // ───────────── UTILIDADES ─────────────
@@ -154,6 +154,26 @@ world.beforeEvents.itemUse.subscribe((ev) => {
   const id = ev.itemStack.typeId, p = ev.source;
   if (!FB_ITEMS.includes(id)) return;
   if (!esElegido(p)) { ev.cancel = true; system.run(() => rechazar(p)); return; }
+  if (id === "fb:supreme_staff") {
+    ev.cancel = true;
+    system.run(() => { if (!enCooldown(p, "staff", 10)) rayoSupremo(p); });
+    return;
+  }
+  if (id === "fb:jump_orb") {
+    ev.cancel = true;
+    system.run(() => { if (!enCooldown(p, "jump", 20)) saltoSupremo(p); });
+    return;
+  }
+  if (id === "fb:ally_book") {
+    ev.cancel = true;
+    system.run(() => {
+      if (!esDueno(p)) return p.onScreenDisplay.setActionBar(`§cSolo ${DUENO} puede abrir este libro.`);
+      const falta = Math.ceil((proximosAliados - system.currentTick) / 20);
+      if (falta > 0) return p.onScreenDisplay.setActionBar(`§7El libro se recarga: ${falta}s`);
+      invocarTodos(p);
+    });
+    return;
+  }
   if (id === "fb:restoration_orb") {
     ev.cancel = true;
     system.run(() => { if (!enCooldown(p, "orb", 40)) restaurarTodo(p); });
@@ -224,6 +244,37 @@ function restaurarTodo(p) {
   }
   p.playSound("beacon.activate");
   p.onScreenDisplay.setActionBar(`§aRestauración: ${items} objetos y ${mobs} mobs de vuelta`);
+}
+
+// ───────────── BÁCULO SUPREMO y ORBE DE SALTO ─────────────
+function rayoSupremo(p) {
+  const dir = p.getViewDirection(), o = p.getHeadLocation();
+  let alcance = 40;
+  try { // el rayo se detiene en el primer bloque
+    const b = p.getBlockFromViewDirection({ maxDistance: 40 });
+    if (b) alcance = Math.hypot(b.block.location.x - o.x, b.block.location.y - o.y, b.block.location.z - o.z);
+  } catch {}
+  for (let d = 1; d < alcance; d += 1) {
+    try { p.dimension.spawnParticle("minecraft:blue_flame_particle", { x: o.x + dir.x * d, y: o.y + dir.y * d, z: o.z + dir.z * d }); } catch {}
+  }
+  for (const { entity: e, distance } of p.getEntitiesFromViewDirection({ maxDistance: 40 })) {
+    if (distance > alcance || e.id === p.id || e.hasTypeFamily("fb_ally")) continue;
+    try { e.applyDamage(60, { cause: EntityDamageCause.entityAttack, damagingEntity: p }); e.dimension.spawnParticle("minecraft:huge_explosion_emitter", e.location); } catch {}
+  }
+  p.playSound("random.explode");
+}
+function saltoSupremo(p) {
+  const dir = p.getViewDirection(), o = p.getHeadLocation();
+  let dest;
+  try {
+    const b = p.getBlockFromViewDirection({ maxDistance: 60 });
+    if (b) dest = { x: b.block.location.x + 0.5, y: b.block.location.y + 1, z: b.block.location.z + 0.5 };
+  } catch {}
+  dest ??= { x: o.x + dir.x * 40, y: o.y + dir.y * 40 - 1.6, z: o.z + dir.z * 40 };
+  p.dimension.spawnParticle("minecraft:totem_particle", p.location);
+  p.teleport(dest, { keepVelocity: false });
+  p.addEffect("resistance", 60, { amplifier: 4, showParticles: false }); // sin daño de caída por el salto
+  p.playSound("mob.endermen.portal");
 }
 
 // ───────────── ALIADOS DE DiamondHalo9031 ─────────────

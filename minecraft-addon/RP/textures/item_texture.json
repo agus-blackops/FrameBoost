@@ -19,6 +19,15 @@
     },
     "fb_antidote": {
       "textures": "textures/items/fb_antidote"
+    },
+    "fb_supreme_staff": {
+      "textures": "textures/items/fb_supreme_staff"
+    },
+    "fb_jump_orb": {
+      "textures": "textures/items/fb_jump_orb"
+    },
+    "fb_ally_book": {
+      "textures": "textures/items/fb_ally_book"
     }
   }
 }

@@ -85,7 +85,37 @@ def bottle(x, y):
         if math.hypot(x - 19, y - 22) < 1.2: return (210, 255, 200, 255)
         return (205, 232, 242, 255)
 
-TEXTURAS = {"titan_sword": sword, "storm_axe": axe, "divine_heart": heart,
+def staff(x, y):
+    a, b = axes(x, y)
+    if 3 <= b <= 34 and abs(a) <= 1.3: return mix((150, 110, 200), (70, 40, 120), (a + 1.3) / 2.6)
+    for bb in (9, 17, 25):
+        if abs(b - bb) <= 1 and abs(a) <= 2.2: return (255, 215, 80, 255)
+    r = math.hypot(a, b - 38.5)
+    if r <= 4.6:
+        if math.hypot(a + 1.4, b - 40) < 1.3: return (255, 255, 255, 255)
+        return mix((170, 255, 255), (30, 130, 230), r / 4.6)
+    if abs(a) <= 5.5 and 33 <= b <= 36 and abs(a) > 1.3: return (255, 215, 80, 255)
+def jump_orb(x, y):
+    r = math.hypot(x - 16, y - 16)
+    if r <= 12.5:
+        if r < 3.2: return (10, 0, 30, 255)
+        if r < 4.6: return (190, 255, 240, 255)
+        ang = math.atan2(y - 16, x - 16) + r * .5
+        if math.sin(ang * 3) > .6 and r > 6: return (210, 170, 255, 255)
+        return mix((130, 90, 255), (25, 15, 110), r / 12.5)
+def book(x, y):
+    if 6 <= x <= 26 and 4 <= y <= 28:
+        if x <= 8: return (110, 15, 25, 255)                         # lomo
+        if x >= 25 or y >= 27 or y <= 5: return (250, 245, 225, 255) if x >= 25 else (255, 215, 80, 255)
+        dx, dy = x - 16.5, y - 16
+        for k in range(5):                                              # estrella dorada
+            ang = k * 2 * math.pi / 5 - math.pi / 2
+            ux, uy = math.cos(ang), math.sin(ang)
+            t = dx * ux + dy * uy; pr = abs(-dx * uy + dy * ux)
+            if 0 <= t <= 6.5 and pr <= 1.6 * (1 - t / 7.5): return (255, 225, 90, 255)
+        return mix((200, 40, 55), (120, 15, 30), (y - 4) / 24)
+
+TEXTURAS = {"supreme_staff": staff, "jump_orb": jump_orb, "ally_book": book, "titan_sword": sword, "storm_axe": axe, "divine_heart": heart,
             "immortal_core": core, "restoration_orb": orb, "antidote": bottle}
 
 def png(path, px):
@@ -97,7 +127,7 @@ def png(path, px):
 
 if __name__ == "__main__":
     for n, f in TEXTURAS.items():
-        png(f"{ROOT}/RP/textures/items/fb_{n}.png", render(f, sparkle=n in ("divine_heart", "immortal_core", "restoration_orb", "antidote", "titan_sword"), seed=len(n)))
+        png(f"{ROOT}/RP/textures/items/fb_{n}.png", render(f, sparkle=n in ("divine_heart", "immortal_core", "restoration_orb", "antidote", "titan_sword", "supreme_staff", "jump_orb", "ally_book"), seed=len(n)))
     import entities; entities.build(ROOT)
     out = os.path.join(ROOT, "dist"); os.makedirs(out, exist_ok=True)
     mc = f"{out}/PoderSupremo.mcaddon"
