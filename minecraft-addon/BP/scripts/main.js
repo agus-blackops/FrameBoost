@@ -18,10 +18,10 @@ const AIM = {
 };
 
 const WEAPONS = {
-  "fb:aim_mace": { bonus: 16, smash: 2.5 },
   "fb:titan_sword": { bonus: 34, smash: 1 },
   "fb:storm_axe": { bonus: 22, smash: 1, lightning: true },
 };
+const MAZO = "minecraft:mace"; // el mazo normal de Minecraft, con aimbot
 const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb", "fb:antidote"];
 const IGNORE_TYPES = new Set(["minecraft:item", "minecraft:xp_orb", "minecraft:armor_stand", "minecraft:arrow", "minecraft:lightning_bolt"]);
 
@@ -52,11 +52,11 @@ function enCooldown(p, key, ticks) {
 const wrap = (a) => ((a + 540) % 360) - 180;
 
 // ───────────── AIM ASSIST DEL MAZO ─────────────
-function elegirObjetivo(p, cono) {
+function elegirObjetivo(p, cono, rango) {
   const head = p.getHeadLocation();
   const v = p.getViewDirection();
   let best, bestAng = Infinity;
-  for (const e of p.dimension.getEntities({ location: head, maxDistance: AIM.RANGE })) {
+  for (const e of p.dimension.getEntities({ location: head, maxDistance: rango })) {
     if (e.id === p.id || IGNORE_TYPES.has(e.typeId) || !e.getComponent("minecraft:health")) continue;
     if (!AIM.TARGET_PLAYERS && e.typeId === "minecraft:player") continue;
     if (e.hasTypeFamily("villager") || e.hasTypeFamily("pet")) continue; // no apuntar a aldeanos ni mascotas
@@ -70,15 +70,17 @@ function elegirObjetivo(p, cono) {
   return best;
 }
 function apuntar(p) {
-  const lock = p.isSneaking; // agachado = aimbot total, de pie = aim assist
-  const e = elegirObjetivo(p, lock ? 180 : AIM.ASSIST_CONE);
+  const cayendo = p.getVelocity().y < -0.3; // cayendo con el mazo = aimbot total hacia el objetivo (para el smash)
+  const lock = p.isSneaking || cayendo;      // agachado/cayendo = aimbot total, de pie = aim assist
+  const e = elegirObjetivo(p, lock ? 180 : AIM.ASSIST_CONE, cayendo ? 20 : AIM.RANGE);
   if (!e) return;
   const head = p.getHeadLocation();
   const dx = e.location.x - head.x, dy = e.location.y + 0.9 - head.y, dz = e.location.z - head.z;
   const yaw = (-Math.atan2(dx, dz) * 180) / Math.PI;
   const pitch = (-Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;
   const cur = p.getRotation(), k = lock ? AIM.LOCK_SMOOTH : AIM.ASSIST_SMOOTH;
-  p.setRotation({ x: Math.max(-90, Math.min(90, cur.x + (pitch - cur.x) * k)), y: cur.y + wrap(yaw - cur.y) * k });
+  // teleport con rotación: setRotation suele ser ignorado en jugadores (el cliente manda su cámara)
+  p.teleport(p.location, { rotation: { x: Math.max(-90, Math.min(90, cur.x + (pitch - cur.x) * k)), y: cur.y + wrap(yaw - cur.y) * k }, keepVelocity: true });
 }
 
 // ───────────── BUCLE PRINCIPAL ─────────────
@@ -90,7 +92,7 @@ system.runInterval(() => {
       continue;
     }
     if (!esElegido(p)) continue;
-    if (held === "fb:aim_mace") apuntar(p);
+    if (held === MAZO) apuntar(p);
 
     // Núcleo Inmortal: pasivo desde el inventario
     if (system.currentTick % 5 === 0 && hasInInventory(p, "fb:immortal_core")) {
@@ -277,5 +279,5 @@ system.runInterval(() => {
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
   if (ev.id === "fb:boss" && ev.sourceEntity?.typeId === "minecraft:player") { if (!jefe) invocarJefe(ev.sourceEntity); return; } // prueba
   if (ev.id !== "fb:kit" || ev.sourceType !== "Entity" || ev.sourceEntity?.typeId !== "minecraft:player") return;
-  for (const id of FB_ITEMS) ev.sourceEntity.runCommand(`give @s ${id}`);
+  for (const id of [MAZO, ...FB_ITEMS]) ev.sourceEntity.runCommand(`give @s ${id}`);
 });

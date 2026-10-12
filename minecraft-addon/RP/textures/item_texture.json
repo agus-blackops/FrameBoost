@@ -2,9 +2,6 @@
   "resource_pack_name": "poder_supremo",
   "texture_name": "atlas.items",
   "texture_data": {
-    "fb_aim_mace": {
-      "textures": "textures/items/fb_aim_mace"
-    },
     "fb_titan_sword": {
       "textures": "textures/items/fb_titan_sword"
     },

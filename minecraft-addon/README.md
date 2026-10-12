@@ -7,7 +7,7 @@ Kit completo: `/scriptevent fb:kit`
 
 | Objeto | Qué hace |
 |---|---|
-| Mazo Aimbot | Aim assist al sostenerlo; **agachado = aimbot total**. Daño extra + smash al caer |
+| Mazo de Minecraft (el normal) | Al sostenerlo tiene aim assist; **agachado o cayendo = aimbot total** (hasta 20 bloques al caer, para el smash). Daño y smash son los del juego |
 | Espada del Titán | +34 de daño extra |
 | Hacha de Tormenta | +22 de daño y rayo |
 | Corazón Divino (click derecho) | Regeneración X, Fuerza X, Resistencia, Absorción, Velocidad por 5 min |
