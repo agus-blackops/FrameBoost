@@ -89,7 +89,7 @@ if __name__ == "__main__":
         for pack in ("BP", "RP"):
             for d, _, fs in os.walk(f"{ROOT}/{pack}"):
                 for f in fs:
-                    p = os.path.join(d, f); z.write(p, os.path.relpath(p, ROOT))
+                    p = os.path.join(d, f); z.write(p, "PoderSupremo_" + os.path.relpath(p, ROOT).replace("/", "/", 1))
     # el .zip contiene el .mcaddon (+ README)
     with zipfile.ZipFile(f"{out}/PoderSupremo.zip", "w", zipfile.ZIP_DEFLATED) as z:
         z.write(mc, "PoderSupremo.mcaddon")

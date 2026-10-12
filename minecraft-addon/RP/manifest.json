@@ -3,11 +3,11 @@
   "header": {
     "name": "§bPoder Supremo §7(RP)",
     "description": "Texturas del addon Poder Supremo",
-    "uuid": "86339e31-5902-4779-b145-a5a05d79e8ed",
-    "version": [1, 0, 0],
+    "uuid": "4731198e-6e7c-4361-90aa-8f6c8895b04c",
+    "version": [1, 1, 0],
     "min_engine_version": [1, 21, 40]
   },
   "modules": [
-    { "type": "resources", "uuid": "aba4c045-a5c6-4dbe-a478-b3331366cb4c", "version": [1, 0, 0] }
+    { "type": "resources", "uuid": "c259d187-7e2c-4d62-b6df-711c5301042a", "version": [1, 1, 0] }
   ]
 }
