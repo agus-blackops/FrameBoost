@@ -1,4 +1,4 @@
-import { world, system, EntityDamageCause } from "@minecraft/server";
+import { world, system, EntityDamageCause, EquipmentSlot } from "@minecraft/server";
 
 // ───────────── CONFIGURACIÓN ─────────────
 // Jugadores que NO son "el elegido": los objetos no funcionan para ellos.
@@ -18,7 +18,7 @@ const WEAPONS = {
   "fb:titan_sword": { bonus: 34, smash: 1 },
   "fb:storm_axe": { bonus: 22, smash: 1, lightning: true },
 };
-const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb"];
+const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb", "fb:antidote"];
 const IGNORE_TYPES = new Set(["minecraft:item", "minecraft:xp_orb", "minecraft:armor_stand", "minecraft:arrow", "minecraft:lightning_bolt"]);
 
 // ───────────── UTILIDADES ─────────────
@@ -116,6 +116,23 @@ world.afterEvents.entityHitEntity.subscribe(({ damagingEntity: p, hitEntity: t }
     }
     if (w.lightning) t.dimension.spawnEntity("minecraft:lightning_bolt", t.location);
   } catch {}
+});
+
+// ───────────── ANTIDOTE (un solo uso) ─────────────
+// Si golpeas a un jugador "no elegido" (FaultierLocket0) con el Antidote:
+// pierde toda su armadura y todos sus efectos (ventajas), y el Antidote se gasta.
+world.afterEvents.entityHitEntity.subscribe(({ damagingEntity: p, hitEntity: t }) => {
+  if (p.typeId !== "minecraft:player" || t.typeId !== "minecraft:player") return;
+  if (heldId(p) !== "fb:antidote" || !esElegido(p) || esElegido(t)) return;
+  const inv = p.getComponent("inventory")?.container;
+  inv?.setItem(p.selectedSlotIndex, undefined); // un solo uso
+  const eq = t.getComponent("equippable");
+  for (const s of [EquipmentSlot.Head, EquipmentSlot.Chest, EquipmentSlot.Legs, EquipmentSlot.Feet]) eq?.setEquipment(s, undefined);
+  for (const fx of t.getEffects()) t.removeEffect(fx.typeId);
+  t.dimension.spawnParticle("minecraft:totem_particle", t.location);
+  p.playSound("random.break");
+  p.onScreenDisplay.setActionBar(`§2Antidote usado: ${t.name} perdió su armadura y sus ventajas`);
+  t.onScreenDisplay.setActionBar("§cEl Antidote te quitó la armadura y todas tus ventajas");
 });
 
 // ───────────── USO DE OBJETOS ─────────────

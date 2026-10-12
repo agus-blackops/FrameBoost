@@ -19,6 +19,9 @@
     },
     "fb_restoration_orb": {
       "textures": "textures/items/fb_restoration_orb"
+    },
+    "fb_antidote": {
+      "textures": "textures/items/fb_antidote"
     }
   }
 }

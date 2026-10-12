@@ -56,8 +56,17 @@ def orb():
             if d <= 49: c[y][x] = (80, 255, 140, 255) if d > 20 else (220, 255, 230, 255)
     return c
 
+def antidote(): # frasco verde
+    c = canvas()
+    for y in range(7, 15):
+        for x in range(4, 12): c[y][x] = (60, 200, 80, 255)
+    for y in range(3, 7):
+        for x in range(6, 10): c[y][x] = (200, 220, 230, 255)
+    for x in range(5, 11): c[2][x] = (140, 90, 40, 255)
+    c[9][6] = (200, 255, 200, 255); return c
+
 if __name__ == "__main__":
-    for n, f in [("aim_mace", mace), ("titan_sword", sword), ("storm_axe", axe), ("divine_heart", heart), ("immortal_core", core), ("restoration_orb", orb)]:
+    for n, f in [("aim_mace", mace), ("titan_sword", sword), ("storm_axe", axe), ("divine_heart", heart), ("immortal_core", core), ("restoration_orb", orb), ("antidote", antidote)]:
         png(f"{ROOT}/RP/textures/items/fb_{n}.png", f())
     out = os.path.join(ROOT, "dist"); os.makedirs(out, exist_ok=True)
     for ext in ("zip", "mcaddon"):

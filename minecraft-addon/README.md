@@ -13,6 +13,7 @@ Kit completo: `/scriptevent fb:kit`
 | Corazón Divino (click derecho) | Regeneración X, Fuerza X, Resistencia, Absorción, Velocidad por 5 min |
 | Núcleo Inmortal (en inventario) | Con ≤3 corazones te cura al máximo y da resistencia (cooldown 30 s) |
 | Orbe de Restauración (clic derecho) | Devuelve los objetos y mobs que desaparecieron sin morir, sin ser recogidos y sin expirar |
+| Antidote (golpear) | Un solo uso: si golpeas a `FaultierLocket0` le quita toda la armadura y todos los efectos. Contra otros jugadores no hace nada y no se gasta |
 
 **Orbe — límites:** no puede saber qué hizo el mod de tu hermano, así que detecta "desapareció cerca de un jugador sin causa normal". Solo ve lo que ocurre en un radio de 48 bloques de algún jugador, con el addon ya activo; el registro se pierde al cerrar el mundo; los mobs vuelven sin datos extra (domesticación, armadura, vida) y los bloques borrados no se restauran. Un objeto borrado a menos de 5 bloques de un jugador se confunde con "recogido".
 
