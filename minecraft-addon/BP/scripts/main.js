@@ -59,7 +59,8 @@ function elegirObjetivo(p, cono, rango) {
   for (const e of p.dimension.getEntities({ location: head, maxDistance: rango })) {
     if (e.id === p.id || IGNORE_TYPES.has(e.typeId) || !e.getComponent("minecraft:health")) continue;
     if (!AIM.TARGET_PLAYERS && e.typeId === "minecraft:player") continue;
-    if (e.hasTypeFamily("villager") || e.hasTypeFamily("pet")) continue; // no apuntar a aldeanos ni mascotas
+    if (e.hasTypeFamily("villager") || e.hasTypeFamily("pet") || e.hasTypeFamily("fb_ally")) continue; // ni aldeanos, mascotas ni aliados
+    if (activos.some((a) => valida(a.e) && a.e.id === e.id)) continue;
     const t = e.location, h = e.getComponent("minecraft:health");
     if (h && h.currentValue <= 0) continue;
     const dx = t.x - head.x, dy = t.y + 0.9 - head.y, dz = t.z - head.z;
@@ -79,8 +80,14 @@ function apuntar(p) {
   const yaw = (-Math.atan2(dx, dz) * 180) / Math.PI;
   const pitch = (-Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;
   const cur = p.getRotation(), k = lock ? AIM.LOCK_SMOOTH : AIM.ASSIST_SMOOTH;
-  // teleport con rotación: setRotation suele ser ignorado en jugadores (el cliente manda su cámara)
-  p.teleport(p.location, { rotation: { x: Math.max(-90, Math.min(90, cur.x + (pitch - cur.x) * k)), y: cur.y + wrap(yaw - cur.y) * k }, keepVelocity: true });
+  const rot = { x: Math.max(-90, Math.min(90, cur.x + (pitch - cur.x) * k)), y: cur.y + wrap(yaw - cur.y) * k };
+  if (Math.abs(wrap(yaw - cur.y)) < 0.5 && Math.abs(pitch - cur.x) < 0.5) return; // ya apunta
+  // teleport con rotación (setRotation suele ser ignorado en jugadores); pero teleport reinicia la caída
+  // y rompería el smash, así que al caer se usa setRotation.
+  try {
+    if (cayendo) p.setRotation(rot);
+    else p.teleport(p.location, { rotation: rot, keepVelocity: true });
+  } catch {}
 }
 
 // ───────────── BUCLE PRINCIPAL ─────────────
@@ -302,8 +309,10 @@ system.runInterval(() => {
           const eq = e.getComponent("minecraft:equippable");
           for (const s of ARMADURA) eq?.setEquipment(s, undefined);
         }
-        if (def.debilita) { e.addEffect("weakness", 100, { amplifier: 3 }); e.addEffect("slowness", 100, { amplifier: 2 }); }
-        if (def.marca) { e.addEffect("glowing", 200); e.addEffect("weakness", 100, { amplifier: 2 }); }
+        try {
+          if (def.debilita) { e.addEffect("weakness", 100, { amplifier: 3 }); e.addEffect("slowness", 100, { amplifier: 2 }); }
+          if (def.marca) { e.addEffect("weakness", 100, { amplifier: 2 }); e.addEffect("mining_fatigue", 100, { amplifier: 2 }); }
+        } catch {}
         e.applyDamage(def.dano, { cause: EntityDamageCause.entityAttack, damagingEntity: a.e });
         e.dimension.spawnParticle("minecraft:critical_hit_emitter", e.location);
       } catch {}

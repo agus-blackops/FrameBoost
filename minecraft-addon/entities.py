@@ -81,7 +81,7 @@ def build(root):
             "minecraft:behavior.random_look_around": {"priority": 9},
         }
         json.dump({"format_version": "1.21.0", "minecraft:entity": {"description": {"identifier": ident, "is_spawnable": False,
-                  "is_summonable": True, "is_experimental": False}, "components": comps}},
+                  "is_summonable": True}, "components": comps}},
                   open(f"{root}/BP/entities/{name}.json", "w"), indent=2)
         cubes = [{"origin": c["o"], "size": c["s"], "uv": faces(c["c"])} for c in e["cubes"]]
         if e.get("logo"):

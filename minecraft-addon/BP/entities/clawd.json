@@ -4,8 +4,7 @@
     "description": {
       "identifier": "fb:clawd",
       "is_spawnable": false,
-      "is_summonable": true,
-      "is_experimental": false
+      "is_summonable": true
     },
     "components": {
       "minecraft:type_family": {
