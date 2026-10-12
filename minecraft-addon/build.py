@@ -48,8 +48,16 @@ def core():
             if d <= 7: c[y][x] = (170, 60, 255, 255) if d > 3 else (255, 255, 255, 255)
     return c
 
+def orb():
+    c = canvas()
+    for y in range(16):
+        for x in range(16):
+            d = (x - 7.5) ** 2 + (y - 7.5) ** 2
+            if d <= 49: c[y][x] = (80, 255, 140, 255) if d > 20 else (220, 255, 230, 255)
+    return c
+
 if __name__ == "__main__":
-    for n, f in [("aim_mace", mace), ("titan_sword", sword), ("storm_axe", axe), ("divine_heart", heart), ("immortal_core", core)]:
+    for n, f in [("aim_mace", mace), ("titan_sword", sword), ("storm_axe", axe), ("divine_heart", heart), ("immortal_core", core), ("restoration_orb", orb)]:
         png(f"{ROOT}/RP/textures/items/fb_{n}.png", f())
     out = os.path.join(ROOT, "dist"); os.makedirs(out, exist_ok=True)
     for ext in ("zip", "mcaddon"):

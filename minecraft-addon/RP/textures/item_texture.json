@@ -2,10 +2,23 @@
   "resource_pack_name": "poder_supremo",
   "texture_name": "atlas.items",
   "texture_data": {
-    "fb_aim_mace": { "textures": "textures/items/fb_aim_mace" },
-    "fb_titan_sword": { "textures": "textures/items/fb_titan_sword" },
-    "fb_storm_axe": { "textures": "textures/items/fb_storm_axe" },
-    "fb_divine_heart": { "textures": "textures/items/fb_divine_heart" },
-    "fb_immortal_core": { "textures": "textures/items/fb_immortal_core" }
+    "fb_aim_mace": {
+      "textures": "textures/items/fb_aim_mace"
+    },
+    "fb_titan_sword": {
+      "textures": "textures/items/fb_titan_sword"
+    },
+    "fb_storm_axe": {
+      "textures": "textures/items/fb_storm_axe"
+    },
+    "fb_divine_heart": {
+      "textures": "textures/items/fb_divine_heart"
+    },
+    "fb_immortal_core": {
+      "textures": "textures/items/fb_immortal_core"
+    },
+    "fb_restoration_orb": {
+      "textures": "textures/items/fb_restoration_orb"
+    }
   }
 }

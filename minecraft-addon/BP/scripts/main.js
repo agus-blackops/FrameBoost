@@ -18,7 +18,7 @@ const WEAPONS = {
   "fb:titan_sword": { bonus: 34, smash: 1 },
   "fb:storm_axe": { bonus: 22, smash: 1, lightning: true },
 };
-const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core"];
+const FB_ITEMS = [...Object.keys(WEAPONS), "fb:divine_heart", "fb:immortal_core", "fb:restoration_orb"];
 const IGNORE_TYPES = new Set(["minecraft:item", "minecraft:xp_orb", "minecraft:armor_stand", "minecraft:arrow", "minecraft:lightning_bolt"]);
 
 // ───────────── UTILIDADES ─────────────
@@ -123,6 +123,11 @@ world.beforeEvents.itemUse.subscribe((ev) => {
   const id = ev.itemStack.typeId, p = ev.source;
   if (!FB_ITEMS.includes(id)) return;
   if (!esElegido(p)) { ev.cancel = true; system.run(() => rechazar(p)); return; }
+  if (id === "fb:restoration_orb") {
+    ev.cancel = true;
+    system.run(() => { if (!enCooldown(p, "orb", 40)) restaurarTodo(p); });
+    return;
+  }
   if (id === "fb:divine_heart") {
     ev.cancel = true;
     system.run(() => {
@@ -136,6 +141,60 @@ world.beforeEvents.itemUse.subscribe((ev) => {
     });
   }
 });
+
+// ───────────── REGISTRO DE BORRADOS (para el Orbe de Restauración) ─────────────
+// Se guarda una "foto" de items y mobs cerca de los jugadores. Si una entidad desaparece
+// sin haber muerto, sin ser recogida y sin haber expirado, se anota como "borrada".
+const NO_REGISTRAR = new Set([...IGNORE_TYPES, "minecraft:player", "minecraft:fireball", "minecraft:snowball", "minecraft:egg", "minecraft:ender_pearl", "minecraft:thrown_trident", "minecraft:tnt", "minecraft:falling_block"]);
+const SNAP_RANGE = 48, MAX_LEDGER = 3000, ITEM_LIFE = 5800;
+const snaps = new Map();   // id -> foto
+const muertos = new Set(); // ids que murieron normalmente
+const borrados = [];       // entidades borradas, restaurables
+
+system.runInterval(() => {
+  const ahora = system.currentTick;
+  for (const p of world.getAllPlayers()) {
+    for (const e of p.dimension.getEntities({ location: p.location, maxDistance: SNAP_RANGE })) {
+      if (NO_REGISTRAR.has(e.typeId)) continue;
+      let s = snaps.get(e.id);
+      if (!s) { s = { type: e.typeId, first: ahora }; snaps.set(e.id, s); }
+      s.dim = e.dimension.id; s.loc = e.location; s.seen = ahora; s.name = e.nameTag;
+      if (e.typeId === "minecraft:item") s.stack = e.getComponent("item")?.itemStack;
+    }
+  }
+  for (const [id, s] of snaps) if (ahora - s.seen > 600) snaps.delete(id); // limpieza
+}, 10);
+
+world.afterEvents.entityDie.subscribe((ev) => muertos.add(ev.deadEntity.id));
+
+world.afterEvents.entityRemove.subscribe(({ removedEntityId: id }) => {
+  const s = snaps.get(id); snaps.delete(id);
+  if (!s) return;
+  if (muertos.delete(id)) return;                                  // murió
+  const ahora = system.currentTick;
+  if (ahora - s.seen > 40) return;                                 // dato viejo / chunk descargado
+  if (s.type === "minecraft:item" && ahora - s.first >= ITEM_LIFE) return; // expiró solo
+  const cerca = world.getAllPlayers().filter((p) => p.dimension.id === s.dim);
+  if (!cerca.length) return;                                       // nadie cerca: probable descarga de chunk
+  if (cerca.some((p) => Math.hypot(p.location.x - s.loc.x, p.location.y - s.loc.y, p.location.z - s.loc.z) > SNAP_RANGE + 8)
+      && cerca.every((p) => Math.hypot(p.location.x - s.loc.x, p.location.z - s.loc.z) > SNAP_RANGE)) return;
+  if (s.type === "minecraft:item" && cerca.some((p) => Math.hypot(p.location.x - s.loc.x, p.location.y - s.loc.y, p.location.z - s.loc.z) < 5)) return; // recogido
+  borrados.push(s);
+  if (borrados.length > MAX_LEDGER) borrados.shift();
+});
+
+function restaurarTodo(p) {
+  let items = 0, mobs = 0;
+  for (const s of borrados.splice(0)) {
+    try {
+      const dim = world.getDimension(s.dim);
+      if (s.type === "minecraft:item") { if (s.stack) { dim.spawnItem(s.stack, s.loc); items++; } }
+      else { const e = dim.spawnEntity(s.type, s.loc); if (s.name) e.nameTag = s.name; mobs++; }
+    } catch {}
+  }
+  p.playSound("beacon.activate");
+  p.onScreenDisplay.setActionBar(`§aRestauración: ${items} objetos y ${mobs} mobs de vuelta`);
+}
 
 // ───────────── KIT: /scriptevent fb:kit ─────────────
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
