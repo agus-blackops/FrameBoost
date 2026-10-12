@@ -10,14 +10,29 @@ OUT = (22, 14, 30, 255)
 def mix(a, b, t):
     t = max(0.0, min(1.0, t))
     return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3)) + (255,)
-def render(f):
+def render(f, sparkle=False, seed=1):
     px = [[f(x + .5, y + .5) for x in range(N)] for y in range(N)]
     res = [row[:] for row in px]
+    def op(x, y): return 0 <= x < N and 0 <= y < N and px[y][x] is not None and px[y][x] != OUT
     for y in range(N):
         for x in range(N):
-            if px[y][x] is None and any(0 <= x + dx < N and 0 <= y + dy < N and px[y + dy][x + dx]
-                                         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                res[y][x] = OUT
+            c = px[y][x]
+            if c is None:  # contorno teñido con el color del vecino (más suave que negro)
+                nb = [px[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) if op(x + dx, y + dy)]
+                if nb:
+                    m = [sum(v[i] for v in nb) // len(nb) for i in range(3)]
+                    res[y][x] = (int(m[0] * .22) + 6, int(m[1] * .22) + 4, int(m[2] * .22) + 10, 255)
+                continue
+            f_ = 1 + ((x * 73856093 ^ y * 19349663 ^ seed) & 15) / 15 * .08 - .04       # grano
+            if not op(x - 1, y) or not op(x, y - 1): f_ *= 1.22                          # luz arriba-izquierda
+            if not op(x + 1, y) or not op(x, y + 1): f_ *= .78                           # sombra abajo-derecha
+            res[y][x] = tuple(max(0, min(255, int(c[k] * f_))) for k in range(3)) + (255,)
+    if sparkle:  # destellos mágicos en el espacio vacío
+        for (sx, sy) in ((5, 6), (26, 9), (8, 25), (25, 25)):
+            for dx, dy, a in ((0, 0, 255), (1, 0, 160), (-1, 0, 160), (0, 1, 160), (0, -1, 160)):
+                x2, y2 = sx + dx, sy + dy
+                if 0 <= x2 < N and 0 <= y2 < N and res[y2][x2] is None:
+                    res[y2][x2] = (255, 255, 255, a)
     return [[c or (0, 0, 0, 0) for c in row] for row in res]
 def axes(x, y):  # a = perpendicular a la diagonal, b = a lo largo (0 abajo-izq .. 44 arriba-der)
     return (x - (N - y)) / math.sqrt(2), (x + (N - y)) / math.sqrt(2)
@@ -82,7 +97,7 @@ def png(path, px):
 
 if __name__ == "__main__":
     for n, f in TEXTURAS.items():
-        png(f"{ROOT}/RP/textures/items/fb_{n}.png", render(f))
+        png(f"{ROOT}/RP/textures/items/fb_{n}.png", render(f, sparkle=n in ("divine_heart", "immortal_core", "restoration_orb", "antidote", "titan_sword"), seed=len(n)))
     import entities; entities.build(ROOT)
     out = os.path.join(ROOT, "dist"); os.makedirs(out, exist_ok=True)
     mc = f"{out}/PoderSupremo.mcaddon"
