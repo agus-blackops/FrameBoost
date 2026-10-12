@@ -15,6 +15,8 @@ Kit completo: `/scriptevent fb:kit`
 | Orbe de Restauración (clic derecho) | Devuelve los objetos y mobs que desaparecieron sin morir, sin ser recogidos y sin expirar |
 | Antidote (golpear) | Un solo uso: si golpeas a `FaultierLocket0` le quita toda la armadura y todos los efectos. Contra otros jugadores no hace nada y no se gasta |
 
+**Jefe Final:** cuando `DiamondHalo9031` queda con 3 corazones o menos aparece un Golem de Hierro gigante y muy potenciado ("Jefe Final") que lo protege durante 90 s: golpea a los monstruos cercanos y a quien lo haya herido hace poco, y le da resistencia y regeneración. Reaparece tras 5 min. Prueba rápida: `/scriptevent fb:boss`. Ajustes en `DUENO` y `BOSS` de `main.js`.
+
 **Orbe — límites:** no puede saber qué hizo el mod de tu hermano, así que detecta "desapareció cerca de un jugador sin causa normal". Solo ve lo que ocurre en un radio de 48 bloques de algún jugador, con el addon ya activo; el registro se pierde al cerrar el mundo; los mobs vuelven sin datos extra (domesticación, armadura, vida) y los bloques borrados no se restauran. Un objeto borrado a menos de 5 bloques de un jugador se confunde con "recogido".
 
 **El elegido:** `FaultierLocket0` está en la lista `NO_ELEGIDOS` de `BP/scripts/main.js`: los objetos no le obedecen y ve "no es el elegido". Para agregar más, edita la lista o usa `/tag <jugador> add fb_no_elegido`.
