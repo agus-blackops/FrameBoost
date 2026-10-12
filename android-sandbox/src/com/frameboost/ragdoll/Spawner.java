@@ -1,0 +1,250 @@
+package com.frameboost.ragdoll;
+
+import java.util.Random;
+
+/** Builds every kind of body the player can place. */
+final class Spawner {
+    static final int[] SKIN = {0xFFf1c7a0, 0xFFe0ac81, 0xFFc68642, 0xFF8d5524, 0xFFffdbb4, 0xFFd9a066};
+    static final int[] SHIRT = {0xFF3b6ea8, 0xFFb23a3a, 0xFF3f8f55, 0xFFd4a62a, 0xFF7a4aa8, 0xFFdd7b2f, 0xFF4a4a52, 0xFF2f9da8, 0xFFe8e8e8};
+    static final int[] PANTS = {0xFF2c3e60, 0xFF3a3a3a, 0xFF5b4636, 0xFF2f4f3a, 0xFF6b6f78, 0xFF1f2a44};
+    static final int[] HAIR = {0xFF2a1d14, 0xFF111111, 0xFF7a4a21, 0xFFc9a14a, 0xFFa33a1d, 0xFF8a8a8a};
+
+    static final Random rnd = new Random();
+
+    private static int pick(int[] a) { return a[rnd.nextInt(a.length)]; }
+
+    static void finish(Body b) {
+        float m = 0;
+        for (int i = 0; i < b.ps.size(); i++) {
+            Particle p = b.ps.get(i);
+            if (p.baseInvM > 0) m += 1f / p.baseInvM;
+        }
+        b.mass = m;
+        b.updateBounds();
+    }
+
+    // ---------------------------------------------------------------------------- humans ----
+
+    static Body human(World w, float x, float y, float s, int dir) {
+        Body b = new Body(Body.HUMAN);
+        b.scale = s; b.dir = dir; b.flammable = true;
+        b.skin = pick(SKIN); b.shirt = pick(SHIRT); b.pants = pick(PANTS); b.hair = pick(HAIR);
+        float m = s * s;
+
+        Particle pelvis = new Particle(b, x, y, 6 * m, 11 * s);
+        Particle chest = new Particle(b, x, y - 52 * s, 6 * m, 10.5f * s);
+        Particle head = new Particle(b, x + dir, y - 76 * s, 4 * m, 13 * s);
+        b.pelvis = pelvis; b.chest = chest; b.head = head;
+        b.torso = new Stick(b, pelvis, chest, 52 * s, 11 * s).solid(b.shirt);
+        b.neck = new Stick(b, head, chest, 24 * s, 4.5f * s);
+        b.neck.color = b.skin;
+        b.neck.tear = 38 * s;
+
+        for (int side = 0; side < 2; side++) {
+            boolean front = side == 0;
+            float off = (front ? 1 : -1) * dir * 2.5f * s;
+
+            // arm
+            Particle uJ = new Particle(b, x + off, y - 52 * s, 2 * m, 5.5f * s);
+            Particle uE = new Particle(b, x + off, y - 22 * s, 1.8f * m, 5f * s);
+            Stick upper = new Stick(b, uJ, uE, 30 * s, 5.5f * s).solid(b.shirt);
+            Particle fJ = new Particle(b, x + off, y - 22 * s, 1.5f * m, 5f * s);
+            Particle fE = new Particle(b, x + off, y + 6 * s, 1.2f * m, 5f * s);
+            Stick fore = new Stick(b, fJ, fE, 28 * s, 5f * s).solid(b.skin);
+            Stick jSh = new Stick(b, uJ, chest, 0, 0);
+            Stick jEl = new Stick(b, uE, fJ, 0, 0);
+            jSh.joint = jEl.joint = true;
+            jSh.tear = 34 * s; jEl.tear = 34 * s;
+            b.ls.add(new AngleLimit(chest, pelvis, uJ, uE, true, -170, 60, dir, 0.8f));
+            b.ls.add(new AngleLimit(uE, uJ, fJ, fE, false, -150, 0, dir, 0.7f));
+
+            // leg
+            Particle tJ = new Particle(b, x + off, y, 4 * m, 8 * s);
+            Particle tE = new Particle(b, x + off, y + 40 * s, 3 * m, 7 * s);
+            Stick thigh = new Stick(b, tJ, tE, 40 * s, 8 * s).solid(b.pants);
+            Particle sJ = new Particle(b, x + off, y + 40 * s, 2.5f * m, 6.5f * s);
+            Particle sE = new Particle(b, x + off, y + 80 * s, 1.8f * m, 6.5f * s);
+            Stick shin = new Stick(b, sJ, sE, 40 * s, 6.5f * s).solid(b.pants);
+            Stick jHip = new Stick(b, tJ, pelvis, 0, 0);
+            Stick jKnee = new Stick(b, tE, sJ, 0, 0);
+            jHip.joint = jKnee.joint = true;
+            jHip.tear = 40 * s; jKnee.tear = 40 * s;
+            b.ls.add(new AngleLimit(pelvis, chest, tJ, tE, false, -110, 35, dir, 0.8f));
+            b.ls.add(new AngleLimit(tE, tJ, sJ, sE, false, 0, 150, dir, 0.7f));
+
+            if (front) {
+                b.uarmF = upper; b.farmF = fore; b.jShF = jSh; b.jElF = jEl;
+                b.thighF = thigh; b.shinF = shin; b.jHipF = jHip; b.jKneeF = jKnee;
+            } else {
+                b.uarmB = upper; b.farmB = fore; b.jShB = jSh; b.jElB = jEl;
+                b.thighB = thigh; b.shinB = shin; b.jHipB = jHip; b.jKneeB = jKnee;
+            }
+        }
+        finish(b);
+        return b;
+    }
+
+    // ----------------------------------------------------------------------------- props -----
+
+    /** Square grid body (crate, barrel, steel block...). cols x rows particles. */
+    private static Body grid(int type, float x, float y, int cols, int rows, float sp, float r, float mass, int color) {
+        Body b = new Body(type);
+        b.color = color;
+        Particle[][] g = new Particle[cols][rows];
+        for (int i = 0; i < cols; i++)
+            for (int j = 0; j < rows; j++)
+                g[i][j] = new Particle(b, x + (i - (cols - 1) / 2f) * sp, y + (j - (rows - 1) / 2f) * sp, mass, r);
+        for (int i = 0; i < cols; i++)
+            for (int j = 0; j < rows; j++) {
+                if (i + 1 < cols) new Stick(b, g[i][j], g[i + 1][j], sp, r).solid(color);
+                if (j + 1 < rows) new Stick(b, g[i][j], g[i][j + 1], sp, r).solid(color);
+                if (i + 1 < cols && j + 1 < rows) {
+                    Stick d1 = new Stick(b, g[i][j], g[i + 1][j + 1], -1, r);
+                    Stick d2 = new Stick(b, g[i + 1][j], g[i][j + 1], -1, r);
+                    d1.color = d2.color = color;
+                    d1.band = d2.band = true;
+                }
+            }
+        return b;
+    }
+
+    static Body crate(float x, float y, float size) {
+        float e = size / 2f, r = e / 3f, sp = e - r;
+        Body b = grid(Body.CRATE, x, y, 3, 3, sp, r, 2.5f * size / 60f, 0xFFB7864B);
+        b.flammable = true;
+        finish(b);
+        return b;
+    }
+
+    static Body heavy(float x, float y) {
+        Body b = grid(Body.HEAVY, x, y, 3, 3, 24f, 11f, 11f, 0xFF8a9099);
+        finish(b);
+        return b;
+    }
+
+    static Body barrel(float x, float y, boolean explosive) {
+        Body b = grid(explosive ? Body.XBARREL : Body.BARREL, x, y, 3, 4, 13f, 9f, 2.2f,
+                explosive ? 0xFFb03a2e : 0xFF4f6b8a);
+        // bands
+        for (int i = 0; i < b.ss.size(); i++) {
+            Stick s = b.ss.get(i);
+            if (!s.band && Math.abs(s.a.y - s.b.y) < 0.5f) s.band = true;
+        }
+        if (explosive) {
+            b.explosive = true; b.flammable = true;
+            b.blastR = 380; b.blastPow = 6200; b.blastDmg = 120;
+        }
+        finish(b);
+        return b;
+    }
+
+    static Body tnt(float x, float y) {
+        Body b = grid(Body.TNT, x, y, 3, 3, 18f, 9f, 2.4f, 0xFFc0392b);
+        b.explosive = true; b.flammable = true;
+        b.blastR = 540; b.blastPow = 7600; b.blastDmg = 160;
+        finish(b);
+        return b;
+    }
+
+    /** Rigid 2-row truss: plank / platform. */
+    static Body plank(float x, float y, float len, boolean fixed) {
+        Body b = new Body(fixed ? Body.PLATFORM : Body.PLANK);
+        b.color = fixed ? 0xFF6b7280 : 0xFFC9A066;
+        b.flammable = !fixed;
+        float r = 6.5f, sp = 20f, gap = 11f;
+        int n = Math.max(3, (int) (len / sp) + 1);
+        float mass = fixed ? 0f : 1.6f;
+        Particle[] top = new Particle[n], bot = new Particle[n];
+        for (int i = 0; i < n; i++) {
+            float px = x + (i - (n - 1) / 2f) * sp;
+            top[i] = new Particle(b, px, y - gap / 2, mass, r);
+            bot[i] = new Particle(b, px, y + gap / 2, mass, r);
+        }
+        for (int i = 0; i < n; i++) {
+            if (i + 1 < n) {
+                new Stick(b, top[i], top[i + 1], sp, r).solid(b.color);
+                new Stick(b, bot[i], bot[i + 1], sp, r).solid(b.color);
+                Stick d1 = new Stick(b, top[i], bot[i + 1], -1, r);
+                Stick d2 = new Stick(b, bot[i], top[i + 1], -1, r);
+                d1.color = d2.color = b.color;
+            }
+            Stick v = new Stick(b, top[i], bot[i], gap, r);
+            v.color = b.color;
+        }
+        finish(b);
+        return b;
+    }
+
+    static Body ball(float x, float y, float radius, int color, boolean balloon) {
+        Body b = new Body(balloon ? Body.BALLOON : Body.BALL);
+        b.color = color;
+        int n = balloon ? 8 : 10;
+        float r = balloon ? 4f : 5f;
+        float mass = balloon ? 0.35f : 1.4f;
+        Particle c = new Particle(b, x, y, mass, r);
+        Particle[] ring = new Particle[n];
+        for (int i = 0; i < n; i++) {
+            double a = i * Math.PI * 2 / n;
+            ring[i] = new Particle(b, x + (float) Math.cos(a) * radius, y + (float) Math.sin(a) * radius, mass, r);
+        }
+        for (int i = 0; i < n; i++) {
+            Stick rs = new Stick(b, ring[i], ring[(i + 1) % n], -1, r);
+            rs.collide = true; rs.kind = Stick.HIDDEN;
+            Stick sp = new Stick(b, c, ring[i], radius, r);
+            sp.kind = Stick.HIDDEN;
+            if (i == 0) { sp.band = true; sp.kind = Stick.HIDDEN; }
+        }
+        if (balloon) { b.gravScale = -0.2f; b.drag = 0.992f; b.bounce = 0.3f; }
+        else { b.bounce = 0.62f; b.flammable = false; }
+        finish(b);
+        return b;
+    }
+
+    static Body grenade(float x, float y) {
+        Body b = new Body(Body.GRENADE);
+        b.color = 0xFF4d6030;
+        Particle a = new Particle(b, x - 6, y, 1.4f, 8f);
+        Particle c = new Particle(b, x + 6, y, 1.4f, 8f);
+        new Stick(b, a, c, 12f, 8f).solid(b.color);
+        b.explosive = true;
+        b.fuse = 3f; b.blastR = 280; b.blastPow = 4600; b.blastDmg = 70;
+        finish(b);
+        return b;
+    }
+
+    static Body dynamite(float x, float y) {
+        Body b = new Body(Body.DYNAMITE);
+        b.color = 0xFFcc2e2e;
+        Particle[] a = new Particle[3], c = new Particle[3];
+        for (int i = 0; i < 3; i++) {
+            a[i] = new Particle(b, x - 17, y + (i - 1) * 8f, 0.9f, 4.5f);
+            c[i] = new Particle(b, x + 17, y + (i - 1) * 8f, 0.9f, 4.5f);
+            new Stick(b, a[i], c[i], 34f, 4.5f).solid(b.color);
+        }
+        for (int i = 0; i < 2; i++) {
+            Stick s1 = new Stick(b, a[i], a[i + 1], -1, 4f); s1.kind = Stick.HIDDEN;
+            Stick s2 = new Stick(b, c[i], c[i + 1], -1, 4f); s2.kind = Stick.HIDDEN;
+            Stick s3 = new Stick(b, a[i], c[i + 1], -1, 4f); s3.kind = Stick.HIDDEN;
+            Stick s4 = new Stick(b, c[i], a[i + 1], -1, 4f); s4.kind = Stick.HIDDEN;
+        }
+        b.explosive = true;
+        b.fuse = 4f; b.blastR = 430; b.blastPow = 6600; b.blastDmg = 110;
+        finish(b);
+        return b;
+    }
+
+    static Body blade(float x, float y, boolean sword) {
+        Body b = new Body(sword ? Body.SWORD : Body.KNIFE);
+        float hl = sword ? 20f : 14f, bl = sword ? 96f : 34f, r = sword ? 3.4f : 2.8f;
+        Particle a = new Particle(b, x - (hl + bl) / 2, y, 0.8f, 3.5f);
+        Particle g = new Particle(b, a.x + hl, y, 0.8f, 3.5f);
+        Particle t = new Particle(b, g.x + bl, y, 0.6f, r);
+        new Stick(b, a, g, hl, 3.6f).solid(0xFF5b3a1e);
+        new Stick(b, g, t, bl, r).solid(0xFFdfe4ea);
+        Stick brace = new Stick(b, a, t, -1, r);
+        brace.kind = Stick.HIDDEN;
+        b.sharp = true;
+        finish(b);
+        return b;
+    }
+}
