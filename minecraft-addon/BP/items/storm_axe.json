@@ -1,0 +1,32 @@
+{
+  "format_version": "1.21.40",
+  "minecraft:item": {
+    "description": {
+      "identifier": "fb:storm_axe",
+      "menu_category": {
+        "category": "equipment",
+        "group": "itemGroup.name.axe"
+      }
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "fb_storm_axe"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "§eHacha de Tormenta"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:damage": 12,
+      "minecraft:durability": {
+        "max_durability": 2500
+      },
+      "minecraft:enchantable": {
+        "value": 15,
+        "slot": "sword"
+      }
+    }
+  }
+}
