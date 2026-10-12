@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -16,6 +17,14 @@ final class Game {
     final Fx fx = new Fx();
     final Sfx sfx;
     final World world;
+    final ModEngine mods = new ModEngine();
+    int userTheme = 0;
+    boolean textures = true;
+    private boolean silentSpawn;
+
+    /** Implemented by the Activity so the game can open the native text editor for mods. */
+    interface Host { void editMod(Mod existing); }
+    Host host;
     final Renderer renderer = new Renderer();
     final Ui ui = new Ui();
     final Random rnd = new Random();
@@ -44,13 +53,17 @@ final class Game {
         boolean dragged;
         float scrollStart;
         float fireCd;
+        float holdT;
     }
     private final Ptr[] ptrs = new Ptr[12];
     // camera gesture baseline
     private float camDist, camZoom0, camMidX, camMidY, camCx0, camCy0;
 
-    Game(Sfx sfx) {
+    Game(Sfx sfx) { this(sfx, null); }
+
+    Game(Sfx sfx, File modsDir) {
         this.sfx = sfx;
+        mods.load(modsDir);
         world = new World(fx, sfx);
         world.wallL = 0; world.wallR = ROOM_W;
         for (int i = 0; i < ptrs.length; i++) ptrs[i] = new Ptr();
@@ -102,8 +115,29 @@ final class Game {
         fpsAcc += dtReal; fpsFrames++;
         if (fpsAcc > 0.5f) { fps = fpsFrames / fpsAcc; fpsAcc = 0; fpsFrames = 0; }
         if (confirmT > 0) { confirmT -= dtReal; if (confirmT <= 0) confirmClear = false; }
-        float sim = paused ? 0f : dtReal * (slow ? 0.3f : 1f);
-        world.gravMul = gravMode == 0 ? 1f : (gravMode == 1 ? 0.17f : 0.0f);
+        float sim = paused ? 0f : dtReal * (slow ? 0.3f : 1f) * mods.timescale;
+        world.gravMul = (gravMode == 0 ? 1f : (gravMode == 1 ? 0.17f : 0.0f)) * mods.gravity;
+        world.wind = mods.wind;
+        world.modBounce = mods.bounce;
+        Spawner.headScale = mods.head;
+        renderer.theme = mods.theme >= 0 ? mods.theme : userTheme;
+        renderer.detail = textures;
+        ui.active.clear();
+        for (int i = 0; i < mods.mods.size(); i++) if (mods.mods.get(i).on) ui.active.add(Tools.MOD_BASE + i);
+        ui.active.add(Tools.STYLE_BASE + (mods.theme >= 0 ? mods.theme : userTheme));
+        if (textures) ui.active.add(Tools.STYLE_TEX);
+        // long-press on one of your own mods opens the editor
+        for (Ptr pt : ptrs) {
+            if (!pt.down || pt.role != R_UI || pt.dragged) continue;
+            pt.holdT += dtReal;
+            if (pt.holdT > 0.6f && pt.uiAction >= Ui.ITEM && pt.uiAction < Ui.BTN && ui.cat == Tools.CAT_MODS) {
+                int mi = pt.uiAction - Ui.ITEM - 1;
+                pt.uiAction = Ui.BLOCK;
+                if (mi >= 0 && mi < mods.mods.size() && mods.mods.get(mi).user && host != null) host.editMod(mods.mods.get(mi));
+                else if (mi >= 0) ui.toast("Los mods del Taller incluidos no se editan; crea uno nuevo");
+            }
+        }
+        if (!paused) { silentSpawn = true; mods.update(sim, this); silentSpawn = false; }
         // held weapons
         for (Ptr pt : ptrs) {
             if (!pt.down || pt.role != R_TOOL) continue;
@@ -184,7 +218,7 @@ final class Game {
 
     private void onDown(Ptr pt, float x, float y) {
         pt.down = true; pt.x = pt.sx = pt.lx = x; pt.y = pt.sy = pt.ly = y;
-        pt.dragged = false; pt.grab = null; pt.role = R_NONE;
+        pt.dragged = false; pt.grab = null; pt.role = R_NONE; pt.holdT = 0;
         int a = ui.hit(x, y);
         if (a != Ui.NONE) {
             pt.role = R_UI; pt.uiAction = a; pt.scrollStart = ui.scrollX;
@@ -326,8 +360,18 @@ final class Game {
             Tools.Item[] items = Tools.CATS[ui.cat];
             int i = a - Ui.ITEM;
             if (i >= 0 && i < items.length) {
-                tool = items[i].id;
-                ui.toast(items[i].name + " · " + items[i].hint);
+                int id = items[i].id;
+                if (id == Tools.MOD_CREATE) { if (host != null) host.editMod(null); else ui.toast("Editor no disponible"); }
+                else if (id >= Tools.STYLE_TEX && id < Tools.STYLE_TEX + 50) { textures = !textures; ui.toast(textures ? "Texturas activadas" : "Texturas desactivadas"); }
+                else if (id >= Tools.STYLE_BASE) { userTheme = id - Tools.STYLE_BASE; ui.toast("Fondo: " + Tools.THEMES[userTheme]); }
+                else if (id >= Tools.MOD_BASE) {
+                    Mod m = mods.mods.get(id - Tools.MOD_BASE);
+                    mods.toggle(m, this);
+                    ui.toast((m.on ? "Mod activado: " : "Mod desactivado: ") + m.name);
+                } else {
+                    tool = id;
+                    ui.toast(items[i].name + " · " + items[i].hint);
+                }
             }
         } else if (a >= Ui.BTN) {
             switch (a - Ui.BTN) {
@@ -358,6 +402,15 @@ final class Game {
         ui.btnLabel[Ui.BTN_SOUND] = sfx != null && sfx.enabled ? "Sonido" : "Mudo";
         ui.btnOn[Ui.BTN_SOUND] = sfx == null || !sfx.enabled;
     }
+
+    /** Called by the editor dialog. Returns an error text, or null when saved. */
+    String saveMod(Mod existing, String source) {
+        String err = mods.save(existing, source);
+        if (err == null) ui.toast("Mod guardado");
+        return err;
+    }
+
+    void deleteMod(Mod m) { mods.delete(m); ui.toast("Mod borrado"); }
 
     private void undoLast() {
         while (!undo.isEmpty()) {
@@ -482,7 +535,7 @@ final class Game {
 
     private void register(Body b) {
         if (b == null) return;
-        if (!world.add(b)) { ui.toast("Límite de objetos alcanzado"); return; }
+        if (!world.add(b)) { if (!silentSpawn) ui.toast("Límite de objetos alcanzado"); return; }
         undo.add(b);
         if (undo.size() > 80) undo.remove(0);
         fx.add(Fx.GLOW, b.cx, b.cy, 0, 0, 0.18f, Math.max(16f, b.rad * 0.8f), 0xFFffffff);
@@ -493,14 +546,21 @@ final class Game {
         x = Math.max(world.wallL + 70, Math.min(world.wallR - 70, x));
         y = Math.max(world.ceilY + 120, y);
         int dir = rnd.nextBoolean() ? 1 : -1;
+        float hs = mods.hscale;
         switch (id) {
-            case Tools.HUMAN: register(Spawner.human(world, x, Math.min(y, fl - 96), 1f, dir)); break;
-            case Tools.GIANT: register(Spawner.human(world, x, Math.min(y, fl - 180), 1.8f, dir)); break;
-            case Tools.KID: register(Spawner.human(world, x, Math.min(y, fl - 60), 0.62f, dir)); break;
+            case Tools.ROBOT: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_ROBOT)); break;
+            case Tools.ZOMBIE: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_ZOMBIE)); break;
+            case Tools.SKELETON: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_SKELETON)); break;
+            case Tools.WHEEL: register(Spawner.wheel(x, Math.min(y, fl - 50))); break;
+            case Tools.BOWLING: register(Spawner.bowling(x, Math.min(y, fl - 30))); break;
+            case Tools.MELON: register(Spawner.melon(x, Math.min(y, fl - 40))); break;
+            case Tools.HUMAN: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir)); break;
+            case Tools.GIANT: register(Spawner.human(world, x, Math.min(y, fl - 180), 1.8f * hs, dir)); break;
+            case Tools.KID: register(Spawner.human(world, x, Math.min(y, fl - 60), 0.62f * hs, dir)); break;
             case Tools.CROWD:
                 for (int i = 0; i < 5; i++) {
                     float hx = Math.max(world.wallL + 70, Math.min(world.wallR - 70, x + (i - 2) * 75f));
-                    register(Spawner.human(world, hx, Math.min(y, fl - 96) - (i % 2) * 30, 1f, rnd.nextBoolean() ? 1 : -1));
+                    register(Spawner.human(world, hx, Math.min(y, fl - 96 * hs) - (i % 2) * 30, hs, rnd.nextBoolean() ? 1 : -1));
                 }
                 break;
             case Tools.CRATE: register(Spawner.crate(x, Math.min(y, fl - 40), 60)); break;

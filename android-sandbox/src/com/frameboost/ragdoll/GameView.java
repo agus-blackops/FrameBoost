@@ -10,9 +10,9 @@ final class GameView extends View {
     final Game game;
     private long last;
 
-    GameView(Context ctx, Sfx sfx) {
+    GameView(Context ctx, Sfx sfx, java.io.File modsDir) {
         super(ctx);
-        game = new Game(sfx);
+        game = new Game(sfx, modsDir);
         setKeepScreenOn(true);
         setFocusable(true);
     }

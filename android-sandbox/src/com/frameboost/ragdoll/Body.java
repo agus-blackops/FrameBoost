@@ -5,7 +5,9 @@ import java.util.ArrayList;
 /** A group of particles/sticks that behaves as one object (a person, a crate, a bomb...). */
 final class Body {
     static final int HUMAN = 0, CRATE = 1, PLANK = 2, BARREL = 3, BALL = 4, BALLOON = 5, HEAVY = 6,
-            PLATFORM = 7, TNT = 8, XBARREL = 9, GRENADE = 10, DYNAMITE = 11, KNIFE = 12, SWORD = 13;
+            PLATFORM = 7, TNT = 8, XBARREL = 9, GRENADE = 10, DYNAMITE = 11, KNIFE = 12, SWORD = 13,
+            WHEEL = 14, BOWLING = 15, MELON = 16;
+    static final int K_HUMAN = 0, K_ROBOT = 1, K_ZOMBIE = 2, K_SKELETON = 3;
 
     final int type;
     final ArrayList<Particle> ps = new ArrayList<>();
@@ -32,6 +34,7 @@ final class Body {
     float blood = 100f;
     boolean dead;
     int dir = 1;
+    int kind;
     float scale = 1f;
     int skin, shirt, pants, hair;
     Particle head, chest, pelvis;

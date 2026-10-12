@@ -28,6 +28,7 @@ final class Fx {
     int bn;
     float bt;
 
+    int bloodA = 0xFFb71414, bloodB = 0xFF7d0c0c;   // droplet colours of the creature being hurt
     float flash;          // white screen flash 0..1
     float shake;          // camera shake 0..1
     final Random rnd = new Random();
@@ -57,7 +58,7 @@ final class Fx {
             float sp = 120f + rf() * 520f;
             float ax = dx + rr(0.9f), ay = dy + rr(0.9f);
             float l = (float) Math.sqrt(ax * ax + ay * ay) + 1e-4f;
-            int c = rnd.nextInt(3) == 0 ? 0xFF7d0c0c : 0xFFb71414;
+            int c = rnd.nextInt(3) == 0 ? bloodB : bloodA;
             add(BLOOD, px + rr(3), py + rr(3), ax / l * sp, ay / l * sp - 80f, 1.6f + rf(), 1.6f + rf() * 2.4f, c);
         }
     }
@@ -66,7 +67,7 @@ final class Fx {
         for (int i = 0; i < n; i++) {
             float a = rf() * 6.2832f;
             float sp = 80f + rf() * 420f;
-            int c = rnd.nextInt(3) == 0 ? 0xFF7d0c0c : 0xFFb71414;
+            int c = rnd.nextInt(3) == 0 ? bloodB : bloodA;
             add(BLOOD, px, py, (float) Math.cos(a) * sp, (float) Math.sin(a) * sp - 120f, 1.4f + rf(), 1.8f + rf() * 2.6f, c);
         }
     }
@@ -166,7 +167,7 @@ final class Fx {
                     vy[i] += 1700f * dt;
                     x[i] += vx[i] * dt; y[i] += vy[i] * dt;
                     if (y[i] >= floor) {
-                        stain(x[i], 2f + size[i] * 1.7f, color[i] == 0xFF7d0c0c ? 0xDD6d0a0a : 0xDDa31212);
+                        stain(x[i], 2f + size[i] * 1.7f, Renderer.alpha(color[i], 0.85f));
                         life[i] = 0;
                     } else if (x[i] < wl || x[i] > wr) {
                         life[i] = 0;

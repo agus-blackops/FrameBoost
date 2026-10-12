@@ -24,6 +24,7 @@ final class Ui {
     final boolean[] btnOn = new boolean[BTN_COUNT];
     private final float[] btnX = new float[BTN_COUNT], btnW = new float[BTN_COUNT];
 
+    final java.util.HashSet<Integer> active = new java.util.HashSet<>();
     String toast;
     float toastT;
 
@@ -131,7 +132,7 @@ final class Ui {
             for (int i = 0; i < items.length; i++) {
                 float x0 = gap + i * (cardW + gap) - scrollX;
                 if (x0 + cardW < 0 || x0 > sw) continue;
-                boolean sel = items[i].id == selectedTool;
+                boolean sel = items[i].id == selectedTool || active.contains(items[i].id);
                 p.setStyle(Paint.Style.FILL);
                 p.setColor(sel ? 0xFF3a4560 : 0xFF262d3b);
                 r.set(x0, cy0, x0 + cardW, cy0 + cardH);
@@ -143,7 +144,8 @@ final class Ui {
                     c.drawRoundRect(r, 10 * d, 10 * d, p);
                     p.setStyle(Paint.Style.FILL);
                 }
-                drawIcon(c, items[i].id, x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.36f);
+                if (items[i].id >= Tools.MOD_CREATE) letterIcon(c, items[i], x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.36f);
+                else drawIcon(c, items[i].id, x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.36f);
                 p.setColor(0xFFe9edf4);
                 p.setTextSize(11.5f * d);
                 p.setTextAlign(Paint.Align.CENTER);
@@ -184,6 +186,30 @@ final class Ui {
             p.setColor(alpha(0xFFffffff, Math.min(1f, toastT * 2f)));
             c.drawText(toast, sw / 2f, ty, p);
         }
+    }
+
+    /** Icon for workshop mods and styles: coloured tile with the initial (or a symbol). */
+    private void letterIcon(Canvas c, Tools.Item it, float cx, float cy, float s) {
+        int id = it.id;
+        int[] pal = {0xFFe0463c, 0xFF3aa0e0, 0xFF4cbf6b, 0xFFf2b134, 0xFFb06ad8, 0xFFf27ab0, 0xFF2fb5a8, 0xFFdd7b2f};
+        int col = id == Tools.MOD_CREATE ? 0xFF4a5568 : pal[Math.abs(id * 7 + it.name.length()) % pal.length];
+        if (id >= Tools.STYLE_BASE && id < Tools.STYLE_TEX) {
+            int[] wall = {0xFF2f3846, 0xFFdde5ea, 0xFF0f1630, 0xFF6b3b32, 0xFF0a0612, 0xFFe8c98a};
+            int[] flr = {0xFF666d7a, 0xFFf2f6f8, 0xFF3a4258, 0xFF7a5636, 0xFF00e5ff, 0xFFe6b867};
+            int k = id - Tools.STYLE_BASE;
+            box(c, cx - s * 0.9f, cy - s * 0.7f, cx + s * 0.9f, cy + s * 0.7f, wall[k], s * 0.12f);
+            box(c, cx - s * 0.9f, cy + s * 0.25f, cx + s * 0.9f, cy + s * 0.7f, flr[k], s * 0.12f);
+            return;
+        }
+        box(c, cx - s * 0.8f, cy - s * 0.7f, cx + s * 0.8f, cy + s * 0.7f, col, s * 0.2f);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xFFffffff);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setFakeBoldText(true);
+        p.setTextSize(s * 1.2f);
+        String t = id == Tools.MOD_CREATE ? "+" : (id == Tools.STYLE_TEX ? "▦" : it.name.substring(0, 1).toUpperCase());
+        c.drawText(t, cx, cy + s * 0.42f, p);
+        p.setFakeBoldText(false);
     }
 
     private static int alpha(int c, float a) {

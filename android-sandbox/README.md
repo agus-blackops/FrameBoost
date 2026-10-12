@@ -26,6 +26,35 @@ Contenido: humano, gigante, niño y multitud; caja, caja grande, tabla, barril, 
 acero, plataforma fija; granada, dinamita, TNT, barril explosivo, detonar y bomba nuclear; pistola, rifle,
 escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
 
+## Novedades: modelos, texturas y Taller
+
+* **Modelos nuevos:** Robot (sin sangre, suelta chispas y aceite), Zombi (sangre verde), Esqueleto,
+  Rueda de camión, Bolas de bolos y Sandía (revienta al golpear).
+* **Texturas / Estilo:** 6 fondos (Habitación, Laboratorio, Noche, Ladrillos, Neón, Desierto) y un
+  interruptor de texturas: vetas de madera, remaches de acero, rayas y bolsillos en las camisetas,
+  ladrillos, estrellas, baldosas y tablones de suelo.
+* **Taller (mods):** 17 mods incluidos (Lluvia de Cajas, Cabezones, Luna Loca, Ventilador Gigante,
+  Apocalipsis Zombi, Bombardeo, Tormenta Eléctrica, Invasión Robot...). Tócalos para activarlos;
+  se pueden combinar. **"+ Crear mod"** abre un editor de texto para escribir los tuyos; mantén pulsado
+  un mod propio para editarlo o borrarlo. Se guardan en la carpeta privada de la app (`files/mods/*.rpmod`).
+
+Ejemplo de mod propio:
+
+```
+name Mi Mod
+desc Zombis con gravedad lunar
+gravity 0.3
+wind 200
+once spawn zombie 4
+every 3 spawn crate
+every 5 explode 250
+```
+
+Órdenes: `gravity`, `wind`, `bounce`, `headsize`, `humanscale`, `timescale`, `theme 0..5`,
+`once spawn <objeto> [n]`, `every <seg> spawn <objeto> [floor]`, `every <seg> explode|lightning|ignite|shock`.
+Objetos: human giant kid robot zombie skeleton crate bigcrate plank barrel ball balloon steel wheel
+bowling melon grenade dynamite tnt xbarrel knife sword platform.
+
 ## Cómo está hecho
 
 * `World` – física Verlet por posiciones (partículas + varillas), colisiones partícula/partícula y

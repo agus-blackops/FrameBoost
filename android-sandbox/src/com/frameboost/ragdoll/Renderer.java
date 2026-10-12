@@ -9,6 +9,14 @@ final class Renderer {
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rf = new RectF();
 
+    int theme = 0;
+    boolean detail = true;
+    private static final int[] WALL = {0xFF2f3846, 0xFFdde5ea, 0xFF0f1630, 0xFF6b3b32, 0xFF0a0612, 0xFFe8c98a};
+    private static final int[] GRIDC = {0xFF3a4455, 0xFFc3ced6, 0xFF1a2348, 0xFF4f2a24, 0xFF7a1fa8, 0xFFd1ac6a};
+    private static final int[] FLOORC = {0xFF4c525d, 0xFFb8c2c9, 0xFF1c2230, 0xFF5a3e28, 0xFF14091f, 0xFFc79a55};
+    private static final int[] FLOORTOP = {0xFF666d7a, 0xFFf2f6f8, 0xFF3a4258, 0xFF7a5636, 0xFF00e5ff, 0xFFe6b867};
+    private static final int[] FLOORLINE = {0xFF3b404a, 0xFFa3aeb6, 0xFF151a26, 0xFF45301f, 0xFFff2bd6, 0xFFb08440};
+
     Renderer() {
         p.setStrokeCap(Paint.Cap.ROUND);
     }
@@ -68,43 +76,97 @@ final class Renderer {
 
     private void drawBackground(Canvas c, World w, float vx0, float vy0, float vx1, float vy1) {
         p.setStyle(Paint.Style.FILL);
-        // outside the room
-        p.setColor(0xFF161a22);
+        int t = Math.max(0, Math.min(WALL.length - 1, theme));
+        p.setColor(0xFF10131a);
         rf.set(vx0 - 50, vy0 - 50, vx1 + 50, vy1 + 50);
         c.drawRect(rf, p);
-        // room wall
         float x0 = Math.max(w.wallL, vx0 - 1), x1 = Math.min(w.wallR, vx1 + 1);
         float top = Math.max(w.ceilY, vy0 - 1);
-        p.setColor(0xFF2f3846);
+        p.setColor(WALL[t]);
         c.drawRect(x0, top, x1, w.floorY, p);
-        // grid
-        p.setColor(0xFF3a4455);
-        p.setStrokeWidth(2f);
-        float step = 100f;
-        float gx = (float) Math.ceil(x0 / step) * step;
-        for (; gx <= x1; gx += step) c.drawLine(gx, top, gx, w.floorY, p);
-        float gy = (float) Math.floor(w.floorY / step) * step;
-        for (; gy >= top; gy -= step) c.drawLine(x0, gy, x1, gy, p);
-        // darker bands on walls give some depth
+
+        if (t == 2 && detail) {                    // night: sky gradient bands, stars, moon
+            p.setColor(0x2210204a);
+            c.drawRect(x0, w.floorY - 520, x1, w.floorY, p);
+            p.setColor(0xFFdfe6ff);
+            for (int i = 0; i < 160; i++) {
+                float sx = (i * 7919 % 2600), sy = w.floorY - 80 - ((i * 104729) % 1500);
+                if (sx < x0 || sx > x1 || sy < top || sy > vy1) continue;
+                c.drawCircle(sx, sy, 1.5f + (i % 3), p);
+            }
+            p.setColor(0xFFf5f0d0);
+            c.drawCircle(2000, w.floorY - 640, 70, p);
+            p.setColor(0xFF0f1630);
+            c.drawCircle(2030, w.floorY - 655, 62, p);
+        } else if (t == 5 && detail) {             // desert: sun + dunes
+            p.setColor(0xFFfff0b0);
+            c.drawCircle(1850, w.floorY - 520, 120, p);
+            p.setColor(0xFFf3b25a);
+            c.drawCircle(1850, w.floorY - 520, 85, p);
+            p.setColor(0xFFd8aa62);
+            for (int i = 0; i < 4; i++) c.drawCircle(300 + i * 750, w.floorY + 80, 420 + (i % 2) * 120, p);
+        }
+        // grid / brick pattern
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeCap(Paint.Cap.BUTT);
+        if (t == 3 && detail) {                    // bricks
+            p.setColor(GRIDC[t]);
+            p.setStrokeWidth(3f);
+            int row = 0;
+            for (float gy = (float) Math.floor(w.floorY / 44f) * 44f; gy >= top; gy -= 44f, row++) {
+                c.drawLine(x0, gy, x1, gy, p);
+                float off = (row & 1) == 0 ? 0 : 60;
+                for (float gx = (float) Math.floor(x0 / 120f) * 120f + off; gx <= x1; gx += 120f) {
+                    if (gx >= x0) c.drawLine(gx, gy, gx, gy - 44f, p);
+                }
+            }
+        } else {
+            p.setColor(GRIDC[t]);
+            p.setStrokeWidth(t == 4 ? 3f : 2f);
+            float step = 100f;
+            float gx = (float) Math.ceil(x0 / step) * step;
+            for (; gx <= x1; gx += step) c.drawLine(gx, top, gx, w.floorY, p);
+            float gy = (float) Math.floor(w.floorY / step) * step;
+            for (; gy >= top; gy -= step) c.drawLine(x0, gy, x1, gy, p);
+            if (t == 4) {                           // neon glow lines
+                p.setColor(0x5500e5ff);
+                p.setStrokeWidth(8f);
+                for (gy = (float) Math.floor(w.floorY / 300f) * 300f; gy >= top; gy -= 300f) c.drawLine(x0, gy, x1, gy, p);
+            }
+        }
+        p.setStyle(Paint.Style.FILL);
         p.setColor(0x33000000);
         if (vx0 < w.wallL + 60) c.drawRect(w.wallL, top, w.wallL + 60, w.floorY, p);
         if (vx1 > w.wallR - 60) c.drawRect(w.wallR - 60, top, w.wallR, w.floorY, p);
         // floor
         if (vy1 > w.floorY) {
-            p.setColor(0xFF4c525d);
+            p.setColor(FLOORC[t]);
             c.drawRect(x0, w.floorY, x1, vy1 + 100, p);
-            p.setColor(0xFF666d7a);
-            c.drawRect(x0, w.floorY, x1, w.floorY + 9, p);
-            p.setColor(0xFF3b404a);
+            if (t == 4) { p.setColor(0x4400e5ff); c.drawRect(x0, w.floorY, x1, w.floorY + 26, p); }
+            p.setColor(FLOORTOP[t]);
+            c.drawRect(x0, w.floorY, x1, w.floorY + (t == 4 ? 5 : 9), p);
+            p.setStyle(Paint.Style.STROKE);
+            p.setColor(FLOORLINE[t]);
             p.setStrokeWidth(3f);
-            float fy = w.floorY + 60;
-            for (; fy < vy1 + 100; fy += 60) c.drawLine(x0, fy, x1, fy, p);
+            if (detail && (t == 1 || t == 5 || t == 0)) {      // tiles / planks
+                for (float fy = w.floorY + 60; fy < vy1 + 100; fy += 60) c.drawLine(x0, fy, x1, fy, p);
+                if (t == 1) for (float fx = (float) Math.ceil(x0 / 140f) * 140f; fx <= x1; fx += 140f) c.drawLine(fx, w.floorY, fx, vy1 + 100, p);
+            } else if (detail && t == 3) {                       // wooden boards
+                for (float fy = w.floorY + 50; fy < vy1 + 100; fy += 50) c.drawLine(x0, fy, x1, fy, p);
+                int i = 0;
+                for (float fx = (float) Math.ceil(x0 / 190f) * 190f; fx <= x1; fx += 190f, i++)
+                    c.drawLine(fx + (i % 3) * 40, w.floorY, fx + (i % 3) * 40, w.floorY + 50, p);
+            } else if (t == 4) {
+                for (float fx = (float) Math.ceil(x0 / 120f) * 120f; fx <= x1; fx += 120f) c.drawLine(fx, w.floorY, fx - (fx - 1300f) * 0.25f, vy1 + 100, p);
+            }
+            p.setStyle(Paint.Style.FILL);
         }
-        // wall edges
         p.setColor(0xFF0e1117);
+        p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(8f);
         if (vx0 < w.wallL) c.drawLine(w.wallL, top, w.wallL, vy1 + 100, p);
         if (vx1 > w.wallR) c.drawLine(w.wallR, top, w.wallR, vy1 + 100, p);
+        p.setStyle(Paint.Style.FILL);
     }
 
     private void drawStains(Canvas c, World w, Fx fx) {
@@ -129,7 +191,7 @@ final class Renderer {
     }
 
     private void drawProp(Canvas c, Body b) {
-        if (b.type == Body.BALL || b.type == Body.BALLOON) { drawBall(c, b); return; }
+        if (b.type == Body.BALL || b.type == Body.BALLOON || b.type == Body.WHEEL || b.type == Body.BOWLING || b.type == Body.MELON) { drawBall(c, b); return; }
         // outline pass, then fill pass (so touching sticks merge into one silhouette)
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeCap(Paint.Cap.ROUND);
@@ -145,15 +207,48 @@ final class Renderer {
             }
         }
         // details
-        int detail = dark(bodyColor(b, b.color), 0.4f);
-        p.setColor(detail);
+        int detailCol = dark(bodyColor(b, b.color), 0.4f);
+        p.setColor(detailCol);
         p.setStrokeWidth(2.2f);
         for (int i = 0; i < n; i++) {
             Stick s = b.ss.get(i);
             if (s.dead || !s.band) continue;
             c.drawLine(s.a.x, s.a.y, s.b.x, s.b.y, p);
         }
+        if (detail) textures(c, b);
         overlay(c, b);
+    }
+
+    /** Material textures: wood grain, steel rivets. */
+    private void textures(Canvas c, Body b) {
+        int n = b.ss.size();
+        boolean wood = b.type == Body.CRATE || b.type == Body.PLANK || b.type == Body.TNT;
+        if (wood) {
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeCap(Paint.Cap.BUTT);
+            p.setStrokeWidth(1.3f);
+            p.setColor(alpha(dark(bodyColor(b, b.color), 0.5f), 0.55f));
+            for (int i = 0; i < n; i++) {
+                Stick s = b.ss.get(i);
+                if (s.dead || s.kind != Stick.FILL || s.joint || s.band) continue;
+                float dx = s.b.x - s.a.x, dy = s.b.y - s.a.y;
+                float l = (float) Math.sqrt(dx * dx + dy * dy);
+                if (l < 1f) continue;
+                float nx = -dy / l * s.r * 0.5f, ny = dx / l * s.r * 0.5f;
+                c.drawLine(s.a.x + nx, s.a.y + ny, s.b.x + nx, s.b.y + ny, p);
+                c.drawLine(s.a.x - nx, s.a.y - ny, s.b.x - nx, s.b.y - ny, p);
+            }
+            p.setStrokeCap(Paint.Cap.ROUND);
+        } else if (b.type == Body.HEAVY || b.type == Body.PLATFORM) {
+            p.setStyle(Paint.Style.FILL);
+            for (int i = 0; i < b.ps.size(); i += (b.type == Body.PLATFORM ? 2 : 1)) {
+                Particle q = b.ps.get(i);
+                p.setColor(dark(bodyColor(b, b.color), 0.45f));
+                c.drawCircle(q.x, q.y, 2.9f, p);
+                p.setColor(0x66ffffff);
+                c.drawCircle(q.x - 0.8f, q.y - 0.8f, 1.2f, p);
+            }
+        }
     }
 
     private void overlay(Canvas c, Body b) {
@@ -241,6 +336,37 @@ final class Renderer {
         p.setColor(dark(col, 0.28f));
         c.drawLine(ctr.x, ctr.y, ctr.x + (m.x - ctr.x) * 0.82f, ctr.y + (m.y - ctr.y) * 0.82f, p);
         p.setStyle(Paint.Style.FILL);
+        if (detail && b.type == Body.WHEEL) {
+            p.setColor(0xFF9aa3ad);
+            c.drawCircle(ctr.x, ctr.y, rad * 0.5f, p);
+            p.setColor(0xFF4a525c);
+            c.drawCircle(ctr.x, ctr.y, rad * 0.22f, p);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(rad * 0.09f);
+            p.setColor(0xFF45494f);
+            for (int i = 1; i <= n; i += 2) {
+                Particle q = b.ps.get(i);
+                c.drawLine(ctr.x + (q.x - ctr.x) * 0.3f, ctr.y + (q.y - ctr.y) * 0.3f, ctr.x + (q.x - ctr.x) * 0.5f, ctr.y + (q.y - ctr.y) * 0.5f, p);
+            }
+            p.setStyle(Paint.Style.FILL);
+        } else if (detail && b.type == Body.BOWLING) {
+            float vx = m.x - ctr.x, vy = m.y - ctr.y;
+            p.setColor(0xFF05070f);
+            for (int i = 0; i < 3; i++) {
+                float a = i == 0 ? 0f : (i == 1 ? 0.5f : -0.5f);
+                float cs = (float) Math.cos(a), sn = (float) Math.sin(a);
+                c.drawCircle(ctr.x + (vx * cs - vy * sn) * 0.5f, ctr.y + (vx * sn + vy * cs) * 0.5f, rad * 0.14f, p);
+            }
+        } else if (detail && b.type == Body.MELON) {
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(rad * 0.16f);
+            p.setColor(0xFF2a6e29);
+            for (int i = 1; i <= n; i += 3) {
+                Particle q = b.ps.get(i);
+                c.drawLine(ctr.x + (q.x - ctr.x) * 0.15f, ctr.y + (q.y - ctr.y) * 0.15f, ctr.x + (q.x - ctr.x) * 0.9f, ctr.y + (q.y - ctr.y) * 0.9f, p);
+            }
+            p.setStyle(Paint.Style.FILL);
+        }
         p.setColor(0x55ffffff);
         c.drawCircle(ctr.x - rad * 0.35f, ctr.y - rad * 0.38f, rad * 0.22f, p);
     }
@@ -292,6 +418,7 @@ final class Renderer {
         part(c, b, b.uarmB, b.shirt); part(c, b, b.farmB, skin); hand(c, b, b.farmB);
         // torso
         seg(c, b, b.pelvis, b.chest, b.torso.r, b.shirt);
+        torsoDetail(c, b);
         if (!b.neck.dead) seg(c, b, b.head, b.chest, b.neck.r, skin);
         // front legs
         part(c, b, b.thighF, b.pants); part(c, b, b.shinF, b.pants); foot(c, b, b.shinF);
@@ -312,6 +439,64 @@ final class Renderer {
         }
     }
 
+    private void torsoDetail(Canvas c, Body b) {
+        Particle a = b.pelvis, z = b.chest;
+        float dx = z.x - a.x, dy = z.y - a.y;
+        float l = (float) Math.sqrt(dx * dx + dy * dy);
+        if (l < 1f) return;
+        float ux = dx / l, uy = dy / l, nx = -uy, ny = ux, r = b.torso.r;
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeCap(Paint.Cap.BUTT);
+        if (b.kind == Body.K_SKELETON) {                 // ribs + spine
+            p.setColor(0xFF8d8774);
+            p.setStrokeWidth(2.2f * b.scale);
+            for (int i = 0; i < 4; i++) {
+                float t = 0.3f + i * 0.17f;
+                float cx = a.x + dx * t, cy = a.y + dy * t;
+                c.drawLine(cx - nx * r * 0.85f, cy - ny * r * 0.85f, cx + nx * r * 0.85f, cy + ny * r * 0.85f, p);
+            }
+            c.drawLine(a.x, a.y, z.x, z.y, p);
+        } else if (b.kind == Body.K_ROBOT) {             // chest plate + panel lines
+            p.setColor(0xFF33414f);
+            p.setStrokeWidth(2f * b.scale);
+            float cx = a.x + dx * 0.6f, cy = a.y + dy * 0.6f;
+            c.drawLine(cx - nx * r * 0.8f, cy - ny * r * 0.8f, cx + nx * r * 0.8f, cy + ny * r * 0.8f, p);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(b.dead ? 0xFF555f6a : 0xFF35e0ff);
+            c.drawCircle(a.x + dx * 0.5f, a.y + dy * 0.5f, 3.2f * b.scale, p);
+        } else if (detail) {
+            int pat = (b.shirt >>> 8) & 3;
+            if (b.kind == Body.K_ZOMBIE) {               // torn shirt
+                p.setColor(alpha(0xFF111111, 0.55f));
+                p.setStrokeWidth(2f * b.scale);
+                for (int i = 0; i < 3; i++) {
+                    float t = 0.25f + i * 0.25f;
+                    float cx = a.x + dx * t, cy = a.y + dy * t;
+                    c.drawLine(cx - nx * r * 0.6f, cy - ny * r * 0.6f, cx + nx * r * 0.2f + ux * 6, cy + ny * r * 0.2f + uy * 6, p);
+                }
+            } else if (pat == 1) {                       // stripes
+                p.setColor(alpha(dark(bodyColor(b, b.shirt), 0.45f), 0.8f));
+                p.setStrokeWidth(4f * b.scale);
+                for (int i = 0; i < 5; i++) {
+                    float t = 0.12f + i * 0.19f;
+                    float cx = a.x + dx * t, cy = a.y + dy * t;
+                    c.drawLine(cx - nx * r * 0.95f, cy - ny * r * 0.95f, cx + nx * r * 0.95f, cy + ny * r * 0.95f, p);
+                }
+            } else if (pat == 2) {                       // chest pocket
+                p.setColor(alpha(dark(bodyColor(b, b.shirt), 0.5f), 0.9f));
+                p.setStrokeWidth(2f * b.scale);
+                float cx = a.x + dx * 0.72f + nx * b.dir * r * 0.4f, cy = a.y + dy * 0.72f + ny * b.dir * r * 0.4f;
+                c.drawLine(cx - 4 * b.scale, cy, cx + 4 * b.scale, cy, p);
+            }
+            // belt
+            p.setColor(alpha(0xFF14161c, 0.8f));
+            p.setStrokeWidth(3f * b.scale);
+            float cx = a.x + dx * 0.08f, cy = a.y + dy * 0.08f;
+            c.drawLine(cx - nx * r, cy - ny * r, cx + nx * r, cy + ny * r, p);
+        }
+        p.setStrokeCap(Paint.Cap.ROUND);
+    }
+
     private void drawHead(Canvas c, Body b, int skin) {
         Particle h = b.head;
         float ux = h.x - b.chest.x, uy = h.y - b.chest.y;
@@ -327,28 +512,56 @@ final class Renderer {
         c.drawCircle(0, 0, r + 1.6f, p);
         p.setColor(col);
         c.drawCircle(0, 0, r, p);
-        // hair: cap over the top and the back of the head
-        int hair = bodyColor(b, b.hair);
-        p.setColor(hair);
-        rf.set(-r, -r, r, r);
-        c.drawArc(rf, 180f, 180f, true, p);
-        c.drawCircle(-b.dir * r * 0.42f, -r * 0.1f, r * 0.62f, p);
-        p.setColor(col);
-        c.drawCircle(b.dir * r * 0.28f, r * 0.02f, r * 0.62f, p);   // forehead/face cleans the hair front
-        // eye
         float ex = b.dir * r * 0.5f, ey = -r * 0.12f;
-        p.setColor(0xFF1b1b1b);
-        if (b.dead) {
+        if (b.kind == Body.K_ROBOT) {
+            p.setColor(bodyColor(b, 0xFF7f8c99));
+            rf.set(-r * 0.95f, -r * 0.95f, r * 0.95f, r * 0.95f);
+            c.drawRoundRect(rf, r * 0.25f, r * 0.25f, p);
+            p.setColor(0xFF1b222b);
+            rf.set(-r * 0.2f + b.dir * r * 0.15f, -r * 0.42f, r * 0.85f * b.dir + b.dir * r * 0.1f, r * 0.1f);
+            if (b.dir < 0) rf.set(r * 0.85f * b.dir + b.dir * r * 0.1f, -r * 0.42f, -r * 0.2f + b.dir * r * 0.15f, r * 0.1f);
+            c.drawRoundRect(rf, r * 0.1f, r * 0.1f, p);
+            p.setColor(b.dead ? 0xFF3b4652 : 0xFF35e0ff);
+            c.drawCircle(ex, -r * 0.16f, r * 0.14f, p);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(2f);
+            p.setColor(0xFF9aa5b1);
+            c.drawLine(0, -r * 0.95f, 0, -r * 1.35f, p);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(b.dead ? 0xFF555f6a : 0xFFff4d4d);
+            c.drawCircle(0, -r * 1.4f, r * 0.12f, p);
+        } else if (b.kind == Body.K_SKELETON) {
+            p.setColor(0xFF2a2820);
+            c.drawCircle(b.dir * r * 0.42f, -r * 0.1f, r * 0.24f, p);
+            c.drawCircle(-b.dir * r * 0.1f, -r * 0.1f, r * 0.2f, p);
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(1.8f);
-            float k = r * 0.2f;
-            c.drawLine(ex - k, ey - k, ex + k, ey + k, p);
-            c.drawLine(ex - k, ey + k, ex + k, ey - k, p);
+            for (int i = -1; i <= 1; i++) c.drawLine(b.dir * (r * 0.1f + i * r * 0.18f), r * 0.45f, b.dir * (r * 0.1f + i * r * 0.18f), r * 0.78f, p);
+            p.setStyle(Paint.Style.FILL);
         } else {
-            c.drawCircle(ex, ey, r * 0.15f, p);
-            p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(1.6f);
-            c.drawLine(b.dir * r * 0.3f, r * 0.42f, b.dir * r * 0.72f, r * 0.42f, p);
+            int hair = bodyColor(b, b.hair);
+            p.setColor(hair);
+            rf.set(-r, -r, r, r);
+            if (b.kind != Body.K_ZOMBIE || b.hair != 0) c.drawArc(rf, 180f, 180f, true, p);
+            c.drawCircle(-b.dir * r * 0.42f, -r * 0.1f, r * 0.62f, p);
+            p.setColor(col);
+            c.drawCircle(b.dir * r * 0.28f, r * 0.02f, r * 0.62f, p);
+            boolean z = b.kind == Body.K_ZOMBIE;
+            p.setColor(z ? 0xFFd62020 : 0xFF1b1b1b);
+            if (b.dead && !z) {
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(1.8f);
+                float k = r * 0.2f;
+                c.drawLine(ex - k, ey - k, ex + k, ey + k, p);
+                c.drawLine(ex - k, ey + k, ex + k, ey - k, p);
+            } else {
+                c.drawCircle(ex, ey, r * (z ? 0.2f : 0.15f), p);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(1.6f);
+                p.setColor(z ? 0xFF4a1010 : 0xFF1b1b1b);
+                if (z) { c.drawLine(b.dir * r * 0.25f, r * 0.45f, b.dir * r * 0.75f, r * 0.55f, p); }
+                else c.drawLine(b.dir * r * 0.3f, r * 0.42f, b.dir * r * 0.72f, r * 0.42f, p);
+            }
         }
         c.restore();
     }

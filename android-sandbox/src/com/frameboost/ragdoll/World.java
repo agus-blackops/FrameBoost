@@ -18,6 +18,8 @@ final class World {
     float floorY = 0f, wallL = 0f, wallR = 2600f, ceilY = -1900f;
     float gravity = 1900f;
     float gravMul = 1f;
+    float wind = 0f;          // horizontal acceleration (mods)
+    float modBounce = 0f;     // minimum bounce (mods)
 
     final ArrayList<Body> bodies = new ArrayList<>();
     final ArrayList<Particle> ps = new ArrayList<>();
@@ -124,7 +126,7 @@ final class World {
             float d = p.body.drag;
             float vx = (p.x - p.px) * d, vy = (p.y - p.py) * d;
             p.px = p.x; p.py = p.y;
-            p.x += vx;
+            p.x += vx + wind * H * H;
             p.y += vy + g * p.body.gravScale;
         }
         buildGrids();
@@ -315,7 +317,7 @@ final class World {
                 if (first) {
                     float vyUnits = vy / H;
                     if (vyUnits > 1400f) hit(p.body, (vyUnits - 1400f) * 0.012f, p.x, p.y, vyUnits > 2200f);
-                    if (vy > 0) p.py = p.y + vy * Math.max(0.04f, p.body.bounce);
+                    if (vy > 0) p.py = p.y + vy * Math.max(Math.max(0.04f, p.body.bounce), modBounce);
                     float vx = p.x - p.px;
                     float dv = FRICTION * gravity * Math.abs(gravMul) * H * H * 1.3f;
                     if (Math.abs(vx) <= dv) p.px = p.x; else p.px += vx > 0 ? dv : -dv;
@@ -338,6 +340,8 @@ final class World {
             if (a.explosive && a.fuse < 0) a.fuse = 0.05f;
             if (b.explosive && b.fuse < 0) b.fuse = 0.05f;
         }
+        if (a.type == Body.MELON && speed > 850f) { smash(a); return; }
+        if (b.type == Body.MELON && speed > 850f) { smash(b); return; }
         if (speed > 1000f && sfx != null) sfx.thud(Math.min(1f, speed / 2600f));
         if (a.sharp && speed > 420f) slash(a, b, x, y);
         if (b.sharp && speed > 420f) slash(b, a, x, y);
@@ -356,9 +360,21 @@ final class World {
         fx.blood(x, y, rnd.nextFloat() - 0.5f, -0.6f, 4);
     }
 
+    /** Picks droplet colours for a creature (red blood, green goo, oil, bone dust). */
+    void setBlood(Body b) {
+        switch (b.kind) {
+            case Body.K_ZOMBIE: fx.bloodA = 0xFF5aa02a; fx.bloodB = 0xFF3b6e1a; break;
+            case Body.K_ROBOT: fx.bloodA = 0xFF2b2b2f; fx.bloodB = 0xFF4a4a52; break;
+            case Body.K_SKELETON: fx.bloodA = 0xFFe9e5d3; fx.bloodB = 0xFFc9c4ad; break;
+            default: fx.bloodA = 0xFFb71414; fx.bloodB = 0xFF7d0c0c; break;
+        }
+    }
+
     /** Applies damage to a human; may kill. */
     void hit(Body b, float dmg, float x, float y, boolean gore) {
         if (!b.isHuman() || b.dead || dmg <= 0.2f) return;
+        setBlood(b);
+        if (b.kind == Body.K_ROBOT && dmg > 3f) fx.sparks(x, y, 5, 0xFFffd25a);
         if (b.hurtCd > 0.05f && dmg < 20f) dmg *= 0.3f;
         b.hurtCd = 0.12f;
         b.blood -= dmg;
@@ -430,6 +446,7 @@ final class World {
 
     private void updateHuman(Body b, float dt) {
         int wounds = 0;
+        setBlood(b);
         for (int i = 0; i < b.ps.size(); i++) {
             Particle p = b.ps.get(i);
             if (p.bleed <= 0f) continue;
@@ -438,7 +455,7 @@ final class World {
             if (rnd.nextFloat() < 22f * dt) {
                 float sp = 0.4f + rnd.nextFloat();
                 fx.add(Fx.BLOOD, p.x, p.y, p.vx() * 0.2f + fx.rr(160) * sp, p.vy() * 0.2f - 60f + fx.rr(120), 1.6f, 1.8f + fx.rf() * 2f,
-                        rnd.nextInt(3) == 0 ? 0xFF7d0c0c : 0xFFb71414);
+                        rnd.nextInt(3) == 0 ? fx.bloodB : fx.bloodA);
             }
         }
         if (wounds > 0 && !b.dead) {
@@ -512,6 +529,8 @@ final class World {
         dirty = true;
         Body b = s.body;
         if (b.isHuman()) {
+            setBlood(b);
+            if (b.kind == Body.K_ROBOT) fx.sparks((s.a.x + s.b.x) / 2, (s.a.y + s.b.y) / 2, 10, 0xFFffd25a);
             if (s.joint || s == b.neck) {
                 s.capA = s.capB = true;
                 s.a.bleed = Math.max(s.a.bleed, 9f + rnd.nextFloat() * 5f);
@@ -543,6 +562,19 @@ final class World {
         if (best == null) return false;
         breakStick(best);
         return true;
+    }
+
+    void smash(Body b) {
+        if (b.removed) return;
+        int a0 = fx.bloodA, b0 = fx.bloodB;
+        fx.bloodA = 0xFFe0384a; fx.bloodB = 0xFFb82234;
+        fx.bloodBurst(b.cx, b.cy, 26);
+        fx.bloodA = 0xFF3f9a3c; fx.bloodB = 0xFF2c6e2a;
+        fx.bloodBurst(b.cx, b.cy, 10);
+        fx.bloodA = a0; fx.bloodB = b0;
+        fx.debris(b.cx, b.cy, 8, 0xFF3f9a3c, 300f);
+        if (sfx != null) sfx.splat();
+        removeBody(b);
     }
 
     void pop(Body b) {
@@ -747,6 +779,7 @@ final class World {
         if (h.p != null) h.p.addVel(dx * impulse, dy * impulse);
         if (b.isHuman()) {
             Particle p = h.p;
+            setBlood(b);
             fx.blood(h.x, h.y, dx, dy, 7);
             if (p != null) p.bleed = Math.max(p.bleed, 6f);
             if (h.head && !b.dead) {

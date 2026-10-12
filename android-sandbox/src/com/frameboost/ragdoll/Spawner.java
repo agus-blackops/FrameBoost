@@ -10,6 +10,8 @@ final class Spawner {
     static final int[] HAIR = {0xFF2a1d14, 0xFF111111, 0xFF7a4a21, 0xFFc9a14a, 0xFFa33a1d, 0xFF8a8a8a};
 
     static final Random rnd = new Random();
+    /** Set by active workshop mods. */
+    static float headScale = 1f;
 
     private static int pick(int[] a) { return a[rnd.nextInt(a.length)]; }
 
@@ -25,18 +27,35 @@ final class Spawner {
 
     // ---------------------------------------------------------------------------- humans ----
 
-    static Body human(World w, float x, float y, float s, int dir) {
+    static Body human(World w, float x, float y, float s, int dir) { return human(w, x, y, s, dir, Body.K_HUMAN); }
+
+    static Body human(World w, float x, float y, float s, int dir, int kind) {
         Body b = new Body(Body.HUMAN);
-        b.scale = s; b.dir = dir; b.flammable = true;
+        b.scale = s; b.dir = dir; b.flammable = true; b.kind = kind;
         b.skin = pick(SKIN); b.shirt = pick(SHIRT); b.pants = pick(PANTS); b.hair = pick(HAIR);
+        switch (kind) {
+            case Body.K_ROBOT:
+                b.skin = 0xFFa9b4bf; b.shirt = 0xFF68788a; b.pants = 0xFF4b5666; b.hair = 0xFFd8dee6;
+                b.flammable = false; b.blood = 260f;
+                break;
+            case Body.K_ZOMBIE:
+                b.skin = 0xFF7fa65a; b.shirt = 0xFF5d5a4a; b.pants = 0xFF3b3f4c; b.hair = 0xFF2d3322; b.blood = 170f;
+                break;
+            case Body.K_SKELETON:
+                b.skin = 0xFFe9e5d3; b.shirt = 0xFFe9e5d3; b.pants = 0xFFe3dfcc; b.hair = 0xFFe9e5d3;
+                b.flammable = false; b.blood = 90f;
+                break;
+            default: break;
+        }
         float m = s * s;
+        float hs = headScale;
 
         Particle pelvis = new Particle(b, x, y, 6 * m, 11 * s);
         Particle chest = new Particle(b, x, y - 52 * s, 6 * m, 10.5f * s);
-        Particle head = new Particle(b, x + dir, y - 76 * s, 4 * m, 13 * s);
+        Particle head = new Particle(b, x + dir, y - (76 + 13 * (hs - 1)) * s, 4 * m * hs * hs, 13 * s * hs);
         b.pelvis = pelvis; b.chest = chest; b.head = head;
         b.torso = new Stick(b, pelvis, chest, 52 * s, 11 * s).solid(b.shirt);
-        b.neck = new Stick(b, head, chest, 24 * s, 4.5f * s);
+        b.neck = new Stick(b, head, chest, (24 + 13 * (hs - 1)) * s, 4.5f * s);
         b.neck.color = b.skin;
         b.neck.tear = 38 * s;
 
@@ -79,6 +98,10 @@ final class Spawner {
                 b.uarmB = upper; b.farmB = fore; b.jShB = jSh; b.jElB = jEl;
                 b.thighB = thigh; b.shinB = shin; b.jHipB = jHip; b.jKneeB = jKnee;
             }
+        }
+        if (kind == Body.K_SKELETON) {   // bones are thinner
+            Stick[] bones = {b.uarmF, b.farmF, b.uarmB, b.farmB, b.thighF, b.shinF, b.thighB, b.shinB};
+            for (Stick st : bones) { st.r *= 0.55f; st.a.r *= 0.55f; st.b.r *= 0.55f; }
         }
         finish(b);
         return b;
@@ -176,11 +199,13 @@ final class Spawner {
     }
 
     static Body ball(float x, float y, float radius, int color, boolean balloon) {
-        Body b = new Body(balloon ? Body.BALLOON : Body.BALL);
+        if (balloon) return ballEx(Body.BALLOON, x, y, radius, color, 0.35f, 0.3f, 8, 4f);
+        return ballEx(Body.BALL, x, y, radius, color, 1.4f, 0.62f, 10, 5f);
+    }
+
+    static Body ballEx(int type, float x, float y, float radius, int color, float mass, float bounce, int n, float r) {
+        Body b = new Body(type);
         b.color = color;
-        int n = balloon ? 8 : 10;
-        float r = balloon ? 4f : 5f;
-        float mass = balloon ? 0.35f : 1.4f;
         Particle c = new Particle(b, x, y, mass, r);
         Particle[] ring = new Particle[n];
         for (int i = 0; i < n; i++) {
@@ -192,13 +217,16 @@ final class Spawner {
             rs.collide = true; rs.kind = Stick.HIDDEN;
             Stick sp = new Stick(b, c, ring[i], radius, r);
             sp.kind = Stick.HIDDEN;
-            if (i == 0) { sp.band = true; sp.kind = Stick.HIDDEN; }
         }
-        if (balloon) { b.gravScale = -0.2f; b.drag = 0.992f; b.bounce = 0.3f; }
-        else { b.bounce = 0.62f; b.flammable = false; }
+        b.bounce = bounce;
+        if (type == Body.BALLOON) { b.gravScale = -0.2f; b.drag = 0.992f; }
         finish(b);
         return b;
     }
+
+    static Body wheel(float x, float y) { return ballEx(Body.WHEEL, x, y, 34f, 0xFF25272c, 2.2f, 0.28f, 12, 8f); }
+    static Body bowling(float x, float y) { return ballEx(Body.BOWLING, x, y, 15f, 0xFF1d2a5a, 5.5f, 0.12f, 8, 5f); }
+    static Body melon(float x, float y) { Body b = ballEx(Body.MELON, x, y, 22f, 0xFF3f9a3c, 1.1f, 0.2f, 10, 5f); b.flammable = true; return b; }
 
     static Body grenade(float x, float y) {
         Body b = new Body(Body.GRENADE);
