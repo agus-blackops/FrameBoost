@@ -20,6 +20,7 @@ final class World {
     float gravMul = 1f;
     float wind = 0f;          // horizontal acceleration (mods)
     float modBounce = 0f;     // minimum bounce (mods)
+    float rumble;             // accumulated 'oomph' this frame (haptics, music intensity)
 
     final ArrayList<Body> bodies = new ArrayList<>();
     final ArrayList<Particle> ps = new ArrayList<>();
@@ -34,7 +35,8 @@ final class World {
 
     private float acc;
     private float spreadT, bleedAcc;
-    private int frame, stampSeq;
+    int frame;
+    private int stampSeq;
 
     // broadphase
     private final int[] pHead = new int[GRID], pNext = new int[MAX_PARTICLES + 8];
@@ -129,6 +131,7 @@ final class World {
             p.x += vx + wind * H * H;
             p.y += vy + g * p.body.gravScale;
         }
+        Brain.muscles(this);
         buildGrids();
         for (int it = 0; it < ITER; it++) {
             solveSticks();
@@ -261,6 +264,7 @@ final class World {
         float sp = p.invM / tot, sq = q.invM / tot;
         p.x += nx * pen * sp; p.y += ny * pen * sp;
         q.x -= nx * pen * sq; q.y -= ny * pen * sq;
+        if (ny < -0.4f) p.groundFrame = frame; else if (ny > 0.4f) q.groundFrame = frame;
         float tvx = rvx - nx * (rvx * nx + rvy * ny), tvy = rvy - ny * (rvx * nx + rvy * ny);
         p.px += tvx * FRICTION * sp; p.py += tvy * FRICTION * sp;
         q.px -= tvx * FRICTION * sq; q.py -= tvy * FRICTION * sq;
@@ -295,6 +299,7 @@ final class World {
         float closing = -rn / H;
         float cp = pen * wp / tot, ca = pen / tot;
         p.x += nx * cp; p.y += ny * cp;
+        if (ny < -0.4f) p.groundFrame = frame;
         a.x -= nx * ca * (1 - t) * a.invM; a.y -= ny * ca * (1 - t) * a.invM;
         b.x -= nx * ca * t * b.invM; b.y -= ny * ca * t * b.invM;
         float tvx = rvx - nx * rn, tvy = rvy - ny * rn;
@@ -314,6 +319,7 @@ final class World {
             if (p.y + r > floorY) {
                 float vy = p.y - p.py;
                 p.y = floorY - r;
+                p.groundFrame = frame;
                 if (first) {
                     float vyUnits = vy / H;
                     if (vyUnits > 1400f) hit(p.body, (vyUnits - 1400f) * 0.012f, p.x, p.y, vyUnits > 2200f);
@@ -334,8 +340,10 @@ final class World {
     private void contact(Body a, Body b, float speed, Particle pa, Particle pb, float x, float y) {
         float ma = Math.min(3f, Math.max(0.4f, b.mass / 22f));
         float mb = Math.min(3f, Math.max(0.4f, a.mass / 22f));
-        if (a.isHuman() && speed > 700f) hit(a, (speed - 700f) * 0.012f * ma, x, y, false);
-        if (b.isHuman() && speed > 700f) hit(b, (speed - 700f) * 0.012f * mb, x, y, false);
+        // people bumping into people (or limbs into their own neighbours) needs a much harder hit to hurt
+        float th = a.isHuman() && b.isHuman() ? 1500f : 700f;
+        if (a.isHuman() && speed > th) hit(a, Math.min(30f, (speed - th) * 0.012f * ma), x, y, false);
+        if (b.isHuman() && speed > th) hit(b, Math.min(30f, (speed - th) * 0.012f * mb), x, y, false);
         if (speed > 1700f) {
             if (a.explosive && a.fuse < 0) a.fuse = 0.05f;
             if (b.explosive && b.fuse < 0) b.fuse = 0.05f;
@@ -378,6 +386,7 @@ final class World {
         if (b.hurtCd > 0.05f && dmg < 20f) dmg *= 0.3f;
         b.hurtCd = 0.12f;
         b.blood -= dmg;
+        if (dmg > 9f) { b.ko = Math.max(b.ko, Math.min(6f, 1.2f + dmg * 0.07f) * (b.kind == Body.K_ROBOT ? 0.5f : 1f)); b.tone = 0f; }
         if (dmg > 6f || gore) fx.bloodBurst(x, y, Math.min(14, 2 + (int) (dmg * 0.5f)));
         if (b.blood <= 0) kill(b);
     }
@@ -416,7 +425,7 @@ final class World {
             Body b = bodies.get(i);
             b.updateBounds();
             if (b.hurtCd > 0) b.hurtCd -= dt;
-            if (b.isHuman()) updateHuman(b, dt);
+            if (b.isHuman()) { updateHuman(b, dt); Brain.think(this, b, dt); }
             if (b.burning) updateBurning(b, dt);
             if (b.fuse >= 0f) {
                 b.fuse -= dt;
@@ -536,6 +545,7 @@ final class World {
                 s.a.bleed = Math.max(s.a.bleed, 9f + rnd.nextFloat() * 5f);
                 s.b.bleed = Math.max(s.b.bleed, 9f + rnd.nextFloat() * 5f);
                 fx.bloodBurst((s.a.x + s.b.x) / 2, (s.a.y + s.b.y) / 2, 16);
+                rumble += 0.18f;
                 if (sfx != null) sfx.splat();
                 if (s == b.neck) kill(b);
                 else if (!b.dead) hit(b, 18f, s.a.x, s.a.y, false);
@@ -588,6 +598,7 @@ final class World {
 
     void explode(float x, float y, float R, float pow, float dmg) {
         fx.explosion(x, y, R);
+        rumble += Math.min(1.2f, R / 450f);
         if (sfx != null) sfx.boom(Math.min(1f, R / 600f));
         final float R2 = R * R;
         for (int i = 0; i < ps.size(); i++) {
@@ -775,6 +786,7 @@ final class World {
     private void applyBullet(Hit h, float dx, float dy, float dmg, float impulse) {
         Body b = h.body;
         if (b.type == Body.BALLOON) { pop(b); return; }
+        if (b.type == Body.MELON) { smash(b); return; }
         if (b.explosive && b.fuse < 0f && b.type != Body.GRENADE && b.type != Body.DYNAMITE) b.fuse = 0.05f;
         if (h.p != null) h.p.addVel(dx * impulse, dy * impulse);
         if (b.isHuman()) {
@@ -783,6 +795,7 @@ final class World {
             fx.blood(h.x, h.y, dx, dy, 7);
             if (p != null) p.bleed = Math.max(p.bleed, 6f);
             if (h.head && !b.dead) {
+                rumble += 0.25f;
                 hit(b, 60f, h.x, h.y, true);
                 kill(b);
                 fx.blood(h.x, h.y, dx, dy, 12);
@@ -870,6 +883,7 @@ final class World {
             fx.stain(tx, 22f, 0xCC111111);
         }
         fx.lightning(x, topY, tx, ty);
+        rumble += 0.5f;
         fx.sparks(tx, ty, 14, 0xFFcfe6ff);
         if (sfx != null) sfx.zap();
     }

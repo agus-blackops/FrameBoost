@@ -23,8 +23,22 @@ final class Game {
     private boolean silentSpawn;
 
     /** Implemented by the Activity so the game can open the native text editor for mods. */
-    interface Host { void editMod(Mod existing); }
+    interface Host {
+        void editMod(Mod existing);
+        void saveSettings(Settings s);
+        void vibrate(int ms);
+    }
     Host host;
+    Settings settings = new Settings();
+    final Screens screens = new Screens();
+    MusicPlayer music;
+    File saveFile;
+
+    // challenge state
+    int challenge = -1, chUses, chResult, chStars;
+    float chTime, chIdle, chSpawnT, chEndT, lastSimDt;
+    final StringBuilder chProgress = new StringBuilder();
+    private float slowmoT, demoT;
     final Renderer renderer = new Renderer();
     final Ui ui = new Ui();
     final Random rnd = new Random();
@@ -68,14 +82,140 @@ final class Game {
         world.wallL = 0; world.wallR = ROOM_W;
         for (int i = 0; i < ptrs.length; i++) ptrs[i] = new Ptr();
         refreshButtons();
-        spawnDemo();
+        titleDemo();
+    }
+
+    /** Live scene behind the title menu: people, zombies and the odd explosion. */
+    void titleDemo() {
+        world.clear();
+        float f = world.floorY;
+        for (int i = 0; i < 3; i++) world.add(Spawner.human(world, 1350 + i * 140, f - 96, 1f, -1));
+        world.add(Spawner.human(world, 2350, f - 96, 1f, -1, Body.K_ZOMBIE));
+        world.add(Spawner.human(world, 2480, f - 96, 1f, -1, Body.K_ZOMBIE));
+        for (int i = 0; i < 3; i++) world.add(Spawner.crate(1900, f - 31 - i * 61, 60));
+        world.add(Spawner.barrel(2060, f - 40, true));
+        demoT = 0;
     }
 
     void spawnDemo() {
-        world.add(Spawner.human(world, ROOM_W / 2 - 80, -120, 1f, 1));
+        world.clear();
+        world.add(Spawner.human(world, ROOM_W / 2 - 80, world.floorY - 96, 1f, 1));
         world.add(Spawner.crate(ROOM_W / 2 + 160, -80, 60));
         ui.stripOpen = true;
         ui.cat = 1;
+    }
+
+    // ------------------------------------------------------------------------- game flow ----
+
+    boolean hasSave() { return saveFile != null && saveFile.exists() && challenge < 0; }
+
+    void saveScene() {
+        if (saveFile == null || challenge >= 0 || screens.screen == Screens.TITLE) return;
+        try { SceneIO.save(this, saveFile); } catch (Throwable ignored) { }
+    }
+
+    void saveSettings() { if (host != null) host.saveSettings(settings); applySettings(); }
+
+    void applySettings() {
+        fx.gore = settings.gore;
+        fx.quality = settings.highQuality ? 1f : 0.5f;
+        ui.showFps = settings.showFps;
+        if (sfx != null) sfx.volume = settings.sfx;
+        if (music != null) music.volume = settings.music;
+    }
+
+    void click() {
+        if (sfx != null) sfx.click();
+        haptic(8);
+    }
+
+    void haptic(int ms) { if (settings.haptics && host != null) host.vibrate(ms); }
+
+    private void setPlayMode(int chal) {
+        challenge = chal;
+        screens.screen = Screens.NONE;
+        paused = false; slow = false; gravMode = 0;
+        world.grabs.clear();
+        undo.clear();
+        for (Mod m : mods.mods) if (m.on) mods.toggle(m, this);
+        if (chal >= 0) {
+            Challenges.setup(this, chal);
+            Challenges.Def d = Challenges.LIST[chal];
+            Tools.Item[] items = new Tools.Item[d.tools.length];
+            for (int i = 0; i < d.tools.length; i++) items[i] = Tools.find(d.tools[i]);
+            Tools.CATS[Tools.CAT_CHAL] = items;
+            ui.cats = new int[]{Tools.CAT_CHAL};
+            ui.cat = Tools.CAT_CHAL; ui.stripOpen = true; ui.scrollX = 0;
+            tool = d.tools[0];
+            chUses = d.uses; chTime = 0; chIdle = 0; chResult = 0; chSpawnT = 3f; chEndT = 0;
+            ui.toast(d.goal);
+            if (music != null) music.play(Music.CHALLENGE);
+        } else {
+            ui.cats = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+            tool = Tools.HAND;
+            if (music != null) music.play(Music.LAB);
+        }
+        ui.btnHidden[Ui.BTN_GRAV] = chal >= 0;
+        ui.btnHidden[Ui.BTN_CLEAR] = chal >= 0;
+        ui.btnHidden[Ui.BTN_UNDO] = chal >= 0;
+        if (sw > 0) ui.layout(sw, sh, density);
+        refreshButtons();
+    }
+
+    /** Actions coming from the menus. */
+    void menuAction(int a) {
+        switch (a) {
+            case Screens.A_CONTINUE:
+                setPlayMode(-1);
+                if (!SceneIO.load(this, saveFile)) spawnDemo();
+                ui.stripOpen = false;
+                clampCam();
+                break;
+            case Screens.A_SANDBOX:
+                setPlayMode(-1);
+                spawnDemo();
+                resetCamera();
+                if (!settings.tutorialDone) { screens.screen = Screens.TUTORIAL; screens.tutStep = 0; }
+                break;
+            case Screens.A_CHALLENGES: screens.screen = Screens.CHALLENGES; break;
+            case Screens.A_SETTINGS: screens.back = screens.screen; screens.screen = Screens.SETTINGS; break;
+            case Screens.A_BACK:
+                screens.screen = screens.screen == Screens.SETTINGS ? screens.back
+                        : (screens.screen == Screens.CHALLENGES ? Screens.TITLE : Screens.NONE);
+                break;
+            case Screens.A_RESUME: screens.screen = Screens.NONE; paused = false; refreshButtons(); break;
+            case Screens.A_MENU:
+                saveScene();
+                challenge = -1;
+                screens.screen = Screens.TITLE;
+                titleDemo();
+                resetCamera();
+                if (music != null) music.play(Music.TITLE);
+                break;
+            case Screens.A_RESTART: case Screens.A_RETRY: setPlayMode(challenge); break;
+            case Screens.A_NEXT: setPlayMode(Math.min(Challenges.LIST.length - 1, challenge + 1)); break;
+            case Screens.A_MUSIC_DN: settings.music = Math.max(0f, settings.music - 0.1f); saveSettings(); break;
+            case Screens.A_MUSIC_UP: settings.music = Math.min(1f, settings.music + 0.1f); saveSettings(); break;
+            case Screens.A_SFX_DN: settings.sfx = Math.max(0f, settings.sfx - 0.1f); saveSettings(); break;
+            case Screens.A_SFX_UP: settings.sfx = Math.min(1f, settings.sfx + 0.1f); saveSettings(); break;
+            case Screens.A_HAPTICS: settings.haptics = !settings.haptics; saveSettings(); haptic(30); break;
+            case Screens.A_GORE: settings.gore = !settings.gore; saveSettings(); break;
+            case Screens.A_QUALITY: settings.highQuality = !settings.highQuality; saveSettings(); break;
+            case Screens.A_FPS: settings.showFps = !settings.showFps; saveSettings(); break;
+            case Screens.A_TEXTURES: textures = !textures; break;
+            default:
+                if (a >= Screens.A_CHAL) setPlayMode(a - Screens.A_CHAL);
+                break;
+        }
+    }
+
+    /** One tool use in a challenge with limited uses. Returns false when none are left. */
+    private boolean useCharge() {
+        if (challenge < 0 || chUses < 0) return true;
+        if (chUses == 0) { ui.toast("¡Sin usos! Espera al resultado o reinicia"); return false; }
+        chUses--;
+        chIdle = 0;
+        return true;
     }
 
     void resize(int w, int h, float density) {
@@ -112,10 +252,37 @@ final class Game {
 
     void update(float dtReal) {
         if (dtReal > 0.05f) dtReal = 0.05f;
+        lastFrameDt = dtReal;
         fpsAcc += dtReal; fpsFrames++;
         if (fpsAcc > 0.5f) { fps = fpsFrames / fpsAcc; fpsAcc = 0; fpsFrames = 0; }
         if (confirmT > 0) { confirmT -= dtReal; if (confirmT <= 0) confirmClear = false; }
-        float sim = paused ? 0f : dtReal * (slow ? 0.3f : 1f) * mods.timescale;
+        boolean menu = screens.screen != Screens.NONE && screens.screen != Screens.TITLE && screens.screen != Screens.RESULT
+                && screens.screen != Screens.TUTORIAL;
+        if (slowmoT > 0) slowmoT -= dtReal;
+        float sim = paused || menu ? 0f : dtReal * (slow ? 0.3f : 1f) * mods.timescale * (slowmoT > 0 ? 0.35f : 1f);
+        lastSimDt = sim;
+        if (screens.screen == Screens.TITLE) {
+            demoT += dtReal;
+            if (demoT > 7f) {     // something dramatic every few seconds
+                demoT = 0;
+                int n = 0;
+                for (Body b : world.bodies) if (b.isHuman()) n++;
+                if (n < 4 || world.bodies.size() < 6) titleDemo();
+                else world.explode(1700 + rnd.nextFloat() * 500, world.floorY - 30, 260, 4800, 30);
+            }
+        }
+        if (challenge >= 0 && screens.screen == Screens.NONE && chResult == 0 && sim > 0) {
+            chTime += sim; chIdle += sim;
+            int r = Challenges.check(this, challenge, chProgress);
+            if (r != 0) {
+                chResult = r;
+                chEndT = 1.2f;
+                if (r > 0) { chStars = Challenges.stars(this, challenge); settings.setStars(challenge, chStars); saveSettings(); }
+            }
+        } else if (challenge >= 0 && chResult != 0 && chEndT > 0) {
+            chEndT -= dtReal;
+            if (chEndT <= 0) { screens.screen = Screens.RESULT; screens.time = 0; haptic(chResult > 0 ? 60 : 30); }
+        }
         world.gravMul = (gravMode == 0 ? 1f : (gravMode == 1 ? 0.17f : 0.0f)) * mods.gravity;
         world.wind = mods.wind;
         world.modBounce = mods.bounce;
@@ -143,11 +310,18 @@ final class Game {
             if (!pt.down || pt.role != R_TOOL) continue;
             if (tool == Tools.RIFLE && !paused) {
                 pt.fireCd -= dtReal;
-                if (pt.fireCd <= 0) { pt.fireCd = 0.09f; fire(tool, toWorldX(pt.x), toWorldY(pt.y)); }
+                if (pt.fireCd <= 0) { pt.fireCd = 0.09f; if (useCharge()) fire(tool, toWorldX(pt.x), toWorldY(pt.y)); }
             }
             if (tool == Tools.FIRE) igniteAt(toWorldX(pt.x), toWorldY(pt.y));
         }
         world.update(sim);
+        if (world.rumble > 0f) {
+            float rr = world.rumble;
+            world.rumble = 0f;
+            haptic((int) Math.min(160, 12 + rr * 90));
+            if (music != null) music.excite(Math.min(1f, 0.3f + rr));
+            if (rr >= 0.95f && slowmoT <= 0 && screens.screen == Screens.NONE) slowmoT = 0.55f;
+        }
         fx.update(sim > 0 ? sim : 0);
         if (paused) fx.shake = Math.max(0, fx.shake - dtReal * 2f);
         world.updateTracers(dtReal);
@@ -188,8 +362,32 @@ final class Game {
                 c.drawCircle(pt.x, pt.y, 14 * density, p);
             }
         }
-        Tools.Item it = Tools.find(tool);
-        ui.draw(c, tool, it.name, it.hint, fps, world.bodies.size(), confirmClear);
+        if (screens.screen != Screens.TITLE && screens.screen != Screens.CHALLENGES) {
+            Tools.Item it = Tools.find(tool);
+            ui.draw(c, tool, it.name, it.hint, fps, world.bodies.size(), confirmClear);
+            if (challenge >= 0) challengeBanner(c);
+        }
+        screens.draw(c, this, lastFrameDt);
+    }
+
+    private float lastFrameDt = 1f / 60f;
+
+    private void challengeBanner(Canvas c) {
+        Challenges.Def d = Challenges.LIST[challenge];
+        float w = Math.min(sw * 0.5f, 460 * density), x = sw / 2f - w / 2, y = 52 * density;
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xCC141820);
+        rf.set(x, y, x + w, y + 54 * density);
+        c.drawRoundRect(rf, 12 * density, 12 * density, p);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setFakeBoldText(true);
+        p.setTextSize(13 * density);
+        p.setColor(0xFFf2b134);
+        c.drawText(d.name + String.format("   %.1f s", chTime), sw / 2f, y + 21 * density, p);
+        p.setFakeBoldText(false);
+        p.setTextSize(12 * density);
+        p.setColor(0xFFe9edf4);
+        c.drawText(chProgress.length() > 0 ? chProgress.toString() : d.goal, sw / 2f, y + 42 * density, p);
     }
 
     // ------------------------------------------------------------------------------ input ----
@@ -197,6 +395,10 @@ final class Game {
     void touch(int action, int id, float x, float y) {
         if (id < 0 || id >= ptrs.length) return;
         Ptr pt = ptrs[id];
+        if (screens.screen != Screens.NONE && !pt.down) {
+            screens.touch(action, x, y, this);
+            return;
+        }
         switch (action) {
             case DOWN: onDown(pt, x, y); break;
             case MOVE: onMove(pt, x, y); break;
@@ -241,6 +443,8 @@ final class Game {
         pt.role = R_TOOL;
         float wx = toWorldX(x), wy = toWorldY(y);
         pt.fireCd = 0.09f;
+        boolean instant = Tools.isWeapon(tool) || tool == Tools.LIGHTNING || tool == Tools.DETONATE || tool == Tools.NUKE || tool == Tools.PUSH;
+        if (instant && !useCharge()) return;
         switch (tool) {
             case Tools.DELETE: deleteAt(wx, wy); break;
             case Tools.FREEZE: freezeAt(wx, wy); break;
@@ -312,7 +516,7 @@ final class Game {
         }
         if (role == R_TOOL) {
             if (pt.grab != null) { world.grabs.remove(pt.grab); pt.grab = null; }
-            else if (!cancelled && Tools.isSpawn(tool)) {
+            else if (!cancelled && Tools.isSpawn(tool) && useCharge()) {
                 spawn(tool, toWorldX(x), toWorldY(y));
             }
         }
@@ -352,6 +556,7 @@ final class Game {
     // ---------------------------------------------------------------------------------- UI ----
 
     private void uiAction(int a) {
+        click();
         if (a >= Ui.TAB && a < Ui.ITEM) {
             int c = a - Ui.TAB;
             if (ui.cat == c && ui.stripOpen) ui.stripOpen = false;
@@ -376,6 +581,7 @@ final class Game {
         } else if (a >= Ui.BTN) {
             switch (a - Ui.BTN) {
                 case Ui.BTN_PAUSE: paused = !paused; break;
+                case Ui.BTN_MENU: screens.screen = Screens.PAUSE; saveScene(); break;
                 case Ui.BTN_SLOW: slow = !slow; break;
                 case Ui.BTN_GRAV: gravMode = (gravMode + 1) % 3; break;
                 case Ui.BTN_UNDO: undoLast(); break;
@@ -383,7 +589,10 @@ final class Game {
                     if (confirmClear) { clearAll(); confirmClear = false; }
                     else { confirmClear = true; confirmT = 2.5f; }
                     break;
-                case Ui.BTN_SOUND: if (sfx != null) sfx.enabled = !sfx.enabled; break;
+                case Ui.BTN_SOUND:
+                    if (sfx != null) sfx.enabled = !sfx.enabled;
+                    if (music != null) music.volume = sfx != null && !sfx.enabled ? 0f : settings.music;
+                    break;
                 default: break;
             }
             refreshButtons();
@@ -400,6 +609,7 @@ final class Game {
         ui.btnLabel[Ui.BTN_UNDO] = "Deshacer";
         ui.btnLabel[Ui.BTN_CLEAR] = "Limpiar";
         ui.btnLabel[Ui.BTN_SOUND] = sfx != null && sfx.enabled ? "Sonido" : "Mudo";
+        ui.btnLabel[Ui.BTN_MENU] = "Menú";
         ui.btnOn[Ui.BTN_SOUND] = sfx == null || !sfx.enabled;
     }
 

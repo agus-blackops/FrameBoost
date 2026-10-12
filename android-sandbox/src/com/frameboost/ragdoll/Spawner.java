@@ -49,6 +49,7 @@ final class Spawner {
         }
         float m = s * s;
         float hs = headScale;
+        b.param = hs;
 
         Particle pelvis = new Particle(b, x, y, 6 * m, 11 * s);
         Particle chest = new Particle(b, x, y - 52 * s, 6 * m, 10.5f * s);
@@ -134,6 +135,7 @@ final class Spawner {
     static Body crate(float x, float y, float size) {
         float e = size / 2f, r = e / 3f, sp = e - r;
         Body b = grid(Body.CRATE, x, y, 3, 3, sp, r, 2.5f * size / 60f, 0xFFB7864B);
+        b.param = size;
         b.flammable = true;
         finish(b);
         return b;
@@ -173,6 +175,7 @@ final class Spawner {
     static Body plank(float x, float y, float len, boolean fixed) {
         Body b = new Body(fixed ? Body.PLATFORM : Body.PLANK);
         b.color = fixed ? 0xFF6b7280 : 0xFFC9A066;
+        b.param = len;
         b.flammable = !fixed;
         float r = 6.5f, sp = 20f, gap = 11f;
         int n = Math.max(3, (int) (len / sp) + 1);
@@ -206,6 +209,7 @@ final class Spawner {
     static Body ballEx(int type, float x, float y, float radius, int color, float mass, float bounce, int n, float r) {
         Body b = new Body(type);
         b.color = color;
+        b.param = radius;
         Particle c = new Particle(b, x, y, mass, r);
         Particle[] ring = new Particle[n];
         for (int i = 0; i < n; i++) {

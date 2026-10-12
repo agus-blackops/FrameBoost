@@ -1,6 +1,8 @@
 package android.media;
 public class AudioTrack {
-    public static final int MODE_STATIC = 0;
+    public static final int MODE_STATIC = 0, MODE_STREAM = 1;
+    public static int getMinBufferSize(int a, int b, int c) { return 4096; }
+    public void pause() {}
     public AudioTrack(int a, int b, int c, int d, int e, int f) {}
     public int write(short[] d, int o, int n) { return n; }
     public void stop() {} public void play() {} public void release() {}

@@ -13,6 +13,7 @@ final class Body {
     final ArrayList<Particle> ps = new ArrayList<>();
     final ArrayList<Stick> ss = new ArrayList<>();
     final ArrayList<AngleLimit> ls = new ArrayList<>();
+    final ArrayList<Stick> allSticks = new ArrayList<>();   // including broken ones (save files)
 
     boolean removed;
     boolean flammable, explosive, sharp;
@@ -35,6 +36,14 @@ final class Body {
     boolean dead;
     int dir = 1;
     int kind;
+    // active ragdoll ("brain") state
+    float ko;              // seconds knocked out
+    float tone;            // 0 = limp, 1 = full muscle tone
+    int walk;              // -1, 0, +1
+    float stepT, biteCd, thinkT, infected = -1f, panic;
+    int stepFoot;
+    boolean held, bitten;
+    float param;           // spawn parameter (crate size, plank length, ball radius...) for save files
     float scale = 1f;
     int skin, shirt, pants, hair;
     Particle head, chest, pelvis;

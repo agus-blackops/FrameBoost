@@ -15,6 +15,7 @@ public class Harness {
         g.resize(W, H, DENS);
         g.world.clear();
         g.ui.stripOpen = false;
+        g.screens.screen = Screens.NONE;
         return g;
     }
 

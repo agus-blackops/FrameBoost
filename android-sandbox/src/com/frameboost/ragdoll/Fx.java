@@ -29,6 +29,8 @@ final class Fx {
     float bt;
 
     int bloodA = 0xFFb71414, bloodB = 0xFF7d0c0c;   // droplet colours of the creature being hurt
+    boolean gore = true;
+    float quality = 1f;
     float flash;          // white screen flash 0..1
     float shake;          // camera shake 0..1
     final Random rnd = new Random();
@@ -42,6 +44,8 @@ final class Fx {
     }
 
     void add(int t, float px, float py, float pvx, float pvy, float lf, float sz, int col) {
+        if (t == BLOOD && !gore) return;
+        if (quality < 1f && (t == FLAME || t == SMOKE || t == DEBRIS) && rnd.nextFloat() > quality) return;
         int i = next;
         next = (next + 1) % MAXP;
         type[i] = t; x[i] = px; y[i] = py; vx[i] = pvx; vy[i] = pvy;

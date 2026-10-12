@@ -11,6 +11,7 @@ final class Stick {
     int kind = FILL;
     int color;
     int idx;
+    int id;                // creation order inside its body (save files)
     int stamp = -1;
 
     Stick(Body body, Particle a, Particle b, float rest, float r) {
@@ -23,7 +24,9 @@ final class Stick {
         }
         this.rest = rest;
         this.r = r;
+        this.id = body.ss.size();
         body.ss.add(this);
+        body.allSticks.add(this);
     }
 
     Stick solid(int color) { this.collide = true; this.color = color; return this; }

@@ -48,6 +48,7 @@ public class Canvas {
     public void drawArc(RectF r, float start, float sweep, boolean center, Paint p) {
         paintShape(new Arc2D.Float(r.left, r.top, r.right - r.left, r.bottom - r.top, -start, -sweep, center ? Arc2D.PIE : Arc2D.OPEN), p);
     }
+    public void drawPath(Path path, Paint p) { paintShape(path.p, p); }
     public void drawText(String s, float x, float y, Paint p) {
         g.setFont(new Font("SansSerif", p.bold ? Font.BOLD : Font.PLAIN, Math.max(1, Math.round(p.textSize))));
         float w = p.measureText(s);

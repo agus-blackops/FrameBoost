@@ -17,8 +17,8 @@ final class Tools {
         Item(int id, String name, String hint) { this.id = id; this.name = name; this.hint = hint; }
     }
 
-    static final String[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Taller", "Estilo"};
-    static final int CAT_MODS = 6, CAT_STYLE = 7;
+    static final String[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Taller", "Estilo", "Desafío"};
+    static final int CAT_MODS = 6, CAT_STYLE = 7, CAT_CHAL = 8;
 
     static final String PLACE = "Toca para colocar";
 
@@ -72,7 +72,7 @@ final class Tools {
             new Item(LIGHTNING, "Rayo", "Toca para lanzar un rayo"),
             new Item(PUSH, "Onda", "Toca para empujar con una onda de choque"),
         },
-        {}, {},
+        {}, {}, {},
     };
 
     static final String[] THEMES = {"Habitación", "Laboratorio", "Noche", "Ladrillos", "Neón", "Desierto"};

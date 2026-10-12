@@ -10,15 +10,17 @@ import java.util.Random;
 final class Sfx {
     private static final int RATE = 22050;
     boolean enabled = true;
+    float volume = 0.9f;
 
     private final Clip boom = new Clip(), shot = new Clip(), thud = new Clip(), splat = new Clip(),
-            pop = new Clip(), zap = new Clip(), launch = new Clip();
+            pop = new Clip(), zap = new Clip(), launch = new Clip(), click = new Clip();
     private long lastBoom, lastShot, lastThud, lastSplat, lastMisc;
 
     private static final class Clip {
         AudioTrack[] t = new AudioTrack[3];
         int n;
         int i;
+        float master = 1f;
         void play(float vol) {
             AudioTrack a = t[i];
             i = (i + 1) % t.length;
@@ -26,7 +28,7 @@ final class Sfx {
             try {
                 a.stop();
                 a.setPlaybackHeadPosition(0);
-                a.setStereoVolume(vol, vol);
+                a.setStereoVolume(vol * master, vol * master);
                 a.play();
             } catch (Throwable ignored) { }
         }
@@ -42,6 +44,7 @@ final class Sfx {
             build(pop, noise(r, 0.07f, 0.9f, 55f, 1500f, 0.6f));
             build(zap, noise(r, 0.35f, 0.9f, 8f, 2400f, 0.95f));
             build(launch, noise(r, 0.4f, 0.7f, 5f, 700f, 0.7f));
+            build(click, noise(r, 0.03f, 0.5f, 90f, 2600f, 0.1f));
         } catch (Throwable t) {
             enabled = false;
         }
@@ -80,6 +83,7 @@ final class Sfx {
     private static long now() { return System.currentTimeMillis(); }
 
     void boom(float size) {
+        vol();
         if (!enabled || now() - lastBoom < 70) return;
         lastBoom = now();
         boom.play(0.5f + 0.5f * size);
@@ -103,12 +107,19 @@ final class Sfx {
         splat.play(0.6f);
     }
 
+    private void vol() {
+        Clip[] all = {boom, shot, thud, splat, pop, zap, launch, click};
+        for (Clip c : all) c.master = volume;
+    }
+
+    void click() { vol(); if (enabled) click.play(0.5f); }
+
     void pop() { if (enabled && now() - lastMisc > 40) { lastMisc = now(); pop.play(0.7f); } }
     void zap() { if (enabled && now() - lastMisc > 40) { lastMisc = now(); zap.play(0.8f); } }
     void launch() { if (enabled && now() - lastMisc > 40) { lastMisc = now(); launch.play(0.7f); } }
 
     void release() {
-        Clip[] all = {boom, shot, thud, splat, pop, zap, launch};
+        Clip[] all = {boom, shot, thud, splat, pop, zap, launch, click};
         for (Clip c : all) for (AudioTrack a : c.t) if (a != null) { try { a.release(); } catch (Throwable ignored) { } }
     }
 }

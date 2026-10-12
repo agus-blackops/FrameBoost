@@ -1,10 +1,12 @@
-# Ragdoll Playground (Android)
+# Trastazo (Android)
 
-Sandbox de física con ragdolls inspirado en *People Playground*: coloca personas y objetos, agárralos,
-córtalos, quémalos, vuélalos o dispárales. Todo el juego (física, gráficos y sonido) es código propio
+**Trastazo — laboratorio de muñecos y caos.** Un sandbox de física con muñecos *activos*: la gente se
+mantiene en pie, se tambalea, queda KO y se vuelve a levantar; los zombis persiguen y contagian; los humanos
+huyen. Además de jugar libre, hay un modo **Desafíos** con objetivos y estrellas, un **Taller** de mods y una
+banda sonora original compuesta y sintetizada por el propio juego. Todo el juego (física, gráficos y sonido) es código propio
 en Java, sin motores ni assets externos; el APK pesa unos 80 KB.
 
-APK listo para instalar: [`dist/ragdoll-playground.apk`](dist/ragdoll-playground.apk)
+APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk)
 (Android 5.0+, pantalla horizontal; hay que permitir "instalar apps de orígenes desconocidos").
 
 ## Cómo se juega
@@ -26,7 +28,22 @@ Contenido: humano, gigante, niño y multitud; caja, caja grande, tabla, barril, 
 acero, plataforma fija; granada, dinamita, TNT, barril explosivo, detonar y bomba nuclear; pistola, rifle,
 escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
 
-## Novedades: modelos, texturas y Taller
+## Novedades de la v2.0
+
+* **Muñecos activos:** equilibrio con "músculos" (control PD sobre la velocidad, con pies que agarran el
+  suelo), KO al recibir golpes fuertes y animación de levantarse, caminar y girarse. Los zombis persiguen y
+  muerden; un mordido que muere se levanta como zombi; los humanos huyen agitando los brazos.
+* **Desafíos (6):** Derribo, Plaga zombi, Frutería, Reacción en cadena, Puntería y Supervivencia, con
+  herramientas y munición limitadas y de 1 a 3 estrellas.
+* **Música original (3 temas):** "Trastazo" (menú, La menor, 100 BPM), "Laboratorio" (sandbox, re dórico,
+  108 BPM, con una capa de batería y melodía que sube con la acción) y "Desafío" (Mi menor, 132 BPM). Las
+  melodías están escritas nota a nota en `Music.java` y se sintetizan al arrancar (osciladores PolyBLEP,
+  envolventes, filtros, eco y reverb); el APK no lleva ningún archivo de audio.
+* **Móvil:** menú principal con escena en vivo, pausa (botón atrás incluido), ajustes guardados (volumen de
+  música y efectos, vibración, sangre sí/no, calidad, FPS), vibración háptica, autoguardado al salir y
+  "Continuar", tutorial la primera vez, cámara lenta automática en las grandes explosiones.
+
+## Modelos, texturas y Taller
 
 * **Modelos nuevos:** Robot (sin sangre, suelta chispas y aceite), Zombi (sangre verde), Esqueleto,
   Rueda de camión, Bolas de bolos y Sandía (revienta al golpear).

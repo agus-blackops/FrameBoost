@@ -7,7 +7,7 @@ import android.graphics.RectF;
 /** Screen-space interface: category tabs, item strip and top buttons. Hit testing + drawing. */
 final class Ui {
     static final int NONE = 0, BLOCK = 1, TAB = 100, ITEM = 200, BTN = 300;
-    static final int BTN_PAUSE = 0, BTN_SLOW = 1, BTN_GRAV = 2, BTN_UNDO = 3, BTN_CLEAR = 4, BTN_SOUND = 5, BTN_COUNT = 6;
+    static final int BTN_PAUSE = 0, BTN_SLOW = 1, BTN_GRAV = 2, BTN_UNDO = 3, BTN_CLEAR = 4, BTN_SOUND = 5, BTN_MENU = 6, BTN_COUNT = 7;
 
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF r = new RectF();
@@ -22,6 +22,9 @@ final class Ui {
     float tabH, stripH, topH, cardW, cardH, gap;
     final String[] btnLabel = new String[BTN_COUNT];
     final boolean[] btnOn = new boolean[BTN_COUNT];
+    final boolean[] btnHidden = new boolean[BTN_COUNT];
+    int[] cats = {0, 1, 2, 3, 4, 5, 6, 7};
+    boolean showFps;
     private final float[] btnX = new float[BTN_COUNT], btnW = new float[BTN_COUNT];
 
     final java.util.HashSet<Integer> active = new java.util.HashSet<>();
@@ -34,9 +37,12 @@ final class Ui {
         cardW = 88 * d; cardH = 76 * d; gap = 8 * d;
         p.setTextSize(12 * d);
         float x = sw - 8 * d;
-        for (int i = BTN_COUNT - 1; i >= 0; i--) {
+        int[] order = {BTN_MENU, BTN_PAUSE, BTN_SLOW, BTN_GRAV, BTN_UNDO, BTN_CLEAR, BTN_SOUND};
+        for (int oi = order.length - 1; oi >= 0; oi--) {
+            int i = order[oi];
+            if (btnHidden[i]) continue;
             // fixed widths so the bar doesn't jump when labels change
-            btnW[i] = (i == BTN_GRAV ? 96 : (i == BTN_PAUSE ? 70 : 62)) * d;
+            btnW[i] = (i == BTN_GRAV ? 92 : (i == BTN_PAUSE ? 68 : (i == BTN_MENU ? 64 : 62))) * d;
             x -= btnW[i];
             btnX[i] = x;
             x -= 6 * d;
@@ -57,9 +63,9 @@ final class Ui {
     /** What is under the screen point? */
     int hit(float x, float y) {
         if (y >= sh - tabH) {
-            int n = Tools.CAT_NAMES.length;
+            int n = cats.length;
             int i = (int) (x / (sw / (float) n));
-            return TAB + Math.max(0, Math.min(n - 1, i));
+            return TAB + cats[Math.max(0, Math.min(n - 1, i))];
         }
         if (stripOpen && y >= stripTop()) {
             float cy0 = stripTop() + (stripH - cardH) / 2;
@@ -74,7 +80,7 @@ final class Ui {
         }
         if (y <= topH + 6 * d) {
             for (int i = 0; i < BTN_COUNT; i++)
-                if (x >= btnX[i] && x <= btnX[i] + btnW[i] && y >= 4 * d && y <= 4 * d + topH) return BTN + i;
+                if (!btnHidden[i] && x >= btnX[i] && x <= btnX[i] + btnW[i] && y >= 4 * d && y <= 4 * d + topH) return BTN + i;
         }
         return NONE;
     }
@@ -102,10 +108,12 @@ final class Ui {
         drawFitted(c, hudHint, 16 * d, 38 * d, Math.min(sw * 0.4f, 300 * d) - 16 * d);
         p.setColor(0x88ffffff);
         p.setTextSize(9 * d);
-        c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), 16 * d, 52 * d, p);
+        if (showFps) c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), 16 * d, 52 * d, p);
+        else c.drawText(bodies + " objetos", 16 * d, 52 * d, p);
 
         // top-right buttons
         for (int i = 0; i < BTN_COUNT; i++) {
+            if (btnHidden[i]) continue;
             boolean on = btnOn[i] || (i == BTN_CLEAR && confirmClear);
             p.setColor(on ? 0xEEf2b134 : 0xCC1b2029);
             r.set(btnX[i], 4 * d, btnX[i] + btnW[i], 4 * d + topH);
@@ -155,10 +163,11 @@ final class Ui {
         }
 
         // tabs
-        int n = Tools.CAT_NAMES.length;
+        int n = cats.length;
         float tw = sw / (float) n;
         for (int i = 0; i < n; i++) {
-            boolean sel = i == cat && stripOpen;
+            int ci = cats[i];
+            boolean sel = ci == cat && stripOpen;
             p.setStyle(Paint.Style.FILL);
             p.setColor(sel ? 0xFFf2b134 : 0xF0161a22);
             r.set(i * tw, sh - tabH, (i + 1) * tw, sh);
@@ -169,7 +178,7 @@ final class Ui {
             p.setTextSize(13 * d);
             p.setTextAlign(Paint.Align.CENTER);
             p.setFakeBoldText(true);
-            c.drawText(Tools.CAT_NAMES[i], i * tw + tw / 2, sh - tabH / 2 + 5 * d, p);
+            c.drawText(Tools.CAT_NAMES[ci], i * tw + tw / 2, sh - tabH / 2 + 5 * d, p);
             p.setFakeBoldText(false);
         }
 

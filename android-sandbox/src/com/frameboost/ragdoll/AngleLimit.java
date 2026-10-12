@@ -8,7 +8,7 @@ final class AngleLimit {
     final Particle pj, pf, cj, cf;
     final float lo, hi, childShare;
     final boolean invert;
-    final int dir;
+    int dir;
 
     AngleLimit(Particle pj, Particle pf, Particle cj, Particle cf, boolean invert,
                float loDeg, float hiDeg, int dir, float childShare) {

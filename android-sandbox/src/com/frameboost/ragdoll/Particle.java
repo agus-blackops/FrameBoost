@@ -9,6 +9,8 @@ final class Particle {
     boolean pinned;       // frozen by the player
     boolean dead;         // removed from the world
     int idx;
+    int id;                // creation order inside its body (save files)
+    int groundFrame = -1000;  // last physics step it was supported from below
 
     Particle(Body body, float x, float y, float mass, float r) {
         this.body = body;
@@ -17,6 +19,7 @@ final class Particle {
         this.baseInvM = mass > 0 ? 1f / mass : 0f;
         this.invM = baseInvM;
         this.r = r;
+        this.id = body.ps.size();
         body.ps.add(this);
     }
 

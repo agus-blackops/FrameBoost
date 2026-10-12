@@ -11,7 +11,7 @@ public class InputTest {
         Game g = Harness.newGame();
         float d = Harness.DENS;
         // open "Gente" tab (2nd of 6), choose Humano
-        tap(g, g.sw / 6f * 1.5f, g.sh - 20 * d);
+        tap(g, g.sw / 8f * 1.5f, g.sh - 20 * d);
         check("strip opens", g.ui.stripOpen && g.ui.cat == 1);
         float cardY = g.ui.stripTop() + g.ui.stripH / 2;
         tap(g, g.ui.gap + g.ui.cardW / 2, cardY);
@@ -19,7 +19,7 @@ public class InputTest {
         tap(g, sx(g, 1000), sy(g, -100));
         check("spawn human", g.world.bodies.size() == 1);
         // 2nd tab item: Gigante, then objects: crate
-        tap(g, g.sw / 6f * 2.5f, g.sh - 20 * d);
+        tap(g, g.sw / 8f * 2.5f, g.sh - 20 * d);
         tap(g, g.ui.gap + g.ui.cardW / 2, cardY);
         check("tool=CRATE", g.tool == Tools.CRATE);
         tap(g, sx(g, 1400), sy(g, -100));
