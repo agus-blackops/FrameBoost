@@ -4,15 +4,15 @@
     "name": "§bPoder Supremo §7(BP)",
     "description": "Mazo con aim assist, armas y objetos poderosos",
     "uuid": "2a438126-8a11-46b1-89f4-a71c8dee1975",
-    "version": [1, 1, 0],
+    "version": [1, 2, 0],
     "min_engine_version": [1, 21, 40]
   },
   "modules": [
-    { "type": "data", "uuid": "3cac8346-d11d-4e7e-9a2c-2b439324fd13", "version": [1, 1, 0] },
-    { "type": "script", "language": "javascript", "uuid": "7894a177-ec80-4fb4-9a51-0bc7f2fd967b", "version": [1, 1, 0], "entry": "scripts/main.js" }
+    { "type": "data", "uuid": "3cac8346-d11d-4e7e-9a2c-2b439324fd13", "version": [1, 2, 0] },
+    { "type": "script", "language": "javascript", "uuid": "7894a177-ec80-4fb4-9a51-0bc7f2fd967b", "version": [1, 2, 0], "entry": "scripts/main.js" }
   ],
   "dependencies": [
-    { "uuid": "4731198e-6e7c-4361-90aa-8f6c8895b04c", "version": [1, 1, 0] },
+    { "uuid": "4731198e-6e7c-4361-90aa-8f6c8895b04c", "version": [1, 2, 0] },
     { "module_name": "@minecraft/server", "version": "1.16.0" }
   ]
 }

@@ -83,6 +83,7 @@ def png(path, px):
 if __name__ == "__main__":
     for n, f in TEXTURAS.items():
         png(f"{ROOT}/RP/textures/items/fb_{n}.png", render(f))
+    import entities; entities.build(ROOT)
     out = os.path.join(ROOT, "dist"); os.makedirs(out, exist_ok=True)
     mc = f"{out}/PoderSupremo.mcaddon"
     with zipfile.ZipFile(mc, "w", zipfile.ZIP_DEFLATED) as z:

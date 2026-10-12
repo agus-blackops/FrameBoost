@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "fb:clawd",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/fb_clawd"
+      },
+      "geometry": {
+        "default": "geometry.fb_clawd"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "fb:warden_final",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/fb_warden_final"
+      },
+      "geometry": {
+        "default": "geometry.fb_warden_final"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "fb:chatgpt_logo",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/fb_chatgpt_logo"
+      },
+      "geometry": {
+        "default": "geometry.fb_chatgpt_logo"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

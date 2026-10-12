@@ -7,7 +7,7 @@ const NO_ELEGIDOS = ["FaultierLocket0"];
 
 // Dueño del addon: cuando él está en máximo peligro, aparece el Jefe Final (su guardián).
 const DUENO = "DiamondHalo9031";
-const BOSS = { PELIGRO_HP: 6, DURACION: 20 * 90, ESPERA: 20 * 60 * 5, DANO: 40, RADIO: 9 };
+const BOSS = { PELIGRO_HP: 6, ESPERA: 20 * 60 * 5 };
 
 const AIM = {
   RANGE: 10,          // bloques de alcance del aim
@@ -132,6 +132,7 @@ world.afterEvents.entityHitEntity.subscribe(({ damagingEntity: p, hitEntity: t }
   if (heldId(p) !== "fb:antidote" || !esElegido(p) || esElegido(t)) return;
   const inv = p.getComponent("minecraft:inventory")?.container;
   inv?.setItem(p.selectedSlotIndex, undefined); // un solo uso
+  for (const [slot, s] of foto.items) if (s.typeId === "fb:antidote") foto.items.delete(slot); // que el escudo no lo devuelva
   const eq = t.getComponent("minecraft:equippable");
   for (const s of [EquipmentSlot.Head, EquipmentSlot.Chest, EquipmentSlot.Legs, EquipmentSlot.Feet]) eq?.setEquipment(s, undefined);
   for (const fx of t.getEffects()) t.removeEffect(fx.typeId);
@@ -218,66 +219,149 @@ function restaurarTodo(p) {
   p.onScreenDisplay.setActionBar(`§aRestauración: ${items} objetos y ${mobs} mobs de vuelta`);
 }
 
-// ───────────── JEFE FINAL (guardián de DiamondHalo9031) ─────────────
-// Aparece cuando el dueño queda con <= 3 corazones. Dura 90 s y reaparece tras 5 min.
-// Es un Golem de Hierro hiper-potenciado que protege al dueño: castiga a los monstruos
-// cercanos y a quien lo haya herido hace poco, y le da resistencia y regeneración.
-let jefe = null, jefeFin = 0, proximoJefe = 0, ultimoAtacante = null, ultimoAtaque = 0;
+// ───────────── ALIADOS DE DiamondHalo9031 ─────────────
+// 5 aliados: Jefe Final, Warden Final, Clawd (mascota de Claude Code), La Convergencia y el Logo de ChatGPT.
+// - El Jefe Final sale solo cuando el dueño queda con <= 3 corazones.
+// - Los 5 salen juntos cuando FaultierLocket0 le da el "Golpe Supremo" al dueño llevando el Antidote.
+// - Prueba rápida: /scriptevent fb:aliados   (los 5)  o  /scriptevent fb:boss  (solo el Jefe)
+const ALIADOS = {
+  jefe: { tipo: "minecraft:iron_golem", nombre: "§4§lJefe Final", dano: 40, radio: 9 },
+  warden: { tipo: "fb:warden_final", nombre: "§3§lWarden Final", dano: 120, radio: 14, rompeArmadura: true, inmortal: true },
+  clawd: { tipo: "fb:clawd", nombre: "§6Clawd", dano: 30, radio: 10, cura: true },
+  convergencia: { tipo: "fb:convergencia", nombre: "§d§lLa Convergencia", dano: 80, radio: 14, debilita: true },
+  chatgpt: { tipo: "fb:chatgpt_logo", nombre: "§aLogo de ChatGPT", dano: 35, radio: 12, marca: true },
+};
+const DURACION_ALIADOS = 20 * 120, ESPERA_ALIADOS = 20 * 60 * 3;
+const ARMADURA = [EquipmentSlot.Head, EquipmentSlot.Chest, EquipmentSlot.Legs, EquipmentSlot.Feet];
+const activos = []; // { kind, e, fin }
+let proximoJefe = 0, proximosAliados = 0, ultimoAtacante = null, ultimoAtaque = 0;
 
 const esDueno = (p) => p.name.toLowerCase() === DUENO.toLowerCase();
+const valida = (e) => { try { return !!e && e.isValid; } catch { return false; } };
 
-function invocarJefe(dueno) {
-  const l = dueno.location, dim = dueno.dimension;
-  jefe = dim.spawnEntity("minecraft:iron_golem", { x: l.x + 2, y: l.y, z: l.z + 2 });
-  jefe.nameTag = "§4§lJefe Final";
-  for (const [fx, amp] of [["health_boost", 49], ["instant_health", 20], ["resistance", 4], ["strength", 9], ["speed", 2], ["regeneration", 4]])
-    jefe.addEffect(fx, BOSS.DURACION + 40, { amplifier: amp });
-  jefeFin = system.currentTick + BOSS.DURACION;
-  proximoJefe = system.currentTick + BOSS.ESPERA;
-  dim.spawnParticle("minecraft:huge_explosion_emitter", jefe.location);
+function invocar(kind, dueno, n, total) {
+  const def = ALIADOS[kind], l = dueno.location, ang = (n / total) * Math.PI * 2;
+  const pos = { x: l.x + Math.cos(ang) * 3, y: l.y, z: l.z + Math.sin(ang) * 3 };
+  let e;
+  try { e = dueno.dimension.spawnEntity(def.tipo, pos); } catch { e = dueno.dimension.spawnEntity(def.tipo, l); }
+  e.nameTag = def.nombre;
+  if (kind === "jefe") {
+    for (const [fx, amp] of [["health_boost", 49], ["instant_health", 20], ["resistance", 4], ["strength", 9], ["speed", 2], ["regeneration", 4]])
+      e.addEffect(fx, DURACION_ALIADOS + 40, { amplifier: amp });
+  }
+  if (def.inmortal) { e.addEffect("resistance", 20 * 60 * 10, { amplifier: 254, showParticles: false }); e.addEffect("fire_resistance", 20 * 60 * 10, { showParticles: false }); }
+  dueno.dimension.spawnParticle("minecraft:huge_explosion_emitter", e.location);
+  activos.push({ kind, e, fin: system.currentTick + DURACION_ALIADOS });
+}
+function invocarTodos(dueno) {
+  const k = Object.keys(ALIADOS);
+  k.forEach((kind, i) => invocar(kind, dueno, i, k.length));
+  proximosAliados = system.currentTick + ESPERA_ALIADOS;
   world.playSound("mob.wither.spawn");
-  world.sendMessage(`§4§l¡EL JEFE FINAL HA DESPERTADO! §r§7${dueno.name} está en máximo peligro.`);
+  world.sendMessage(`§6§l¡LOS 5 ALIADOS DE ${dueno.name} HAN LLEGADO!`);
   for (const [fx, amp] of [["resistance", 3], ["regeneration", 4], ["absorption", 4]]) dueno.addEffect(fx, 20 * 20, { amplifier: amp });
 }
 
 world.afterEvents.entityHurt.subscribe(({ hurtEntity: v, damageSource: d }) => {
   if (v.typeId !== "minecraft:player" || !esDueno(v) || !d.damagingEntity || d.damagingEntity.id === v.id) return;
   ultimoAtacante = d.damagingEntity; ultimoAtaque = system.currentTick;
+  if (d.damagingEntity.typeId === "minecraft:player" && !esElegido(d.damagingEntity)) golpeSupremo(v);
 });
 
 system.runInterval(() => {
   const ahora = system.currentTick;
   const dueno = world.getAllPlayers().find(esDueno);
   if (!dueno) return;
-  if (!jefe && ahora >= proximoJefe) {
+  if (ahora >= proximoJefe && !activos.some((a) => a.kind === "jefe")) {
     const h = dueno.getComponent("minecraft:health");
-    if (h && h.currentValue > 0 && h.currentValue <= BOSS.PELIGRO_HP) invocarJefe(dueno);
+    if (h && h.currentValue > 0 && h.currentValue <= BOSS.PELIGRO_HP) {
+      invocar("jefe", dueno, 0, 1); proximoJefe = ahora + BOSS.ESPERA;
+      world.playSound("mob.wither.spawn");
+      world.sendMessage(`§4§l¡EL JEFE FINAL HA DESPERTADO! §r§7${dueno.name} está en máximo peligro.`);
+      for (const [fx, amp] of [["resistance", 3], ["regeneration", 4], ["absorption", 4]]) dueno.addEffect(fx, 20 * 20, { amplifier: amp });
+    }
   }
-  if (!jefe) return;
-  let vivo = false; try { vivo = jefe.isValid; } catch {}
-  if (!vivo) { jefe = null; return; }
-  if (ahora >= jefeFin) {
-    jefe.dimension.spawnParticle("minecraft:totem_particle", jefe.location);
-    jefe.remove(); jefe = null;
-    world.sendMessage("§7El Jefe Final se retira...");
+  if (!activos.length) return;
+  const ids = new Set(activos.filter((a) => valida(a.e)).map((a) => a.e.id));
+  const monstruos = dueno.dimension.getEntities({ location: dueno.location, maxDistance: 14, families: ["monster"] });
+  for (let i = activos.length - 1; i >= 0; i--) {
+    const a = activos[i], def = ALIADOS[a.kind];
+    if (!valida(a.e)) { activos.splice(i, 1); continue; }
+    if (ahora >= a.fin) { a.e.dimension.spawnParticle("minecraft:totem_particle", a.e.location); a.e.remove(); activos.splice(i, 1); continue; }
+    const d = Math.hypot(a.e.location.x - dueno.location.x, a.e.location.z - dueno.location.z);
+    if (a.e.dimension.id !== dueno.dimension.id || d > 12) a.e.teleport(dueno.location, { dimension: dueno.dimension });
+    if (def.inmortal) a.e.getComponent("minecraft:health")?.resetToMaxValue(); // vida infinita
+    if (def.cura) dueno.addEffect("regeneration", 40, { amplifier: 4, showParticles: false });
+    if (a.kind !== "jefe") dueno.addEffect("resistance", 40, { amplifier: 1, showParticles: false });
+    const enemigos = monstruos.filter((e) => Math.hypot(e.location.x - dueno.location.x, e.location.z - dueno.location.z) <= def.radio);
+    if (valida(ultimoAtacante) && ahora - ultimoAtaque < 400 && ultimoAtacante.dimension.id === dueno.dimension.id) enemigos.push(ultimoAtacante);
+    for (const e of enemigos) {
+      if (ids.has(e.id) || e.id === dueno.id || e.hasTypeFamily("fb_ally")) continue;
+      try {
+        if (def.rompeArmadura && e.typeId === "minecraft:player") { // fuerza que destruye una armadura completa de netherite
+          const eq = e.getComponent("minecraft:equippable");
+          for (const s of ARMADURA) eq?.setEquipment(s, undefined);
+        }
+        if (def.debilita) { e.addEffect("weakness", 100, { amplifier: 3 }); e.addEffect("slowness", 100, { amplifier: 2 }); }
+        if (def.marca) { e.addEffect("glowing", 200); e.addEffect("weakness", 100, { amplifier: 2 }); }
+        e.applyDamage(def.dano, { cause: EntityDamageCause.entityAttack, damagingEntity: a.e });
+        e.dimension.spawnParticle("minecraft:critical_hit_emitter", e.location);
+      } catch {}
+    }
+  }
+  dueno.onScreenDisplay.setActionBar(`§6Aliados activos: ${activos.length}`);
+}, 10);
+
+// ───────────── ANTIDOTE: escudo contra el "Golpe Supremo" ─────────────
+// El Golpe Supremo es el ataque de FaultierLocket0 que quita los poderes del addon.
+// Con el Antidote en el inventario: se guarda una foto de tus efectos y objetos del addon;
+// si FaultierLocket0 te golpea, durante 5 s todo se restaura al instante (no te afecta)
+// y llegan los 5 aliados.
+const foto = { efectos: [], items: new Map(), congelado: 0 };
+let escudoHasta = 0;
+const ES_MOD = (id) => id?.startsWith("fb:") || id === MAZO;
+
+system.runInterval(() => {
+  const ahora = system.currentTick;
+  const dueno = world.getAllPlayers().find(esDueno);
+  if (!dueno) return;
+  const cont = dueno.getComponent("minecraft:inventory")?.container;
+  if (!cont) return;
+  if (ahora < foto.congelado) {
+    if (ahora < escudoHasta) restaurar(dueno, cont, ahora);
     return;
   }
-  const d = Math.hypot(jefe.location.x - dueno.location.x, jefe.location.z - dueno.location.z);
-  if (jefe.dimension.id !== dueno.dimension.id || d > 14) jefe.teleport(dueno.location, { dimension: dueno.dimension });
-  const enemigos = dueno.dimension.getEntities({ location: dueno.location, maxDistance: BOSS.RADIO, families: ["monster"] });
-  if (ultimoAtacante && ahora - ultimoAtaque < 400) {
-    try { if (ultimoAtacante.isValid && ultimoAtacante.dimension.id === dueno.dimension.id) enemigos.push(ultimoAtacante); } catch {}
+  foto.items.clear();
+  for (let i = 0; i < cont.size; i++) { const s = cont.getItem(i); if (s && ES_MOD(s.typeId)) foto.items.set(i, s); }
+  foto.efectos = dueno.getEffects().map((f) => ({ typeId: f.typeId, amplifier: f.amplifier, duration: f.duration, tick: ahora }));
+}, 2);
+
+function restaurar(dueno, cont, ahora) {
+  for (const [slot, stack] of foto.items) {
+    const cur = cont.getItem(slot);
+    if (!cur || cur.typeId !== stack.typeId) cont.setItem(slot, stack);
   }
-  for (const e of enemigos) {
-    if (e.id === jefe.id || e.id === dueno.id) continue;
-    try { e.applyDamage(BOSS.DANO, { cause: EntityDamageCause.entityAttack, damagingEntity: jefe }); } catch {}
+  for (const f of foto.efectos) {
+    const resto = f.duration < 0 ? 20 * 600 : f.duration - (ahora - f.tick);
+    if (resto > 20 && !dueno.getEffect(f.typeId)) dueno.addEffect(f.typeId, resto, { amplifier: f.amplifier });
   }
-  dueno.onScreenDisplay.setActionBar(`§4Jefe Final §7— ${Math.ceil((jefeFin - ahora) / 20)}s`);
-}, 10);
+}
+
+function golpeSupremo(dueno) {
+  if (!hasInInventory(dueno, "fb:antidote")) return;
+  const ahora = system.currentTick;
+  foto.congelado = ahora + 120; escudoHasta = ahora + 100;
+  dueno.onScreenDisplay.setActionBar("§2¡El Antidote bloqueó el Golpe Supremo!");
+  dueno.playSound("random.totem");
+  if (ahora >= proximosAliados) invocarTodos(dueno);
+}
 
 // ───────────── KIT: /scriptevent fb:kit ─────────────
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
-  if (ev.id === "fb:boss" && ev.sourceEntity?.typeId === "minecraft:player") { if (!jefe) invocarJefe(ev.sourceEntity); return; } // prueba
+  if (ev.sourceEntity?.typeId === "minecraft:player") {
+    if (ev.id === "fb:boss") { invocar("jefe", ev.sourceEntity, 0, 1); return; }          // prueba
+    if (ev.id === "fb:aliados") { invocarTodos(ev.sourceEntity); return; }               // prueba
+  }
   if (ev.id !== "fb:kit" || ev.sourceType !== "Entity" || ev.sourceEntity?.typeId !== "minecraft:player") return;
   for (const id of [MAZO, ...FB_ITEMS]) ev.sourceEntity.runCommand(`give @s ${id}`);
 });
