@@ -6,6 +6,7 @@
     "Almacenamiento": "#fbbf24", "Fuente de poder": "#fb923c", "Gabinete": "#94a3b8", "Cooler CPU": "#60a5fa" };
   const CHIPS = [400000, 600000, 800000, 1000000, 1500000, 2000000, 3000000];
 
+  const MAX_BUDGET = 20000000;
   const state = { mode: "gamer", budget: 800000, tab: 0, results: [] };
   try {
     const saved = JSON.parse(localStorage.getItem("pcbuilder") || "{}");
@@ -22,7 +23,7 @@
   });
 
   function setBudget(v) {
-    state.budget = Math.max(0, Math.round(v));
+    state.budget = Math.min(MAX_BUDGET, Math.max(0, Math.round(v)));
     $("budgetNum").value = state.budget ? state.budget.toLocaleString("es-CL") : "";
     $("budgetRange").value = Math.min(Math.max(state.budget, 250000), 4000000);
     update();
@@ -33,7 +34,7 @@
     r.onchange = () => { state.mode = r.value; state.tab = 0; update(); };
   });
   $("budgetNum").oninput = (e) => {
-    const n = parseInt(e.target.value.replace(/\D/g, ""), 10) || 0;
+    const n = Math.min(parseInt(e.target.value.replace(/\D/g, "").slice(0, 9), 10) || 0, MAX_BUDGET);
     state.budget = n;
     e.target.value = n ? n.toLocaleString("es-CL") : "";
     $("budgetRange").value = Math.min(Math.max(n, 250000), 4000000);
@@ -60,6 +61,10 @@
 
   function render(min) {
     const el = $("results");
+    if (!state.budget) {
+      el.innerHTML = '<div class="card empty"><p>Escribe tu presupuesto en pesos chilenos para ver la recomendación.</p></div>';
+      return;
+    }
     if (!state.results.length) {
       el.innerHTML = '<div class="card empty"><p>Con <b>' + clp.format(state.budget) + '</b> todavía no alcanza para armar un ' +
         esc(MODES[state.mode].label) + ' completo (torre con todas sus piezas).</p>' +
@@ -73,7 +78,7 @@
     const r = state.results[state.tab];
     const total = r.build.total, left = state.budget - total;
     const rows = r.parts.map((x) =>
-      "<tr><td class='cat'>" + esc(x.cat) + "</td><td>" + esc(x.name) +
+      "<tr><td class='cat'>" + esc(x.cat) + "</td><td><span class='mcat'>" + esc(x.cat) + "</span>" + esc(x.name) +
       (x.price ? ' <a target="_blank" rel="noopener" href="https://www.falabella.com/falabella-cl/search?Ntt=' + encodeURIComponent(searchTerm(x)) + '">ver en Falabella ↗</a>' : "") +
       "</td><td class='p'>" + (x.price ? clp.format(x.price) : "Incluido") + "</td></tr>").join("");
     const seg = r.parts.filter((x) => x.price).map((x) =>
