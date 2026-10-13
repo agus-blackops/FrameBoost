@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armador de PC — Torre por presupuesto en CLP</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <h1>🖥️ Armador de <span>Torre</span></h1>
+      <p>Elige tu presupuesto en pesos chilenos y te recomiendo las piezas compatibles.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card controls" aria-label="Configuración">
+      <h2>1. ¿Qué tipo de PC quieres?</h2>
+      <div class="types" role="radiogroup" id="types">
+        <label class="type"><input type="radio" name="mode" value="gamer" checked>
+          <span><b>🎮 PC Gamer</b><small>Tarjeta de video dedicada para jugar</small></span></label>
+        <label class="type"><input type="radio" name="mode" value="pro">
+          <span><b>🛠️ PC de trabajo</b><small>Edición, diseño, programación</small></span></label>
+        <label class="type"><input type="radio" name="mode" value="oficina">
+          <span><b>🏠 PC de oficina / hogar</b><small>Office, clases, navegar, series</small></span></label>
+      </div>
+
+      <h2>2. ¿Cuál es tu presupuesto?</h2>
+      <div class="budget">
+        <div class="money">
+          <span>$</span>
+          <input id="budgetNum" type="text" inputmode="numeric" autocomplete="off" aria-label="Presupuesto en pesos chilenos">
+          <em>CLP</em>
+        </div>
+        <input id="budgetRange" type="range" min="250000" max="4000000" step="10000" aria-label="Deslizador de presupuesto">
+        <div class="chips" id="chips"></div>
+        <p class="hint" id="minHint"></p>
+      </div>
+
+      <details class="prefs">
+        <summary>Preferencias opcionales</summary>
+        <div class="prefs-grid">
+          <label>Marca de procesador
+            <select id="cpuBrand"><option value="any">Cualquiera</option><option>AMD</option><option>Intel</option></select></label>
+          <label id="gpuBrandWrap">Marca de tarjeta de video
+            <select id="gpuBrand"><option value="any">Cualquiera</option><option>NVIDIA</option><option>AMD</option></select></label>
+        </div>
+      </details>
+    </section>
+
+    <section id="results" aria-live="polite"></section>
+
+    <footer class="foot">
+      <p>⚠️ Los precios son <b>referenciales</b> (actualizados: <span id="upd"></span>) y los rendimientos son una escala relativa, no benchmarks oficiales.
+      Antes de comprar compara en tiendas y revisa compatibilidad física (largo de la tarjeta de video, altura del cooler, etc.).
+      Puedes ajustar los precios en <code>catalog.js</code>.</p>
+    </footer>
+  </main>
+
+  <script src="catalog.js"></script>
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
