@@ -90,14 +90,22 @@
       "<div><small>Total armado</small><strong>" + clp.format(total) + "</strong></div>" +
       "<div><small>Te sobra</small><strong>" + clp.format(left) + "</strong></div></div>" +
       '<ul class="notes">' + notes.map((n) => n.startsWith("WARN:") ? '<li class="warn">' + esc(n.slice(5)) + "</li>" : "<li>" + esc(n) + "</li>").join("") + "</ul>" +
-      '<div class="actions"><button class="btn" id="copy">📋 Copiar lista</button><button class="btn" onclick="window.print()">🖨️ Imprimir</button></div></div>';
+      '<div class="actions"><button class="btn" id="copy">📋 Copiar lista</button>' +
+      (/; wv\)/.test(navigator.userAgent) ? "" : '<button class="btn" onclick="window.print()">🖨️ Imprimir</button>') + "</div></div>";
     el.querySelectorAll(".tab").forEach((b) => (b.onclick = () => { state.tab = +b.dataset.i; render(min); }));
     $("copy").onclick = async () => {
       const txt = MODES[state.mode].label + " — " + r.variant.label + "\n" +
         r.parts.map((x) => x.cat + ": " + x.name + " — " + (x.price ? clp.format(x.price) : "Incluido")).join("\n") +
         "\nTOTAL: " + clp.format(total) + " (presupuesto " + clp.format(state.budget) + ")";
       try { await navigator.clipboard.writeText(txt); $("copy").textContent = "✅ ¡Copiado!"; }
-      catch (e) { window.prompt("Copia la lista:", txt); }
+      catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = txt; document.body.appendChild(ta); ta.select();
+        let ok = false;
+        try { ok = document.execCommand("copy"); } catch (e2) {}
+        document.body.removeChild(ta);
+        $("copy").textContent = ok ? "✅ ¡Copiado!" : "No se pudo copiar";
+      }
     };
   }
 
