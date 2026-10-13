@@ -229,6 +229,56 @@ final class Spawner {
     }
 
     static Body wheel(float x, float y) { return ballEx(Body.WHEEL, x, y, 34f, 0xFF25272c, 2.2f, 0.28f, 12, 8f); }
+
+    static Body motorWheel(float x, float y) {
+        Body b = ballEx(Body.WHEEL, x, y, 34f, 0xFF25272c, 2.2f, 0.2f, 12, 8f);
+        b.motorized = true;    // starts spinning once it's mounted on an axle (or with Activar)
+        return b;
+    }
+
+    /** A rope of n segments between two points; its ends get linked to whatever they were attached to. */
+    static Body rope(float x0, float y0, float x1, float y1, int n) {
+        Body b = new Body(Body.ROPE);
+        b.color = 0xFFc8a46a;
+        b.param = n;
+        b.scale = (float) Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) / n;   // segment length (save files)
+        b.drag = 0.998f;
+        Particle prev = null;
+        for (int i = 0; i <= n; i++) {
+            float t = i / (float) n;
+            Particle p = new Particle(b, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 0.25f, 2.5f);
+            if (prev != null) {
+                Stick s = new Stick(b, prev, p, -1, 2.6f);
+                s.color = b.color;
+                s.tear = 60f;
+            }
+            prev = p;
+        }
+        b.flammable = true;
+        finish(b);
+        return b;
+    }
+
+    /** A bolt fixed in the air (rope/weld target when you tap empty space). */
+    static Body anchor(float x, float y) {
+        Body b = new Body(Body.ANCHOR);
+        b.color = 0xFF9aa3ad;
+        Particle p = new Particle(b, x, y, 0f, 6f);
+        p.pinned = true;
+        finish(b);
+        return b;
+    }
+
+    /** Rocket thruster: pushes from a (nozzle) toward b (nose) while switched on. */
+    static Body thruster(float x, float y) {
+        Body b = new Body(Body.THRUSTER);
+        b.color = 0xFFd0d4da;
+        Particle a = new Particle(b, x, y + 16, 1.2f, 7f);   // nozzle below, nose up: ready to lift off
+        Particle c = new Particle(b, x, y - 16, 1.2f, 7f);
+        new Stick(b, a, c, 32f, 7f).solid(b.color);
+        finish(b);
+        return b;
+    }
     static Body bowling(float x, float y) { return ballEx(Body.BOWLING, x, y, 15f, 0xFF1d2a5a, 5.5f, 0.12f, 8, 5f); }
     static Body melon(float x, float y) { Body b = ballEx(Body.MELON, x, y, 22f, 0xFF3f9a3c, 1.1f, 0.2f, 10, 5f); b.flammable = true; return b; }
 

@@ -129,6 +129,8 @@ final class ModEngine {
         }
     }
 
+    boolean hasUserMod() { for (Mod m : mods) if (m.user && !m.name.equals("Mi Primer Mod")) return true; return false; }
+
     boolean anyActive() { for (Mod m : mods) if (m.on) return true; return false; }
 
     void update(float dt, Game g) {

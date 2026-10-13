@@ -25,6 +25,8 @@ final class Challenges {
                 new int[]{Tools.PISTOL}, 9, 9, 16),
         new Def("Supervivencia", "Protege al científico 30 segundos",
                 new int[]{Tools.HAND, Tools.PUSH, Tools.SWORD}, -1, 0, 0),
+        new Def("Ingeniería", "Lleva la caja hasta la bandera sin tocarla: construye un vehículo",
+                new int[]{Tools.MOTOR, Tools.PLANK, Tools.HINGE, Tools.WELD, Tools.ACTIVATE}, -1, 15, 35),
     };
 
     static void setup(Game g, int i) {
@@ -69,6 +71,9 @@ final class Challenges {
                 }
                 break;
             }
+            case 6:
+                w.add(Spawner.crate(320, f - 41, 80));
+                break;
             default:
                 Body sci = Spawner.human(w, 1300, f - 96, 1.05f, 1);
                 sci.shirt = 0xFFf4f6f8; sci.pants = 0xFF3a3f4a; sci.hair = 0xFF9aa0a8;   // lab coat
@@ -132,6 +137,13 @@ final class Challenges {
                 out.append("Globos: ").append(bl).append("   Balas: ").append(g.chUses);
                 if (bl == 0) return 1;
                 return g.chUses == 0 && g.chIdle > 1.5f ? -1 : 0;
+            }
+            case 6: {
+                Body crate = null;
+                for (Body b : w.bodies) if (b.type == Body.CRATE) { crate = b; break; }
+                if (crate == null) return -1;
+                out.append(String.format("Distancia a la meta: %d", (int) Math.max(0, 2250 - crate.cx)));
+                return crate.cx > 2250 ? 1 : 0;
             }
             default: {
                 Body sci = null;

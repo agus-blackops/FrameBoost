@@ -20,16 +20,29 @@ final class SceneIO {
         o.println("TRASTAZO 1");
         o.println(String.format(Locale.US, "cam %.1f %.1f %.4f %d", g.camX, g.camY, g.zoom, g.userTheme));
         for (Body b : g.world.bodies) {
-            o.println(String.format(Locale.US, "body %d %d %.3f %.3f %d %d %d %d %d %d %.2f %d %d %.2f %.2f %.2f %.2f %.2f %d",
+            o.println(String.format(Locale.US, "body %d %d %.3f %.3f %d %d %d %d %d %d %.2f %d %d %.2f %.2f %.2f %.2f %.2f %d %d %d",
                     b.type, b.kind, b.param, b.scale, b.dir, b.color, b.skin, b.shirt, b.pants, b.hair, b.blood,
-                    b.dead ? 1 : 0, b.burning ? 1 : 0, b.burnT, b.charT, b.fuse, b.ko, b.infected, b.bitten ? 1 : 0));
+                    b.dead ? 1 : 0, b.burning ? 1 : 0, b.burnT, b.charT, b.fuse, b.ko, b.infected, b.bitten ? 1 : 0,
+                    b.motor, b.thrust ? 1 : 0));
             for (Particle p : b.ps)
                 o.println(String.format(Locale.US, "p %d %.2f %.2f %d %.1f", p.id, p.x, p.y, p.pinned ? 1 : 0, p.bleed));
-            for (Stick s : b.allSticks) if (s.dead) o.println("d " + s.id);
+            for (Stick s : b.allSticks) if (s.dead && !isLink(s)) o.println("d " + s.id);
             o.println("end");
         }
+        // links between bodies (ropes ends, welds, axles) go last so every body exists when they load
+        java.util.List<Body> list = g.world.bodies;
+        for (int i = 0; i < list.size(); i++)
+            for (Stick s : list.get(i).ss) {
+                if (s.dead || !isLink(s)) continue;
+                int ia = list.indexOf(s.a.body), ib = list.indexOf(s.b.body);
+                if (ia < 0 || ib < 0) continue;
+                o.println(String.format(Locale.US, "link %d %d %d %d %d %.2f %.2f %d %d %d", i, ia, s.a.id, ib, s.b.id, s.rest, s.r,
+                        s.joint ? 1 : 0, s.weld ? 1 : 0, s.kind));
+            }
         o.close();
     }
+
+    private static boolean isLink(Stick s) { return s.weld || s.a.body != s.b.body; }
 
     static boolean load(Game g, File f) {
         if (f == null || !f.exists()) return false;
@@ -41,6 +54,7 @@ final class SceneIO {
             Body cur = null;
             HashMap<Integer, float[]> pos = new HashMap<>();
             HashSet<Integer> dead = new HashSet<>();
+            java.util.ArrayList<Body> made = new java.util.ArrayList<>();
             while ((line = in.readLine()) != null) {
                 String[] t = line.trim().split(" ");
                 switch (t[0]) {
@@ -58,6 +72,7 @@ final class SceneIO {
                             cur.burning = t[13].equals("1"); cur.burnT = Float.parseFloat(t[14]); cur.charT = Float.parseFloat(t[15]);
                             cur.fuse = Float.parseFloat(t[16]); cur.ko = Float.parseFloat(t[17]);
                             cur.infected = Float.parseFloat(t[18]); cur.bitten = t[19].equals("1");
+                            if (t.length > 21) { cur.motor = Integer.parseInt(t[20]); cur.thrust = t[21].equals("1"); }
                             if (cur.isHuman()) recolor(cur);
                         }
                         pos.clear(); dead.clear();
@@ -66,6 +81,17 @@ final class SceneIO {
                         pos.put(Integer.parseInt(t[1]), new float[]{Float.parseFloat(t[2]), Float.parseFloat(t[3]),
                                 Float.parseFloat(t[4]), Float.parseFloat(t[5])});
                         break;
+                    case "link": {
+                        Body owner = get(made, t[1]), ba = get(made, t[2]), bb = get(made, t[4]);
+                        Particle pa = ba == null ? null : byId(ba, Integer.parseInt(t[3]));
+                        Particle pb = bb == null ? null : byId(bb, Integer.parseInt(t[5]));
+                        if (owner == null || pa == null || pb == null) break;
+                        Stick s = new Stick(owner, pa, pb, Float.parseFloat(t[6]), Float.parseFloat(t[7]));
+                        s.joint = t[8].equals("1"); s.weld = t[9].equals("1"); s.kind = Integer.parseInt(t[10]);
+                        s.color = 0xFFb9c0ca; s.tear = s.joint ? 90f : 160f;
+                        g.world.dirty = true;
+                        break;
+                    }
                     case "d":
                         dead.add(Integer.parseInt(t[1]));
                         break;
@@ -83,6 +109,7 @@ final class SceneIO {
                             cur.updateBounds();
                             g.world.add(cur);
                         }
+                        made.add(cur);
                         cur = null;
                         break;
                     default: break;
@@ -94,6 +121,16 @@ final class SceneIO {
             g.world.clear();
             return false;
         }
+    }
+
+    private static Body get(java.util.ArrayList<Body> l, String idx) {
+        int i = Integer.parseInt(idx);
+        return i >= 0 && i < l.size() ? l.get(i) : null;
+    }
+
+    private static Particle byId(Body b, int id) {
+        for (Particle p : b.ps) if (p.id == id) return p;
+        return null;
     }
 
     private static void recolor(Body b) {
@@ -129,6 +166,9 @@ final class SceneIO {
             case Body.DYNAMITE: b = Spawner.dynamite(0, 0); break;
             case Body.KNIFE: b = Spawner.blade(0, 0, false); break;
             case Body.SWORD: b = Spawner.blade(0, 0, true); break;
+            case Body.ROPE: { int n = Math.max(2, (int) param); b = Spawner.rope(0, 0, scale * n, 0, n); break; }
+            case Body.ANCHOR: b = Spawner.anchor(0, 0); break;
+            case Body.THRUSTER: b = Spawner.thruster(0, 0); break;
             default: return null;
         }
         b.color = color;

@@ -7,7 +7,7 @@ final class Stick {
     final Body body;
     final Particle a, b;
     float rest, r, tear;
-    boolean collide, joint, dead, capA, capB, band;
+    boolean collide, joint, dead, capA, capB, band, weld;
     int kind = FILL;
     int color;
     int idx;

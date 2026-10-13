@@ -105,6 +105,7 @@ public class MainActivity extends Activity implements Game.Host {
         s.stars = sp.getString("stars", s.stars);
         s.textures = sp.getBoolean("textures", s.textures);
         s.muted = sp.getBoolean("muted", s.muted);
+        s.ach = sp.getString("ach", s.ach);
         return s;
     }
 
@@ -113,7 +114,7 @@ public class MainActivity extends Activity implements Game.Host {
                 .putFloat("music", s.music).putFloat("sfx", s.sfx).putBoolean("haptics", s.haptics)
                 .putBoolean("gore", s.gore).putBoolean("fps", s.showFps).putBoolean("quality", s.highQuality)
                 .putBoolean("tutorial", s.tutorialDone).putString("stars", s.stars)
-                .putBoolean("textures", s.textures).putBoolean("muted", s.muted).apply();
+                .putBoolean("textures", s.textures).putBoolean("muted", s.muted).putString("ach", s.ach).apply();
     }
 
     @Override public void vibrate(int ms) {

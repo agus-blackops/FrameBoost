@@ -6,7 +6,7 @@ import java.util.ArrayList;
 final class Body {
     static final int HUMAN = 0, CRATE = 1, PLANK = 2, BARREL = 3, BALL = 4, BALLOON = 5, HEAVY = 6,
             PLATFORM = 7, TNT = 8, XBARREL = 9, GRENADE = 10, DYNAMITE = 11, KNIFE = 12, SWORD = 13,
-            WHEEL = 14, BOWLING = 15, MELON = 16;
+            WHEEL = 14, BOWLING = 15, MELON = 16, ROPE = 17, ANCHOR = 18, THRUSTER = 19;
     static final int K_HUMAN = 0, K_ROBOT = 1, K_ZOMBIE = 2, K_SKELETON = 3;
 
     final int type;
@@ -44,6 +44,9 @@ final class Body {
     int stepFoot;
     boolean held, bitten, stood;
     float flashT;           // hit flash
+    int motor;              // wheels: 0 off, 1 forward, -1 reverse
+    boolean motorized;      // a motor wheel (starts when it gets an axle)
+    boolean thrust;         // thrusters: on/off
     Stick[] jointList;      // cached for drawing stumps
     float param;           // spawn parameter (crate size, plank length, ball radius...) for save files
     float scale = 1f;
@@ -74,12 +77,16 @@ final class Body {
 
     /** Drops dead sticks and (for props) particles that lost every stick. */
     void compact() {
-        for (int i = ss.size() - 1; i >= 0; i--) if (ss.get(i).dead) ss.remove(i);
+        for (int i = ss.size() - 1; i >= 0; i--) {
+            Stick s = ss.get(i);
+            if (s.a.dead || s.b.dead) s.dead = true;   // links to bodies that no longer exist
+            if (s.dead) ss.remove(i);
+        }
         for (int i = ls.size() - 1; i >= 0; i--) {
             AngleLimit l = ls.get(i);
             if (l.cj.dead || l.cf.dead || l.pj.dead || l.pf.dead) ls.remove(i);
         }
-        if (type == HUMAN) return;
+        if (type == HUMAN || type == ANCHOR) return;   // anchors are a single stick-less particle
         for (int i = 0; i < ps.size(); i++) ps.get(i).idx = 0;
         for (int i = 0; i < ss.size(); i++) { ss.get(i).a.idx++; ss.get(i).b.idx++; }
         for (int i = ps.size() - 1; i >= 0; i--) {

@@ -8,6 +8,7 @@ import android.graphics.RectF;
 final class Renderer {
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rf = new RectF();
+    private final android.graphics.Path path = new android.graphics.Path();
 
     int theme = 0;
     boolean detail = true;
@@ -69,6 +70,7 @@ final class Renderer {
             Body b = w.bodies.get(i);
             if (b.isHuman()) drawHuman(c, b);
         }
+        drawLinks(c, w);
         drawPins(c, w);
         drawFx(c, w, fx);
         c.restore();
@@ -219,7 +221,7 @@ final class Renderer {
         for (int pass = 0; pass < 2; pass++) {
             for (int i = 0; i < n; i++) {
                 Stick s = b.ss.get(i);
-                if (s.dead || s.kind != Stick.FILL || s.joint) continue;
+                if (s.dead || s.kind != Stick.FILL || s.joint || s.weld) continue;
                 int col = bodyColor(b, s.color != 0 ? s.color : b.color);
                 if (pass == 0) { p.setColor(dark(col, 0.55f)); p.setStrokeWidth(s.r * 2 + 3.4f); }
                 else { p.setColor(col); p.setStrokeWidth(s.r * 2); }
@@ -274,6 +276,40 @@ final class Renderer {
     private void overlay(Canvas c, Body b) {
         if (b.ps.isEmpty()) return;
         switch (b.type) {
+            case Body.ANCHOR: {
+                Particle a = b.ps.get(0);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFF2b2f36);
+                c.drawCircle(a.x, a.y, 8f, p);
+                p.setColor(0xFF9aa3ad);
+                c.drawCircle(a.x, a.y, 6f, p);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(1.6f);
+                p.setColor(0xFF4a525c);
+                c.drawLine(a.x - 3.5f, a.y, a.x + 3.5f, a.y, p);
+                c.drawLine(a.x, a.y - 3.5f, a.x, a.y + 3.5f, p);
+                break;
+            }
+            case Body.THRUSTER: {
+                if (b.ps.size() < 2) break;
+                Particle a = b.ps.get(0), z = b.ps.get(1);
+                float dx = z.x - a.x, dy = z.y - a.y, l = (float) Math.sqrt(dx * dx + dy * dy) + 1e-3f;
+                float nx = -dy / l, ny = dx / l;
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFF3a3f48);                       // nozzle
+                path.reset();
+                path.moveTo(a.x + nx * 5, a.y + ny * 5);
+                path.lineTo(a.x - nx * 5, a.y - ny * 5);
+                path.lineTo(a.x - dx / l * 10 - nx * 10, a.y - dy / l * 10 - ny * 10);
+                path.lineTo(a.x - dx / l * 10 + nx * 10, a.y - dy / l * 10 + ny * 10);
+                path.close();
+                c.drawPath(path, p);
+                p.setColor(0xFFd33a2c);                       // red nose
+                c.drawCircle(z.x, z.y, 7.5f, p);
+                p.setColor(b.thrust ? 0xFF6dff8a : 0xFF555b66); // status light
+                c.drawCircle((a.x + z.x) / 2, (a.y + z.y) / 2, 2.8f, p);
+                break;
+            }
             case Body.TNT: {
                 label(c, b, "TNT", 0xFFfff2cf, 15f);
                 break;
@@ -356,7 +392,19 @@ final class Renderer {
         p.setColor(dark(col, 0.28f));
         c.drawLine(ctr.x, ctr.y, ctr.x + (m.x - ctr.x) * 0.82f, ctr.y + (m.y - ctr.y) * 0.82f, p);
         p.setStyle(Paint.Style.FILL);
-        if (detail && b.type == Body.WHEEL) {
+        if (b.type == Body.WHEEL && b.motor != 0) {
+            p.setColor(0xFFf2b134);                           // motor hub
+            c.drawCircle(ctr.x, ctr.y, rad * 0.5f, p);
+            p.setColor(0xFF1b2029);
+            c.drawCircle(ctr.x, ctr.y, rad * 0.2f, p);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(3f);
+            p.setColor(0xFF1b2029);
+            rf.set(ctr.x - rad * 0.36f, ctr.y - rad * 0.36f, ctr.x + rad * 0.36f, ctr.y + rad * 0.36f);
+            float spin = (float) Math.toDegrees(Math.atan2(m.y - ctr.y, m.x - ctr.x));
+            c.drawArc(rf, spin, b.motor > 0 ? 220f : -220f, false, p);
+            p.setStyle(Paint.Style.FILL);
+        } else if (detail && b.type == Body.WHEEL) {
             p.setColor(0xFF9aa3ad);
             c.drawCircle(ctr.x, ctr.y, rad * 0.5f, p);
             p.setColor(0xFF4a525c);
@@ -586,6 +634,29 @@ final class Renderer {
             }
         }
         c.restore();
+    }
+
+    /** Welds and axles: a steel strap with a rivet at each end. */
+    private void drawLinks(Canvas c, World w) {
+        for (int i = 0; i < w.bodies.size(); i++) {
+            Body b = w.bodies.get(i);
+            for (int k = 0; k < b.ss.size(); k++) {
+                Stick s = b.ss.get(k);
+                if (s.dead || !s.weld || s.kind == Stick.HIDDEN) continue;
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeCap(Paint.Cap.ROUND);
+                p.setColor(0xFF2b2f36);
+                p.setStrokeWidth(7f);
+                c.drawLine(s.a.x, s.a.y, s.b.x, s.b.y, p);
+                p.setColor(0xFFb9c0ca);
+                p.setStrokeWidth(4f);
+                c.drawLine(s.a.x, s.a.y, s.b.x, s.b.y, p);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFFe9ecf1);
+                c.drawCircle(s.a.x, s.a.y, 3.6f, p);
+                c.drawCircle(s.b.x, s.b.y, 3.6f, p);
+            }
+        }
     }
 
     private void drawPins(Canvas c, World w) {

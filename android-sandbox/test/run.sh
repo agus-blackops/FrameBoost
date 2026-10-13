@@ -4,5 +4,5 @@ set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf /tmp/rpg-test && mkdir -p /tmp/rpg-test
 javac -nowarn -d /tmp/rpg-test $(find shim -name '*.java') \
-  $(find ../src -name '*.java' ! -name GameView.java ! -name MainActivity.java) Harness.java InputTest.java Start.java NewTest.java BrainTest.java WalkTest.java MusicTest.java FlowTest.java CrashTest.java MonkeyTest.java SmallTest.java CacheTest.java 2>&1 | grep -v "Picked up" || true
+  $(find ../src -name '*.java' ! -name GameView.java ! -name MainActivity.java) Harness.java InputTest.java Start.java NewTest.java BrainTest.java WalkTest.java MusicTest.java FlowTest.java CrashTest.java MonkeyTest.java SmallTest.java CacheTest.java BuildTest.java IconTest.java 2>&1 | grep -v "Picked up" || true
 java -Djava.awt.headless=true -cp /tmp/rpg-test com.frameboost.ragdoll.${MAIN:-Harness} "$@" 2>&1 | grep -v "Picked up"

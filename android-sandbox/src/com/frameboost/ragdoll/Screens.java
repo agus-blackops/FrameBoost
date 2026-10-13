@@ -6,10 +6,10 @@ import android.graphics.RectF;
 
 /** Menus drawn over the live world: title, pause, settings, challenge list, results, tutorial. */
 final class Screens {
-    static final int NONE = 0, TITLE = 1, PAUSE = 2, SETTINGS = 3, CHALLENGES = 4, RESULT = 5, TUTORIAL = 6;
+    static final int NONE = 0, TITLE = 1, PAUSE = 2, SETTINGS = 3, CHALLENGES = 4, RESULT = 5, TUTORIAL = 6, ACHIEVEMENTS = 7;
     static final int A_CONTINUE = 1, A_SANDBOX = 2, A_CHALLENGES = 3, A_SETTINGS = 4, A_RESUME = 5, A_MENU = 6,
             A_RESTART = 7, A_BACK = 8, A_MUSIC_DN = 9, A_MUSIC_UP = 10, A_SFX_DN = 11, A_SFX_UP = 12, A_HAPTICS = 13,
-            A_GORE = 14, A_QUALITY = 15, A_FPS = 16, A_TEXTURES = 17, A_NEXT = 18, A_RETRY = 19, A_TUT = 20, A_CHAL = 100;
+            A_GORE = 14, A_QUALITY = 15, A_FPS = 16, A_TEXTURES = 17, A_NEXT = 18, A_RETRY = 19, A_TUT = 20, A_ACH = 21, A_CHAL = 100;
 
     int screen = TITLE, back = TITLE, tutStep;
     float time, tutT;
@@ -70,6 +70,7 @@ final class Screens {
             case CHALLENGES: challenges(c, g, sw, sh); break;
             case RESULT: result(c, g, sw, sh); break;
             case TUTORIAL: tutorial(c, g, sw, sh); break;
+            case ACHIEVEMENTS: achievements(c, g, sw, sh); break;
             default: break;
         }
     }
@@ -150,8 +151,10 @@ final class Screens {
         if (g.hasSave()) { button(c, colX, y, colW, bh, "Continuar", A_CONTINUE, true); y += bh + gap; }
         button(c, colX, y, colW, bh, "Sandbox libre", A_SANDBOX, !g.hasSave()); y += bh + gap;
         button(c, colX, y, colW, bh, "Desafíos   ★ " + g.settings.totalStars() + "/" + Challenges.LIST.length * 3, A_CHALLENGES, false); y += bh + gap;
-        button(c, colX, y, colW, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v2.1", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        float half = (colW - gap) / 2;
+        button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
+        button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
+        text(c, "Física, arte y música originales · v2.2", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {
@@ -218,8 +221,8 @@ final class Screens {
     private void challenges(Canvas c, Game g, int sw, int sh) {
         dim(c, sw, sh, 0xE60b0e14);
         text(c, "Desafíos", sw / 2f, 46 * d, 26 * d, 0xFFf2b134, Paint.Align.CENTER, true);
-        int n = Challenges.LIST.length, cols = 3;
-        float gap = 14 * d, cw = Math.min(260 * d, (sw - gap * (cols + 1)) / cols), ch = Math.min(118 * d, (sh - 150 * d) / 2 - gap);
+        int n = Challenges.LIST.length, cols = n > 6 ? 4 : 3, rows = (n + cols - 1) / cols;
+        float gap = 12 * d, cw = Math.min(250 * d, (sw - gap * (cols + 1)) / cols), ch = Math.min(118 * d, (sh - 146 * d) / rows - gap);
         float x0 = (sw - (cw * cols + gap * (cols - 1))) / 2, y0 = 66 * d;
         for (int i = 0; i < n; i++) {
             float x = x0 + (i % cols) * (cw + gap), y = y0 + (i / cols) * (ch + gap);
@@ -235,6 +238,27 @@ final class Screens {
             for (int s = 0; s < 3; s++) star(c, x + 24 * d + s * 26 * d, y + ch - 20 * d, 10 * d, s < st);
         }
         button(c, sw / 2f - 90 * d, sh - 62 * d, 180 * d, 46 * d, "Volver", A_BACK, true);
+    }
+
+    private void achievements(Canvas c, Game g, int sw, int sh) {
+        dim(c, sw, sh, 0xE60b0e14);
+        text(c, "Logros  " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, sw / 2f, 46 * d, 24 * d, 0xFFf2b134, Paint.Align.CENTER, true);
+        int n = Achievements.LIST.length, cols = 3, rows = (n + cols - 1) / cols;
+        float gap = 10 * d, cw = Math.min(280 * d, (sw - gap * (cols + 1)) / cols), ch = Math.min(64 * d, (sh - 140 * d) / rows - gap);
+        float x0 = (sw - (cw * cols + gap * (cols - 1))) / 2, y0 = 64 * d;
+        for (int i = 0; i < n; i++) {
+            float x = x0 + (i % cols) * (cw + gap), y = y0 + (i / cols) * (ch + gap);
+            boolean on = g.achievements.has(g.settings, i);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(on ? 0xFF2d3548 : 0xFF1f2531);
+            r.set(x, y, x + cw, y + ch);
+            c.drawRoundRect(r, 12 * d, 12 * d, p);
+            g.achievements.trophy(c, x + 24 * d, y + ch / 2, Math.min(12 * d, ch * 0.25f), on);
+            float ts = Math.min(14 * d, ch * 0.26f);
+            text(c, Achievements.LIST[i][0], x + 46 * d, y + ch * 0.45f, ts, on ? 0xFFffffff : 0xFF7d8698, Paint.Align.LEFT, true);
+            text(c, Achievements.LIST[i][1], x + 46 * d, y + ch * 0.45f + ts * 1.2f, ts * 0.78f, on ? 0xFFb9c2d0 : 0xFF5d6575, Paint.Align.LEFT, false);
+        }
+        button(c, sw / 2f - 90 * d, sh - 58 * d, 180 * d, 44 * d, "Volver", A_BACK, true);
     }
 
     private void wrap(Canvas c, String s, float x, float y, float maxW, float size, int col) {

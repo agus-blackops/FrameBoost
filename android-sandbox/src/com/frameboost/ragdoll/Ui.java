@@ -456,6 +456,57 @@ final class Ui {
                 person(c, cx + s * 0.45f, cy + s * 0.3f, s * 0.55f, 0xFF7a4aa8);
                 person(c, cx, cy + s * 0.2f, s * 0.7f, 0xFF3b6ea8);
                 break;
+            case Tools.ROTATE:
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(w);
+                p.setColor(0xFF7fd1ff);
+                r2.set(cx - s * 0.6f, cy - s * 0.6f, cx + s * 0.6f, cy + s * 0.6f);
+                c.drawArc(r2, 200f, 270f, false, p);
+                line(c, cx + s * 0.05f, cy - s * 0.6f, cx - s * 0.25f, cy - s * 0.85f, w, 0xFF7fd1ff);
+                line(c, cx + s * 0.05f, cy - s * 0.6f, cx - s * 0.2f, cy - s * 0.35f, w, 0xFF7fd1ff);
+                break;
+            case Tools.ROPE: {
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(w * 0.9f);
+                p.setColor(0xFFc8a46a);
+                r2.set(cx - s * 0.7f, cy - s * 0.9f, cx + s * 0.7f, cy + s * 0.5f);
+                c.drawArc(r2, 10f, 160f, false, p);
+                disc(c, cx - s * 0.68f, cy - s * 0.1f, s * 0.14f, 0xFF9aa3ad);
+                disc(c, cx + s * 0.68f, cy - s * 0.1f, s * 0.14f, 0xFF9aa3ad);
+                break;
+            }
+            case Tools.WELD:
+                box(c, cx - s * 0.85f, cy - s * 0.15f, cx - s * 0.1f, cy + s * 0.55f, 0xFF8a9099, s * 0.08f);
+                box(c, cx + s * 0.1f, cy - s * 0.15f, cx + s * 0.85f, cy + s * 0.55f, 0xFF8a9099, s * 0.08f);
+                line(c, cx - s * 0.3f, cy + s * 0.2f, cx + s * 0.3f, cy + s * 0.2f, w, 0xFFe9ecf1);
+                disc(c, cx, cy - s * 0.35f, s * 0.18f, 0xFFffc83d);
+                for (int i = 0; i < 4; i++) line(c, cx, cy - s * 0.35f, cx + (i - 1.5f) * s * 0.25f, cy - s * 0.8f, w * 0.4f, 0xFFffe08a);
+                break;
+            case Tools.HINGE:
+                box(c, cx - s * 0.85f, cy - s * 0.1f, cx + s * 0.85f, cy + s * 0.18f, 0xFFC9A066, s * 0.06f);
+                disc(c, cx, cy, s * 0.32f, 0xFFb9c0ca);
+                disc(c, cx, cy, s * 0.13f, 0xFF4a525c);
+                break;
+            case Tools.ACTIVATE:
+                disc(c, cx, cy, s * 0.6f, 0xFF3a4255);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(w);
+                p.setColor(0xFF6dff8a);
+                r2.set(cx - s * 0.38f, cy - s * 0.38f, cx + s * 0.38f, cy + s * 0.38f);
+                c.drawArc(r2, -60f, 300f, false, p);
+                line(c, cx, cy - s * 0.5f, cx, cy - s * 0.1f, w, 0xFF6dff8a);
+                break;
+            case Tools.MOTOR:
+                disc(c, cx, cy, s * 0.62f, 0xFF25272c);
+                disc(c, cx, cy, s * 0.32f, 0xFFf2b134);
+                disc(c, cx, cy, s * 0.12f, 0xFF1b2029);
+                break;
+            case Tools.THRUSTER:
+                box(c, cx - s * 0.18f, cy - s * 0.55f, cx + s * 0.18f, cy + s * 0.35f, 0xFFd0d4da, s * 0.1f);
+                disc(c, cx, cy - s * 0.55f, s * 0.2f, 0xFFd33a2c);
+                disc(c, cx, cy + s * 0.6f, s * 0.2f, 0xFFff9a1f);
+                disc(c, cx, cy + s * 0.78f, s * 0.12f, 0xFFffe27a);
+                break;
             case Tools.ROBOT:
                 person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFF68788a, 0xFFa9b4bf, 0xFF4b5666, 1f);
                 line(c, cx, cy - s * 0.88f, cx, cy - s * 1.05f, w * 0.5f, 0xFF9aa5b1);

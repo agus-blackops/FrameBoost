@@ -28,6 +28,19 @@ Contenido: humano, gigante, niño y multitud; caja, caja grande, tabla, barril, 
 acero, plataforma fija; granada, dinamita, TNT, barril explosivo, detonar y bomba nuclear; pistola, rifle,
 escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
 
+## Novedades de la v2.2
+
+* **Construcción:** Cuerda (entre dos objetos o colgando de un gancho en el aire), Soldar (unión rígida),
+  Eje (bisagra: el centro de una rueda queda fijo y gira libre), Girar (rota cualquier objeto) y Activar
+  (motores, propulsores, explosivos a distancia... o hacer saltar a una persona). Cortar también corta
+  cuerdas y soldaduras. Todo se guarda con la escena.
+* **Vehículos:** Rueda motor (arranca al montarla en un eje; Activar cambia adelante / atrás / apagado)
+  y Propulsor (levanta incluso a una persona). Tabla + 2 ruedas motor + 2 ejes = un coche.
+* **Cámara que sigue:** doble toque con la Mano sobre algo para seguirlo; doble toque en el fondo para soltar.
+* **12 logros** con aviso al desbloquearlos y pantalla de colección en el menú principal.
+* **Desafío 7 "Ingeniería":** lleva la caja hasta la bandera construyendo un vehículo.
+* Corregido: tocar el interior de una rueda o pelota no la seleccionaba.
+
 ## Novedades de la v2.0
 
 * **Muñecos activos:** equilibrio con "músculos" (control PD sobre la velocidad, con pies que agarran el

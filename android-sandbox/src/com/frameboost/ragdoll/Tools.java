@@ -2,7 +2,8 @@ package com.frameboost.ragdoll;
 
 /** Catalogue of tools and spawnable items, grouped in categories. */
 final class Tools {
-    static final int HAND = 0, DELETE = 1, FREEZE = 2, CUT = 3,
+    static final int HAND = 0, DELETE = 1, FREEZE = 2, CUT = 3, ROPE = 4, WELD = 5, HINGE = 6, ACTIVATE = 7, ROTATE = 8,
+            MOTOR = 60, THRUSTER = 61,
             HUMAN = 10, GIANT = 11, KID = 12, CROWD = 13, ROBOT = 14, ZOMBIE = 15, SKELETON = 16,
             WHEEL = 17, BOWLING = 18, MELON = 19,
             CRATE = 20, BIGCRATE = 21, PLANK = 22, BARREL = 23, BALL = 24, BALLOON = 25, STEEL = 26, PLATFORM = 27,
@@ -27,7 +28,12 @@ final class Tools {
             new Item(HAND, "Mano", "Arrastra lo que quieras · 2 dedos: mover y zoom"),
             new Item(DELETE, "Borrar", "Toca o desliza sobre algo para borrarlo"),
             new Item(FREEZE, "Clavar", "Toca una pieza para clavarla (otra vez para soltarla)"),
-            new Item(CUT, "Cortar", "Desliza para cortar articulaciones y estructuras"),
+            new Item(CUT, "Cortar", "Desliza para cortar articulaciones, cuerdas y estructuras"),
+            new Item(ROTATE, "Girar", "Arrastra alrededor de un objeto para girarlo"),
+            new Item(ROPE, "Cuerda", "Toca dos puntos para unirlos con una cuerda (en el aire = gancho)"),
+            new Item(WELD, "Soldar", "Toca dos piezas para unirlas de forma rígida"),
+            new Item(HINGE, "Eje", "Toca dos piezas para unirlas con un eje que gira (ruedas, bisagras)"),
+            new Item(ACTIVATE, "Activar", "Toca motores, propulsores, explosivos... o personas para que salten"),
         },
         {
             new Item(HUMAN, "Humano", PLACE),
@@ -46,6 +52,8 @@ final class Tools {
             new Item(BALL, "Pelota", PLACE),
             new Item(BALLOON, "Globo", PLACE),
             new Item(WHEEL, "Rueda", PLACE + " · rueda de camión"),
+            new Item(MOTOR, "Rueda motor", PLACE + " · arranca al ponerle un Eje (o con Activar)"),
+            new Item(THRUSTER, "Propulsor", PLACE + " · enciéndelo con Activar; únelo con Soldar"),
             new Item(BOWLING, "Bolos", PLACE + " · bola pesadísima"),
             new Item(MELON, "Sandía", PLACE + " · revienta al golpear"),
             new Item(STEEL, "Bloque acero", PLACE),
@@ -98,14 +106,16 @@ final class Tools {
     }
 
     static boolean isSpawn(int id) {
-        return (id >= HUMAN && id <= STEEL + 1) || (id >= GRENADE && id <= XBARREL) || id == KNIFE || id == SWORD;
+        return (id >= HUMAN && id <= STEEL + 1) || (id >= GRENADE && id <= XBARREL) || id == KNIFE || id == SWORD
+                || id == MOTOR || id == THRUSTER;
     }
 
     /** Item keys usable from mod scripts. */
     static final String[] KEYS = {"human", "giant", "kid", "robot", "zombie", "skeleton", "crate", "bigcrate", "plank", "barrel", "ball",
-            "balloon", "steel", "wheel", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel", "knife", "sword", "platform"};
+            "balloon", "steel", "wheel", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel", "knife", "sword", "platform",
+            "motor", "thruster"};
     static final int[] KEY_IDS = {HUMAN, GIANT, KID, ROBOT, ZOMBIE, SKELETON, CRATE, BIGCRATE, PLANK, BARREL, BALL,
-            BALLOON, STEEL, WHEEL, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL, KNIFE, SWORD, PLATFORM};
+            BALLOON, STEEL, WHEEL, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL, KNIFE, SWORD, PLATFORM, MOTOR, THRUSTER};
 
     static int keyId(String k) {
         for (int i = 0; i < KEYS.length; i++) if (KEYS[i].equals(k)) return KEY_IDS[i];

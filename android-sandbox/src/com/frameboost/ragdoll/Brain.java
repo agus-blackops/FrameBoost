@@ -124,6 +124,7 @@ final class Brain {
     private static void reanimate(World w, Body b) {
         if (b.neck.dead || b.removed) return;
         b.kind = Body.K_ZOMBIE;
+        w.stats.infections++;
         b.skin = 0xFF7fa65a;
         b.shirt = Renderer.mix(b.shirt, 0xFF4a473a, 0.6f);
         b.dead = false;

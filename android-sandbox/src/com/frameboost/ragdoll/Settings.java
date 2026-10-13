@@ -4,7 +4,8 @@ package com.frameboost.ragdoll;
 final class Settings {
     float music = 0.7f, sfx = 0.9f;
     boolean haptics = true, gore = true, showFps = false, highQuality = true, tutorialDone = false, textures = true, muted = false;
-    String stars = "000000";
+    String stars = "0000000";
+    String ach = "000000000000";
 
     int stars(int i) { return i < stars.length() ? stars.charAt(i) - '0' : 0; }
 

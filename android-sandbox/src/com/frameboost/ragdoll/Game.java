@@ -39,6 +39,16 @@ final class Game {
     float chTime, chIdle, chSpawnT, chEndT, lastSimDt;
     final StringBuilder chProgress = new StringBuilder();
     private float slowmoT, demoT;
+    // rotate tool
+    private Body rotBody;
+    private float rotAngle;
+    // two-tap tools (rope / weld / hinge)
+    private Particle linkFirst;
+    private float linkFx, linkFy;
+    // camera follow (double tap with the hand)
+    Body follow;
+    private float lastTapT = -1f, lastTapX, lastTapY, clock;
+    final Achievements achievements = new Achievements();
     final Renderer renderer = new Renderer();
     final Ui ui = new Ui();
     final Random rnd = new Random();
@@ -141,6 +151,8 @@ final class Game {
         paused = false; slow = false; gravMode = 0;
         world.grabs.clear();
         undo.clear();
+        follow = null;
+        linkFirst = null;
         for (Mod m : mods.mods) if (m.on) mods.toggle(m, this);
         if (chal >= 0) {
             Challenges.setup(this, chal);
@@ -183,10 +195,11 @@ final class Game {
                 if (!settings.tutorialDone) { screens.screen = Screens.TUTORIAL; screens.tutStep = 0; screens.tutT = 0; tutBodies = world.bodies.size(); tutZoom = zoom; }
                 break;
             case Screens.A_CHALLENGES: screens.screen = Screens.CHALLENGES; break;
+            case Screens.A_ACH: screens.screen = Screens.ACHIEVEMENTS; break;
             case Screens.A_SETTINGS: screens.back = screens.screen; screens.screen = Screens.SETTINGS; break;
             case Screens.A_BACK:
                 screens.screen = screens.screen == Screens.SETTINGS ? screens.back
-                        : (screens.screen == Screens.CHALLENGES ? Screens.TITLE : Screens.NONE);
+                        : (screens.screen == Screens.CHALLENGES || screens.screen == Screens.ACHIEVEMENTS ? Screens.TITLE : Screens.NONE);
                 break;
             case Screens.A_RESUME: screens.screen = Screens.NONE; paused = false; refreshButtons(); break;
             case Screens.A_MENU:
@@ -324,6 +337,18 @@ final class Game {
             if (tool == Tools.FIRE) igniteAt(toWorldX(pt.x), toWorldY(pt.y));
         }
         world.update(sim);
+        clock += dtReal;
+        if (follow != null) {
+            if (follow.removed || follow.ps.isEmpty()) follow = null;
+            else {
+                float k = Math.min(1f, dtReal * 4f);
+                camX += (follow.cx - camX) * k;
+                camY += (follow.cy - 60f - camY) * k * 0.6f;
+                clampCam();
+            }
+        }
+        if (linkFirst != null && linkFirst.dead) linkFirst = null;
+        achievements.update(this, dtReal);
         if (world.rumble > 0f) {
             float rr = world.rumble;
             world.rumble = 0f;
@@ -347,6 +372,29 @@ final class Game {
             p.setColor(Renderer.alpha(0xFFfff6dd, fx.flash * 0.7f));
             c.drawRect(0, 0, sw, sh, p);
         }
+        if (challenge == 6) {                     // finish flag of the engineering challenge
+            float fx0 = (2250f - camX) * zoom + sw / 2f, fy0 = (world.floorY - camY) * zoom + sh / 2f;
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(4f * density);
+            p.setColor(0xFFe9ecf1);
+            c.drawLine(fx0, fy0, fx0, fy0 - 150 * zoom, p);
+            p.setStyle(Paint.Style.FILL);
+            for (int i = 0; i < 4; i++) for (int j = 0; j < 3; j++) {
+                p.setColor(((i + j) & 1) == 0 ? 0xFF111111 : 0xFFffffff);
+                float cx0 = fx0 + i * 14 * zoom, cy0 = fy0 - 150 * zoom + j * 14 * zoom;
+                c.drawRect(cx0, cy0, cx0 + 14 * zoom, cy0 + 14 * zoom, p);
+            }
+        }
+        // pending rope / weld / hinge
+        if (linkFirst != null && (tool == Tools.ROPE || tool == Tools.WELD || tool == Tools.HINGE)) {
+            float lx = (linkFirst.x - camX) * zoom + sw / 2f, ly = (linkFirst.y - camY) * zoom + sh / 2f;
+            float pulse = 0.5f + 0.5f * (float) Math.sin(clock * 8f);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(3f * density);
+            p.setColor(Renderer.alpha(0xFFf2b134, 0.6f + 0.4f * pulse));
+            c.drawCircle(lx, ly, (10 + 4 * pulse) * density, p);
+        }
+        achievements.draw(c, this);
         // aiming helpers
         for (Ptr pt : ptrs) {
             if (!pt.down || pt.role != R_TOOL) continue;
@@ -371,7 +419,7 @@ final class Game {
                 c.drawCircle(pt.x, pt.y, 14 * density, p);
             }
         }
-        if (screens.screen != Screens.TITLE && screens.screen != Screens.CHALLENGES) {
+        if (screens.screen != Screens.TITLE && screens.screen != Screens.CHALLENGES && screens.screen != Screens.ACHIEVEMENTS) {
             Tools.Item it = Tools.find(tool);
             ui.draw(c, tool, it.name, it.hint, fps, world.bodies.size(), confirmClear);
             if (challenge >= 0) challengeBanner(c);
@@ -447,6 +495,13 @@ final class Game {
         }
         if (tool == Tools.HAND) {
             pt.role = grabbed ? R_TOOL : R_PAN;
+            boolean dbl = clock - lastTapT < 0.32f && Math.abs(x - lastTapX) < 40 * density && Math.abs(y - lastTapY) < 40 * density;
+            lastTapT = clock; lastTapX = x; lastTapY = y;
+            if (dbl) {
+                Body b = grabbed && pt.grab != null ? pt.grab.p.body : null;
+                if (b != null && b != follow) { follow = b; ui.toast("Cámara siguiendo · doble toque en el fondo para soltar"); }
+                else if (b == null && follow != null) { follow = null; ui.toast("Cámara libre"); }
+            }
             return;
         }
         pt.role = R_TOOL;
@@ -459,6 +514,12 @@ final class Game {
             case Tools.FREEZE: freezeAt(wx, wy); break;
             case Tools.FIRE: igniteAt(wx, wy); break;
             case Tools.CUT: break;
+            case Tools.ROPE: case Tools.WELD: case Tools.HINGE: linkTap(wx, wy); break;
+            case Tools.ACTIVATE: activateAt(wx, wy); break;
+            case Tools.ROTATE:
+                rotBody = world.pickBody(wx, wy, 40f / zoom);
+                if (rotBody != null) { rotBody.updateBounds(); rotAngle = (float) Math.atan2(wy - rotBody.cy, wx - rotBody.cx); }
+                break;
             case Tools.PISTOL: case Tools.SHOTGUN: case Tools.ROCKET: case Tools.RIFLE:
                 fire(tool, wx, wy); break;
             case Tools.LIGHTNING: world.lightning(wx); break;
@@ -488,6 +549,7 @@ final class Game {
                 }
                 break;
             case R_PAN:
+                if (pt.dragged) follow = null;
                 camX -= (x - pt.lx) / zoom;
                 camY -= (y - pt.ly) / zoom;
                 clampCam();
@@ -500,6 +562,7 @@ final class Game {
                 if (pt.grab != null) { pt.grab.tx = wx; pt.grab.ty = wy; }
                 else if (tool == Tools.DELETE) deleteAt(wx, wy);
                 else if (tool == Tools.CUT) cutSegment(toWorldX(pt.lx), toWorldY(pt.ly), wx, wy);
+                else if (tool == Tools.ROTATE && rotBody != null && !rotBody.removed) rotateBy(rotBody, wx, wy);
                 break;
             }
             default: break;
@@ -575,6 +638,7 @@ final class Game {
             int i = a - Ui.ITEM;
             if (i >= 0 && i < items.length) {
                 int id = items[i].id;
+                linkFirst = null;
                 if (id == Tools.MOD_CREATE) { if (host != null) host.editMod(null); else ui.toast("Editor no disponible"); }
                 else if (id >= Tools.STYLE_TEX && id < Tools.STYLE_TEX + 50) { settings.textures = !settings.textures; saveSettings(); ui.toast(textures ? "Texturas activadas" : "Texturas desactivadas"); }
                 else if (id >= Tools.STYLE_BASE) { userTheme = id - Tools.STYLE_BASE; ui.toast("Fondo: " + Tools.THEMES[userTheme]); }
@@ -680,6 +744,108 @@ final class Game {
         return true;
     }
 
+    // ------------------------------------------------------------------------ construction ----
+
+    /** A particle to attach to; tapping near a wheel's centre picks its axle. */
+    private Particle pickForLink(float wx, float wy) {
+        Particle q = world.pickParticle(wx, wy, 30f / zoom);
+        if (q == null) return null;
+        Body b = q.body;
+        if ((b.type == Body.BALL || b.type == Body.WHEEL || b.type == Body.BOWLING || b.type == Body.MELON) && !b.ps.isEmpty()) {
+            Particle c = b.ps.get(0);
+            float dx = c.x - wx, dy = c.y - wy;
+            if (dx * dx + dy * dy < (b.param * 0.75f) * (b.param * 0.75f)) return c;
+        }
+        return q;
+    }
+
+    private void linkTap(float wx, float wy) {
+        Particle q = pickForLink(wx, wy);
+        if (q == null) {
+            // empty space: a bolt in the air to hang things from
+            Body an = Spawner.anchor(wx, wy);
+            if (!world.add(an)) return;
+            undo.add(an);
+            world.rebuildNow();
+            q = an.ps.get(0);
+        }
+        if (linkFirst == null) {
+            linkFirst = q; linkFx = q.x; linkFy = q.y;
+            ui.toast(tool == Tools.ROPE ? "Ahora toca el otro extremo de la cuerda" : "Ahora toca la segunda pieza");
+            click();
+            return;
+        }
+        Particle a = linkFirst;
+        linkFirst = null;
+        if (a == q || a.dead) return;
+        if (tool == Tools.ROPE) {
+            float dx = q.x - a.x, dy = q.y - a.y;
+            float len = (float) Math.sqrt(dx * dx + dy * dy);
+            int n = Math.max(2, Math.min(60, (int) (len / 18f)));
+            Body r = Spawner.rope(a.x, a.y, q.x, q.y, n);
+            if (!world.add(r)) { ui.toast("Límite de objetos alcanzado"); return; }
+            Stick s1 = new Stick(r, r.ps.get(0), a, 0, 0);
+            Stick s2 = new Stick(r, r.ps.get(r.ps.size() - 1), q, 0, 0);
+            s1.joint = s2.joint = true;
+            s1.tear = s2.tear = 90f;
+            undo.add(r);
+            world.stats.links++;
+            ui.toast("Cuerda creada");
+        } else {
+            if (a.body == q.body) { ui.toast("Elige piezas de dos objetos distintos"); return; }
+            world.link(a, q, tool == Tools.WELD);
+            ui.toast(tool == Tools.WELD ? "Soldado" : "Eje creado");
+        }
+        haptic(20);
+        if (sfx != null) sfx.thud(0.4f);
+    }
+
+    /** Rotates a whole body around its centre to follow the finger (velocities are cleared). */
+    private void rotateBy(Body b, float wx, float wy) {
+        float ang = (float) Math.atan2(wy - b.cy, wx - b.cx);
+        float d = ang - rotAngle;
+        if (d > Math.PI) d -= 2 * Math.PI;
+        if (d < -Math.PI) d += 2 * Math.PI;
+        rotAngle = ang;
+        float c = (float) Math.cos(d), s = (float) Math.sin(d);
+        for (Particle p : b.ps) {
+            if (p.pinned) continue;
+            float dx = p.x - b.cx, dy = p.y - b.cy;
+            p.x = b.cx + dx * c - dy * s;
+            p.y = b.cy + dx * s + dy * c;
+            p.px = p.x; p.py = p.y;
+        }
+    }
+
+    private void activateAt(float wx, float wy) {
+        Body b = world.pickBody(wx, wy, 34f / zoom);
+        if (b == null) return;
+        switch (b.type) {
+            case Body.WHEEL:
+                b.motorized = true;
+                b.motor = b.motor == 0 ? 1 : (b.motor == 1 ? -1 : 0);
+                ui.toast(b.motor == 0 ? "Motor apagado" : (b.motor == 1 ? "Motor: adelante →" : "Motor: atrás ←"));
+                break;
+            case Body.THRUSTER:
+                b.thrust = !b.thrust;
+                if (b.thrust) world.stats.thrusts++;
+                ui.toast(b.thrust ? "Propulsor encendido" : "Propulsor apagado");
+                break;
+            case Body.HUMAN:
+                if (Brain.able(b)) {
+                    for (Particle p : b.ps) p.addVel(0, -720f);
+                    ui.toast("¡Salta!");
+                }
+                break;
+            default:
+                if (b.explosive && b.fuse < 0f) { b.fuse = b.type == Body.GRENADE ? 3f : (b.type == Body.DYNAMITE ? 4f : 0.05f); ui.toast("¡Activado!"); }
+                else if (b.explosive) { b.fuse = Math.min(b.fuse, 0.05f); }
+                else if (b.type == Body.BALLOON) world.pop(b);
+                else ui.toast("Esto no se puede activar");
+        }
+        click();
+    }
+
     private void deleteAt(float wx, float wy) {
         Body b = world.pickBody(wx, wy, 34f / zoom);
         if (b == null) return;
@@ -715,7 +881,13 @@ final class Game {
         ArrayList<Body> victims = null;
         for (int i = 0; i < world.ss.size(); i++) {
             Stick s = world.ss.get(i);
-            if (s.dead || !s.collide) continue;
+            if (s.dead) continue;
+            boolean cord = s.weld || s.body.type == Body.ROPE;   // ropes and welds snap exactly where you swipe
+            if (!s.collide && !cord) continue;
+            if (cord) {
+                if (segDist(x0, y0, x1, y1, s.a.x, s.a.y, s.b.x, s.b.y) <= s.r + 6f) world.breakStick(s);
+                continue;
+            }
             if (segDist(x0, y0, x1, y1, s.a.x, s.a.y, s.b.x, s.b.y) <= s.r + 2f) {
                 float mx = (s.a.x + s.b.x) / 2, my = (s.a.y + s.b.y) / 2;
                 if (victims == null) victims = new ArrayList<>();
@@ -793,6 +965,8 @@ final class Game {
             case Tools.ZOMBIE: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_ZOMBIE)); break;
             case Tools.SKELETON: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_SKELETON)); break;
             case Tools.WHEEL: register(Spawner.wheel(x, Math.min(y, fl - 50))); break;
+            case Tools.MOTOR: register(Spawner.motorWheel(x, Math.min(y, fl - 50))); break;
+            case Tools.THRUSTER: register(Spawner.thruster(x, Math.min(y, fl - 20))); break;
             case Tools.BOWLING: register(Spawner.bowling(x, Math.min(y, fl - 30))); break;
             case Tools.MELON: register(Spawner.melon(x, Math.min(y, fl - 40))); break;
             case Tools.HUMAN: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir)); break;

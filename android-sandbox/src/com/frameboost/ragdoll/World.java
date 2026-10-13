@@ -21,6 +21,13 @@ final class World {
     float wind = 0f;          // horizontal acceleration (mods)
     float modBounce = 0f;     // minimum bounce (mods)
     float rumble;             // accumulated 'oomph' this frame (haptics, music intensity)
+    final Stats stats = new Stats();
+
+    /** Counters used by achievements. */
+    static final class Stats {
+        int explosions, joints, headshots, infections, melons, thrusts, links, recentBooms;
+        float recentT;
+    }
 
     final ArrayList<Body> bodies = new ArrayList<>();
     final ArrayList<Particle> ps = new ArrayList<>();
@@ -90,6 +97,8 @@ final class World {
         fx.clear();
     }
 
+    void rebuildNow() { rebuild(); }
+
     private void rebuild() {
         ps.clear(); ss.clear(); ls.clear();
         for (int i = 0; i < bodies.size(); i++) {
@@ -136,6 +145,7 @@ final class World {
             p.y += vy + g * p.body.gravScale;
         }
         Brain.muscles(this);
+        machines();
         buildGrids();
         for (int it = 0; it < ITER; it++) {
             solveSticks();
@@ -331,7 +341,8 @@ final class World {
                     if (vy > 0) p.py = p.y + vy * Math.max(Math.max(0.04f, p.body.bounce), modBounce);
                     float vx = p.x - p.px;
                     float dv = FRICTION * gravity * Math.abs(gravMul) * H * H * 1.3f;
-                    if (Math.abs(vx) <= dv) p.px = p.x; else p.px += vx > 0 ? dv : -dv;
+                    if (p.body.type == Body.WHEEL) p.px = p.x;          // tyres grip: roll, don't skid
+                    else if (Math.abs(vx) <= dv) p.px = p.x; else p.px += vx > 0 ? dv : -dv;
                 }
             }
             if (p.x - r < wallL) { float vx = p.x - p.px; p.x = wallL + r; if (first && vx < 0) p.px = p.x + vx * 0.2f; }
@@ -454,6 +465,16 @@ final class World {
                 }
             }
         }
+        if (stats.recentT > 0f) { stats.recentT -= dt; if (stats.recentT <= 0f) stats.recentBooms = 0; }
+        for (int i = 0; i < bodies.size(); i++) {      // thruster flames
+            Body b = bodies.get(i);
+            if (b.type != Body.THRUSTER || !b.thrust || b.ps.size() != 2) continue;
+            Particle a = b.ps.get(0), z = b.ps.get(1);
+            float dx = a.x - z.x, dy = a.y - z.y, l = (float) Math.sqrt(dx * dx + dy * dy) + 1e-3f;
+            for (int k = 0; k < 3; k++)
+                fx.add(Fx.FLAME, a.x + dx / l * 8, a.y + dy / l * 8, dx / l * 500 + fx.rr(60), dy / l * 500 + fx.rr(60), 0.25f, 9f, 0);
+            if (rnd.nextFloat() < 0.4f) fx.smoke(a.x + dx / l * 20, a.y + dy / l * 20, 7f, 0xFF888888);
+        }
         spreadT += dt;
         if (spreadT > 0.25f) { spreadT = 0; spreadFire(); }
         // rockets
@@ -558,6 +579,7 @@ final class World {
                 s.b.bleed = Math.max(s.b.bleed, 9f + rnd.nextFloat() * 5f);
                 fx.bloodBurst((s.a.x + s.b.x) / 2, (s.a.y + s.b.y) / 2, 16);
                 rumble += 0.18f;
+                stats.joints++;
                 if (sfx != null) sfx.splat();
                 if (s == b.neck) kill(b);
                 else if (!b.dead) hit(b, 18f, s.a.x, s.a.y, false);
@@ -589,6 +611,7 @@ final class World {
 
     void smash(Body b) {
         if (b.removed) return;
+        stats.melons++;
         int a0 = fx.bloodA, b0 = fx.bloodB;
         fx.bloodA = 0xFFe0384a; fx.bloodB = 0xFFb82234;
         fx.bloodBurst(b.cx, b.cy, 26);
@@ -598,6 +621,121 @@ final class World {
         fx.debris(b.cx, b.cy, 8, 0xFF3f9a3c, 300f);
         if (sfx != null) sfx.splat();
         removeBody(b);
+    }
+
+    // ----------------------------------------------------------------------- machines -----
+
+    /** Motor wheels spin toward a target speed; thrusters push along their axis. Once per step. */
+    private void machines() {
+        for (int i = 0; i < bodies.size(); i++) {
+            Body b = bodies.get(i);
+            if (b.type == Body.WHEEL && b.motor != 0 && b.ps.size() > 3) {
+                Particle c = b.ps.get(0);
+                float w = 0f, rr = 0f;
+                int n = b.ps.size();
+                for (int k = 1; k < n; k++) {
+                    Particle p = b.ps.get(k);
+                    float rx = p.x - c.x, ry = p.y - c.y;
+                    float vx = (p.x - p.px) - (c.x - c.px), vy = (p.y - p.py) - (c.y - c.py);
+                    w += (rx * vy - ry * vx);
+                    rr += rx * rx + ry * ry;
+                }
+                if (rr < 1f) continue;
+                float omega = w / rr;                        // radians per step
+                float target = b.motor * 9.5f * H;           // ~9.5 rad/s
+                float dw = Math.max(-0.0016f, Math.min(0.0016f, (target - omega) * 0.25f));
+                for (int k = 1; k < n; k++) {
+                    Particle p = b.ps.get(k);
+                    float rx = p.x - c.x, ry = p.y - c.y;
+                    p.px += ry * dw;           // tangential velocity change = dw x r
+                    p.py -= rx * dw;
+                }
+            } else if (b.type == Body.THRUSTER && b.thrust && b.ps.size() == 2) {
+                Particle a = b.ps.get(0), z = b.ps.get(1);
+                float dx = z.x - a.x, dy = z.y - a.y;
+                float l = (float) Math.sqrt(dx * dx + dy * dy);
+                if (l < 1f) continue;
+                float ux = dx / l, uy = dy / l;
+                float vAlong = (a.vx() + z.vx()) * 0.5f * ux + (a.vy() + z.vy()) * 0.5f * uy;
+                if (vAlong > 1600f) continue;                 // top speed, so it stays controllable
+                float acc = 55000f * H * H;                    // ~130k force units: can lift a person
+                a.px -= ux * acc; a.py -= uy * acc;
+                z.px -= ux * acc; z.py -= uy * acc;
+            }
+        }
+    }
+
+    /**
+     * Joins two bodies. Axle (rigid = false): the pivot particle is pinned to the other body with a
+     * triangle of two sticks, so that body holds the pivot fixed and the pivot's own body spins around it.
+     * Weld (rigid = true): three sticks in a triangle, nothing can rotate.
+     */
+    Stick link(Particle a, Particle b, boolean rigid) {
+        if (a == b || a.dead || b.dead || a.body == b.body) return null;
+        // the centre of a wheel/ball is always the pivot
+        if (!rigid && isCentre(b) && !isCentre(a)) { Particle t = a; a = b; b = t; }
+        Particle b2 = triangle(b.body, a, b);
+        Stick s = mk(a, b, Stick.FILL);
+        if (b2 != null) mk(a, b2, Stick.HIDDEN);
+        if (rigid) {
+            // two points on each side, all four cross-linked: a braced quadrilateral can't bend
+            Particle a2 = triangle(a.body, b, a);
+            if (a2 != null) {
+                mk(a2, b, Stick.HIDDEN);
+                if (b2 != null) mk(a2, b2, Stick.HIDDEN);
+            }
+        }
+        stats.links++;
+        dirty = true;
+        if (a.body.motorized && a.body.motor == 0) a.body.motor = 1;
+        if (b.body.motorized && b.body.motor == 0) b.body.motor = 1;
+        return s;
+    }
+
+    private Stick mk(Particle a, Particle b, int kind) {
+        Stick s = new Stick(a.body, a, b, -1, 2.2f);
+        s.kind = kind;
+        s.color = 0xFFb9c0ca;
+        s.tear = 160f;
+        s.weld = true;
+        return s;
+    }
+
+    /** Third corner for a stiff triangle: a particle of `body` near `b`, as far as possible from the line a-b. */
+    private static Particle triangle(Body body, Particle a, Particle b) {
+        Particle best = null;
+        float bestArea = 0f;
+        float ux = b.x - a.x, uy = b.y - a.y;
+        for (int i = 0; i < body.ps.size(); i++) {
+            Particle p = body.ps.get(i);
+            if (p == b) continue;
+            float dx = p.x - b.x, dy = p.y - b.y;
+            if (dx * dx + dy * dy > 90f * 90f) continue;
+            float area = Math.abs(ux * (p.y - a.y) - uy * (p.x - a.x));
+            if (area > bestArea) { bestArea = area; best = p; }
+        }
+        return best;
+    }
+
+    static boolean isRound(Body b) {
+        return b.type == Body.WHEEL || b.type == Body.BALL || b.type == Body.BOWLING || b.type == Body.MELON || b.type == Body.BALLOON;
+    }
+
+    private static boolean isCentre(Particle p) {
+        Body b = p.body;
+        return (b.type == Body.WHEEL || b.type == Body.BALL || b.type == Body.BOWLING || b.type == Body.MELON) && !b.ps.isEmpty() && b.ps.get(0) == p;
+    }
+
+    private static Particle nearestOther(Body body, Particle not, float x, float y) {
+        Particle best = null;
+        float bd = Float.MAX_VALUE;
+        for (int i = 0; i < body.ps.size(); i++) {
+            Particle p = body.ps.get(i);
+            if (p == not) continue;
+            float dx = p.x - x, dy = p.y - y, d = dx * dx + dy * dy;
+            if (d < bd) { bd = d; best = p; }
+        }
+        return best;
     }
 
     void pop(Body b) {
@@ -612,6 +750,9 @@ final class World {
     void explode(float x, float y, float R, float pow, float dmg) {
         fx.explosion(x, y, R);
         rumble += Math.min(1.2f, R / 450f);
+        stats.explosions++;
+        stats.recentBooms++;
+        stats.recentT = 2f;
         if (sfx != null) sfx.boom(Math.min(1f, R / 600f));
         final float R2 = R * R;
         for (int i = 0; i < ps.size(); i++) {
@@ -812,6 +953,7 @@ final class World {
             if (p != null) p.bleed = Math.max(p.bleed, 6f);
             if (h.head && !b.dead) {
                 rumble += 0.25f;
+                stats.headshots++;
                 hit(b, 60f, h.x, h.y, true);
                 kill(b);
                 fx.blood(h.x, h.y, dx, dy, 12);
@@ -913,7 +1055,7 @@ final class World {
         for (int i = 0; i < ss.size(); i++) {
             Stick s = ss.get(i);
             if (s.dead || s.kind == Stick.HIDDEN && !s.collide) continue;
-            if (s.joint) continue;
+            if (s.joint || s.weld) continue;
             float abx = s.b.x - s.a.x, aby = s.b.y - s.a.y, l2 = abx * abx + aby * aby;
             float t = l2 > 1e-6f ? clamp(((x - s.a.x) * abx + (y - s.a.y) * aby) / l2) : 0f;
             float qx = s.a.x + abx * t - x, qy = s.a.y + aby * t - y;
@@ -926,6 +1068,12 @@ final class World {
                 float qx = b.head.x - x, qy = b.head.y - y;
                 float d = (float) Math.sqrt(qx * qx + qy * qy) - b.head.r;
                 if (d < bd) { bd = d; best = b.head; }
+            } else if (isRound(b) && !b.ps.isEmpty()) {
+                // the inside of a ball or wheel counts too (its ring is the only collider)
+                Particle c = b.ps.get(0);
+                float qx = c.x - x, qy = c.y - y;
+                float d = (float) Math.sqrt(qx * qx + qy * qy) - b.param - 4f;
+                if (d < bd) { bd = d; best = c; }
             }
         }
         return best;
