@@ -6,6 +6,7 @@ final class Tools {
             SYR_HEAL = 70, SYR_ADRENALINE = 71, SYR_LIFE = 72, SYR_ZOMBIE = 73, SYR_ACID = 74, SYR_SEDATIVE = 75,
             GUN_PISTOL = 80, GUN_RIFLE = 81, GUN_MINIGUN = 82, C4 = 83,
             MOTOR = 60, THRUSTER = 61,
+            SOLDIER = 90, MEDIC = 91, FIREFIGHTER = 92, THUG = 93, TURRET = 94, DRONE = 95,
             HUMAN = 10, GIANT = 11, KID = 12, CROWD = 13, ROBOT = 14, ZOMBIE = 15, SKELETON = 16,
             WHEEL = 17, BOWLING = 18, MELON = 19,
             CRATE = 20, BIGCRATE = 21, PLANK = 22, BARREL = 23, BALL = 24, BALLOON = 25, STEEL = 26, PLATFORM = 27,
@@ -46,6 +47,10 @@ final class Tools {
             new Item(ROBOT, "Robot", PLACE + " · sin sangre, suelta chispas"),
             new Item(ZOMBIE, "Zombi", PLACE + " · sangre verde"),
             new Item(SKELETON, "Esqueleto", PLACE),
+            new Item(SOLDIER, "Soldado", PLACE + " · IA: dispara a zombis y matones, nunca a civiles"),
+            new Item(MEDIC, "Médico", PLACE + " · IA: cura heridos y reanima a los muertos"),
+            new Item(FIREFIGHTER, "Bombero", PLACE + " · IA: apaga todo lo que arde"),
+            new Item(THUG, "Matón", PLACE + " · IA: busca pelea con quien pille"),
         },
         {
             new Item(CRATE, "Caja", PLACE),
@@ -79,6 +84,8 @@ final class Tools {
             new Item(GUN_PISTOL, "Pistola (obj.)", PLACE + " · dispara con Activar; suéldala a algo o a una mano"),
             new Item(GUN_RIFLE, "Rifle (obj.)", PLACE + " · dispara con Activar · atraviesa"),
             new Item(GUN_MINIGUN, "Ametralladora", PLACE + " · Activar la enciende y la apaga"),
+            new Item(TURRET, "Torreta", PLACE + " · IA: dispara sola a zombis y matones · Activar = on/off"),
+            new Item(DRONE, "Dron", PLACE + " · IA: patrulla y ataca desde el aire · Activar = on/off"),
             new Item(KNIFE, "Cuchillo", PLACE + " · agarra y apuñala"),
             new Item(SWORD, "Espada", PLACE + " · agarra y corta"),
         },
@@ -122,15 +129,17 @@ final class Tools {
 
     static boolean isSpawn(int id) {
         return (id >= HUMAN && id <= STEEL + 1) || (id >= GRENADE && id <= XBARREL) || id == KNIFE || id == SWORD
-                || id == MOTOR || id == THRUSTER || (id >= GUN_PISTOL && id <= C4);
+                || id == MOTOR || id == THRUSTER || (id >= GUN_PISTOL && id <= C4) || (id >= SOLDIER && id <= DRONE);
     }
 
     /** Item keys usable from mod scripts. */
     static final String[] KEYS = {"human", "giant", "kid", "robot", "zombie", "skeleton", "crate", "bigcrate", "plank", "barrel", "ball",
             "balloon", "steel", "wheel", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel", "knife", "sword", "platform",
-            "motor", "thruster", "pistolgun", "riflegun", "minigun", "c4"};
+            "motor", "thruster", "pistolgun", "riflegun", "minigun", "c4",
+            "soldier", "medic", "firefighter", "thug", "turret", "drone"};
     static final int[] KEY_IDS = {HUMAN, GIANT, KID, ROBOT, ZOMBIE, SKELETON, CRATE, BIGCRATE, PLANK, BARREL, BALL,
-            BALLOON, STEEL, WHEEL, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL, KNIFE, SWORD, PLATFORM, MOTOR, THRUSTER, GUN_PISTOL, GUN_RIFLE, GUN_MINIGUN, C4};
+            BALLOON, STEEL, WHEEL, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL, KNIFE, SWORD, PLATFORM, MOTOR, THRUSTER, GUN_PISTOL, GUN_RIFLE, GUN_MINIGUN, C4,
+            SOLDIER, MEDIC, FIREFIGHTER, THUG, TURRET, DRONE};
 
     static int keyId(String k) {
         for (int i = 0; i < KEYS.length; i++) if (KEYS[i].equals(k)) return KEY_IDS[i];

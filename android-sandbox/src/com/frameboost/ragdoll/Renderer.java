@@ -359,6 +359,76 @@ final class Renderer {
                 c.drawCircle((a.x + z.x) / 2, (a.y + z.y) / 2, 2.8f, p);
                 break;
             }
+            case Body.TURRET: {
+                if (b.ps.size() < 4) break;
+                Particle q = b.ps.get(2), z = b.ps.get(3);
+                float dx = z.x - q.x, dy = z.y - q.y, l = (float) Math.sqrt(dx * dx + dy * dy) + 1e-3f;
+                float ux = dx / l, uy = dy / l;
+                if (b.target != null && !b.dead && b.thrust) {     // laser sight
+                    p.setStyle(Paint.Style.STROKE);
+                    p.setStrokeWidth(1.6f);
+                    p.setColor(0x88ff2a2a);
+                    c.emissive(true);
+                    c.drawLine(z.x, z.y, z.x + ux * 900f, z.y + uy * 900f, p);
+                    c.emissive(false);
+                }
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(dark(bodyColor(b, 0xFF5d6875), 0.45f));
+                rf.set(q.x - 17f, q.y - 13f, q.x + 17f, q.y + 13f);
+                c.drawRoundRect(rf, 6f, 6f, p);
+                p.setColor(bodyColor(b, 0xFF5d6875));
+                rf.set(q.x - 15f, q.y - 11f, q.x + 15f, q.y + 11f);
+                c.drawRoundRect(rf, 5f, 5f, p);
+                p.setColor(0xFF1b222b);
+                c.drawCircle(q.x + ux * 6f, q.y + uy * 6f - 2f, 5.5f, p);
+                int eye = b.dead ? 0xFF3b4652 : (!b.thrust ? 0xFF555b66 : (b.target != null ? 0xFFff3b30 : 0xFF35e0ff));
+                p.setColor(eye);
+                c.emissive(!b.dead && b.thrust);
+                c.drawCircle(q.x + ux * 6f, q.y + uy * 6f - 2f, 3f, p);
+                c.emissive(false);
+                p.setColor(0xFF15171a);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(6f);
+                c.drawLine(z.x - ux * 3f, z.y - uy * 3f, z.x + ux * 3f, z.y + uy * 3f, p);
+                p.setStyle(Paint.Style.FILL);
+                if (b.dead) { p.setColor(0x99202020); c.drawCircle(q.x, q.y, 9f, p); }
+                break;
+            }
+            case Body.DRONE: {
+                if (b.ps.size() < 2) break;
+                Particle a = b.ps.get(0), z = b.ps.get(1);
+                float dx = z.x - a.x, dy = z.y - a.y, l = (float) Math.sqrt(dx * dx + dy * dy) + 1e-3f;
+                float nx = dy / l, ny = -dx / l;            // "up" for the drone
+                if (ny > 0) { nx = -nx; ny = -ny; }
+                float mx = (a.x + z.x) / 2, my = (a.y + z.y) / 2;
+                boolean on = b.thrust && !b.dead;
+                float spin = on ? (float) Math.abs(Math.sin(System.currentTimeMillis() * 0.05)) : 1f;
+                for (int k = 0; k < 2; k++) {
+                    Particle r = k == 0 ? a : z;
+                    float hx = r.x + nx * 9f, hy = r.y + ny * 9f;
+                    p.setStyle(Paint.Style.STROKE);
+                    p.setStrokeWidth(3f);
+                    p.setColor(0xFF2a2e35);
+                    c.drawLine(r.x, r.y, hx, hy, p);
+                    p.setStrokeWidth(3.2f);
+                    p.setColor(on ? 0x88c8d0da : 0xFF8a929c);
+                    float half = 6f + 12f * spin;
+                    c.drawLine(hx - dx / l * half, hy - dy / l * half, hx + dx / l * half, hy + dy / l * half, p);
+                }
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(dark(bodyColor(b, b.color), 0.4f));
+                c.drawCircle(mx - nx * 4f, my - ny * 4f, 10f, p);
+                p.setColor(bodyColor(b, 0xFF4d5764));
+                c.drawCircle(mx - nx * 4f, my - ny * 4f, 8.5f, p);
+                p.setColor(0xFF111418);
+                c.drawCircle(mx - nx * 7f, my - ny * 7f, 4.6f, p);
+                int eye = b.dead ? 0xFF3b4652 : (!b.thrust ? 0xFF555b66 : (b.target != null ? 0xFFff3b30 : 0xFF6dff8a));
+                p.setColor(eye);
+                c.emissive(on);
+                c.drawCircle(mx - nx * 7f, my - ny * 7f, 2.6f, p);
+                c.emissive(false);
+                break;
+            }
             case Body.TNT: {
                 label(c, b, "TNT", 0xFFfff2cf, 15f);
                 break;
@@ -564,6 +634,7 @@ final class Renderer {
         part(c, b, b.thighF, b.pants); part(c, b, b.shinF, b.pants); foot(c, b, b.shinF);
         // head
         drawHead(c, b, skin);
+        gear(c, b);
         // front arm
         part(c, b, b.uarmF, b.shirt); part(c, b, b.farmF, skin); hand(c, b, b.farmF);
         if (b == inspect) inspectOverlay(c, b);
@@ -607,6 +678,39 @@ final class Renderer {
             p.setStyle(Paint.Style.FILL);
             p.setColor(b.dead ? 0xFF555f6a : 0xFF35e0ff);
             c.drawCircle(a.x + dx * 0.5f, a.y + dy * 0.5f, 3.2f * b.scale, p);
+        } else if (b.kind == Body.K_SOLDIER) {           // camo blotches + vest
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(alpha(0xFF2f3a22, 0.7f));
+            for (int i = 0; i < 3; i++) {
+                float t = 0.2f + i * 0.28f, side = (i & 1) == 0 ? 0.45f : -0.4f;
+                c.drawCircle(a.x + dx * t + nx * r * side, a.y + dy * t + ny * r * side, r * 0.38f, p);
+            }
+            p.setStyle(Paint.Style.STROKE);
+            p.setColor(0xFF3a2f1c);
+            p.setStrokeWidth(3f * b.scale);
+            c.drawLine(a.x + dx * 0.95f + nx * r * 0.7f, a.y + dy * 0.95f + ny * r * 0.7f, a.x + dx * 0.15f - nx * r * 0.7f, a.y + dy * 0.15f - ny * r * 0.7f, p);
+        } else if (b.kind == Body.K_MEDIC) {             // red cross
+            float cx = a.x + dx * 0.62f, cy = a.y + dy * 0.62f, k = r * 0.55f;
+            p.setColor(b.dead ? 0xFF8a5a5a : 0xFFe0332c);
+            p.setStrokeWidth(3.4f * b.scale);
+            c.drawLine(cx - ux * k, cy - uy * k, cx + ux * k, cy + uy * k, p);
+            c.drawLine(cx - nx * k, cy - ny * k, cx + nx * k, cy + ny * k, p);
+        } else if (b.kind == Body.K_FIREFIGHTER) {       // reflective stripes
+            p.setStrokeWidth(3.2f * b.scale);
+            for (int i = 0; i < 2; i++) {
+                float t = 0.3f + i * 0.35f, cx = a.x + dx * t, cy = a.y + dy * t;
+                p.setColor(0xFFe9f04a);
+                c.drawLine(cx - nx * r, cy - ny * r, cx + nx * r, cy + ny * r, p);
+            }
+        } else if (b.kind == Body.K_THUG) {              // jacket zip + chain
+            p.setColor(0xFF4a4d55);
+            p.setStrokeWidth(1.6f * b.scale);
+            c.drawLine(a.x + dx * 0.1f, a.y + dy * 0.1f, z.x - dx * 0.05f, z.y - dy * 0.05f, p);
+            p.setColor(0xFFd8b23a);
+            p.setStrokeWidth(1.8f * b.scale);
+            float cx = a.x + dx * 0.8f, cy = a.y + dy * 0.8f;
+            c.drawLine(cx - nx * r * 0.5f, cy - ny * r * 0.5f, cx + ux * -6f * b.scale, cy + uy * -6f * b.scale, p);
+            c.drawLine(cx + nx * r * 0.5f, cy + ny * r * 0.5f, cx + ux * -6f * b.scale, cy + uy * -6f * b.scale, p);
         } else if (detail) {
             int pat = (b.shirt >>> 8) & 3;
             if (b.kind == Body.K_ZOMBIE) {               // torn shirt
@@ -729,8 +833,104 @@ final class Renderer {
                 if (z) { c.drawLine(b.dir * r * 0.25f, r * 0.45f, b.dir * r * 0.75f, r * 0.55f, p); }
                 else c.drawLine(b.dir * r * 0.3f, r * 0.42f, b.dir * r * 0.72f, r * 0.42f, p);
             }
+            hat(c, b, r);
         }
         c.restore();
+    }
+
+    /** Headgear of the AI roles, drawn in head space (origin = head centre, up = -y). */
+    private void hat(Draw2D c, Body b, float r) {
+        p.setStyle(Paint.Style.FILL);
+        int d = b.dir;
+        switch (b.kind) {
+            case Body.K_SOLDIER:
+                p.setColor(bodyColor(b, 0xFF3f4a2c));
+                rf.set(-r * 1.12f, -r * 1.2f, r * 1.12f, r * 0.9f);
+                c.drawArc(rf, 180f, 180f, true, p);
+                rf.set(-r * 1.25f, -r * 0.22f, r * 1.25f, r * 0.02f);
+                c.drawRoundRect(rf, r * 0.1f, r * 0.1f, p);
+                p.setColor(bodyColor(b, 0xFF566342));
+                c.drawCircle(-d * r * 0.4f, -r * 0.7f, r * 0.16f, p);
+                break;
+            case Body.K_MEDIC:
+                p.setColor(bodyColor(b, 0xFFf4f6f8));
+                rf.set(-r * 0.98f, -r * 1.05f, r * 0.98f, r * 0.55f);
+                c.drawArc(rf, 180f, 180f, true, p);
+                p.setColor(0xFFe0332c);
+                rf.set(-r * 0.08f, -r * 0.92f, r * 0.08f, -r * 0.4f);
+                c.drawRect(rf, p);
+                rf.set(-r * 0.26f, -r * 0.74f, r * 0.26f, -r * 0.58f);
+                c.drawRect(rf, p);
+                break;
+            case Body.K_FIREFIGHTER:
+                p.setColor(bodyColor(b, 0xFFf2b134));
+                rf.set(-r * 1.1f, -r * 1.25f, r * 1.1f, r * 0.85f);
+                c.drawArc(rf, 180f, 180f, true, p);
+                rf.set(-d * r * 0.6f - r * 0.75f, -r * 0.24f, -d * r * 0.6f + r * 0.75f, r * 0.04f);   // long back brim
+                c.drawRoundRect(rf, r * 0.12f, r * 0.12f, p);
+                p.setColor(0xFFd5d9de);
+                c.drawCircle(d * r * 0.55f, -r * 0.55f, r * 0.2f, p);
+                break;
+            case Body.K_THUG:
+                p.setColor(bodyColor(b, 0xFF1c1e22));          // beanie
+                rf.set(-r * 1.02f, -r * 1.12f, r * 1.02f, r * 0.6f);
+                c.drawArc(rf, 180f, 180f, true, p);
+                if (!b.dead) {
+                    p.setColor(0xFF0d0e10);                    // shades
+                    rf.set(Math.min(d * r * 0.15f, d * r * 0.95f), -r * 0.3f, Math.max(d * r * 0.15f, d * r * 0.95f), r * 0.05f);
+                    c.drawRoundRect(rf, r * 0.1f, r * 0.1f, p);
+                }
+                break;
+            default: break;
+        }
+    }
+
+    /** What the AI roles carry: the soldier's rifle, the firefighter's tank and hose. */
+    private void gear(Draw2D c, Body b) {
+        if (b.kind != Body.K_SOLDIER && b.kind != Body.K_FIREFIGHTER) return;
+        if (b.jShF.dead || b.jElF.dead) return;
+        float s = b.scale;
+        Particle hf = b.farmF.b, hb = b.farmB.b;
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        if (b.kind == Body.K_SOLDIER) {
+            float ux = b.aimX, uy = b.aimY;
+            if (b.aimT <= 0f) {                                // slung: along the forearm
+                float dx = hf.x - b.farmF.a.x, dy = hf.y - b.farmF.a.y, l = (float) Math.sqrt(dx * dx + dy * dy) + 1e-3f;
+                ux = dx / l; uy = dy / l;
+            }
+            float bx = hf.x - ux * 26f * s, by = hf.y - uy * 26f * s, ex = hf.x + ux * 30f * s, ey = hf.y + uy * 30f * s;
+            p.setColor(bodyColor(b, 0xFF1d2024));
+            p.setStrokeWidth(6.5f * s);
+            c.drawLine(bx, by, hf.x + ux * 8f * s, hf.y + uy * 8f * s, p);
+            p.setStrokeWidth(3.6f * s);
+            c.drawLine(bx, by, ex, ey, p);
+            p.setColor(bodyColor(b, 0xFF5b4024));            // stock
+            p.setStrokeWidth(6f * s);
+            c.drawLine(bx - ux * 10f * s, by - uy * 10f * s, bx, by, p);
+            p.setColor(bodyColor(b, 0xFF2b2b30));            // magazine
+            p.setStrokeWidth(4f * s);
+            float nx = -uy * b.dir, ny = ux * b.dir;
+            if (ny < 0) { nx = -nx; ny = -ny; }
+            c.drawLine(hf.x - ux * 6f * s, hf.y - uy * 6f * s, hf.x - ux * 8f * s + nx * 10f * s, hf.y - uy * 8f * s + ny * 10f * s, p);
+        } else {
+            // air tank on the back, hose to the front hand
+            float tx = b.chest.x - b.dir * 13f * s, ty = b.chest.y + 12f * s;
+            p.setColor(bodyColor(b, 0xFFc93a2c));
+            p.setStrokeWidth(10f * s);
+            c.drawLine(tx, ty - 10f * s, tx, ty + 16f * s, p);
+            p.setColor(0xFF1d1f24);
+            p.setStrokeWidth(2.6f * s);
+            float mx = (tx + hf.x) * 0.5f, my = Math.max(ty, hf.y) + 16f * s;
+            c.drawLine(tx, ty + 16f * s, mx, my, p);
+            c.drawLine(mx, my, hf.x, hf.y, p);
+            if (b.aimT > 0f) {
+                p.setColor(0xFFb9c0ca);
+                p.setStrokeWidth(4f * s);
+                c.drawLine(hf.x, hf.y, hf.x + b.aimX * 12f * s, hf.y + b.aimY * 12f * s, p);
+            }
+        }
+        p.setStyle(Paint.Style.FILL);
     }
 
     /** Welds and axles: a steel strap with a rivet at each end. */
@@ -888,6 +1088,7 @@ final class Renderer {
             if (b.ps.isEmpty()) continue;
             if (b.burning) c.light(b.cx, b.cy, Math.max(160f, b.rad * 3.2f), 0xFFff7a24, 0.75f + 0.15f * (float) Math.sin(b.burnT * 23f));
             if (b.type == Body.THRUSTER && b.thrust && b.ps.size() == 2) c.light(b.ps.get(0).x, b.ps.get(0).y, 260f, 0xFFffa040, 0.9f);
+            if (b.machine() && b.thrust && !b.dead) c.light(b.cx, b.cy, 110f, b.target != null ? 0xFFff3b30 : 0xFF35e0ff, 0.45f);
             if (b.fuse >= 0f && b.type != Body.TNT && b.type != Body.XBARREL) c.light(b.ps.get(0).x, b.ps.get(0).y - 6, 90f, 0xFFffc83d, 0.6f);
         }
         if (theme == 4) {          // neon floor strip lights the room

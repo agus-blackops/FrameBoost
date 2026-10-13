@@ -20,12 +20,14 @@ final class World {
     float gravMul = 1f;
     float wind = 0f;          // horizontal acceleration (mods)
     float modBounce = 0f;     // minimum bounce (mods)
+    Body rayIgnore;           // the shooter: its own bullets go through it
     float rumble;             // accumulated 'oomph' this frame (haptics, music intensity)
     final Stats stats = new Stats();
 
     /** Counters used by achievements. */
     static final class Stats {
         int explosions, joints, headshots, infections, melons, thrusts, links, recentBooms;
+        int revives, heals, fires, machinesDown, aiKills;
         float recentT;
     }
 
@@ -485,7 +487,8 @@ final class World {
             b.updateBounds();
             if (b.hurtCd > 0) b.hurtCd -= dt;
             if (b.flashT > 0) b.flashT -= dt;
-            if (b.isHuman()) { updateHuman(b, dt); updateAcid(b, dt); if (b.adrenaline > 0f) b.adrenaline -= dt; Brain.think(this, b, dt); }
+            if (b.isHuman()) { updateHuman(b, dt); updateAcid(b, dt); if (b.adrenaline > 0f) b.adrenaline -= dt; Ai.tick(this, b, dt); Brain.think(this, b, dt); }
+            else if (b.machine()) Ai.machineThink(this, b, dt);
             if (b.burning) updateBurning(b, dt);
             if (b.fuse >= 0f) {
                 b.fuse -= dt;
@@ -668,6 +671,8 @@ final class World {
     private void machines() {
         for (int i = 0; i < bodies.size(); i++) {
             Body b = bodies.get(i);
+            if (b.type == Body.DRONE) { Ai.fly(this, b); continue; }
+            if (b.type == Body.TURRET) { Ai.servo(this, b); continue; }
             if (b.type == Body.WHEEL && b.motor != 0 && b.ps.size() > 3) {
                 Particle c = b.ps.get(0);
                 float w = 0f, rr = 0f;
@@ -980,6 +985,7 @@ final class World {
             if (b.type == Body.BALLOON) { if (f > 0.1f) { pop(b); } continue; }
             if (b.explosive && b.fuse < 0f && f > 0.15f) b.fuse = 0.06f + rnd.nextFloat() * 0.25f;
             if (b.flammable && f > 0.35f) ignite(b);
+            if (b.machine()) Ai.damage(this, b, dmg * f * 1.5f);
             if (b.isHuman()) {
                 hit(b, dmg * f * f, b.cx, b.cy, f > 0.5f);
                 if (f > 0.4f) {
@@ -1059,13 +1065,13 @@ final class World {
         float ex = x + dx * len, ey = y + dy * len;
         for (int i = 0; i < ss.size(); i++) {
             Stick s = ss.get(i);
-            if (s.dead || !s.collide) continue;
+            if (s.dead || !s.collide || s.body == rayIgnore) continue;
             float d = segSegDist(x, y, ex, ey, s.a.x, s.a.y, s.b.x, s.b.y, segOut);
             if (d < s.r) addHit(segOut[0] * len, s.body, segOut[1] < 0.5f ? s.a : s.b, false, x + dx * segOut[0] * len, y + dy * segOut[0] * len);
         }
         for (int i = 0; i < bodies.size(); i++) {
             Body b = bodies.get(i);
-            if (!b.isHuman() || b.head == null) continue;
+            if (!b.isHuman() || b.head == null || b == rayIgnore) continue;
             Particle h = b.head;
             float fx0 = x - h.x, fy0 = y - h.y;
             float bq = fx0 * dx + fy0 * dy, c = fx0 * fx0 + fy0 * fy0 - h.r * h.r;
@@ -1145,6 +1151,7 @@ final class World {
         Body b = h.body;
         if (b.type == Body.BALLOON) { pop(b); return; }
         if (b.type == Body.MELON) { smash(b); return; }
+        if (b.machine()) Ai.damage(this, b, dmg);
         if (b.explosive && b.fuse < 0f && b.type != Body.GRENADE && b.type != Body.DYNAMITE) b.fuse = 0.05f;
         if (h.p != null) h.p.addVel(dx * impulse, dy * impulse);
         if (b.isHuman()) {

@@ -24,9 +24,31 @@ APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk)
 | Armas | Toca para disparar al punto; el rifle dispara en ráfaga si mantienes |
 | Botones superiores | Pausa, cámara lenta, gravedad (normal/luna/cero), deshacer, limpiar, sonido |
 
-Contenido: humano, gigante, niño y multitud; caja, caja grande, tabla, barril, pelota, globo, bloque de
+Contenido: humano, gigante, niño, multitud, robot, zombi, esqueleto, soldado, médico, bombero y matón; torreta y dron; caja, caja grande, tabla, barril, pelota, globo, bloque de
 acero, plataforma fija; granada, dinamita, TNT, barril explosivo, detonar y bomba nuclear; pistola, rifle,
 escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
+
+## Novedades de la v3.2: nuevos modelos con IA programada
+
+Cada personaje tiene un "cerebro" con un rol (`Ai.java`), y el panel Inspeccionar muestra qué está haciendo.
+
+* **Soldado:** busca zombis y matones, se encara, apunta con el rifle (con anticipación al movimiento),
+  dispara ráfagas con cargador y recarga, da culatazos cuerpo a cuerpo y **nunca dispara si hay un civil en
+  la línea de fuego**.
+* **Médico:** va hacia los heridos, detiene hemorragias, entablilla fracturas y cura; a los muertos (con
+  cabeza y sin infectar) les hace **RCP** hasta reanimarlos. Huye si un zombi se le acerca.
+* **Bombero:** localiza cualquier cosa que arda (personas, cajas, barriles...), corre hacia ella y la apaga
+  con la manguera (chorro de agua y vapor).
+* **Matón:** busca pelea con quien pille (puñetazos que derriban), huye de los zombis y escapa cuando está
+  malherido.
+* **Torreta:** trípode que se ancla al suelo, vigila de lado a lado, fija objetivo con mira láser, dispara
+  ráfagas y recarga; no dispara si hay alguien amigo delante. Se puede averiar a tiros o con explosiones.
+* **Dron:** vuela solo con un controlador de altitud y nivelación, patrulla, persigue a los hostiles y les
+  dispara desde el aire; si lo derriban cae echando humo. Activar enciende/apaga torretas y drones.
+* **Civiles más listos:** huyen de zombis, matones, granadas y dinamita encendidas y del fuego; si están
+  acorralados contra una pared intentan escapar por el otro lado.
+* Los zombis también infectan a soldados, médicos, bomberos y matones.
+* 3 logros nuevos: *Primeros auxilios*, *Escuadrón* y *Brigada* (15 en total).
 
 ## Novedades de la v3.1: estilo People Playground
 
@@ -65,7 +87,7 @@ escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
 * **Vehículos:** Rueda motor (arranca al montarla en un eje; Activar cambia adelante / atrás / apagado)
   y Propulsor (levanta incluso a una persona). Tabla + 2 ruedas motor + 2 ejes = un coche.
 * **Cámara que sigue:** doble toque con la Mano sobre algo para seguirlo; doble toque en el fondo para soltar.
-* **12 logros** con aviso al desbloquearlos y pantalla de colección en el menú principal.
+* **12 logros** (15 desde la v3.2) con aviso al desbloquearlos y pantalla de colección en el menú principal.
 * **Desafío 7 "Ingeniería":** lleva la caja hasta la bandera construyendo un vehículo.
 * Corregido: tocar el interior de una rueda o pelota no la seleccionaba.
 
@@ -145,4 +167,5 @@ simulados) generando capturas PNG:
 ```
 test/run.sh all /tmp/shots
 MAIN=InputTest test/run.sh /tmp/shots
+MAIN=AiTest test/run.sh /tmp/shots     # comportamiento de la IA
 ```

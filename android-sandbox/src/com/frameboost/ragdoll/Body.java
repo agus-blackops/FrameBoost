@@ -6,8 +6,10 @@ import java.util.ArrayList;
 final class Body {
     static final int HUMAN = 0, CRATE = 1, PLANK = 2, BARREL = 3, BALL = 4, BALLOON = 5, HEAVY = 6,
             PLATFORM = 7, TNT = 8, XBARREL = 9, GRENADE = 10, DYNAMITE = 11, KNIFE = 12, SWORD = 13,
-            WHEEL = 14, BOWLING = 15, MELON = 16, ROPE = 17, ANCHOR = 18, THRUSTER = 19, GUN = 20, C4 = 21;
-    static final int K_HUMAN = 0, K_ROBOT = 1, K_ZOMBIE = 2, K_SKELETON = 3;
+            WHEEL = 14, BOWLING = 15, MELON = 16, ROPE = 17, ANCHOR = 18, THRUSTER = 19, GUN = 20, C4 = 21,
+            TURRET = 22, DRONE = 23;
+    static final int K_HUMAN = 0, K_ROBOT = 1, K_ZOMBIE = 2, K_SKELETON = 3,
+            K_SOLDIER = 4, K_MEDIC = 5, K_FIREFIGHTER = 6, K_THUG = 7;
 
     final int type;
     final ArrayList<Particle> ps = new ArrayList<>();
@@ -52,6 +54,15 @@ final class Body {
     boolean thrust;         // thrusters: on/off
     int gunKind;            // guns: 0 pistol, 1 rifle, 2 machine gun
     boolean firing, stuck;  // machine gun on; C4 already stuck to something
+    // programmed AI (soldiers, medics, firefighters, thugs, turrets, drones)
+    Body target;            // what the AI is busy with
+    float aimX = 1f, aimY;  // unit aim direction (guns, hoses, punches)
+    float aimT;             // > 0 while the arms point along the aim
+    float work;             // medic CPR / treatment progress, turret sweep phase
+    float punchT, shotCd, reloadT;
+    float goalX, goalY;     // drones: where to fly
+    int ammo = 12;
+    String mood = "";       // short label of what the AI is doing (inspect panel)
     float maxBlood = 100f;
     Stick[] jointList;      // cached for drawing stumps
     float param;           // spawn parameter (crate size, plank length, ball radius...) for save files
@@ -64,6 +75,19 @@ final class Body {
     Body(int type) { this.type = type; }
 
     boolean isHuman() { return type == HUMAN; }
+
+    /** A flesh-and-blood person (can bleed, be infected, take syringes). */
+    boolean organic() {
+        return type == HUMAN && kind != K_ROBOT && kind != K_SKELETON && kind != K_ZOMBIE;
+    }
+
+    /** Someone the good guys (soldiers, turrets, drones) fight, and everyone else runs from. */
+    boolean hostile() {
+        return type == HUMAN && !dead && (kind == K_ZOMBIE || kind == K_THUG);
+    }
+
+    /** An AI machine (turret or drone). */
+    boolean machine() { return type == TURRET || type == DRONE; }
 
     /** Torso, arms and legs of a person (cached). */
     Stick[] parts() {

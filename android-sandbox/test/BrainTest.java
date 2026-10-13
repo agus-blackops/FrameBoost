@@ -48,6 +48,8 @@ public class BrainTest {
         Body v2 = Spawner.human(t.world, 300, -90, 1f, 1);
         Body z2 = Spawner.human(t.world, 460, -90, 1f, -1, Body.K_ZOMBIE);
         t.world.add(v2); t.world.add(z2);
+        Harness.run(t, 0.5f);
+        v2.pelvis.setPinned(true);   // cornered civilians now try to dodge past; keep this one trapped
         for (int i = 0; i < 40; i++) { Harness.run(t, 1f); if (v2.kind == Body.K_ZOMBIE) break; }
         System.out.println(" trapped victim: " + st(v2) + " blood=" + v2.blood);
         check("bitten victim turns into a zombie", v2.kind == Body.K_ZOMBIE);

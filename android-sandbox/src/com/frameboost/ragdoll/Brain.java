@@ -28,7 +28,7 @@ final class Brain {
     static void think(World w, Body b, float dt) {
         if (b.ko > 0f) b.ko -= dt;
         if (b.biteCd > 0f) b.biteCd -= dt;
-        if (b.dead && b.bitten && b.infected < 0f && b.kind == Body.K_HUMAN) b.infected = 3f;
+        if (b.dead && b.bitten && b.infected < 0f && b.organic()) b.infected = 3f;
         if (b.infected > 0f) {
             b.infected -= dt;
             if (b.infected <= 0f) reanimate(w, b);
@@ -58,19 +58,24 @@ final class Brain {
         if (b.thinkT > 0f) return;
         b.thinkT = 0.25f + w.rnd.nextFloat() * 0.15f;
         b.walk = 0;
-        if (!able(b) || b.tone < 0.6f) return;
-        if (b.kind == Body.K_ZOMBIE) {
+        if (!able(b) || b.tone < 0.6f) {
+            b.target = null;
+            b.mood = b.dead ? "" : (b.ko > 0f ? "Inconsciente" : (b.legsBroken() ? "No puede andar" : "Aturdido"));
+            return;
+        }
+        if (Ai.decide(w, b)) {
+            // programmed roles (civilians, soldiers, medics, firefighters, thugs)
+        } else if (b.kind == Body.K_ZOMBIE) {
+            b.mood = "Buscando presas";
             Body prey = nearest(w, b, false, 1400f);
             if (prey != null) {
                 float dx = prey.pelvis.x - b.pelvis.x;
                 if (Math.abs(dx) > 34f * b.scale) b.walk = dx > 0 ? 1 : -1;
+                b.mood = "Cazando";
                 if (Math.abs(dx) < 70f * b.scale && Math.abs(prey.pelvis.y - b.pelvis.y) < 120f && b.biteCd <= 0f) bite(w, b, prey);
             }
-        } else if (b.kind == Body.K_HUMAN) {
-            Body z = nearest(w, b, true, 520f);
-            if (z != null) b.walk = z.pelvis.x > b.pelvis.x ? -1 : 1;
-            else if (b.burning) b.walk = w.rnd.nextBoolean() ? 1 : -1;
-            b.panic = z != null || b.burning ? 1f : 0f;
+        } else if (b.kind == Body.K_ROBOT) {
+            b.mood = "En espera";
         }
         // stop at the walls
         if (b.walk < 0 && b.pelvis.x < w.wallL + 80) b.walk = 0;
@@ -110,20 +115,22 @@ final class Brain {
 
     private static void bite(World w, Body z, Body v) {
         z.biteCd = 0.9f;
-        if (v.kind == Body.K_HUMAN) v.bitten = true;
+        if (v.organic()) v.bitten = true;
         Particle target = v.chest;
         target.bleed = Math.max(target.bleed, 4f);
         w.hit(v, 7f, target.x, target.y, true);
         target.addVel(z.dir * 260f, -120f);
         z.head.addVel(z.dir * 200f, 60f);
-        if (v.kind == Body.K_HUMAN && v.dead && v.infected < 0f) v.infected = 3f;
-        else if (v.kind == Body.K_HUMAN && v.blood < 35f && v.infected < 0f) { v.infected = 4f; }
+        if (v.organic() && v.dead && v.infected < 0f) v.infected = 3f;
+        else if (v.organic() && v.blood < 35f && v.infected < 0f) { v.infected = 4f; }
     }
 
     /** A bitten person rises again as a zombie. */
     private static void reanimate(World w, Body b) {
         if (b.neck.dead || b.removed) return;
         b.kind = Body.K_ZOMBIE;
+        b.target = null; b.aimT = 0f; b.work = 0f;
+        b.flammable = true;
         w.stats.infections++;
         b.skin = 0xFF7fa65a;
         b.shirt = Renderer.mix(b.shirt, 0xFF4a473a, 0.6f);
@@ -183,6 +190,7 @@ final class Brain {
         float lean = b.walk * (b.panic > 0 ? 24f : 14f) * s;
         float px = fx + lean, py = baseY - 78f * s;
         if (b.kind == Body.K_ZOMBIE) { lean += b.dir * 5f * s; py += 4f * s; }
+        if (b.kind == Body.K_MEDIC && b.aimT > 0f && b.walk == 0) { lean += b.dir * 10f * s; py += 14f * s; }   // kneel over the patient
         spring(w, b.pelvis, px, py, kp, kd, ff);
         spring(w, b.chest, px + lean * 0.6f, py - 52f * s, kp * 1.2f, kd, ff);
         spring(w, b.head, px + lean * 0.8f + b.dir * 2f * s, py - 52f * s - b.neck.rest, kp * 0.8f, kd, ff);
@@ -193,9 +201,21 @@ final class Brain {
         if (b.kind == Body.K_ZOMBIE) {
             spring(w, b.farmF.b, b.chest.x + b.dir * 55f * s, b.chest.y + 4f * s, kp * 0.3f, kd * 0.5f, ff);
             spring(w, b.farmB.b, b.chest.x + b.dir * 52f * s, b.chest.y + 10f * s, kp * 0.3f, kd * 0.5f, ff);
+        } else if (b.aimT > 0f && b.kind == Body.K_MEDIC) {        // hands on the patient
+            spring(w, b.farmF.b, b.chest.x + b.aimX * 50f * s, b.chest.y + b.aimY * 50f * s, kp * 0.45f, kd * 0.6f, ff);
+            spring(w, b.farmB.b, b.chest.x + b.aimX * 44f * s, b.chest.y + b.aimY * 44f * s + 6f * s, kp * 0.45f, kd * 0.6f, ff);
+        } else if (b.punchT > 0f) {                                // punch / rifle butt
+            spring(w, b.farmF.b, b.chest.x + b.aimX * 66f * s, b.chest.y + b.aimY * 66f * s, kp * 1.1f, kd * 0.6f, ff);
+            spring(w, b.farmB.b, b.chest.x + b.dir * 18f * s, b.chest.y - 26f * s, kp * 0.35f, kd * 0.5f, ff);
+        } else if (b.aimT > 0f) {                                  // rifle / hose shouldered
+            spring(w, b.farmF.b, b.chest.x + b.aimX * 56f * s, b.chest.y - 6f * s + b.aimY * 56f * s, kp * 0.7f, kd * 0.7f, ff);
+            spring(w, b.farmB.b, b.chest.x + b.aimX * 30f * s, b.chest.y - 4f * s + b.aimY * 30f * s, kp * 0.6f, kd * 0.7f, ff);
         } else if (b.panic > 0f) {
             spring(w, b.farmF.b, b.chest.x + b.dir * 10f * s, b.chest.y - 50f * s, kp * 0.25f, kd * 0.4f, ff);
             spring(w, b.farmB.b, b.chest.x - b.dir * 10f * s, b.chest.y - 48f * s, kp * 0.25f, kd * 0.4f, ff);
+        } else if (b.kind == Body.K_THUG && b.target != null) {      // fists up
+            spring(w, b.farmF.b, b.chest.x + b.dir * 30f * s, b.chest.y - 30f * s, kp * 0.3f, kd * 0.5f, ff);
+            spring(w, b.farmB.b, b.chest.x + b.dir * 22f * s, b.chest.y - 26f * s, kp * 0.3f, kd * 0.5f, ff);
         }
         if (b.walk != 0) {
             float dur = b.panic > 0 ? 0.22f : (b.kind == Body.K_ZOMBIE ? 0.42f : 0.32f);

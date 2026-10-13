@@ -45,6 +45,18 @@ final class Spawner {
                 b.skin = 0xFFe9e5d3; b.shirt = 0xFFe9e5d3; b.pants = 0xFFe3dfcc; b.hair = 0xFFe9e5d3;
                 b.flammable = false; b.blood = 90f;
                 break;
+            case Body.K_SOLDIER:
+                b.shirt = 0xFF55663a; b.pants = 0xFF4a5232; b.blood = 130f;
+                break;
+            case Body.K_MEDIC:
+                b.shirt = 0xFFf4f6f8; b.pants = 0xFF3f8f9a;
+                break;
+            case Body.K_FIREFIGHTER:
+                b.shirt = 0xFFb8402c; b.pants = 0xFF2d2f36; b.flammable = false; b.blood = 120f;
+                break;
+            case Body.K_THUG:
+                b.shirt = 0xFF26282e; b.pants = 0xFF3a4a6a; b.hair = 0xFF111111; b.blood = 125f;
+                break;
             default: break;
         }
         b.maxBlood = b.blood;
@@ -306,6 +318,40 @@ final class Spawner {
         finish(b);
         return b;
     }
+    /** Automatic sentry gun: a heavy tripod (feet + pivot) and a barrel the AI swings toward targets. */
+    static Body turret(float x, float y) {
+        Body b = new Body(Body.TURRET);
+        b.color = 0xFF4b5562;
+        b.blood = b.maxBlood = 160f;
+        b.thrust = true;                                     // switched on
+        Particle l = new Particle(b, x - 30, y + 30, 14f, 7f);
+        Particle r = new Particle(b, x + 30, y + 30, 14f, 7f);
+        Particle c = new Particle(b, x, y - 8, 4f, 12f);
+        Particle m = new Particle(b, x + 44, y - 8, 0.7f, 5f);
+        new Stick(b, l, c, -1, 4f).solid(0xFF2f353d);
+        new Stick(b, r, c, -1, 4f).solid(0xFF2f353d);
+        Stick base = new Stick(b, l, r, -1, 4f);
+        base.kind = Stick.HIDDEN;
+        new Stick(b, c, m, 44f, 4.5f).solid(0xFF2a2e35);
+        finish(b);
+        return b;
+    }
+
+    /** Hovering combat drone: two rotors; the AI keeps it level and flies it after targets. */
+    static Body drone(float x, float y) {
+        Body b = new Body(Body.DRONE);
+        b.color = 0xFF39414c;
+        b.blood = b.maxBlood = 70f;
+        b.thrust = true;
+        b.param = x;                                         // patrol home
+        b.goalX = x; b.goalY = y;
+        Particle a = new Particle(b, x - 22, y, 0.9f, 7f);
+        Particle c = new Particle(b, x + 22, y, 0.9f, 7f);
+        new Stick(b, a, c, 44f, 6f).solid(b.color);
+        finish(b);
+        return b;
+    }
+
     static Body bowling(float x, float y) { return ballEx(Body.BOWLING, x, y, 15f, 0xFF1d2a5a, 5.5f, 0.12f, 8, 5f); }
     static Body melon(float x, float y) { Body b = ballEx(Body.MELON, x, y, 22f, 0xFF3f9a3c, 1.1f, 0.2f, 10, 5f); b.flammable = true; return b; }
 

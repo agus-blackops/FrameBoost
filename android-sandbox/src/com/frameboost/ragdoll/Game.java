@@ -921,6 +921,12 @@ final class Game {
                 b.motor = b.motor == 0 ? 1 : (b.motor == 1 ? -1 : 0);
                 ui.toast(b.motor == 0 ? "Motor apagado" : (b.motor == 1 ? "Motor: adelante →" : "Motor: atrás ←"));
                 break;
+            case Body.TURRET: case Body.DRONE:
+                if (b.dead) { ui.toast("Está averiado"); break; }
+                b.thrust = !b.thrust;
+                if (b.type == Body.DRONE && b.thrust) { b.param = b.cx; b.goalX = b.cx; b.goalY = b.cy; }
+                ui.toast((b.type == Body.TURRET ? "Torreta " : "Dron ") + (b.thrust ? "encendido" : "apagado"));
+                break;
             case Body.THRUSTER:
                 b.thrust = !b.thrust;
                 if (b.thrust) world.stats.thrusts++;
@@ -945,7 +951,7 @@ final class Game {
 
     private void openContext(Body b, float x, float y) {
         ctxBody = b; ctxX = x; ctxY = y; ctxN = 0;
-        boolean activatable = b.type == Body.WHEEL || b.type == Body.THRUSTER || b.type == Body.GUN || b.explosive
+        boolean activatable = b.type == Body.WHEEL || b.type == Body.THRUSTER || b.type == Body.GUN || b.machine() || b.explosive
                 || b.type == Body.BALLOON || (b.isHuman() && Brain.able(b));
         if (activatable) ctxActs[ctxN++] = CX_ACTIVATE;
         if (b.isHuman()) ctxActs[ctxN++] = CX_INSPECT;
@@ -1069,12 +1075,13 @@ final class Game {
         p.setColor(0xE6141820);
         rf.set(x, y, x + w, y + h);
         c.drawRoundRect(rf, 12 * d, 12 * d, p);
-        String kind = b.kind == Body.K_ZOMBIE ? "Zombi" : (b.kind == Body.K_ROBOT ? "Robot" : (b.kind == Body.K_SKELETON ? "Esqueleto" : "Humano"));
+        String kind = kindName(b.kind);
         String state = b.dead ? "Muerto" : (b.ko > 0 ? "Inconsciente" : (b.legsBroken() ? "En el suelo (fractura)" : "Consciente"));
         if (b.infected > 0) state += " · infectado";
         if (b.adrenaline > 0) state += " · adrenalina";
         if (b.acid > 0) state += " · ácido";
         if (b.burning) state += " · ardiendo";
+        if (!b.dead && b.mood != null && !b.mood.isEmpty()) state += " · IA: " + b.mood;
         p.setTextAlign(Paint.Align.LEFT);
         p.setFakeBoldText(true);
         p.setTextSize(rowH * 0.78f);
@@ -1237,6 +1244,12 @@ final class Game {
             case Tools.ROBOT: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_ROBOT)); break;
             case Tools.ZOMBIE: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_ZOMBIE)); break;
             case Tools.SKELETON: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_SKELETON)); break;
+            case Tools.SOLDIER: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_SOLDIER)); break;
+            case Tools.MEDIC: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_MEDIC)); break;
+            case Tools.FIREFIGHTER: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir, Body.K_FIREFIGHTER)); break;
+            case Tools.THUG: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs * 1.08f, dir, Body.K_THUG)); break;
+            case Tools.TURRET: { Body t = Spawner.turret(x, Math.min(y, fl - 40)); t.dir = dir; register(t); break; }
+            case Tools.DRONE: register(Spawner.drone(x, Math.min(y, fl - 200))); break;
             case Tools.WHEEL: register(Spawner.wheel(x, Math.min(y, fl - 50))); break;
             case Tools.MOTOR: register(Spawner.motorWheel(x, Math.min(y, fl - 50))); break;
             case Tools.THRUSTER: register(Spawner.thruster(x, Math.min(y, fl - 20))); break;
@@ -1270,6 +1283,19 @@ final class Game {
             case Tools.KNIFE: register(Spawner.blade(x, Math.min(y, fl - 20), false)); break;
             case Tools.SWORD: register(Spawner.blade(x, Math.min(y, fl - 20), true)); break;
             default: break;
+        }
+    }
+
+    static String kindName(int k) {
+        switch (k) {
+            case Body.K_ZOMBIE: return "Zombi";
+            case Body.K_ROBOT: return "Robot";
+            case Body.K_SKELETON: return "Esqueleto";
+            case Body.K_SOLDIER: return "Soldado";
+            case Body.K_MEDIC: return "Médico";
+            case Body.K_FIREFIGHTER: return "Bombero";
+            case Body.K_THUG: return "Matón";
+            default: return "Civil";
         }
     }
 

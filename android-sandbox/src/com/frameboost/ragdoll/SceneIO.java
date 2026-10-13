@@ -171,6 +171,8 @@ final class SceneIO {
             case Body.THRUSTER: b = Spawner.thruster(0, 0); break;
             case Body.GUN: b = Spawner.gun(0, 0, (int) param); break;
             case Body.C4: b = Spawner.c4(0, 0); break;
+            case Body.TURRET: b = Spawner.turret(0, 0); break;
+            case Body.DRONE: b = Spawner.drone(0, 0); b.param = param; break;
             default: return null;
         }
         b.color = color;

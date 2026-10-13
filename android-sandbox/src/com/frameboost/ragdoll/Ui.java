@@ -482,6 +482,44 @@ final class Ui {
                 disc(c, cx - s * len * 0.1f, cy + s * 0.75f, s * 0.12f, 0xFF6dff8a);
                 break;
             }
+            case Tools.SOLDIER:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFF55663a, 0xFFe0ac81, 0xFF4a5232, 1f);
+                disc(c, cx, cy - s * 0.66f, s * 0.24f, 0xFF3f4a2c);
+                line(c, cx - s * 0.25f, cy - s * 0.18f, cx + s * 0.75f, cy - s * 0.3f, s * 0.13f, 0xFF1d2024);
+                break;
+            case Tools.MEDIC:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFFf4f6f8, 0xFFf1c7a0, 0xFF3f8f9a, 1f);
+                line(c, cx - s * 0.13f, cy - s * 0.12f, cx + s * 0.13f, cy - s * 0.12f, s * 0.08f, 0xFFe0332c);
+                line(c, cx, cy - s * 0.25f, cx, cy + s * 0.01f, s * 0.08f, 0xFFe0332c);
+                break;
+            case Tools.FIREFIGHTER:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFFb8402c, 0xFFf1c7a0, 0xFF2d2f36, 1f);
+                disc(c, cx, cy - s * 0.68f, s * 0.24f, 0xFFf2b134);
+                line(c, cx - s * 0.3f, cy - s * 0.66f, cx + s * 0.3f, cy - s * 0.62f, s * 0.08f, 0xFFf2b134);
+                disc(c, cx + s * 0.62f, cy - s * 0.42f, s * 0.07f, 0xFF8fd3ff);
+                disc(c, cx + s * 0.78f, cy - s * 0.5f, s * 0.06f, 0xFF8fd3ff);
+                break;
+            case Tools.THUG:
+                person(c, cx, cy + s * 0.1f, s * 0.95f, 0xFF26282e, 0xFFd9a066, 0xFF3a4a6a, 1.15f);
+                disc(c, cx, cy - s * 0.7f, s * 0.22f, 0xFF1c1e22);
+                line(c, cx - s * 0.02f, cy - s * 0.6f, cx + s * 0.2f, cy - s * 0.6f, s * 0.08f, 0xFF0d0e10);
+                break;
+            case Tools.TURRET:
+                line(c, cx, cy - s * 0.05f, cx - s * 0.45f, cy + s * 0.65f, s * 0.12f, 0xFF2f353d);
+                line(c, cx, cy - s * 0.05f, cx + s * 0.45f, cy + s * 0.65f, s * 0.12f, 0xFF2f353d);
+                line(c, cx, cy - s * 0.15f, cx + s * 0.85f, cy - s * 0.35f, s * 0.16f, 0xFF2a2e35);
+                box(c, cx - s * 0.32f, cy - s * 0.4f, cx + s * 0.32f, cy + s * 0.1f, 0xFF5d6875, s * 0.1f);
+                disc(c, cx + s * 0.08f, cy - s * 0.16f, s * 0.1f, 0xFFff3b30);
+                break;
+            case Tools.DRONE:
+                line(c, cx - s * 0.6f, cy, cx + s * 0.6f, cy, s * 0.14f, 0xFF39414c);
+                line(c, cx - s * 0.85f, cy - s * 0.25f, cx - s * 0.35f, cy - s * 0.25f, s * 0.08f, 0xFFc8d0da);
+                line(c, cx + s * 0.35f, cy - s * 0.25f, cx + s * 0.85f, cy - s * 0.25f, s * 0.08f, 0xFFc8d0da);
+                line(c, cx - s * 0.6f, cy, cx - s * 0.6f, cy - s * 0.25f, s * 0.06f, 0xFF2a2e35);
+                line(c, cx + s * 0.6f, cy, cx + s * 0.6f, cy - s * 0.25f, s * 0.06f, 0xFF2a2e35);
+                disc(c, cx, cy + s * 0.08f, s * 0.24f, 0xFF4d5764);
+                disc(c, cx, cy + s * 0.14f, s * 0.1f, 0xFF6dff8a);
+                break;
             case Tools.C4:
                 box(c, cx - s * 0.7f, cy - s * 0.25f, cx + s * 0.7f, cy + s * 0.3f, 0xFF7a7f3a, s * 0.08f);
                 disc(c, cx, cy - s * 0.32f, s * 0.12f, 0xFFff3b30);
