@@ -43,6 +43,8 @@
   $("cpuBrand").onchange = $("gpuBrand").onchange = () => { state.tab = 0; update(); };
 
   function prefs() { return { cpuBrand: $("cpuBrand").value, gpuBrand: $("gpuBrand").value }; }
+  // Quita paréntesis y texto de relleno para que Falabella encuentre mejor el producto.
+  const searchTerm = (x) => x.name.replace(/\(.*?\)/g, "").replace(/^Placa /, "Placa madre ").replace(/\s+/g, " ").trim();
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   function update() {
@@ -72,7 +74,7 @@
     const total = r.build.total, left = state.budget - total;
     const rows = r.parts.map((x) =>
       "<tr><td class='cat'>" + esc(x.cat) + "</td><td>" + esc(x.name) +
-      (x.price ? ' <a target="_blank" rel="noopener" href="https://www.google.com/search?q=' + encodeURIComponent(x.name + " precio Chile") + '">buscar ↗</a>' : "") +
+      (x.price ? ' <a target="_blank" rel="noopener" href="https://www.falabella.com/falabella-cl/search?Ntt=' + encodeURIComponent(searchTerm(x)) + '">ver en Falabella ↗</a>' : "") +
       "</td><td class='p'>" + (x.price ? clp.format(x.price) : "Incluido") + "</td></tr>").join("");
     const seg = r.parts.filter((x) => x.price).map((x) =>
       '<i title="' + esc(x.cat) + '" style="width:' + (x.price / total * 100).toFixed(2) + "%;background:" + (COLORS[x.cat] || "#888") + '"></i>').join("");
