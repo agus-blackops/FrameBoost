@@ -28,6 +28,22 @@ Contenido: humano, gigante, niño y multitud; caja, caja grande, tabla, barril, 
 acero, plataforma fija; granada, dinamita, TNT, barril explosivo, detonar y bomba nuclear; pistola, rifle,
 escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
 
+## Novedades de la v3.0: motor gráfico propio (GPU)
+
+* **Motor OpenGL ES 2.0 (`GLEngine`):** cada forma es un quad cuyo *fragment shader* evalúa un campo de
+  distancias con signo (cápsula, aro, caja redondeada, elipse, sector, arco): antialiasing exacto a cualquier
+  zoom y todo el mundo en un puñado de *draw calls*.
+* **Iluminación dinámica:** fuego, explosiones, disparos, cohetes, propulsores, mechas, rayos, la luna y el
+  suelo neón son fuentes de luz; cada tema tiene su luz ambiente (la Noche es oscura de verdad).
+* **Post-proceso:** bloom (desenfoque gaussiano separable a media resolución), refracción de las ondas
+  expansivas, viñeta, gradación de color y destellos.
+* **Arquitectura:** `Draw2D` es una API de dibujo independiente del motor; el mismo `Renderer` dibuja en la
+  GPU o en Canvas. En modo GPU la simulación y el render corren en el hilo de OpenGL y la interfaz en una capa
+  Canvas encima. Si el móvil no puede con el motor GPU, el juego cambia solo al motor Canvas
+  (Ajustes → Motor: GPU / Canvas).
+* **Probado de verdad:** `test/GLTest.java` y `test/GLStress.java` ejecutan el motor real sin pantalla con
+  Mesa (llvmpipe) mediante un shim de `android.opengl.GLES20` sobre LWJGL (`test/fetch-lwjgl.sh`).
+
 ## Novedades de la v2.2
 
 * **Construcción:** Cuerda (entre dos objetos o colgando de un gancho en el aire), Soldar (unión rígida),

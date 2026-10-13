@@ -19,6 +19,10 @@ public class Paint {
     public void setStrokeWidth(float w) { strokeWidth = w; }
     public void setTextSize(float s) { textSize = s; }
     public float getTextSize() { return textSize; }
+    public int getColor() { return color; }
+    public Style getStyle() { return style; }
+    public float getStrokeWidth() { return strokeWidth; }
+    public Cap getStrokeCap() { return cap; }
     public void setTextAlign(Align a) { align = a; }
     public void setFakeBoldText(boolean b) { bold = b; }
     public float measureText(String s) {

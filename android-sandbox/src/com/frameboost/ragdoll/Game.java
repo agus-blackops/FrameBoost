@@ -27,6 +27,7 @@ final class Game {
         void editMod(Mod existing);
         void saveSettings(Settings s);
         void vibrate(int ms);
+        void switchEngine(boolean gpu);
     }
     Host host;
     Settings settings = new Settings();
@@ -220,6 +221,12 @@ final class Game {
             case Screens.A_GORE: settings.gore = !settings.gore; saveSettings(); break;
             case Screens.A_QUALITY: settings.highQuality = !settings.highQuality; saveSettings(); break;
             case Screens.A_FPS: settings.showFps = !settings.showFps; saveSettings(); break;
+            case Screens.A_ENGINE:
+                settings.gpu = !settings.gpu;
+                saveSettings();
+                if (host != null) host.switchEngine(settings.gpu);
+                ui.toast(settings.gpu ? "Motor gráfico: GPU (OpenGL ES)" : "Motor gráfico: Canvas");
+                break;
             case Screens.A_TEXTURES: settings.textures = !settings.textures; saveSettings(); break;
             default:
                 if (a >= Screens.A_CHAL) setPlayMode(a - Screens.A_CHAL);
@@ -364,14 +371,43 @@ final class Game {
 
     // ------------------------------------------------------------------------------ draw ----
 
+    private CanvasDraw canvasDraw;
+
+    /** Software path (Canvas engine): world + interface on one canvas. */
     void draw(Canvas c) {
         c.drawColor(0xFF0e1117);
-        renderer.draw(c, world, fx, camX, camY, zoom, sw, sh);
+        if (canvasDraw == null) canvasDraw = new CanvasDraw(c);
+        canvasDraw.c = c;
+        drawWorld(canvasDraw);
         if (fx.flash > 0.01f) {
             p.setStyle(Paint.Style.FILL);
             p.setColor(Renderer.alpha(0xFFfff6dd, fx.flash * 0.7f));
             c.drawRect(0, 0, sw, sh, p);
         }
+        drawOverlay(c);
+    }
+
+    /** The world, through any engine. */
+    void drawWorld(Draw2D d) {
+        renderer.draw(d, world, fx, camX, camY, zoom, sw, sh);
+    }
+
+    // ambient light per theme: room, lab, night, bricks, neon, desert
+    private static final float[][] AMBIENT = {
+        {0.93f, 0.93f, 0.97f}, {1.0f, 1.0f, 1.0f}, {0.42f, 0.47f, 0.66f}, {0.84f, 0.78f, 0.72f}, {0.55f, 0.48f, 0.68f}, {1.0f, 0.97f, 0.9f},
+    };
+
+    /** Per-frame settings for the GPU engine (lighting mood, flash, quality). */
+    void setupEngine(GLEngine e) {
+        int t = Math.max(0, Math.min(AMBIENT.length - 1, renderer.theme));
+        e.ambR = AMBIENT[t][0]; e.ambG = AMBIENT[t][1]; e.ambB = AMBIENT[t][2];
+        e.flash = Math.min(0.8f, fx.flash * 0.75f);
+        e.effects = settings.highQuality;
+        e.vignette = t == 2 || t == 4 ? 0.8f : 0.5f;
+    }
+
+    /** Everything that is interface, drawn on top of the world (a Canvas overlay on the GPU path). */
+    void drawOverlay(Canvas c) {
         if (challenge == 6) {                     // finish flag of the engineering challenge
             float fx0 = (2250f - camX) * zoom + sw / 2f, fy0 = (world.floorY - camY) * zoom + sh / 2f;
             p.setStyle(Paint.Style.STROKE);

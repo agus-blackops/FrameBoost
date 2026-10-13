@@ -9,7 +9,7 @@ final class Screens {
     static final int NONE = 0, TITLE = 1, PAUSE = 2, SETTINGS = 3, CHALLENGES = 4, RESULT = 5, TUTORIAL = 6, ACHIEVEMENTS = 7;
     static final int A_CONTINUE = 1, A_SANDBOX = 2, A_CHALLENGES = 3, A_SETTINGS = 4, A_RESUME = 5, A_MENU = 6,
             A_RESTART = 7, A_BACK = 8, A_MUSIC_DN = 9, A_MUSIC_UP = 10, A_SFX_DN = 11, A_SFX_UP = 12, A_HAPTICS = 13,
-            A_GORE = 14, A_QUALITY = 15, A_FPS = 16, A_TEXTURES = 17, A_NEXT = 18, A_RETRY = 19, A_TUT = 20, A_ACH = 21, A_CHAL = 100;
+            A_GORE = 14, A_QUALITY = 15, A_FPS = 16, A_TEXTURES = 17, A_NEXT = 18, A_RETRY = 19, A_TUT = 20, A_ACH = 21, A_ENGINE = 22, A_CHAL = 100;
 
     int screen = TITLE, back = TITLE, tutStep;
     float time, tutT;
@@ -154,7 +154,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v2.2", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.0 · motor GPU propio", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {
@@ -180,7 +180,7 @@ final class Screens {
         dim(c, sw, sh, 0xCC0b0e14);
         Settings s = g.settings;
         float w = Math.min(560 * d, sw * 0.86f), x = (sw - w) / 2;
-        float rowH = Math.min(46 * d, (sh - 110 * d) / 5f), panelH = 56 * d + rowH * 5 + 14 * d;
+        float rowH = Math.min(46 * d, (sh - 110 * d) / 6f), panelH = 56 * d + rowH * 6 + 14 * d;
         float y = Math.max(8 * d, (sh - panelH) / 2);
         p.setStyle(Paint.Style.FILL);
         p.setColor(0xF01b2029);
@@ -198,7 +198,9 @@ final class Screens {
         button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Texturas: " + (g.textures ? "Sí" : "No"), A_TEXTURES, false);
         ry += rowH;
         button(c, lx, ry, half, rowH * 0.86f, "Mostrar FPS: " + (s.showFps ? "Sí" : "No"), A_FPS, false);
-        button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Volver", A_BACK, true);
+        button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Motor: " + (s.gpu ? "GPU" : "Canvas"), A_ENGINE, false);
+        ry += rowH;
+        button(c, lx + cw / 4, ry, cw / 2, rowH * 0.86f, "Volver", A_BACK, true);
     }
 
     private float slider(Canvas c, String label, float v, float x, float y, float w, float h, int dn, int up) {

@@ -5,33 +5,41 @@ import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
 
-/** Hardware-accelerated view that runs the game loop from onDraw and forwards touches. */
+/** Canvas path (fallback engine): runs the loop from onDraw and forwards touches. */
 final class GameView extends View {
     final Game game;
     private long last;
 
-    GameView(Context ctx, Sfx sfx, java.io.File modsDir) {
+    GameView(Context ctx, Game game) {
         super(ctx);
-        game = new Game(sfx, modsDir);
+        this.game = game;
         setKeepScreenOn(true);
         setFocusable(true);
     }
 
     @Override protected void onSizeChanged(int w, int h, int ow, int oh) {
         super.onSizeChanged(w, h, ow, oh);
-        game.resize(w, h, getResources().getDisplayMetrics().density);
+        synchronized (game) { game.resize(w, h, getResources().getDisplayMetrics().density); }
     }
 
     @Override protected void onDraw(Canvas canvas) {
         long now = System.nanoTime();
         float dt = last == 0 ? 1f / 60f : (now - last) / 1e9f;
         last = now;
-        game.update(dt);
-        game.draw(canvas);
+        synchronized (game) {
+            game.update(dt);
+            game.draw(canvas);
+        }
         postInvalidateOnAnimation();
     }
 
     @Override public boolean onTouchEvent(MotionEvent e) {
+        synchronized (game) { dispatch(game, e); }
+        return true;
+    }
+
+    /** Multi-touch MotionEvent -> Game.touch calls (shared by both engines). */
+    static void dispatch(Game game, MotionEvent e) {
         final int act = e.getActionMasked();
         switch (act) {
             case MotionEvent.ACTION_DOWN:
@@ -41,8 +49,7 @@ final class GameView extends View {
                 break;
             }
             case MotionEvent.ACTION_MOVE:
-                for (int i = 0; i < e.getPointerCount(); i++)
-                    game.touch(Game.MOVE, e.getPointerId(i), e.getX(i), e.getY(i));
+                for (int i = 0; i < e.getPointerCount(); i++) game.touch(Game.MOVE, e.getPointerId(i), e.getX(i), e.getY(i));
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP: {
@@ -51,12 +58,10 @@ final class GameView extends View {
                 break;
             }
             case MotionEvent.ACTION_CANCEL:
-                for (int i = 0; i < e.getPointerCount(); i++)
-                    game.touch(Game.CANCEL, e.getPointerId(i), e.getX(i), e.getY(i));
+                for (int i = 0; i < e.getPointerCount(); i++) game.touch(Game.CANCEL, e.getPointerId(i), e.getX(i), e.getY(i));
                 break;
             default:
                 break;
         }
-        return true;
     }
 }

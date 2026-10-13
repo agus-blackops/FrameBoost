@@ -11,6 +11,7 @@ import android.text.InputType;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -18,8 +19,9 @@ import android.widget.Toast;
 
 import java.io.File;
 
-public class MainActivity extends Activity implements Game.Host {
-    private GameView view;
+public class MainActivity extends Activity implements Game.Host, GLGameView.Listener {
+    private Game game;
+    private GLGameView glView;
     private Sfx sfx;
     private MusicPlayer music;
     private Vibrator vibrator;
@@ -28,8 +30,8 @@ public class MainActivity extends Activity implements Game.Host {
         super.onCreate(b);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         sfx = new Sfx(getCacheDir());
-        view = new GameView(this, sfx, new File(getFilesDir(), "mods"));
-        Game g = view.game;
+        game = new Game(sfx, new File(getFilesDir(), "mods"));
+        Game g = game;
         g.host = this;
         g.saveFile = new File(getFilesDir(), "autosave.trz");
         g.settings = loadSettings();
@@ -39,8 +41,37 @@ public class MainActivity extends Activity implements Game.Host {
         music.play(Music.TITLE);
         music.start();
         try { vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE); } catch (Throwable ignored) { }
-        setContentView(view);
+        showEngine(g.settings.gpu);
         immersive();
+    }
+
+    /** GPU engine (GLSurfaceView + interface overlay) or the Canvas fallback. */
+    private void showEngine(boolean gpu) {
+        if (glView != null) { glView.onPause(); glView = null; }
+        if (gpu) {
+            FrameLayout root = new FrameLayout(this);
+            glView = new GLGameView(this, game, this);
+            root.addView(glView);
+            root.addView(new GLGameView.OverlayView(this, game));
+            setContentView(root);
+        } else {
+            setContentView(new GameView(this, game));
+        }
+    }
+
+    /** The GPU engine could not start on this device: switch to Canvas and remember it. */
+    @Override public void onEngineFailed(String why) {
+        synchronized (game) {
+            game.settings.gpu = false;
+            saveSettings(game.settings);
+            game.ui.toast("Motor GPU no disponible: usando el motor Canvas");
+        }
+        showEngine(false);
+        immersive();
+    }
+
+    @Override public void switchEngine(final boolean gpu) {
+        runOnUiThread(new Runnable() { @Override public void run() { showEngine(gpu); immersive(); } });
     }
 
     private void immersive() {
@@ -55,6 +86,10 @@ public class MainActivity extends Activity implements Game.Host {
 
     /** Workshop editor: a plain text box where the player writes a mod script. */
     @Override public void editMod(final Mod existing) {
+        runOnUiThread(new Runnable() { @Override public void run() { openEditor(existing); } });
+    }
+
+    private void openEditor(final Mod existing) {
         final EditText edit = new EditText(this);
         edit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         edit.setMinLines(6);
@@ -79,14 +114,15 @@ public class MainActivity extends Activity implements Game.Host {
                 .setNegativeButton("Cancelar", null)
                 .setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface d, int w) {
-                        String err = view.game.saveMod(existing, edit.getText().toString());
+                        String err;
+                        synchronized (game) { err = game.saveMod(existing, edit.getText().toString()); }
                         if (err != null) Toast.makeText(MainActivity.this, err, Toast.LENGTH_LONG).show();
                         immersive();
                     }
                 });
         if (existing != null) {
             bd.setNeutralButton("Borrar", new DialogInterface.OnClickListener() {
-                @Override public void onClick(DialogInterface d, int w) { view.game.deleteMod(existing); immersive(); }
+                @Override public void onClick(DialogInterface d, int w) { synchronized (game) { game.deleteMod(existing); } immersive(); }
             });
         }
         bd.show();
@@ -106,6 +142,7 @@ public class MainActivity extends Activity implements Game.Host {
         s.textures = sp.getBoolean("textures", s.textures);
         s.muted = sp.getBoolean("muted", s.muted);
         s.ach = sp.getString("ach", s.ach);
+        s.gpu = sp.getBoolean("gpu", s.gpu);
         return s;
     }
 
@@ -114,7 +151,7 @@ public class MainActivity extends Activity implements Game.Host {
                 .putFloat("music", s.music).putFloat("sfx", s.sfx).putBoolean("haptics", s.haptics)
                 .putBoolean("gore", s.gore).putBoolean("fps", s.showFps).putBoolean("quality", s.highQuality)
                 .putBoolean("tutorial", s.tutorialDone).putString("stars", s.stars)
-                .putBoolean("textures", s.textures).putBoolean("muted", s.muted).putString("ach", s.ach).apply();
+                .putBoolean("textures", s.textures).putBoolean("muted", s.muted).putString("ach", s.ach).putBoolean("gpu", s.gpu).apply();
     }
 
     @Override public void vibrate(int ms) {
@@ -124,12 +161,14 @@ public class MainActivity extends Activity implements Game.Host {
     @Override protected void onPause() {
         super.onPause();
         if (music != null) music.setPaused(true);
-        if (view != null) view.game.saveScene();
+        if (game != null) synchronized (game) { game.saveScene(); }
+        if (glView != null) glView.onPause();
     }
 
     @Override protected void onResume() {
         super.onResume();
         if (music != null) music.setPaused(false);
+        if (glView != null) glView.onResume();
     }
 
     @Override public void onWindowFocusChanged(boolean hasFocus) {
@@ -138,7 +177,7 @@ public class MainActivity extends Activity implements Game.Host {
     }
 
     @Override public void onBackPressed() {
-        Game g = view != null ? view.game : null;
+        Game g = game;
         if (g != null) {
             if (g.screens.screen == Screens.NONE) {
                 if (g.ui.stripOpen) g.ui.stripOpen = false;

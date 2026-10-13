@@ -1,6 +1,5 @@
 package com.frameboost.ragdoll;
 
-import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
@@ -8,7 +7,7 @@ import android.graphics.RectF;
 final class Renderer {
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rf = new RectF();
-    private final android.graphics.Path path = new android.graphics.Path();
+    private final float[] poly = new float[16];
 
     int theme = 0;
     boolean detail = true;
@@ -43,7 +42,7 @@ final class Renderer {
 
     // ------------------------------------------------------------------------------------ main ---
 
-    void draw(Canvas c, World w, Fx fx, float camX, float camY, float zoom, int sw, int sh) {
+    void draw(Draw2D c, World w, Fx fx, float camX, float camY, float zoom, int sw, int sh) {
         float shx = 0, shy = 0;
         if (fx.shake > 0) {
             float a = fx.shake * fx.shake * 26f;
@@ -78,7 +77,7 @@ final class Renderer {
 
     // ------------------------------------------------------------------------------ background ---
 
-    private void drawBackground(Canvas c, World w, float vx0, float vy0, float vx1, float vy1) {
+    private void drawBackground(Draw2D c, World w, float vx0, float vy0, float vx1, float vy1) {
         p.setStyle(Paint.Style.FILL);
         int t = Math.max(0, Math.min(WALL.length - 1, theme));
         p.setColor(0xFF10131a);
@@ -148,7 +147,9 @@ final class Renderer {
             c.drawRect(x0, w.floorY, x1, vy1 + 100, p);
             if (t == 4) { p.setColor(0x4400e5ff); c.drawRect(x0, w.floorY, x1, w.floorY + 26, p); }
             p.setColor(FLOORTOP[t]);
+            c.emissive(t == 4);
             c.drawRect(x0, w.floorY, x1, w.floorY + (t == 4 ? 5 : 9), p);
+            c.emissive(false);
             p.setStyle(Paint.Style.STROKE);
             p.setColor(FLOORLINE[t]);
             p.setStrokeWidth(3f);
@@ -174,7 +175,7 @@ final class Renderer {
     }
 
     /** Soft contact shadows on the floor: they ground everything visually. */
-    private void drawShadows(Canvas c, World w) {
+    private void drawShadows(Draw2D c, World w) {
         p.setStyle(Paint.Style.FILL);
         for (int i = 0; i < w.bodies.size(); i++) {
             Body b = w.bodies.get(i);
@@ -190,7 +191,7 @@ final class Renderer {
         }
     }
 
-    private void drawStains(Canvas c, World w, Fx fx) {
+    private void drawStains(Draw2D c, World w, Fx fx) {
         p.setStyle(Paint.Style.FILL);
         for (int i = 0; i < fx.stCount; i++) {
             float wd = fx.stw[i];
@@ -212,7 +213,7 @@ final class Renderer {
         return col;
     }
 
-    private void drawProp(Canvas c, Body b) {
+    private void drawProp(Draw2D c, Body b) {
         if (b.type == Body.BALL || b.type == Body.BALLOON || b.type == Body.WHEEL || b.type == Body.BOWLING || b.type == Body.MELON) { drawBall(c, b); return; }
         // outline pass, then fill pass (so touching sticks merge into one silhouette)
         p.setStyle(Paint.Style.STROKE);
@@ -242,7 +243,7 @@ final class Renderer {
     }
 
     /** Material textures: wood grain, steel rivets. */
-    private void textures(Canvas c, Body b) {
+    private void textures(Draw2D c, Body b) {
         int n = b.ss.size();
         boolean wood = b.type == Body.CRATE || b.type == Body.PLANK || b.type == Body.TNT;
         if (wood) {
@@ -273,7 +274,7 @@ final class Renderer {
         }
     }
 
-    private void overlay(Canvas c, Body b) {
+    private void overlay(Draw2D c, Body b) {
         if (b.ps.isEmpty()) return;
         switch (b.type) {
             case Body.ANCHOR: {
@@ -297,13 +298,11 @@ final class Renderer {
                 float nx = -dy / l, ny = dx / l;
                 p.setStyle(Paint.Style.FILL);
                 p.setColor(0xFF3a3f48);                       // nozzle
-                path.reset();
-                path.moveTo(a.x + nx * 5, a.y + ny * 5);
-                path.lineTo(a.x - nx * 5, a.y - ny * 5);
-                path.lineTo(a.x - dx / l * 10 - nx * 10, a.y - dy / l * 10 - ny * 10);
-                path.lineTo(a.x - dx / l * 10 + nx * 10, a.y - dy / l * 10 + ny * 10);
-                path.close();
-                c.drawPath(path, p);
+                poly[0] = a.x + nx * 5; poly[1] = a.y + ny * 5;
+                poly[2] = a.x - nx * 5; poly[3] = a.y - ny * 5;
+                poly[4] = a.x - dx / l * 10 - nx * 10; poly[5] = a.y - dy / l * 10 - ny * 10;
+                poly[6] = a.x - dx / l * 10 + nx * 10; poly[7] = a.y - dy / l * 10 + ny * 10;
+                c.drawPoly(poly, 4, p);
                 p.setColor(0xFFd33a2c);                       // red nose
                 c.drawCircle(z.x, z.y, 7.5f, p);
                 p.setColor(b.thrust ? 0xFF6dff8a : 0xFF555b66); // status light
@@ -339,7 +338,7 @@ final class Renderer {
         }
     }
 
-    private void label(Canvas c, Body b, String text, int col, float size) {
+    private void label(Draw2D c, Body b, String text, int col, float size) {
         Particle a = b.ps.get(0), z = b.ps.get(Math.min(2, b.ps.size() - 1));
         float ang = (float) Math.toDegrees(Math.atan2(z.y - a.y, z.x - a.x)) - 90f;
         float mx = 0, my = 0;
@@ -348,17 +347,40 @@ final class Renderer {
         c.save();
         c.translate(mx, my);
         c.rotate(ang);
-        p.setStyle(Paint.Style.FILL);
         p.setColor(bodyColor(b, col));
-        p.setTextSize(size);
-        p.setTextAlign(Paint.Align.CENTER);
-        p.setFakeBoldText(true);
-        c.drawText(text, 0, size * 0.36f, p);
-        p.setFakeBoldText(false);
+        strokeText(c, text, size);
         c.restore();
     }
 
-    private void drawBall(Canvas c, Body b) {
+    /** Tiny vector font (only the glyphs the world needs), so labels look the same on every engine. */
+    private void strokeText(Draw2D c, String text, float size) {
+        float gw = size * 0.62f, gap = size * 0.22f;
+        float total = text.length() * gw + (text.length() - 1) * gap;
+        float x = -total / 2, y = -size / 2;
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeWidth(size * 0.2f);
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            float[] g;
+            switch (ch) {
+                case 'T': g = new float[]{0, 0, 1, 0, 0.5f, 0, 0.5f, 1}; break;
+                case 'N': g = new float[]{0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0}; break;
+                default: g = new float[]{0.5f, 0, 0.5f, 0.58f}; break;   // '!'
+            }
+            for (int k = 0; k + 3 < g.length; k += 4)
+                c.drawLine(x + g[k] * gw, y + g[k + 1] * size, x + g[k + 2] * gw, y + g[k + 3] * size, p);
+            if (ch == '!') {
+                p.setStyle(Paint.Style.FILL);
+                c.drawCircle(x + 0.5f * gw, y + 0.92f * size, size * 0.11f, p);
+                p.setStyle(Paint.Style.STROKE);
+            }
+            x += gw + gap;
+        }
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    private void drawBall(Draw2D c, Body b) {
         if (b.ps.size() < 3) return;
         Particle ctr = b.ps.get(0);
         float rad = 0;
@@ -441,7 +463,7 @@ final class Renderer {
 
     // ---------------------------------------------------------------------------------- humans ---
 
-    private void seg(Canvas c, Body b, Particle a, Particle z, float r, int col) {
+    private void seg(Draw2D c, Body b, Particle a, Particle z, float r, int col) {
         col = bodyColor(b, col);
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeCap(Paint.Cap.ROUND);
@@ -453,11 +475,11 @@ final class Renderer {
         c.drawLine(a.x, a.y, z.x, z.y, p);
     }
 
-    private void part(Canvas c, Body b, Stick s, int col) {
+    private void part(Draw2D c, Body b, Stick s, int col) {
         seg(c, b, s.a, s.b, s.r, col);
     }
 
-    private void foot(Canvas c, Body b, Stick shin) {
+    private void foot(Draw2D c, Body b, Stick shin) {
         float sx = shin.b.x - shin.a.x, sy = shin.b.y - shin.a.y;
         float l = (float) Math.sqrt(sx * sx + sy * sy);
         if (l < 1e-3f) return;
@@ -472,13 +494,13 @@ final class Renderer {
         c.drawLine(shin.b.x, shin.b.y + 1, shin.b.x + fx * 9 * s, shin.b.y + fy * 9 * s + 1, p);
     }
 
-    private void hand(Canvas c, Body b, Stick fore) {
+    private void hand(Draw2D c, Body b, Stick fore) {
         p.setStyle(Paint.Style.FILL);
         p.setColor(bodyColor(b, b.skin));
         c.drawCircle(fore.b.x, fore.b.y, fore.r * 1.15f, p);
     }
 
-    private void drawHuman(Canvas c, Body b) {
+    private void drawHuman(Draw2D c, Body b) {
         int skin = b.skin;
         if (b.dead) skin = mix(skin, 0xFF9aa0a8, 0.25f);
         // back limbs
@@ -509,7 +531,7 @@ final class Renderer {
         }
     }
 
-    private void torsoDetail(Canvas c, Body b) {
+    private void torsoDetail(Draw2D c, Body b) {
         Particle a = b.pelvis, z = b.chest;
         float dx = z.x - a.x, dy = z.y - a.y;
         float l = (float) Math.sqrt(dx * dx + dy * dy);
@@ -567,7 +589,7 @@ final class Renderer {
         p.setStrokeCap(Paint.Cap.ROUND);
     }
 
-    private void drawHead(Canvas c, Body b, int skin) {
+    private void drawHead(Draw2D c, Body b, int skin) {
         Particle h = b.head;
         float ux = h.x - b.chest.x, uy = h.y - b.chest.y;
         if (b.neck.dead) { ux = h.x - h.px; uy = h.y - h.py - 1; if (ux * ux + uy * uy < 0.01f) uy = -1; }
@@ -637,7 +659,7 @@ final class Renderer {
     }
 
     /** Welds and axles: a steel strap with a rivet at each end. */
-    private void drawLinks(Canvas c, World w) {
+    private void drawLinks(Draw2D c, World w) {
         for (int i = 0; i < w.bodies.size(); i++) {
             Body b = w.bodies.get(i);
             for (int k = 0; k < b.ss.size(); k++) {
@@ -659,7 +681,7 @@ final class Renderer {
         }
     }
 
-    private void drawPins(Canvas c, World w) {
+    private void drawPins(Draw2D c, World w) {
         p.setStyle(Paint.Style.FILL);
         for (int i = 0; i < w.ps.size(); i++) {
             Particle q = w.ps.get(i);
@@ -682,14 +704,16 @@ final class Renderer {
 
     // ----------------------------------------------------------------------------------- effects ---
 
-    private void drawFx(Canvas c, World w, Fx fx) {
+    private void drawFx(Draw2D c, World w, Fx fx) {
         p.setStyle(Paint.Style.FILL);
         for (int pass = 0; pass < 2; pass++) {
+            c.emissive(pass == 1);
             for (int i = 0; i < Fx.MAXP; i++) {
                 if (fx.life[i] <= 0) continue;
                 int t = fx.type[i];
                 boolean front = t == Fx.FLAME || t == Fx.SPARK || t == Fx.GLOW;
                 if (front != (pass == 1)) continue;
+                if (pass == 1 && (i & 15) == 0 && t == Fx.FLAME) c.light(fx.x[i], fx.y[i], 150f, 0xFFff8a2a, 0.22f * fx.life[i] / fx.maxLife[i]);
                 float k = fx.life[i] / fx.maxLife[i];
                 switch (t) {
                     case Fx.BLOOD:
@@ -720,17 +744,21 @@ final class Renderer {
                         p.setStyle(Paint.Style.FILL);
                         break;
                     case Fx.GLOW:
-                        p.setColor(alpha(fx.color[i], k * 0.85f));
+                        c.light(fx.x[i], fx.y[i], Math.min(420f, fx.size[i] * 3.5f), fx.color[i], k * 0.75f);
+                        // with real lighting the light itself is the glow: keep the disc subtle
+                        p.setColor(alpha(fx.color[i], k * (c.hasLighting() ? 0.3f : 0.85f)));
                         c.drawCircle(fx.x[i], fx.y[i], fx.size[i] * (1.7f - k * 0.7f), p);
                         break;
                     default: break;
                 }
             }
         }
+        c.emissive(true);
         // shock rings
         p.setStyle(Paint.Style.STROKE);
         for (int i = 0; i < Fx.MAXR; i++) {
             if (fx.rt[i] <= 0) continue;
+            c.ripple(fx.rx[i], fx.ry[i], fx.rr[i], fx.rt[i]);
             p.setColor(alpha(0xFFffffff, fx.rt[i] * 0.55f));
             p.setStrokeWidth(4f + 18f * fx.rt[i]);
             c.drawCircle(fx.rx[i], fx.ry[i], fx.rr[i], p);
@@ -743,6 +771,7 @@ final class Renderer {
             p.setColor(alpha(0xFFfff1b0, k));
             p.setStrokeWidth(3f);
             c.drawLine(w.trX0[i], w.trY0[i], w.trX1[i], w.trY1[i], p);
+            c.light(w.trX0[i], w.trY0[i], 160f, 0xFFffd27a, k);
         }
         // rockets
         for (int i = 0; i < w.rockets.size(); i++) {
@@ -758,6 +787,7 @@ final class Renderer {
             p.setStyle(Paint.Style.FILL);
             p.setColor(0xFFd33a2c);
             c.drawCircle(r.x + dx * 2, r.y + dy * 2, 6f, p);
+            c.light(r.x - dx * 30, r.y - dy * 30, 220f, 0xFFff8a2a, 0.9f);
             p.setStyle(Paint.Style.STROKE);
         }
         // lightning
@@ -768,7 +798,27 @@ final class Renderer {
                 p.setStrokeWidth(pass == 0 ? 16f : 5f);
                 for (int i = 0; i + 1 < fx.bn; i++) c.drawLine(fx.bx[i], fx.by[i], fx.bx[i + 1], fx.by[i + 1], p);
             }
+            for (int i = 0; i < fx.bn; i += 3) c.light(fx.bx[i], fx.by[i], 420f, 0xFF9cc8ff, k * 1.2f);
         }
+        c.emissive(false);
         p.setStyle(Paint.Style.FILL);
+        drawLights(c, w);
+    }
+
+    /** Light sources that belong to bodies: fire, thrusters, lit fuses, motor hubs. */
+    private void drawLights(Draw2D c, World w) {
+        if (!c.hasLighting()) return;
+        for (int i = 0; i < w.bodies.size(); i++) {
+            Body b = w.bodies.get(i);
+            if (b.ps.isEmpty()) continue;
+            if (b.burning) c.light(b.cx, b.cy, Math.max(160f, b.rad * 3.2f), 0xFFff7a24, 0.75f + 0.15f * (float) Math.sin(b.burnT * 23f));
+            if (b.type == Body.THRUSTER && b.thrust && b.ps.size() == 2) c.light(b.ps.get(0).x, b.ps.get(0).y, 260f, 0xFFffa040, 0.9f);
+            if (b.fuse >= 0f && b.type != Body.TNT && b.type != Body.XBARREL) c.light(b.ps.get(0).x, b.ps.get(0).y - 6, 90f, 0xFFffc83d, 0.6f);
+        }
+        if (theme == 4) {          // neon floor strip lights the room
+            for (float x = 100; x < w.wallR; x += 300) c.light(x, w.floorY, 360f, (((int) x / 300) & 1) == 0 ? 0xFF00e5ff : 0xFFff2bd6, 0.45f);
+        } else if (theme == 2) {   // moonlight
+            c.light(2000, w.floorY - 640, 900f, 0xFF8fa8ff, 0.35f);
+        }
     }
 }

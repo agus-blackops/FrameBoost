@@ -3,7 +3,7 @@ package com.frameboost.ragdoll;
 /** Player preferences (persisted by the Activity in SharedPreferences). */
 final class Settings {
     float music = 0.7f, sfx = 0.9f;
-    boolean haptics = true, gore = true, showFps = false, highQuality = true, tutorialDone = false, textures = true, muted = false;
+    boolean haptics = true, gore = true, showFps = false, highQuality = true, tutorialDone = false, textures = true, muted = false, gpu = true;
     String stars = "0000000";
     String ach = "000000000000";
 
