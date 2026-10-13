@@ -28,6 +28,18 @@ Contenido: humano, gigante, niño y multitud; caja, caja grande, tabla, barril, 
 acero, plataforma fija; granada, dinamita, TNT, barril explosivo, detonar y bomba nuclear; pistola, rifle,
 escopeta, lanzacohetes, cuchillo y espada; fuego, rayo y onda de choque.
 
+## Novedades de la v3.1: estilo People Playground
+
+* **Daño por parte del cuerpo:** cada extremidad acumula daño y puede fracturarse (queda floja); con una
+  pierna rota no se puede estar de pie. La cabeza tiene su propio daño.
+* **Inspeccionar:** panel con el estado (consciente, inconsciente, muerto, infectado, ardiendo...), la sangre
+  y cada parte (sana, herida, fractura, amputada, sangrando) + el cuerpo coloreado según el daño.
+* **Jeringas:** Curación, Adrenalina, Resurrección, Virus zombi, Ácido (disuelve hasta el esqueleto) y Sedante.
+* **Armas como objeto:** pistola, rifle y ametralladora que se colocan, se sueldan (a una mesa, a un coche, a
+  la mano de alguien) y disparan con Activar, con retroceso. La ametralladora alterna fuego continuo.
+* **C4:** se pega a lo primero que toca; Activar cualquier carga detona todas (detonador remoto).
+* **Menú contextual:** mantén pulsado un objeto con la Mano → Activar, Inspeccionar, Duplicar, Clavar, Borrar.
+
 ## Novedades de la v3.0: motor gráfico propio (GPU)
 
 * **Motor OpenGL ES 2.0 (`GLEngine`):** cada forma es un quad cuyo *fragment shader* evalúa un campo de

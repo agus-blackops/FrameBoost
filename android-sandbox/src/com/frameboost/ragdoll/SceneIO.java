@@ -133,7 +133,7 @@ final class SceneIO {
         return null;
     }
 
-    private static void recolor(Body b) {
+    static void recolor(Body b) {
         Stick[] shirt = {b.torso, b.uarmF, b.uarmB}, skin = {b.farmF, b.farmB, b.neck}, pants = {b.thighF, b.shinF, b.thighB, b.shinB};
         for (Stick s : shirt) s.color = b.shirt;
         for (Stick s : skin) s.color = b.skin;
@@ -169,6 +169,8 @@ final class SceneIO {
             case Body.ROPE: { int n = Math.max(2, (int) param); b = Spawner.rope(0, 0, scale * n, 0, n); break; }
             case Body.ANCHOR: b = Spawner.anchor(0, 0); break;
             case Body.THRUSTER: b = Spawner.thruster(0, 0); break;
+            case Body.GUN: b = Spawner.gun(0, 0, (int) param); break;
+            case Body.C4: b = Spawner.c4(0, 0); break;
             default: return null;
         }
         b.color = color;

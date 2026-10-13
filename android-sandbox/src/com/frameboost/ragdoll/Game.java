@@ -40,6 +40,13 @@ final class Game {
     float chTime, chIdle, chSpawnT, chEndT, lastSimDt;
     final StringBuilder chProgress = new StringBuilder();
     private float slowmoT, demoT;
+    // inspection + long-press context menu
+    Body inspected;
+    private Body ctxBody;
+    private float ctxX, ctxY;
+    private final int[] ctxActs = new int[6];
+    private int ctxN;
+    private static final int CX_ACTIVATE = 1, CX_INSPECT = 2, CX_DUPLICATE = 3, CX_PIN = 4, CX_DELETE = 5;
     // rotate tool
     private Body rotBody;
     private float rotAngle;
@@ -156,6 +163,8 @@ final class Game {
         undo.clear();
         follow = null;
         linkFirst = null;
+        inspected = null;
+        ctxBody = null;
         for (Mod m : mods.mods) if (m.on) mods.toggle(m, this);
         if (chal >= 0) {
             Challenges.setup(this, chal);
@@ -170,7 +179,7 @@ final class Game {
             ui.toast(d.goal);
             if (music != null) music.play(Music.CHALLENGE);
         } else {
-            ui.cats = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+            ui.cats = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8};
             ui.dock = false; ui.dockBadge = null;
             tool = Tools.HAND;
             if (music != null) music.play(Music.LAB);
@@ -325,6 +334,20 @@ final class Game {
         for (int i = 0; i < mods.mods.size(); i++) if (mods.mods.get(i).on) ui.active.add(Tools.MOD_BASE + i);
         ui.active.add(Tools.STYLE_BASE + (mods.theme >= 0 ? mods.theme : userTheme));
         if (textures) ui.active.add(Tools.STYLE_TEX);
+        // long-press on an object with the hand opens its context menu
+        for (Ptr pt : ptrs) {
+            if (!pt.down || pt.role != R_TOOL || pt.grab == null || pt.dragged) continue;
+            pt.holdT += dtReal;
+            if (pt.holdT > 0.55f) {
+                Body b = pt.grab.p.body;
+                world.grabs.remove(pt.grab);
+                pt.grab = null;
+                pt.role = R_NONE;
+                openContext(b, pt.x, pt.y);
+            }
+        }
+        if (inspected != null && inspected.removed) inspected = null;
+        renderer.inspect = inspected;
         // long-press on one of your own mods opens the editor
         for (Ptr pt : ptrs) {
             if (!pt.down || pt.role != R_UI || pt.dragged) continue;
@@ -433,6 +456,8 @@ final class Game {
             p.setColor(Renderer.alpha(0xFFf2b134, 0.6f + 0.4f * pulse));
             c.drawCircle(lx, ly, (10 + 4 * pulse) * density, p);
         }
+        if (inspected != null && screens.screen == Screens.NONE) drawInspection(c);
+        if (ctxBody != null) drawContext(c);
         achievements.draw(c, this);
         // aiming helpers
         for (Ptr pt : ptrs) {
@@ -493,6 +518,10 @@ final class Game {
     void touch(int action, int id, float x, float y) {
         if (id < 0 || id >= ptrs.length) return;
         Ptr pt = ptrs[id];
+        if (ctxBody != null && !pt.down) {
+            if (action == UP) contextTap(x, y);
+            return;
+        }
         if (screens.screen != Screens.NONE && !pt.down && !(action == MOVE && pt.down)) {
             if (screens.touch(action, x, y, this)) return;
         }
@@ -556,6 +585,12 @@ final class Game {
             case Tools.CUT: break;
             case Tools.ROPE: case Tools.WELD: case Tools.HINGE: linkTap(wx, wy); break;
             case Tools.ACTIVATE: activateAt(wx, wy); break;
+            case Tools.INSPECT: {
+                Body h = world.pickBody(wx, wy, 40f / zoom);
+                inspected = h != null && h.isHuman() ? h : null;
+                if (inspected == null) ui.toast("Toca a una persona para inspeccionarla");
+                break;
+            }
             case Tools.ROTATE:
                 rotBody = world.pickBody(wx, wy, 40f / zoom);
                 if (rotBody != null) { rotBody.updateBounds(); rotAngle = (float) Math.atan2(wy - rotBody.cy, wx - rotBody.cx); }
@@ -566,7 +601,13 @@ final class Game {
             case Tools.DETONATE: world.explode(wx, wy, 300f, 5000f, 90f); break;
             case Tools.NUKE: world.explode(wx, Math.min(wy, world.floorY - 60), 1500f, 14000f, 400f); break;
             case Tools.PUSH: world.shockwave(wx, wy, 520f, 3200f); break;
-            default: break; // spawn items are placed on release
+            default:
+                if (Tools.isSyringe(tool)) {
+                    Body h = world.pickBody(wx, wy, 40f / zoom);
+                    if (h == null) ui.toast("Toca a una persona");
+                    else { ui.toast(world.inject(h, tool)); haptic(15); if (h.isHuman()) inspected = h; }
+                }
+                break; // spawn items are placed on release
         }
     }
 
@@ -679,6 +720,7 @@ final class Game {
             if (i >= 0 && i < items.length) {
                 int id = items[i].id;
                 linkFirst = null;
+                if (id != Tools.INSPECT && !Tools.isSyringe(id) && id < Tools.MOD_CREATE) inspected = null;
                 if (id == Tools.MOD_CREATE) { if (host != null) host.editMod(null); else ui.toast("Editor no disponible"); }
                 else if (id >= Tools.STYLE_TEX && id < Tools.STYLE_TEX + 50) { settings.textures = !settings.textures; saveSettings(); ui.toast(textures ? "Texturas activadas" : "Texturas desactivadas"); }
                 else if (id >= Tools.STYLE_BASE) { userTheme = id - Tools.STYLE_BASE; ui.toast("Fondo: " + Tools.THEMES[userTheme]); }
@@ -860,7 +902,20 @@ final class Game {
     private void activateAt(float wx, float wy) {
         Body b = world.pickBody(wx, wy, 34f / zoom);
         if (b == null) return;
+        activate(b);
+    }
+
+    private void activate(Body b) {
         switch (b.type) {
+            case Body.GUN:
+                if (b.gunKind == 2) { b.firing = !b.firing; b.fireCd = 0f; ui.toast(b.firing ? "Ametralladora: fuego" : "Ametralladora: alto"); }
+                else world.fireGun(b);
+                break;
+            case Body.C4: {
+                int n = world.detonateC4();
+                ui.toast(n > 1 ? "¡Detonador! " + n + " cargas de C4" : "¡Detonador!");
+                break;
+            }
             case Body.WHEEL:
                 b.motorized = true;
                 b.motor = b.motor == 0 ? 1 : (b.motor == 1 ? -1 : 0);
@@ -884,6 +939,184 @@ final class Game {
                 else ui.toast("Esto no se puede activar");
         }
         click();
+    }
+
+    // ------------------------------------------------------------------------ context menu ----
+
+    private void openContext(Body b, float x, float y) {
+        ctxBody = b; ctxX = x; ctxY = y; ctxN = 0;
+        boolean activatable = b.type == Body.WHEEL || b.type == Body.THRUSTER || b.type == Body.GUN || b.explosive
+                || b.type == Body.BALLOON || (b.isHuman() && Brain.able(b));
+        if (activatable) ctxActs[ctxN++] = CX_ACTIVATE;
+        if (b.isHuman()) ctxActs[ctxN++] = CX_INSPECT;
+        ctxActs[ctxN++] = CX_DUPLICATE;
+        ctxActs[ctxN++] = CX_PIN;
+        ctxActs[ctxN++] = CX_DELETE;
+        haptic(25);
+        click();
+    }
+
+    private float ctxRadius() { return 78 * density; }
+
+    private float[] ctxPos(int i) {
+        double a = -Math.PI / 2 + (i - (ctxN - 1) / 2.0) * 0.95;
+        float r = ctxRadius();
+        float x = ctxX + (float) Math.cos(a) * r, y = ctxY + (float) Math.sin(a) * r;
+        // keep the buttons on screen
+        x = Math.max(36 * density, Math.min(sw - 36 * density, x));
+        y = Math.max(36 * density, Math.min(sh - 36 * density, y));
+        return new float[]{x, y};
+    }
+
+    private void contextTap(float x, float y) {
+        Body b = ctxBody;
+        ctxBody = null;
+        if (b == null || b.removed) return;
+        for (int i = 0; i < ctxN; i++) {
+            float[] q = ctxPos(i);
+            if (dist(x, y, q[0], q[1]) > 32 * density) continue;
+            click();
+            switch (ctxActs[i]) {
+                case CX_ACTIVATE: activate(b); break;
+                case CX_INSPECT: inspected = b; break;
+                case CX_DUPLICATE: duplicate(b); break;
+                case CX_PIN: {
+                    boolean any = false;
+                    for (Particle p : b.ps) if (p.pinned) { p.setPinned(false); any = true; }
+                    if (!any) {
+                        Particle best = world.nearestParticle(b, toWorldX(ctxX), toWorldY(ctxY));
+                        if (best != null) best.setPinned(true);
+                    }
+                    ui.toast(any ? "Liberado" : "Clavado");
+                    break;
+                }
+                default:
+                    fx.smoke(b.cx, b.cy, 12, 0xFFbbbbbb);
+                    world.removeBody(b);
+            }
+            return;
+        }
+    }
+
+    private static final String[] CX_NAMES = {"", "Activar", "Inspeccionar", "Duplicar", "Clavar", "Borrar"};
+    private static final int[] CX_COLORS = {0, 0xFF3fbf6b, 0xFF3aa0e0, 0xFFb06ad8, 0xFF8a9099, 0xFFe0463c};
+
+    private void drawContext(Canvas c) {
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0x55000000);
+        c.drawRect(0, 0, sw, sh, p);
+        p.setColor(0xCCffffff);
+        c.drawCircle(ctxX, ctxY, 6 * density, p);
+        for (int i = 0; i < ctxN; i++) {
+            float[] q = ctxPos(i);
+            int act = ctxActs[i];
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(2f * density);
+            p.setColor(0x88ffffff);
+            c.drawLine(ctxX, ctxY, q[0], q[1], p);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xF01b2029);
+            c.drawCircle(q[0], q[1], 30 * density, p);
+            p.setColor(CX_COLORS[act]);
+            c.drawCircle(q[0], q[1], 26 * density, p);
+            p.setColor(0xFFffffff);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setFakeBoldText(true);
+            p.setTextSize(9.5f * density);
+            String label = act == CX_PIN && anyPinned(ctxBody) ? "Soltar" : CX_NAMES[act];
+            c.drawText(label, q[0], q[1] + 3.5f * density, p);
+            p.setFakeBoldText(false);
+        }
+    }
+
+    private static boolean anyPinned(Body b) {
+        if (b == null) return false;
+        for (Particle p : b.ps) if (p.pinned) return true;
+        return false;
+    }
+
+    /** Copy of a body (shape, colours, pose and state) placed next to the original. */
+    private void duplicate(Body b) {
+        Body c = SceneIO.create(world, b.type, b.kind, b.param, b.scale, b.dir, b.color);
+        if (c == null) { ui.toast("Esto no se puede duplicar"); return; }
+        c.skin = b.skin; c.shirt = b.shirt; c.pants = b.pants; c.hair = b.hair;
+        if (c.isHuman()) SceneIO.recolor(c);
+        c.motorized = b.motorized; c.motor = b.motor; c.gunKind = b.gunKind;
+        float off = Math.min(220f, b.rad * 1.6f + 30f);
+        if (b.cx + off > world.wallR - 60) off = -off;
+        for (int i = 0; i < c.ps.size() && i < b.ps.size(); i++) {
+            Particle s = b.ps.get(i), d = c.ps.get(i);
+            d.x = d.px = s.x + off;
+            d.y = d.py = Math.min(s.y, world.floorY - d.r);
+        }
+        c.updateBounds();
+        register(c);
+        ui.toast("Duplicado");
+    }
+
+    // -------------------------------------------------------------------------- inspection ----
+
+    private void drawInspection(Canvas c) {
+        Body b = inspected;
+        float d = density, x = 8 * d, y = 74 * d, w = Math.min(250 * d, sw * 0.32f);
+        String[] names = {"Torso", "Brazo (frente)", "Antebrazo (frente)", "Brazo (atrás)", "Antebrazo (atrás)",
+                "Muslo (frente)", "Pierna (frente)", "Muslo (atrás)", "Pierna (atrás)"};
+        Stick[] parts = b.parts();
+        Stick[] joints = {null, b.jShF, b.jElF, b.jShB, b.jElB, b.jHipF, b.jKneeF, b.jHipB, b.jKneeB};
+        float rowH = Math.min(18 * d, (sh - y - 64 * d) / 14.2f);
+        float h = rowH * 13.9f;
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xE6141820);
+        rf.set(x, y, x + w, y + h);
+        c.drawRoundRect(rf, 12 * d, 12 * d, p);
+        String kind = b.kind == Body.K_ZOMBIE ? "Zombi" : (b.kind == Body.K_ROBOT ? "Robot" : (b.kind == Body.K_SKELETON ? "Esqueleto" : "Humano"));
+        String state = b.dead ? "Muerto" : (b.ko > 0 ? "Inconsciente" : (b.legsBroken() ? "En el suelo (fractura)" : "Consciente"));
+        if (b.infected > 0) state += " · infectado";
+        if (b.adrenaline > 0) state += " · adrenalina";
+        if (b.acid > 0) state += " · ácido";
+        if (b.burning) state += " · ardiendo";
+        p.setTextAlign(Paint.Align.LEFT);
+        p.setFakeBoldText(true);
+        p.setTextSize(rowH * 0.78f);
+        p.setColor(0xFFf2b134);
+        c.drawText(kind, x + 10 * d, y + rowH * 1.05f, p);
+        p.setFakeBoldText(false);
+        p.setTextSize(rowH * 0.62f);
+        p.setColor(b.dead ? 0xFFe0463c : 0xFFd5dbe6);
+        c.drawText(state, x + 10 * d, y + rowH * 1.95f, p);
+        float by = y + rowH * 2.6f;
+        bar(c, "Sangre", Math.max(0, b.blood) / b.maxBlood, null, x, by, w, rowH);
+        bar(c, "Cabeza", b.neck.dead ? -1 : 1f - b.headDmg / 100f, b.neck.dead ? "Decapitado" : null, x, by + rowH, w, rowH);
+        for (int i = 0; i < 9 && parts != null; i++) {
+            Stick s = parts[i];
+            boolean cut = joints[i] != null && joints[i].dead;
+            String tag = cut ? "Amputado" : (s.fractured ? "Fractura" : (s.a.bleed > 0 || s.b.bleed > 0 ? "Sangra" : null));
+            bar(c, names[i], cut ? -1 : 1f - s.damage / 100f, tag, x, by + rowH * (i + 2), w, rowH);
+        }
+    }
+
+    private void bar(Canvas c, String label, float v, String tag, float x, float y, float w, float rowH) {
+        float d = density;
+        p.setTextAlign(Paint.Align.LEFT);
+        p.setTextSize(rowH * 0.56f);
+        p.setColor(0xFFb9c2d0);
+        c.drawText(label, x + 10 * d, y + rowH * 0.68f, p);
+        float bx = x + w * 0.5f, bw = w * 0.5f - 12 * d, bh = rowH * 0.36f, top = y + rowH * 0.32f;
+        p.setColor(0xFF2a3142);
+        rf.set(bx, top, bx + bw, top + bh);
+        c.drawRoundRect(rf, bh / 2, bh / 2, p);
+        if (v >= 0) {
+            int col = v > 0.6f ? 0xFF4cbf6b : (v > 0.3f ? 0xFFf2b134 : 0xFFe0463c);
+            p.setColor(col);
+            rf.set(bx, top, bx + bw * Math.max(0.03f, Math.min(1f, v)), top + bh);
+            c.drawRoundRect(rf, bh / 2, bh / 2, p);
+        }
+        if (tag != null) {
+            p.setTextAlign(Paint.Align.RIGHT);
+            p.setTextSize(rowH * 0.5f);
+            p.setColor(tag.equals("Sangra") ? 0xFFff6b6b : (tag.equals("Fractura") ? 0xFFd88cff : 0xFF9aa0a8));
+            c.drawText(tag, bx - 4 * d, y + rowH * 0.68f, p);
+        }
     }
 
     private void deleteAt(float wx, float wy) {
@@ -1007,6 +1240,10 @@ final class Game {
             case Tools.WHEEL: register(Spawner.wheel(x, Math.min(y, fl - 50))); break;
             case Tools.MOTOR: register(Spawner.motorWheel(x, Math.min(y, fl - 50))); break;
             case Tools.THRUSTER: register(Spawner.thruster(x, Math.min(y, fl - 20))); break;
+            case Tools.GUN_PISTOL: register(Spawner.gun(x, Math.min(y, fl - 20), 0)); break;
+            case Tools.GUN_RIFLE: register(Spawner.gun(x, Math.min(y, fl - 20), 1)); break;
+            case Tools.GUN_MINIGUN: register(Spawner.gun(x, Math.min(y, fl - 20), 2)); break;
+            case Tools.C4: register(Spawner.c4(x, Math.min(y, fl - 20))); break;
             case Tools.BOWLING: register(Spawner.bowling(x, Math.min(y, fl - 30))); break;
             case Tools.MELON: register(Spawner.melon(x, Math.min(y, fl - 40))); break;
             case Tools.HUMAN: register(Spawner.human(world, x, Math.min(y, fl - 96 * hs), hs, dir)); break;

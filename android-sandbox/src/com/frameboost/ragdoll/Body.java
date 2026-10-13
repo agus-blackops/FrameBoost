@@ -6,7 +6,7 @@ import java.util.ArrayList;
 final class Body {
     static final int HUMAN = 0, CRATE = 1, PLANK = 2, BARREL = 3, BALL = 4, BALLOON = 5, HEAVY = 6,
             PLATFORM = 7, TNT = 8, XBARREL = 9, GRENADE = 10, DYNAMITE = 11, KNIFE = 12, SWORD = 13,
-            WHEEL = 14, BOWLING = 15, MELON = 16, ROPE = 17, ANCHOR = 18, THRUSTER = 19;
+            WHEEL = 14, BOWLING = 15, MELON = 16, ROPE = 17, ANCHOR = 18, THRUSTER = 19, GUN = 20, C4 = 21;
     static final int K_HUMAN = 0, K_ROBOT = 1, K_ZOMBIE = 2, K_SKELETON = 3;
 
     final int type;
@@ -44,9 +44,15 @@ final class Body {
     int stepFoot;
     boolean held, bitten, stood;
     float flashT;           // hit flash
+    float headDmg;          // 0..100
+    float acid, adrenaline; // syringe effects (seconds left)
+    Stick[] parts;          // cached list of body parts
     int motor;              // wheels: 0 off, 1 forward, -1 reverse
     boolean motorized;      // a motor wheel (starts when it gets an axle)
     boolean thrust;         // thrusters: on/off
+    int gunKind;            // guns: 0 pistol, 1 rifle, 2 machine gun
+    boolean firing, stuck;  // machine gun on; C4 already stuck to something
+    float maxBlood = 100f;
     Stick[] jointList;      // cached for drawing stumps
     float param;           // spawn parameter (crate size, plank length, ball radius...) for save files
     float scale = 1f;
@@ -58,6 +64,16 @@ final class Body {
     Body(int type) { this.type = type; }
 
     boolean isHuman() { return type == HUMAN; }
+
+    /** Torso, arms and legs of a person (cached). */
+    Stick[] parts() {
+        if (parts == null && torso != null) parts = new Stick[]{torso, uarmF, farmF, uarmB, farmB, thighF, shinF, thighB, shinB};
+        return parts;
+    }
+
+    boolean legsBroken() {
+        return thighF.fractured || shinF.fractured || thighB.fractured || shinB.fractured;
+    }
 
     void updateBounds() {
         int n = ps.size();

@@ -261,7 +261,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.0 · motor GPU propio", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.1 · motor GPU propio", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {

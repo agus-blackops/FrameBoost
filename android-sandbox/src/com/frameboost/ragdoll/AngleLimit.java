@@ -9,6 +9,7 @@ final class AngleLimit {
     final float lo, hi, childShare;
     final boolean invert;
     int dir;
+    boolean disabled;       // broken bone
 
     AngleLimit(Particle pj, Particle pf, Particle cj, Particle cf, boolean invert,
                float loDeg, float hiDeg, int dir, float childShare) {
@@ -21,6 +22,7 @@ final class AngleLimit {
     }
 
     void solve() {
+        if (disabled) return;
         float ux = pj.x - pf.x, uy = pj.y - pf.y;
         if (invert) { ux = -ux; uy = -uy; }
         float vx = cf.x - cj.x, vy = cf.y - cj.y;

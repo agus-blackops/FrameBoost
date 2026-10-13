@@ -23,7 +23,7 @@ final class Ui {
     final String[] btnLabel = new String[BTN_COUNT];
     final boolean[] btnOn = new boolean[BTN_COUNT];
     final boolean[] btnHidden = new boolean[BTN_COUNT];
-    int[] cats = {0, 1, 2, 3, 4, 5, 6, 7};
+    int[] cats = {0, 1, 2, 3, 4, 5, 6, 7, 8};
     boolean showFps;
     boolean dock;              // challenge mode: the bottom bar holds the allowed tools directly
     String dockBadge;          // e.g. "x3" uses left
@@ -353,7 +353,7 @@ final class Ui {
 
     /** Small icon per category tab. */
     private void catIcon(Canvas c, int ci, float cx, float cy, float s, boolean sel) {
-        int[] rep = {Tools.HAND, Tools.HUMAN, Tools.CRATE, Tools.DYNAMITE, Tools.PISTOL, Tools.FIRE};
+        int[] rep = {Tools.HAND, Tools.HUMAN, Tools.CRATE, Tools.DYNAMITE, Tools.PISTOL, Tools.FIRE, Tools.SYR_HEAL};
         if (ci < rep.length) { drawIcon(c, rep[ci], cx, cy, s); return; }
         p.setStyle(Paint.Style.FILL);
         if (ci == Tools.CAT_MODS) {            // puzzle-piece-ish gear
@@ -455,6 +455,37 @@ final class Ui {
                 person(c, cx - s * 0.45f, cy + s * 0.3f, s * 0.55f, 0xFFd4a62a);
                 person(c, cx + s * 0.45f, cy + s * 0.3f, s * 0.55f, 0xFF7a4aa8);
                 person(c, cx, cy + s * 0.2f, s * 0.7f, 0xFF3b6ea8);
+                break;
+            case Tools.INSPECT:
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(w);
+                p.setColor(0xFFe9edf4);
+                c.drawCircle(cx - s * 0.12f, cy - s * 0.12f, s * 0.42f, p);
+                line(c, cx + s * 0.18f, cy + s * 0.18f, cx + s * 0.62f, cy + s * 0.62f, w * 1.4f, 0xFFe9edf4);
+                line(c, cx - s * 0.3f, cy - s * 0.12f, cx + s * 0.06f, cy - s * 0.12f, w * 0.6f, 0xFF4cbf6b);
+                break;
+            case Tools.SYR_HEAL: case Tools.SYR_ADRENALINE: case Tools.SYR_LIFE: case Tools.SYR_ZOMBIE: case Tools.SYR_ACID: case Tools.SYR_SEDATIVE: {
+                int[] cols = {0xFF4cdc6b, 0xFFffd23f, 0xFF7fd1ff, 0xFF5aa02a, 0xFFb6ff3a, 0xFF9a8cff};
+                int liquid = cols[id - Tools.SYR_HEAL];
+                line(c, cx - s * 0.55f, cy + s * 0.55f, cx + s * 0.35f, cy - s * 0.35f, s * 0.34f, 0xFFdfe4ea);
+                line(c, cx - s * 0.45f, cy + s * 0.45f, cx + s * 0.1f, cy - s * 0.1f, s * 0.22f, liquid);
+                line(c, cx + s * 0.35f, cy - s * 0.35f, cx + s * 0.75f, cy - s * 0.75f, s * 0.06f, 0xFFb9c0ca);
+                line(c, cx - s * 0.62f, cy + s * 0.3f, cx - s * 0.3f, cy + s * 0.62f, s * 0.12f, 0xFF8a9099);
+                break;
+            }
+            case Tools.GUN_PISTOL: case Tools.GUN_RIFLE: case Tools.GUN_MINIGUN: {
+                float len = id == Tools.GUN_PISTOL ? 0.55f : 0.9f;
+                line(c, cx - s * len, cy - s * 0.1f, cx + s * len, cy - s * 0.1f, s * (id == Tools.GUN_MINIGUN ? 0.32f : 0.24f), 0xFF5a5f68);
+                line(c, cx - s * len + s * 0.15f, cy, cx - s * len + s * 0.05f, cy + s * 0.45f, s * 0.2f, 0xFF2b2b30);
+                if (id == Tools.GUN_MINIGUN) line(c, cx, cy, cx, cy + s * 0.45f, s * 0.22f, 0xFF6a5a2a);
+                if (id == Tools.GUN_RIFLE) line(c, cx - s * 0.2f, cy - s * 0.35f, cx + s * 0.2f, cy - s * 0.35f, s * 0.12f, 0xFF22252a);
+                disc(c, cx - s * len * 0.1f, cy + s * 0.75f, s * 0.12f, 0xFF6dff8a);
+                break;
+            }
+            case Tools.C4:
+                box(c, cx - s * 0.7f, cy - s * 0.25f, cx + s * 0.7f, cy + s * 0.3f, 0xFF7a7f3a, s * 0.08f);
+                disc(c, cx, cy - s * 0.32f, s * 0.12f, 0xFFff3b30);
+                line(c, cx - s * 0.4f, cy + s * 0.05f, cx + s * 0.4f, cy + s * 0.05f, s * 0.06f, 0xFF3a3d20);
                 break;
             case Tools.ROTATE:
                 p.setStyle(Paint.Style.STROKE);

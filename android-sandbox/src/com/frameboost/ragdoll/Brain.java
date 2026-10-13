@@ -21,7 +21,7 @@ final class Brain {
     /** Can this body use its muscles at all (alive, whole, conscious)? */
     static boolean able(Body b) {
         return b.isHuman() && !b.dead && b.ko <= 0f && !b.neck.dead
-                && !b.jHipF.dead && !b.jHipB.dead && !b.jKneeF.dead && !b.jKneeB.dead;
+                && !b.jHipF.dead && !b.jHipB.dead && !b.jKneeF.dead && !b.jKneeB.dead && !b.legsBroken();
     }
 
     /** Called once per frame: perception, decisions, timers. */
@@ -148,7 +148,7 @@ final class Brain {
             Body b = w.bodies.get(i);
             if (!b.isHuman() || b.tone <= 0.02f || b.ps.isEmpty()) continue;
             if (!supported(w, b)) continue;
-            pose(w, b, b.tone * (b.kind == Body.K_ROBOT ? 1.15f : 1f));
+            pose(w, b, b.tone * (b.kind == Body.K_ROBOT ? 1.15f : 1f) * (b.adrenaline > 0f ? 1.35f : 1f));
         }
     }
 

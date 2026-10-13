@@ -12,6 +12,7 @@ final class Renderer {
     int theme = 0;
     boolean detail = true;
     boolean gore = true;
+    Body inspect;            // person under the Inspect tool (damage overlay)
     private static final int[] WALL = {0xFF2f3846, 0xFFdde5ea, 0xFF0f1630, 0xFF6b3b32, 0xFF0a0612, 0xFFe8c98a};
     private static final int[] GRIDC = {0xFF3a4455, 0xFFc3ced6, 0xFF1a2348, 0xFF4f2a24, 0xFF7a1fa8, 0xFFd1ac6a};
     private static final int[] FLOORC = {0xFF4c525d, 0xFFb8c2c9, 0xFF1c2230, 0xFF5a3e28, 0xFF14091f, 0xFFc79a55};
@@ -277,6 +278,55 @@ final class Renderer {
     private void overlay(Draw2D c, Body b) {
         if (b.ps.isEmpty()) return;
         switch (b.type) {
+            case Body.GUN: {
+                if (b.ps.size() < 2) break;
+                Particle a = b.ps.get(0), z = b.ps.get(1);
+                float dx = z.x - a.x, dy = z.y - a.y, l = (float) Math.sqrt(dx * dx + dy * dy) + 1e-3f;
+                float ux = dx / l, uy = dy / l, nx = -uy, ny = ux;
+                // grip below the back of the barrel (towards +n), magazine for the machine gun
+                float s = b.gunKind == 2 ? 1.4f : 1f;
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeCap(Paint.Cap.ROUND);
+                p.setColor(0xFF2b2b30);
+                p.setStrokeWidth(7f * s);
+                float gx = a.x + ux * 5f, gy = a.y + uy * 5f;
+                c.drawLine(gx, gy, gx + nx * 13f * s - ux * 3f, gy + ny * 13f * s - uy * 3f, p);
+                if (b.gunKind == 2) {
+                    p.setColor(0xFF6a5a2a);
+                    p.setStrokeWidth(9f);
+                    float mx = a.x + ux * l * 0.5f, my = a.y + uy * l * 0.5f;
+                    c.drawLine(mx, my, mx + nx * 16f, my + ny * 16f, p);
+                }
+                if (b.gunKind == 1) {       // scope
+                    p.setColor(0xFF22252a);
+                    p.setStrokeWidth(5f);
+                    float sx = a.x + ux * l * 0.35f - nx * 8f, sy = a.y + uy * l * 0.35f - ny * 8f;
+                    c.drawLine(sx, sy, sx + ux * 16f, sy + uy * 16f, p);
+                }
+                p.setColor(0xFF15171a);       // muzzle
+                p.setStrokeWidth(b.ps.get(1).r * 1.4f);
+                c.drawLine(z.x - ux * 3f, z.y - uy * 3f, z.x + ux * 2f, z.y + uy * 2f, p);
+                if (b.firing) { p.setStyle(Paint.Style.FILL); p.setColor(0xFFff5a3a); c.drawCircle(a.x, a.y, 3f, p); }
+                p.setStyle(Paint.Style.FILL);
+                break;
+            }
+            case Body.C4: {
+                if (b.ps.size() < 2) break;
+                Particle a = b.ps.get(0), z = b.ps.get(1);
+                float mx = (a.x + z.x) / 2, my = (a.y + z.y) / 2;
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(2f);
+                p.setColor(0xFF3a3d20);
+                c.drawLine(a.x, a.y, z.x, z.y, p);
+                boolean on = ((int) (System.currentTimeMillis() / 400) & 1) == 0;
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(on ? 0xFFff3b30 : 0xFF5a1a16);
+                c.emissive(on);
+                c.drawCircle(mx, my - 4f, 2.6f, p);
+                c.emissive(false);
+                if (on) c.light(mx, my - 4f, 60f, 0xFFff3b30, 0.6f);
+                break;
+            }
             case Body.ANCHOR: {
                 Particle a = b.ps.get(0);
                 p.setStyle(Paint.Style.FILL);
@@ -516,6 +566,7 @@ final class Renderer {
         drawHead(c, b, skin);
         // front arm
         part(c, b, b.uarmF, b.shirt); part(c, b, b.farmF, skin); hand(c, b, b.farmF);
+        if (b == inspect) inspectOverlay(c, b);
         // stumps
         p.setStyle(Paint.Style.FILL);
         p.setColor(0xFF8e1111);
@@ -587,6 +638,30 @@ final class Renderer {
             c.drawLine(cx - nx * r, cy - ny * r, cx + nx * r, cy + ny * r, p);
         }
         p.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    /** Inspect view: every part tinted by its health (green -> red), broken bones in violet. */
+    private void inspectOverlay(Draw2D c, Body b) {
+        Stick[] parts = b.parts();
+        if (parts == null) return;
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        for (Stick s : parts) {
+            float h = 1f - s.damage / 100f;
+            int col = s.fractured ? 0xFFc061ff : (h > 0.5f ? mix(0xFFf2d13a, 0xFF4cdc6b, (h - 0.5f) * 2f) : mix(0xFFe0463c, 0xFFf2d13a, h * 2f));
+            p.setColor(alpha(col, 0.6f));
+            p.setStrokeWidth(s.r * 2f + 2f);
+            c.drawLine(s.a.x, s.a.y, s.b.x, s.b.y, p);
+        }
+        float hh = 1f - b.headDmg / 100f;
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(alpha(hh > 0.5f ? 0xFF4cdc6b : 0xFFe0463c, 0.45f));
+        c.drawCircle(b.head.x, b.head.y, b.head.r, p);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(2.5f);
+        p.setColor(0xCCffffff);
+        c.drawCircle(b.cx, b.cy, b.rad + 10f, p);
+        p.setStyle(Paint.Style.FILL);
     }
 
     private void drawHead(Draw2D c, Body b, int skin) {

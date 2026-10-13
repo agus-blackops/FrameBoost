@@ -403,9 +403,46 @@ final class World {
         b.hurtCd = 0.12f;
         b.flashT = 0.14f;
         b.blood -= dmg;
+        damagePart(b, dmg, x, y);
+        if (b.adrenaline > 0f && dmg < 30f) dmg *= 0.25f;     // adrenaline: hard to knock out
         if (dmg > 9f) { b.ko = Math.max(b.ko, Math.min(6f, 1.2f + dmg * 0.07f) * (b.kind == Body.K_ROBOT ? 0.5f : 1f)); b.tone = 0f; }
         if (dmg > 6f || gore) fx.bloodBurst(x, y, Math.min(14, 2 + (int) (dmg * 0.5f)));
         if (b.blood <= 0) kill(b);
+    }
+
+    /** The part nearest to the impact takes the damage; enough of it breaks the bone. */
+    void damagePart(Body b, float dmg, float x, float y) {
+        if (b.head != null) {
+            float hx = b.head.x - x, hy = b.head.y - y;
+            if (hx * hx + hy * hy < (b.head.r + 6f) * (b.head.r + 6f)) {
+                b.headDmg = Math.min(100f, b.headDmg + dmg * 1.4f);
+                if (b.headDmg >= 100f) kill(b);
+                return;
+            }
+        }
+        Stick[] parts = b.parts();
+        if (parts == null) return;
+        Stick best = null;
+        float bd = Float.MAX_VALUE;
+        for (Stick s : parts) {
+            float abx = s.b.x - s.a.x, aby = s.b.y - s.a.y, l2 = abx * abx + aby * aby;
+            float t = l2 > 1e-6f ? clamp(((x - s.a.x) * abx + (y - s.a.y) * aby) / l2) : 0f;
+            float qx = s.a.x + abx * t - x, qy = s.a.y + aby * t - y, d = qx * qx + qy * qy;
+            if (d < bd) { bd = d; best = s; }
+        }
+        if (best == null) return;
+        best.damage = Math.min(100f, best.damage + dmg * 1.6f);
+        if (best.damage >= 70f && !best.fractured && best != b.torso) fracture(b, best);
+    }
+
+    void fracture(Body b, Stick part) {
+        part.fractured = true;
+        if (part.limit != null) part.limit.disabled = true;
+        float mx = (part.a.x + part.b.x) / 2, my = (part.a.y + part.b.y) / 2;
+        if (b.kind != Body.K_ROBOT) fx.debris(mx, my, 3, 0xFFf0ead6, 160f);
+        else fx.sparks(mx, my, 6, 0xFFffd25a);
+        if (sfx != null) sfx.crunch();
+        if (b.legsBroken()) { b.ko = Math.max(b.ko, 0.5f); b.tone = 0f; }
     }
 
     void kill(Body b) {
@@ -448,7 +485,7 @@ final class World {
             b.updateBounds();
             if (b.hurtCd > 0) b.hurtCd -= dt;
             if (b.flashT > 0) b.flashT -= dt;
-            if (b.isHuman()) { updateHuman(b, dt); Brain.think(this, b, dt); }
+            if (b.isHuman()) { updateHuman(b, dt); updateAcid(b, dt); if (b.adrenaline > 0f) b.adrenaline -= dt; Brain.think(this, b, dt); }
             if (b.burning) updateBurning(b, dt);
             if (b.fuse >= 0f) {
                 b.fuse -= dt;
@@ -475,6 +512,8 @@ final class World {
                 fx.add(Fx.FLAME, a.x + dx / l * 8, a.y + dy / l * 8, dx / l * 500 + fx.rr(60), dy / l * 500 + fx.rr(60), 0.25f, 9f, 0);
             if (rnd.nextFloat() < 0.4f) fx.smoke(a.x + dx / l * 20, a.y + dy / l * 20, 7f, 0xFF888888);
         }
+        guns(dt);
+        stickyC4();
         spreadT += dt;
         if (spreadT > 0.25f) { spreadT = 0; spreadFire(); }
         // rockets
@@ -509,7 +548,7 @@ final class World {
     // ------------------------------------------------------------------------------ fire -----
 
     void ignite(Body b) {
-        if (b.burning || !(b.flammable || b.explosive)) return;
+        if (b.burning || !(b.flammable || b.explosive) || b.type == Body.C4) return;
         b.burning = true;
         b.burnT = b.isHuman() ? 16f : (b.explosive ? 1f : 9f);
         if (b.explosive && b.fuse < 0f) b.fuse = 0.4f + rnd.nextFloat() * 0.5f;
@@ -736,6 +775,168 @@ final class World {
             if (d < bd) { bd = d; best = p; }
         }
         return best;
+    }
+
+    // ------------------------------------------------------------------- guns & C4 -----------
+
+    private void guns(float dt) {
+        for (int i = 0; i < bodies.size(); i++) {
+            Body b = bodies.get(i);
+            if (b.type != Body.GUN || !b.firing) continue;
+            b.fireCd -= dt;
+            if (b.fireCd <= 0f) { b.fireCd = 0.075f; fireGun(b); }
+        }
+    }
+
+    /** One shot along the barrel, with recoil and muzzle flash. */
+    void fireGun(Body g) {
+        if (g.ps.size() < 2) return;
+        Particle a = g.ps.get(0), z = g.ps.get(1);
+        float dx = z.x - a.x, dy = z.y - a.y, l = (float) Math.sqrt(dx * dx + dy * dy);
+        if (l < 1f) return;
+        dx /= l; dy /= l;
+        float ox = z.x + dx * 9f, oy = z.y + dy * 9f;
+        switch (g.gunKind) {
+            case 0: bullet(ox, oy, dx, dy, 24f, 950f, 1); break;
+            case 1: bullet(ox, oy, dx, dy, 40f, 1600f, 3); break;
+            default: {
+                float ang = (float) Math.atan2(dy, dx) + (rnd.nextFloat() - 0.5f) * 0.07f;
+                bullet(ox, oy, (float) Math.cos(ang), (float) Math.sin(ang), 14f, 600f, 1);
+            }
+        }
+        float rec = g.gunKind == 1 ? 520f : (g.gunKind == 2 ? 150f : 300f);
+        a.addVel(-dx * rec, -dy * rec - 40f);
+        z.addVel(-dx * rec * 0.7f, -dy * rec * 0.7f - 90f);
+        fx.add(Fx.GLOW, ox, oy, 0, 0, 0.06f, 16f, 0xFFfff0b0);
+        fx.sparks(ox, oy, 3, 0xFFffd25a);
+        if (sfx != null) sfx.shot();
+        rumble += 0.06f;
+    }
+
+    /** C4 sticks to the first thing it touches. */
+    private void stickyC4() {
+        for (int i = 0; i < bodies.size(); i++) {
+            Body c = bodies.get(i);
+            if (c.type != Body.C4 || c.stuck || c.ps.size() < 2) continue;
+            outer:
+            for (int k = 0; k < c.ps.size(); k++) {
+                Particle p = c.ps.get(k);
+                for (int j = 0; j < bodies.size(); j++) {
+                    Body o = bodies.get(j);
+                    if (o == c || o.type == Body.C4) continue;
+                    float dx = o.cx - p.x, dy = o.cy - p.y;
+                    if (dx * dx + dy * dy > (o.rad + 20f) * (o.rad + 20f)) continue;
+                    for (int m = 0; m < o.ps.size(); m++) {
+                        Particle q = o.ps.get(m);
+                        float ex = q.x - p.x, ey = q.y - p.y, rr = q.r + p.r + 4f;
+                        if (ex * ex + ey * ey < rr * rr) {
+                            link(p, q, true);
+                            c.stuck = true;
+                            break outer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Detonates every C4 in the room (the remote detonator). */
+    int detonateC4() {
+        int n = 0;
+        for (int i = 0; i < bodies.size(); i++) {
+            Body b = bodies.get(i);
+            if (b.type == Body.C4 && b.fuse < 0f) { b.fuse = 0.05f + n * 0.08f; n++; }
+        }
+        return n;
+    }
+
+    // ------------------------------------------------------------------------- syringes ----
+
+    /** Applies a syringe. Returns a short message for the player. */
+    String inject(Body b, int kind) {
+        if (!b.isHuman()) return "Las jeringas solo funcionan con personas";
+        if (b.kind == Body.K_ROBOT || b.kind == Body.K_SKELETON) return "No hace efecto: no tiene sangre";
+        Particle at = b.chest;
+        int col;
+        String msg;
+        switch (kind) {
+            case Tools.SYR_HEAL:
+                heal(b);
+                col = 0xFF6dff8a; msg = "Curado";
+                break;
+            case Tools.SYR_ADRENALINE:
+                if (b.dead) return "Está muerto: usa Resurrección";
+                b.adrenaline = 25f; b.ko = 0f; b.tone = Math.max(b.tone, 0.6f);
+                b.blood = Math.min(b.maxBlood, b.blood + 20f);
+                col = 0xFFffd23f; msg = "¡Adrenalina!";
+                break;
+            case Tools.SYR_LIFE:
+                if (!b.dead) return "Todavía está vivo";
+                if (b.neck.dead) return "Sin cabeza no hay resurrección";
+                heal(b);
+                b.dead = false; b.ko = 2.5f; b.tone = 0f;
+                col = 0xFF7fd1ff; msg = "¡Ha vuelto a la vida!";
+                break;
+            case Tools.SYR_ZOMBIE:
+                if (b.kind == Body.K_ZOMBIE) return "Ya es un zombi";
+                if (b.neck.dead) return "Sin cabeza no hay zombi";
+                b.infected = 2.5f; b.bitten = true;
+                col = 0xFF5aa02a; msg = "Infectado... en unos segundos";
+                break;
+            case Tools.SYR_ACID:
+                b.acid = 9f;
+                col = 0xFFb6ff3a; msg = "Ácido en las venas";
+                break;
+            default:
+                if (b.dead) return "Está muerto";
+                b.ko = 25f; b.tone = 0f; b.adrenaline = 0f;
+                col = 0xFF9a8cff; msg = "Zzz...";
+        }
+        for (int i = 0; i < 10; i++)
+            fx.add(Fx.SPARK, at.x, at.y, fx.rr(180), -80f - fx.rf() * 160f, 0.5f, 2.2f, col);
+        fx.add(Fx.GLOW, at.x, at.y, 0, 0, 0.3f, 26f, col);
+        if (sfx != null) sfx.pop();
+        return msg;
+    }
+
+    void heal(Body b) {
+        b.blood = b.maxBlood;
+        b.headDmg = 0f;
+        b.burning = false; b.burnT = 0f; b.acid = 0f; b.ko = 0f;
+        b.infected = -1f; b.bitten = false;
+        for (Particle p : b.ps) p.bleed = 0f;
+        Stick[] parts = b.parts();
+        if (parts != null) for (Stick s : parts) { s.damage = 0f; s.fractured = false; if (s.limit != null) s.limit.disabled = false; }
+    }
+
+    /** Acid eats a person: damage, green fumes, limbs falling off, and finally only bones are left. */
+    void updateAcid(Body b, float dt) {
+        if (b.acid <= 0f) return;
+        b.acid -= dt;
+        b.blood -= 9f * dt;
+        b.charT = Math.min(0.55f, b.charT + dt * 0.05f);
+        if (rnd.nextFloat() < dt * 10f) {
+            Particle p = b.ps.get(rnd.nextInt(b.ps.size()));
+            fx.smoke(p.x, p.y, 7f, 0xFF8fd14a);
+        }
+        if (rnd.nextFloat() < dt * 0.6f) {
+            Stick[] js = {b.jElF, b.jElB, b.jKneeF, b.jKneeB, b.jShF, b.jShB};
+            Stick s = js[rnd.nextInt(js.length)];
+            if (!s.dead) breakStick(s);
+        }
+        if (b.blood <= 0f && !b.dead) kill(b);
+        if (b.acid <= 0f && b.dead) skeletonize(b);
+    }
+
+    private void skeletonize(Body b) {
+        b.kind = Body.K_SKELETON;
+        b.skin = b.shirt = b.hair = 0xFFe9e5d3; b.pants = 0xFFe3dfcc;
+        b.charT = 0f; b.burning = false;
+        SceneIO.recolor(b);
+        for (Particle p : b.ps) p.bleed = 0f;
+        Stick[] bones = {b.uarmF, b.farmF, b.uarmB, b.farmB, b.thighF, b.shinF, b.thighB, b.shinB};
+        for (Stick s : bones) { s.r *= 0.55f; s.a.r *= 0.55f; s.b.r *= 0.55f; }
+        fx.smoke(b.cx, b.cy, 16f, 0xFF8fd14a);
     }
 
     void pop(Body b) {

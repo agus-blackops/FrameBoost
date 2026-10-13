@@ -8,6 +8,9 @@ final class Stick {
     final Particle a, b;
     float rest, r, tear;
     boolean collide, joint, dead, capA, capB, band, weld;
+    float damage;           // body parts: 0..100
+    boolean fractured;      // broken bone: the joint above it goes limp
+    AngleLimit limit;       // the joint limit this part hangs from
     int kind = FILL;
     int color;
     int idx;

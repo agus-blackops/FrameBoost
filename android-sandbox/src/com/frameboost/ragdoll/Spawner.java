@@ -47,6 +47,7 @@ final class Spawner {
                 break;
             default: break;
         }
+        b.maxBlood = b.blood;
         float m = s * s;
         float hs = headScale;
         b.param = hs;
@@ -75,8 +76,8 @@ final class Spawner {
             Stick jEl = new Stick(b, uE, fJ, 0, 0);
             jSh.joint = jEl.joint = true;
             jSh.tear = 34 * s; jEl.tear = 34 * s;
-            b.ls.add(new AngleLimit(chest, pelvis, uJ, uE, true, -170, 60, dir, 0.8f));
-            b.ls.add(new AngleLimit(uE, uJ, fJ, fE, false, -150, 0, dir, 0.7f));
+            b.ls.add(upper.limit = new AngleLimit(chest, pelvis, uJ, uE, true, -170, 60, dir, 0.8f));
+            b.ls.add(fore.limit = new AngleLimit(uE, uJ, fJ, fE, false, -150, 0, dir, 0.7f));
 
             // leg
             Particle tJ = new Particle(b, x + off, y, 4 * m, 8 * s);
@@ -89,8 +90,8 @@ final class Spawner {
             Stick jKnee = new Stick(b, tE, sJ, 0, 0);
             jHip.joint = jKnee.joint = true;
             jHip.tear = 40 * s; jKnee.tear = 40 * s;
-            b.ls.add(new AngleLimit(pelvis, chest, tJ, tE, false, -110, 35, dir, 0.8f));
-            b.ls.add(new AngleLimit(tE, tJ, sJ, sE, false, 0, 150, dir, 0.7f));
+            b.ls.add(thigh.limit = new AngleLimit(pelvis, chest, tJ, tE, false, -110, 35, dir, 0.8f));
+            b.ls.add(shin.limit = new AngleLimit(tE, tJ, sJ, sE, false, 0, 150, dir, 0.7f));
 
             if (front) {
                 b.uarmF = upper; b.farmF = fore; b.jShF = jSh; b.jElF = jEl;
@@ -255,6 +256,32 @@ final class Spawner {
             prev = p;
         }
         b.flammable = true;
+        finish(b);
+        return b;
+    }
+
+    /** A gun that fires along its barrel (grip -> muzzle) when activated. */
+    static Body gun(float x, float y, int kind) {
+        Body b = new Body(Body.GUN);
+        b.gunKind = kind;
+        b.param = kind;
+        b.color = kind == 1 ? 0xFF4a4f57 : (kind == 2 ? 0xFF3b3f46 : 0xFF5a5f68);
+        float len = kind == 0 ? 26f : (kind == 1 ? 50f : 46f), r = kind == 2 ? 6.5f : 4.2f;
+        Particle a = new Particle(b, x - len / 2, y, kind == 2 ? 3f : 1.2f, r);
+        Particle c = new Particle(b, x + len / 2, y, kind == 2 ? 2f : 0.8f, r * 0.85f);
+        new Stick(b, a, c, len, r).solid(b.color);
+        finish(b);
+        return b;
+    }
+
+    static Body c4(float x, float y) {
+        Body b = new Body(Body.C4);
+        b.color = 0xFF7a7f3a;
+        Particle a = new Particle(b, x - 11, y, 1f, 6f);
+        Particle c = new Particle(b, x + 11, y, 1f, 6f);
+        new Stick(b, a, c, 22f, 6f).solid(b.color);
+        b.explosive = true;
+        b.blastR = 380; b.blastPow = 6800; b.blastDmg = 120;
         finish(b);
         return b;
     }
