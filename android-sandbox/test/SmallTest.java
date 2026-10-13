@@ -19,7 +19,7 @@ public class SmallTest {
             int w = sizes[k][0], h = sizes[k][1];
             Game g = new Game(null, new File("/tmp/rpg-mods"));
             g.resize(w, h, dens[k]);
-            Harness.run(g, 1f);
+            Harness.run(g, 4.5f);
             shot(g, w, h, a[0] + "/s" + k + "_title.png");
             g.menuAction(Screens.A_SANDBOX);
             g.spawn(Tools.HUMAN, 1100, -100); g.spawn(Tools.ZOMBIE, 1500, -100); g.spawn(Tools.CRATE, 1300, -300);

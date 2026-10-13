@@ -94,6 +94,8 @@ final class Game {
         for (int i = 0; i < ptrs.length; i++) ptrs[i] = new Ptr();
         refreshButtons();
         titleDemo();
+        screens.screen = Screens.SPLASH;      // "Made with OpenGL" -> "Made with Opus 5.5" -> title
+        screens.time = 0;
     }
 
     /** Live scene behind the title menu: people, zombies and the odd explosion. */
@@ -280,6 +282,7 @@ final class Game {
     void update(float dtReal) {
         if (dtReal > 0.05f) dtReal = 0.05f;
         lastFrameDt = dtReal;
+        screens.tickSplash(this, dtReal);
         fpsAcc += dtReal; fpsFrames++;
         if (fpsAcc > 0.5f) { fps = fpsFrames / fpsAcc; fpsAcc = 0; fpsFrames = 0; }
         if (confirmT > 0) { confirmT -= dtReal; if (confirmT <= 0) confirmClear = false; }
@@ -455,7 +458,8 @@ final class Game {
                 c.drawCircle(pt.x, pt.y, 14 * density, p);
             }
         }
-        if (screens.screen != Screens.TITLE && screens.screen != Screens.CHALLENGES && screens.screen != Screens.ACHIEVEMENTS) {
+        if (screens.screen != Screens.TITLE && screens.screen != Screens.CHALLENGES && screens.screen != Screens.ACHIEVEMENTS
+                && screens.screen != Screens.SPLASH) {
             Tools.Item it = Tools.find(tool);
             ui.draw(c, tool, it.name, it.hint, fps, world.bodies.size(), confirmClear);
             if (challenge >= 0) challengeBanner(c);

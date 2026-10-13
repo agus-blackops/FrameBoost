@@ -6,7 +6,7 @@ import android.graphics.RectF;
 
 /** Menus drawn over the live world: title, pause, settings, challenge list, results, tutorial. */
 final class Screens {
-    static final int NONE = 0, TITLE = 1, PAUSE = 2, SETTINGS = 3, CHALLENGES = 4, RESULT = 5, TUTORIAL = 6, ACHIEVEMENTS = 7;
+    static final int NONE = 0, TITLE = 1, PAUSE = 2, SETTINGS = 3, CHALLENGES = 4, RESULT = 5, TUTORIAL = 6, ACHIEVEMENTS = 7, SPLASH = 8;
     static final int A_CONTINUE = 1, A_SANDBOX = 2, A_CHALLENGES = 3, A_SETTINGS = 4, A_RESUME = 5, A_MENU = 6,
             A_RESTART = 7, A_BACK = 8, A_MUSIC_DN = 9, A_MUSIC_UP = 10, A_SFX_DN = 11, A_SFX_UP = 12, A_HAPTICS = 13,
             A_GORE = 14, A_QUALITY = 15, A_FPS = 16, A_TEXTURES = 17, A_NEXT = 18, A_RETRY = 19, A_TUT = 20, A_ACH = 21, A_ENGINE = 22, A_CHAL = 100;
@@ -33,6 +33,13 @@ final class Screens {
     /** Returns true when the touch belongs to a menu. */
     boolean touch(int action, float x, float y, Game g) {
         if (screen == NONE) return false;
+        if (screen == SPLASH) {                         // tap skips to the next card
+            if (action == Game.UP) {
+                float card = splashCard(g);
+                if (card < 1f && g.settings.gpu) time = SPLASH_CARD; else { screen = TITLE; time = 0; }
+            }
+            return true;
+        }
         if (screen == TUTORIAL) {
             boolean inside = x >= tutBox.left && x <= tutBox.right && y >= tutBox.top && y <= tutBox.bottom;
             if (inside && action == Game.UP) { g.click(); nextTip(g); }
@@ -57,7 +64,7 @@ final class Screens {
     // ----------------------------------------------------------------------------- drawing ----
 
     void draw(Canvas c, Game g, float dt) {
-        time += dt;
+        if (screen != SPLASH) time += dt;   // the splash is timed by the game loop (tickSplash)
         d = g.density;
         bn = 0;
         int sw = g.sw, sh = g.sh;
@@ -71,8 +78,108 @@ final class Screens {
             case RESULT: result(c, g, sw, sh); break;
             case TUTORIAL: tutorial(c, g, sw, sh); break;
             case ACHIEVEMENTS: achievements(c, g, sw, sh); break;
+            case SPLASH: splash(c, g, sw, sh); break;
             default: break;
         }
+    }
+
+    // ------------------------------------------------------------------------- start-up cards ----
+
+    static final float SPLASH_CARD = 1.9f;
+
+    void tickSplash(Game g, float dt) {
+        if (screen != SPLASH) return;
+        time += dt;
+        if (splashCard(g) >= 2f) { screen = TITLE; time = 0; }
+    }
+
+    /** 0..1 = "Made with OpenGL", 1..2 = "Made with Opus 5.5" (the OpenGL card only on the GPU engine). */
+    private float splashCard(Game g) {
+        float t = time / SPLASH_CARD;
+        return g.settings.gpu ? t : t + 1f;
+    }
+
+    private void splash(Canvas c, Game g, int sw, int sh) {
+        float card = splashCard(g);
+        if (card >= 2f) { screen = TITLE; time = 0; return; }
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xFF0b0e14);
+        c.drawRect(0, 0, sw, sh, p);
+        int idx = (int) card;
+        float k = card - idx;                                   // 0..1 inside this card
+        float a = Math.min(1f, Math.min(k / 0.18f, (1f - k) / 0.18f));
+        a = Math.max(0f, a);
+        float scale = 0.94f + 0.06f * (float) Math.sin(Math.min(1f, k * 1.6f) * Math.PI / 2);
+        float cx = sw / 2f, cy = sh / 2f;
+        c.save();
+        c.translate(cx, cy);
+        c.scale(scale, scale);
+        float big = Math.min(64 * d, sw * 0.09f);
+        // "MADE WITH", spaced capitals
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setFakeBoldText(true);
+        p.setTextSize(13 * d);
+        p.setColor(Renderer.alpha(0xFF8b93a7, a));
+        c.drawText("M A D E   W I T H", 0, -big * 0.95f, p);
+        if (idx == 0) {
+            // glowing concentric rings, like a shader warming up
+            p.setStyle(Paint.Style.STROKE);
+            for (int i = 0; i < 4; i++) {
+                float ph = (time * 0.9f + i * 0.25f) % 1f;
+                p.setStrokeWidth(2f * d);
+                p.setColor(Renderer.alpha(0xFF5b8cff, a * (1f - ph) * 0.5f));
+                c.drawCircle(0, -big * 0.3f, big * (1.2f + ph * 2.4f), p);
+            }
+            p.setStyle(Paint.Style.FILL);
+            p.setTextSize(big * 1.15f);
+            float wOpen = p.measureText("Open"), wGL = p.measureText("GL");
+            float x0 = -(wOpen + wGL) / 2;
+            p.setTextAlign(Paint.Align.LEFT);
+            p.setColor(Renderer.alpha(0xFFffffff, a));
+            c.drawText("Open", x0, big * 0.12f, p);
+            p.setColor(Renderer.alpha(0xFF5b8cff, a));
+            c.drawText("GL", x0 + wOpen, big * 0.12f, p);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setFakeBoldText(false);
+            p.setTextSize(13 * d);
+            p.setColor(Renderer.alpha(0xFFb9c2d0, a));
+            c.drawText("ES 2.0  ·  shaders  ·  iluminación dinámica  ·  bloom", 0, big * 0.12f + 34 * d, p);
+        } else {
+            // a four-point sparkle next to the name
+            p.setStyle(Paint.Style.FILL);
+            p.setTextSize(big * 1.15f);
+            float w = p.measureText("Opus 5.5");
+            float sx = -w / 2 - big * 0.55f, sy = -big * 0.28f, r = big * 0.36f * (0.85f + 0.15f * (float) Math.sin(time * 6f));
+            p.setColor(Renderer.alpha(0xFFe8846a, a));
+            float[] pts = new float[16];
+            for (int i = 0; i < 8; i++) {
+                double ang = -Math.PI / 2 + i * Math.PI / 4;
+                float rr = (i & 1) == 0 ? r : r * 0.28f;
+                pts[i * 2] = sx + (float) Math.cos(ang) * rr;
+                pts[i * 2 + 1] = sy + (float) Math.sin(ang) * rr;
+            }
+            android.graphics.Path path = new android.graphics.Path();
+            path.moveTo(pts[0], pts[1]);
+            for (int i = 1; i < 8; i++) path.lineTo(pts[i * 2], pts[i * 2 + 1]);
+            path.close();
+            c.drawPath(path, p);
+            p.setTextAlign(Paint.Align.LEFT);
+            p.setColor(Renderer.alpha(0xFFffffff, a));
+            c.drawText("Opus 5.5", -w / 2 + big * 0.1f, big * 0.12f, p);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setFakeBoldText(false);
+            p.setTextSize(13 * d);
+            p.setColor(Renderer.alpha(0xFFb9c2d0, a));
+            c.drawText("código  ·  física  ·  arte  ·  música", 0, big * 0.12f + 34 * d, p);
+        }
+        p.setFakeBoldText(false);
+        c.restore();
+        // thin progress line at the bottom
+        p.setColor(Renderer.alpha(0xFF2a3142, 1f));
+        c.drawRect(sw * 0.4f, sh - 28 * d, sw * 0.6f, sh - 26 * d, p);
+        p.setColor(0xFFf2b134);
+        float prog = g.settings.gpu ? card / 2f : (card - 1f);
+        c.drawRect(sw * 0.4f, sh - 28 * d, sw * 0.4f + sw * 0.2f * Math.min(1f, prog), sh - 26 * d, p);
     }
 
     private void dim(Canvas c, int sw, int sh, int col) {

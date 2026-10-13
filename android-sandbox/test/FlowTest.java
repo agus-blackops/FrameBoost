@@ -21,7 +21,10 @@ public class FlowTest {
         Game g = new Game(null, new File("/tmp/rpg-mods"));
         g.resize(Harness.W, Harness.H, Harness.DENS);
         g.saveFile = new File("/tmp/rpg-autosave.trz"); g.saveFile.delete();
-        Harness.run(g, 3f);
+        check("starts with the splash cards", g.screens.screen == Screens.SPLASH);
+        Harness.run(g, 0.9f); Harness.shot(g, out + "/splash_opengl.png");
+        Harness.run(g, 1.9f); Harness.shot(g, out + "/splash_opus.png");
+        Harness.run(g, 1.6f);
         Harness.shot(g, out + "/title.png");
         check("starts on title", g.screens.screen == Screens.TITLE);
         // title buttons: find "Sandbox libre" by trying the menu action directly via tap at its layout
