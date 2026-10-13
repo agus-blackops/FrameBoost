@@ -12,7 +12,8 @@ final class Screens {
             A_GORE = 14, A_QUALITY = 15, A_FPS = 16, A_TEXTURES = 17, A_NEXT = 18, A_RETRY = 19, A_TUT = 20, A_CHAL = 100;
 
     int screen = TITLE, back = TITLE, tutStep;
-    float time;
+    float time, tutT;
+    private final RectF tutBox = new RectF();
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF r = new RectF();
     private final float[] bx = new float[64], by = new float[64], bw = new float[64], bh = new float[64];
@@ -21,10 +22,10 @@ final class Screens {
     private float d = 1f;
 
     static final String[] TUT = {
-        "Abajo están las categorías. Toca \"Gente\" y luego \"Humano\".",
-        "Toca el escenario para colocarlo. Las personas se mantienen en pie... hasta que algo las tumba.",
-        "Con la Mano puedes agarrar y lanzar. Con dos dedos haces zoom y mueves la cámara.",
-        "Prueba los zombis: persiguen a la gente y su mordisco contagia. ¡A experimentar!",
+        "Abre la pestaña \"Gente\" de abajo.",
+        "Elige \"Humano\" y toca el escenario para colocarlo. Se mantendrá en pie... hasta que algo lo tumbe.",
+        "Ahora agarra a alguien: elige \"Mano\" en Herramientas y arrástralo. Con dos dedos, zoom.",
+        "Prueba zombis, explosivos y el Taller de mods. ¡A experimentar!",
     };
 
     // ------------------------------------------------------------------------------- input ----
@@ -33,8 +34,9 @@ final class Screens {
     boolean touch(int action, float x, float y, Game g) {
         if (screen == NONE) return false;
         if (screen == TUTORIAL) {
-            if (action == Game.UP) { tutStep++; g.click(); if (tutStep >= TUT.length) { screen = NONE; g.settings.tutorialDone = true; g.saveSettings(); } }
-            return true;
+            boolean inside = x >= tutBox.left && x <= tutBox.right && y >= tutBox.top && y <= tutBox.bottom;
+            if (inside && action == Game.UP) { g.click(); nextTip(g); }
+            return inside;    // everything else goes to the game: the tips ask you to try things
         }
         int hit = -1;
         for (int i = 0; i < bn; i++) if (x >= bx[i] && x <= bx[i] + bw[i] && y >= by[i] && y <= by[i] + bh[i]) hit = i;
@@ -44,6 +46,12 @@ final class Screens {
             pressed = -1;
         } else if (action == Game.CANCEL) pressed = -1;
         return true;
+    }
+
+    void nextTip(Game g) {
+        tutStep++;
+        tutT = 0;
+        if (tutStep >= TUT.length) { screen = NONE; g.settings.tutorialDone = true; g.saveSettings(); }
     }
 
     // ----------------------------------------------------------------------------- drawing ----
@@ -143,7 +151,7 @@ final class Screens {
         button(c, colX, y, colW, bh, "Sandbox libre", A_SANDBOX, !g.hasSave()); y += bh + gap;
         button(c, colX, y, colW, bh, "Desafíos   ★ " + g.settings.totalStars() + "/" + Challenges.LIST.length * 3, A_CHALLENGES, false); y += bh + gap;
         button(c, colX, y, colW, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v2.0", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v2.1", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {
@@ -169,10 +177,11 @@ final class Screens {
         dim(c, sw, sh, 0xCC0b0e14);
         Settings s = g.settings;
         float w = Math.min(560 * d, sw * 0.86f), x = (sw - w) / 2;
-        float rowH = Math.min(46 * d, (sh - 120 * d) / 6.4f), y = Math.max(16 * d, (sh - rowH * 6.4f - 70 * d) / 2);
+        float rowH = Math.min(46 * d, (sh - 110 * d) / 5f), panelH = 56 * d + rowH * 5 + 14 * d;
+        float y = Math.max(8 * d, (sh - panelH) / 2);
         p.setStyle(Paint.Style.FILL);
         p.setColor(0xF01b2029);
-        r.set(x, y, x + w, y + rowH * 6.4f + 70 * d);
+        r.set(x, y, x + w, y + panelH);
         c.drawRoundRect(r, 20 * d, 20 * d, p);
         text(c, "Ajustes", sw / 2f, y + 38 * d, 22 * d, 0xFFf2b134, Paint.Align.CENTER, true);
         float ry = y + 56 * d, lx = x + 24 * d, cw = w - 48 * d;
@@ -283,7 +292,8 @@ final class Screens {
 
     private void tutorial(Canvas c, Game g, int sw, int sh) {
         String s = TUT[Math.min(tutStep, TUT.length - 1)];
-        float w = Math.min(520 * d, sw * 0.8f), h = 112 * d, x = (sw - w) / 2, y = sh * 0.22f;
+        float w = Math.min(500 * d, sw * 0.62f), h = 96 * d, x = (sw - w) / 2, y = g.ui.topH + 24 * d;
+        tutBox.set(x, y, x + w, y + h);
         p.setStyle(Paint.Style.FILL);
         p.setColor(0xF01b2029);
         r.set(x, y, x + w, y + h);
@@ -295,9 +305,9 @@ final class Screens {
         text(c, "Consejo " + (tutStep + 1) + "/" + TUT.length, x + 20 * d, y + 30 * d, 13 * d, 0xFFf2b134, Paint.Align.LEFT, true);
         wrap(c, s, x + 20 * d, y + 56 * d, w - 40 * d, 15 * d, 0xFFe9edf4);
         float blink = 0.5f + 0.5f * (float) Math.sin(time * 4f);
-        text(c, "Toca para seguir", x + w - 20 * d, y + h - 14 * d, 11 * d, Renderer.alpha(0xFFffffff, 0.4f + 0.5f * blink), Paint.Align.RIGHT, false);
+        text(c, tutStep == TUT.length - 1 ? "Toca para cerrar" : "Toca aquí para saltar", x + w - 20 * d, y + h - 14 * d, 11 * d, Renderer.alpha(0xFFffffff, 0.4f + 0.5f * blink), Paint.Align.RIGHT, false);
         if (tutStep == 0) {   // point at the "Gente" tab
-            float tx = sw / (float) Tools.CAT_NAMES.length * 1.5f, ty = sh - g.ui.tabH - 14 * d - blink * 10 * d;
+            float tx = sw / (float) g.ui.cats.length * 1.5f, ty = sh - g.ui.tabH - 14 * d - blink * 10 * d;
             p.setStyle(Paint.Style.FILL);
             p.setColor(0xFFf2b134);
             android.graphics.Path a = new android.graphics.Path();

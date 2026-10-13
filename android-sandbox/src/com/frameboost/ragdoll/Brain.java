@@ -39,6 +39,13 @@ final class Brain {
         if (b.burning) target *= 0.35f;
         if (target > b.tone) b.tone = Math.min(target, b.tone + dt * 0.7f);
         else b.tone = target;
+        // balance: once standing, leaning too far means falling over instead of magically holding on
+        if (target > 0f && b.tone > 0.9f) {
+            float dy = b.pelvis.y - b.chest.y, dx = Math.abs(b.chest.x - b.pelvis.x);
+            if (dy > dx * 2.2f) b.stood = true;
+            else if (b.stood && (dy < 0 || dx > dy * 1.45f)) { b.ko = Math.max(b.ko, 1.1f); b.tone = 0f; b.stood = false; }
+        }
+        if (b.ko > 0f) b.stood = false;
 
         // struggling while held or burning
         if ((b.held || b.burning) && !b.dead && w.rnd.nextFloat() < dt * 6f) {

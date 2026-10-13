@@ -118,10 +118,14 @@ final class Game {
 
     void applySettings() {
         fx.gore = settings.gore;
+        renderer.gore = settings.gore;
+        textures = settings.textures;
+        if (sfx != null) sfx.enabled = !settings.muted;
         fx.quality = settings.highQuality ? 1f : 0.5f;
         ui.showFps = settings.showFps;
         if (sfx != null) sfx.volume = settings.sfx;
-        if (music != null) music.volume = settings.music;
+        if (music != null) music.volume = settings.muted ? 0f : settings.music;
+        refreshButtons();
     }
 
     void click() {
@@ -145,13 +149,14 @@ final class Game {
             for (int i = 0; i < d.tools.length; i++) items[i] = Tools.find(d.tools[i]);
             Tools.CATS[Tools.CAT_CHAL] = items;
             ui.cats = new int[]{Tools.CAT_CHAL};
-            ui.cat = Tools.CAT_CHAL; ui.stripOpen = true; ui.scrollX = 0;
+            ui.cat = Tools.CAT_CHAL; ui.stripOpen = false; ui.scrollX = 0; ui.dock = true;
             tool = d.tools[0];
             chUses = d.uses; chTime = 0; chIdle = 0; chResult = 0; chSpawnT = 3f; chEndT = 0;
             ui.toast(d.goal);
             if (music != null) music.play(Music.CHALLENGE);
         } else {
             ui.cats = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+            ui.dock = false; ui.dockBadge = null;
             tool = Tools.HAND;
             if (music != null) music.play(Music.LAB);
         }
@@ -175,7 +180,7 @@ final class Game {
                 setPlayMode(-1);
                 spawnDemo();
                 resetCamera();
-                if (!settings.tutorialDone) { screens.screen = Screens.TUTORIAL; screens.tutStep = 0; }
+                if (!settings.tutorialDone) { screens.screen = Screens.TUTORIAL; screens.tutStep = 0; screens.tutT = 0; tutBodies = world.bodies.size(); tutZoom = zoom; }
                 break;
             case Screens.A_CHALLENGES: screens.screen = Screens.CHALLENGES; break;
             case Screens.A_SETTINGS: screens.back = screens.screen; screens.screen = Screens.SETTINGS; break;
@@ -202,7 +207,7 @@ final class Game {
             case Screens.A_GORE: settings.gore = !settings.gore; saveSettings(); break;
             case Screens.A_QUALITY: settings.highQuality = !settings.highQuality; saveSettings(); break;
             case Screens.A_FPS: settings.showFps = !settings.showFps; saveSettings(); break;
-            case Screens.A_TEXTURES: textures = !textures; break;
+            case Screens.A_TEXTURES: settings.textures = !settings.textures; saveSettings(); break;
             default:
                 if (a >= Screens.A_CHAL) setPlayMode(a - Screens.A_CHAL);
                 break;
@@ -227,8 +232,10 @@ final class Game {
     void resetCamera() {
         zoom = sw / 1500f;
         camX = ROOM_W / 2;
-        float visH = sh / zoom;
-        camY = world.floorY - visH * 0.12f;   // floor sits at ~62% of the screen, above the item strip
+        // put the floor just above the item strip, whatever the screen size and density
+        float floorScreenY = sh - ui.tabH - ui.stripH - 26 * density;
+        floorScreenY = Math.max(sh * 0.45f, floorScreenY);
+        camY = world.floorY - (floorScreenY - sh / 2f) / zoom;
         clampCam();
     }
 
@@ -271,6 +278,8 @@ final class Game {
                 else world.explode(1700 + rnd.nextFloat() * 500, world.floorY - 30, 260, 4800, 30);
             }
         }
+        ui.dockBadge = challenge >= 0 && chUses >= 0 ? "×" + chUses : null;
+        tutorialProgress();
         if (challenge >= 0 && screens.screen == Screens.NONE && chResult == 0 && sim > 0) {
             chTime += sim; chIdle += sim;
             int r = Challenges.check(this, challenge, chProgress);
@@ -374,7 +383,8 @@ final class Game {
 
     private void challengeBanner(Canvas c) {
         Challenges.Def d = Challenges.LIST[challenge];
-        float w = Math.min(sw * 0.5f, 460 * density), x = sw / 2f - w / 2, y = 52 * density;
+        // compact pill above the bottom bar: the top of the screen is where the action is
+        float w = Math.min(sw * 0.62f, 460 * density), x = sw / 2f - w / 2, y = sh - ui.tabH - 62 * density;
         p.setStyle(Paint.Style.FILL);
         p.setColor(0xCC141820);
         rf.set(x, y, x + w, y + 54 * density);
@@ -395,9 +405,8 @@ final class Game {
     void touch(int action, int id, float x, float y) {
         if (id < 0 || id >= ptrs.length) return;
         Ptr pt = ptrs[id];
-        if (screens.screen != Screens.NONE && !pt.down) {
-            screens.touch(action, x, y, this);
-            return;
+        if (screens.screen != Screens.NONE && !pt.down && !(action == MOVE && pt.down)) {
+            if (screens.touch(action, x, y, this)) return;
         }
         switch (action) {
             case DOWN: onDown(pt, x, y); break;
@@ -567,7 +576,7 @@ final class Game {
             if (i >= 0 && i < items.length) {
                 int id = items[i].id;
                 if (id == Tools.MOD_CREATE) { if (host != null) host.editMod(null); else ui.toast("Editor no disponible"); }
-                else if (id >= Tools.STYLE_TEX && id < Tools.STYLE_TEX + 50) { textures = !textures; ui.toast(textures ? "Texturas activadas" : "Texturas desactivadas"); }
+                else if (id >= Tools.STYLE_TEX && id < Tools.STYLE_TEX + 50) { settings.textures = !settings.textures; saveSettings(); ui.toast(textures ? "Texturas activadas" : "Texturas desactivadas"); }
                 else if (id >= Tools.STYLE_BASE) { userTheme = id - Tools.STYLE_BASE; ui.toast("Fondo: " + Tools.THEMES[userTheme]); }
                 else if (id >= Tools.MOD_BASE) {
                     Mod m = mods.mods.get(id - Tools.MOD_BASE);
@@ -580,18 +589,22 @@ final class Game {
             }
         } else if (a >= Ui.BTN) {
             switch (a - Ui.BTN) {
-                case Ui.BTN_PAUSE: paused = !paused; break;
+                case Ui.BTN_PAUSE: paused = !paused; ui.toast(paused ? "Pausa" : "Reanudado"); break;
                 case Ui.BTN_MENU: screens.screen = Screens.PAUSE; saveScene(); break;
-                case Ui.BTN_SLOW: slow = !slow; break;
-                case Ui.BTN_GRAV: gravMode = (gravMode + 1) % 3; break;
+                case Ui.BTN_SLOW: slow = !slow; ui.toast(slow ? "Cámara lenta" : "Velocidad normal"); break;
+                case Ui.BTN_GRAV:
+                    gravMode = (gravMode + 1) % 3;
+                    ui.toast(gravMode == 0 ? "Gravedad normal" : (gravMode == 1 ? "Gravedad lunar" : "Sin gravedad"));
+                    break;
                 case Ui.BTN_UNDO: undoLast(); break;
                 case Ui.BTN_CLEAR:
                     if (confirmClear) { clearAll(); confirmClear = false; }
                     else { confirmClear = true; confirmT = 2.5f; }
                     break;
                 case Ui.BTN_SOUND:
-                    if (sfx != null) sfx.enabled = !sfx.enabled;
-                    if (music != null) music.volume = sfx != null && !sfx.enabled ? 0f : settings.music;
+                    settings.muted = !settings.muted;
+                    saveSettings();
+                    ui.toast(settings.muted ? "Sonido desactivado" : "Sonido activado");
                     break;
                 default: break;
             }
@@ -608,9 +621,10 @@ final class Game {
         ui.btnOn[Ui.BTN_GRAV] = gravMode != 0;
         ui.btnLabel[Ui.BTN_UNDO] = "Deshacer";
         ui.btnLabel[Ui.BTN_CLEAR] = "Limpiar";
-        ui.btnLabel[Ui.BTN_SOUND] = sfx != null && sfx.enabled ? "Sonido" : "Mudo";
+        ui.btnLabel[Ui.BTN_SOUND] = settings.muted ? "Mudo" : "Sonido";
         ui.btnLabel[Ui.BTN_MENU] = "Menú";
-        ui.btnOn[Ui.BTN_SOUND] = sfx == null || !sfx.enabled;
+        ui.btnOn[Ui.BTN_SOUND] = settings.muted;
+        ui.gravMode = gravMode;
     }
 
     /** Called by the editor dialog. Returns an error text, or null when saved. */
@@ -621,6 +635,23 @@ final class Game {
     }
 
     void deleteMod(Mod m) { mods.delete(m); ui.toast("Mod borrado"); }
+
+    private int tutBodies;
+    private float tutZoom;
+
+    /** The tutorial advances by itself when the player does what it asks. */
+    private void tutorialProgress() {
+        if (screens.screen != Screens.TUTORIAL) return;
+        screens.tutT += lastFrameDt;
+        boolean done;
+        switch (screens.tutStep) {
+            case 0: done = ui.stripOpen && ui.cat == 1; break;
+            case 1: done = world.bodies.size() > tutBodies; break;
+            case 2: done = !world.grabs.isEmpty() || Math.abs(zoom - tutZoom) > tutZoom * 0.15f; break;
+            default: done = screens.tutT > 9f; break;
+        }
+        if (done) screens.nextTip(this);
+    }
 
     private void undoLast() {
         while (!undo.isEmpty()) {

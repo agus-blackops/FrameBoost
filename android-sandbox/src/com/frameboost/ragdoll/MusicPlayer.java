@@ -15,6 +15,10 @@ final class MusicPlayer implements Runnable {
     volatile float volume = 0.7f;
     private volatile float intensityTarget;
     private Thread thread;
+    private final java.io.File cacheDir;
+    private static final int CACHE_VERSION = 2;   // bump when the compositions change
+
+    MusicPlayer(java.io.File cacheDir) { this.cacheDir = cacheDir; }
 
     void start() {
         if (running) return;
@@ -33,7 +37,38 @@ final class MusicPlayer implements Runnable {
         }, "music-render").start();
     }
 
-    private static synchronized Music.Track render(int id) { return Music.render(id); }
+    /** Renders a track once and keeps it in the cache folder, so later launches start instantly. */
+    private synchronized Music.Track render(int id) {
+        java.io.File f = cacheDir == null ? null : new java.io.File(cacheDir, "music" + CACHE_VERSION + "_" + id + ".pcm");
+        if (f != null && f.exists()) {
+            try {
+                java.io.DataInputStream in = new java.io.DataInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(f), 65536));
+                int stems = in.readInt(), len = in.readInt();
+                short[][] s = new short[stems][len];
+                byte[] buf = new byte[len * 2];
+                for (int k = 0; k < stems; k++) {
+                    in.readFully(buf);
+                    for (int i = 0; i < len; i++) s[k][i] = (short) ((buf[i * 2] & 0xFF) | (buf[i * 2 + 1] << 8));
+                }
+                in.close();
+                return new Music.Track(s);
+            } catch (Throwable ignored) { f.delete(); }
+        }
+        Music.Track t = Music.render(id);
+        if (f != null) {
+            try {
+                java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.BufferedOutputStream(new java.io.FileOutputStream(f), 65536));
+                out.writeInt(t.stems.length); out.writeInt(t.length);
+                byte[] buf = new byte[t.length * 2];
+                for (short[] st : t.stems) {
+                    for (int i = 0; i < t.length; i++) { buf[i * 2] = (byte) st[i]; buf[i * 2 + 1] = (byte) (st[i] >> 8); }
+                    out.write(buf);
+                }
+                out.close();
+            } catch (Throwable ignored) { f.delete(); }
+        }
+        return t;
+    }
 
     void play(int id) { want = id; }
     void setPaused(boolean p) { paused = p; }

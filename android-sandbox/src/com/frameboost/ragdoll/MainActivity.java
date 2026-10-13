@@ -27,13 +27,13 @@ public class MainActivity extends Activity implements Game.Host {
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        sfx = new Sfx();
+        sfx = new Sfx(getCacheDir());
         view = new GameView(this, sfx, new File(getFilesDir(), "mods"));
         Game g = view.game;
         g.host = this;
         g.saveFile = new File(getFilesDir(), "autosave.trz");
         g.settings = loadSettings();
-        music = new MusicPlayer();
+        music = new MusicPlayer(getCacheDir());
         g.music = music;
         g.applySettings();
         music.play(Music.TITLE);
@@ -103,6 +103,8 @@ public class MainActivity extends Activity implements Game.Host {
         s.highQuality = sp.getBoolean("quality", s.highQuality);
         s.tutorialDone = sp.getBoolean("tutorial", s.tutorialDone);
         s.stars = sp.getString("stars", s.stars);
+        s.textures = sp.getBoolean("textures", s.textures);
+        s.muted = sp.getBoolean("muted", s.muted);
         return s;
     }
 
@@ -110,7 +112,8 @@ public class MainActivity extends Activity implements Game.Host {
         getSharedPreferences("trastazo", MODE_PRIVATE).edit()
                 .putFloat("music", s.music).putFloat("sfx", s.sfx).putBoolean("haptics", s.haptics)
                 .putBoolean("gore", s.gore).putBoolean("fps", s.showFps).putBoolean("quality", s.highQuality)
-                .putBoolean("tutorial", s.tutorialDone).putString("stars", s.stars).apply();
+                .putBoolean("tutorial", s.tutorialDone).putString("stars", s.stars)
+                .putBoolean("textures", s.textures).putBoolean("muted", s.muted).apply();
     }
 
     @Override public void vibrate(int ms) {

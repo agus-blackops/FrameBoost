@@ -34,12 +34,14 @@ final class World {
     boolean dirty = true;
 
     private float acc;
+    private Body[] snap = new Body[64];
     private float spreadT, bleedAcc;
     int frame;
     private int stampSeq;
 
     // broadphase
-    private final int[] pHead = new int[GRID], pNext = new int[MAX_PARTICLES + 8];
+    private final int[] pHead = new int[GRID];
+    private int[] pNext = new int[MAX_PARTICLES + 8];
     private final int[] sHead = new int[GRID], eNext = new int[MAX_ENTRIES], eStick = new int[MAX_ENTRIES];
     private int ec;
 
@@ -60,7 +62,9 @@ final class World {
     // ================================================================= body management =======
 
     boolean canAdd(Body b) {
-        return bodies.size() < MAX_BODIES && ps.size() + b.ps.size() < MAX_PARTICLES - 60;
+        int n = 0;   // count live bodies, not the (possibly stale) flattened list
+        for (int i = 0; i < bodies.size(); i++) n += bodies.get(i).ps.size();
+        return bodies.size() < MAX_BODIES && n + b.ps.size() < MAX_PARTICLES - 60;
     }
 
     boolean add(Body b) {
@@ -193,6 +197,7 @@ final class World {
         Arrays.fill(sHead, -1);
         ec = 0;
         final int n = ps.size();
+        if (pNext.length < n) pNext = new int[n + 256];
         for (int i = 0; i < n; i++) {
             Particle p = ps.get(i);
             int key = hash((int) Math.floor(p.x / CELL), (int) Math.floor(p.y / CELL));
@@ -385,6 +390,7 @@ final class World {
         if (b.kind == Body.K_ROBOT && dmg > 3f) fx.sparks(x, y, 5, 0xFFffd25a);
         if (b.hurtCd > 0.05f && dmg < 20f) dmg *= 0.3f;
         b.hurtCd = 0.12f;
+        b.flashT = 0.14f;
         b.blood -= dmg;
         if (dmg > 9f) { b.ko = Math.max(b.ko, Math.min(6f, 1.2f + dmg * 0.07f) * (b.kind == Body.K_ROBOT ? 0.5f : 1f)); b.tone = 0f; }
         if (dmg > 6f || gore) fx.bloodBurst(x, y, Math.min(14, 2 + (int) (dmg * 0.5f)));
@@ -420,11 +426,17 @@ final class World {
             float d = (float) Math.sqrt(dx * dx + dy * dy);
             if (d - s.rest > s.tear) breakStick(s);
         }
+        // iterate over a snapshot: explosions below may remove any number of bodies
         final int nb = bodies.size();
+        if (snap.length < nb) snap = new Body[nb * 2];
+        bodies.toArray(snap);
         for (int i = nb - 1; i >= 0; i--) {
-            Body b = bodies.get(i);
+            Body b = snap[i];
+            snap[i] = null;
+            if (b.removed) continue;
             b.updateBounds();
             if (b.hurtCd > 0) b.hurtCd -= dt;
+            if (b.flashT > 0) b.flashT -= dt;
             if (b.isHuman()) { updateHuman(b, dt); Brain.think(this, b, dt); }
             if (b.burning) updateBurning(b, dt);
             if (b.fuse >= 0f) {
@@ -552,6 +564,7 @@ final class World {
             }
         } else {
             fx.debris((s.a.x + s.b.x) / 2, (s.a.y + s.b.y) / 2, 3, b.color, 260f);
+            if (sfx != null && s.kind != Stick.HIDDEN) sfx.crunch();
         }
     }
 
@@ -612,8 +625,11 @@ final class World {
             float kick = pow * f * (0.45f + p.invM * 1.2f);
             p.addVel(dx / d * kick, (dy / d - 0.25f) * kick);
         }
-        for (int i = bodies.size() - 1; i >= 0; i--) {
-            Body b = bodies.get(i);
+        final int nb = bodies.size();
+        Body[] list = bodies.toArray(new Body[nb]);
+        for (int i = nb - 1; i >= 0; i--) {
+            Body b = list[i];
+            if (b.removed) continue;
             float dx = b.cx - x, dy = b.cy - y;
             float d = (float) Math.sqrt(dx * dx + dy * dy);
             if (d - b.rad > R) continue;

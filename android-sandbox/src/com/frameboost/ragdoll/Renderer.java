@@ -11,6 +11,7 @@ final class Renderer {
 
     int theme = 0;
     boolean detail = true;
+    boolean gore = true;
     private static final int[] WALL = {0xFF2f3846, 0xFFdde5ea, 0xFF0f1630, 0xFF6b3b32, 0xFF0a0612, 0xFFe8c98a};
     private static final int[] GRIDC = {0xFF3a4455, 0xFFc3ced6, 0xFF1a2348, 0xFF4f2a24, 0xFF7a1fa8, 0xFFd1ac6a};
     private static final int[] FLOORC = {0xFF4c525d, 0xFFb8c2c9, 0xFF1c2230, 0xFF5a3e28, 0xFF14091f, 0xFFc79a55};
@@ -57,6 +58,7 @@ final class Renderer {
         float vy0 = camY - sh / 2f / zoom - 20, vy1 = camY + sh / 2f / zoom + 20;
         drawBackground(c, w, vx0, vy0, vx1, vy1);
         drawStains(c, w, fx);
+        drawShadows(c, w);
 
         for (int i = 0; i < w.bodies.size(); i++) {
             Body b = w.bodies.get(i);
@@ -169,6 +171,23 @@ final class Renderer {
         p.setStyle(Paint.Style.FILL);
     }
 
+    /** Soft contact shadows on the floor: they ground everything visually. */
+    private void drawShadows(Canvas c, World w) {
+        p.setStyle(Paint.Style.FILL);
+        for (int i = 0; i < w.bodies.size(); i++) {
+            Body b = w.bodies.get(i);
+            if (b.ps.isEmpty()) continue;
+            float bottom = b.cy + b.rad * 0.5f;
+            float h = w.floorY - bottom;
+            if (h > 420f || h < -60f) continue;
+            float k = 1f - Math.max(0f, h) / 420f;
+            float wd = Math.min(b.rad, 120f) * (0.75f + 0.35f * k);
+            p.setColor(alpha(0xFF000000, 0.32f * k));
+            rf.set(b.cx - wd, w.floorY - 3f, b.cx + wd, w.floorY + 7f);
+            c.drawOval(rf, p);
+        }
+    }
+
     private void drawStains(Canvas c, World w, Fx fx) {
         p.setStyle(Paint.Style.FILL);
         for (int i = 0; i < fx.stCount; i++) {
@@ -183,6 +202,7 @@ final class Renderer {
 
     private int bodyColor(Body b, int col) {
         if (b.charT > 0) col = mix(col, 0xFF1b1b1b, b.charT);
+        if (b.flashT > 0) col = mix(col, 0xFFffffff, b.flashT / 0.14f * 0.65f);
         if (b.fuse >= 0f && b.fuse < 99f) {
             float rate = b.fuse < 1f ? 14f : 6f;
             if (((int) (b.fuse * rate) & 1) == 0) col = mix(col, 0xFFffffff, 0.55f);
@@ -429,7 +449,9 @@ final class Renderer {
         // stumps
         p.setStyle(Paint.Style.FILL);
         p.setColor(0xFF8e1111);
-        Stick[] js = {b.jShF, b.jElF, b.jShB, b.jElB, b.jHipF, b.jKneeF, b.jHipB, b.jKneeB, b.neck};
+        if (b.jointList == null) b.jointList = new Stick[]{b.jShF, b.jElF, b.jShB, b.jElB, b.jHipF, b.jKneeF, b.jHipB, b.jKneeB, b.neck};
+        Stick[] js = b.jointList;
+        p.setColor(gore ? 0xFF8e1111 : 0xFF6b6f78);
         for (int i = 0; i < js.length; i++) {
             Stick s = js[i];
             if (s == null || !s.dead) continue;

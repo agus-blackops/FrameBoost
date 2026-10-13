@@ -70,14 +70,18 @@ final class Challenges {
                 break;
             }
             default:
-                w.add(Spawner.human(w, 1300, f - 96, 1.05f, 1));
+                Body sci = Spawner.human(w, 1300, f - 96, 1.05f, 1);
+                sci.shirt = 0xFFf4f6f8; sci.pants = 0xFF3a3f4a; sci.hair = 0xFF9aa0a8;   // lab coat
+                sci.torso.color = sci.uarmF.color = sci.uarmB.color = sci.shirt;
+                sci.thighF.color = sci.shinF.color = sci.thighB.color = sci.shinB.color = sci.pants;
+                w.add(sci);
                 w.add(Spawner.human(w, 650, f - 96, 1f, 1, Body.K_ZOMBIE));
                 w.add(Spawner.human(w, 1950, f - 96, 1f, -1, Body.K_ZOMBIE));
                 break;
         }
         g.resetCamera();
         g.zoom = g.sw / 1850f;                       // a wider view so the whole puzzle fits
-        g.camY = f - 190f;
+        g.camY = f - (g.sh - g.ui.tabH - 74 * g.density - g.sh / 2f) / g.zoom;   // floor just above the banner
         g.camX = 1300f;
     }
 

@@ -25,6 +25,10 @@ final class Ui {
     final boolean[] btnHidden = new boolean[BTN_COUNT];
     int[] cats = {0, 1, 2, 3, 4, 5, 6, 7};
     boolean showFps;
+    boolean dock;              // challenge mode: the bottom bar holds the allowed tools directly
+    String dockBadge;          // e.g. "x3" uses left
+    int gravMode;              // for the gravity icon
+    float infoW;
     private final float[] btnX = new float[BTN_COUNT], btnW = new float[BTN_COUNT];
 
     final java.util.HashSet<Integer> active = new java.util.HashSet<>();
@@ -33,7 +37,7 @@ final class Ui {
 
     void layout(int w, int h, float density) {
         sw = w; sh = h; d = density;
-        tabH = 46 * d; stripH = 88 * d; topH = 38 * d;
+        tabH = 50 * d; stripH = 88 * d; topH = 40 * d;
         cardW = 88 * d; cardH = 76 * d; gap = 8 * d;
         p.setTextSize(12 * d);
         float x = sw - 8 * d;
@@ -41,15 +45,22 @@ final class Ui {
         for (int oi = order.length - 1; oi >= 0; oi--) {
             int i = order[oi];
             if (btnHidden[i]) continue;
-            // fixed widths so the bar doesn't jump when labels change
-            btnW[i] = (i == BTN_GRAV ? 92 : (i == BTN_PAUSE ? 68 : (i == BTN_MENU ? 64 : 62))) * d;
+            btnW[i] = topH;       // square icon buttons
             x -= btnW[i];
             btnX[i] = x;
             x -= 6 * d;
         }
+        infoW = Math.max(120 * d, Math.min(300 * d, buttonsLeft() - 20 * d));
     }
 
     void toast(String s) { toast = s; toastT = 2.2f; }
+
+    /** Left edge of the right-hand button group (the info box must stop before it). */
+    private float buttonsLeft() {
+        float m = sw;
+        for (int i = 0; i < BTN_COUNT; i++) if (!btnHidden[i]) m = Math.min(m, btnX[i]);
+        return m;
+    }
 
     float stripTop() { return sh - tabH - stripH; }
 
@@ -62,6 +73,11 @@ final class Ui {
 
     /** What is under the screen point? */
     int hit(float x, float y) {
+        if (y >= sh - tabH && dock) {
+            int n = Math.max(1, Tools.CATS[Tools.CAT_CHAL].length);
+            int i = (int) (x / (sw / (float) n));
+            return ITEM + Math.max(0, Math.min(n - 1, i));
+        }
         if (y >= sh - tabH) {
             int n = cats.length;
             int i = (int) (x / (sw / (float) n));
@@ -95,17 +111,17 @@ final class Ui {
         // top-left info
         p.setStyle(Paint.Style.FILL);
         p.setColor(0x99141820);
-        r.set(8 * d, 4 * d, 8 * d + Math.min(sw * 0.4f, 300 * d), 4 * d + topH + 14 * d);
+        r.set(8 * d, 4 * d, 8 * d + infoW, 4 * d + topH + 14 * d);
         c.drawRoundRect(r, 8 * d, 8 * d, p);
         p.setColor(0xFFf2b134);
         p.setTextSize(14 * d);
         p.setTextAlign(Paint.Align.LEFT);
         p.setFakeBoldText(true);
-        c.drawText(hudName, 16 * d, 22 * d, p);
+        drawFitted(c, hudName, 16 * d, 22 * d, infoW - 16 * d);
         p.setFakeBoldText(false);
         p.setColor(0xFFd5dbe6);
         p.setTextSize(10 * d);
-        drawFitted(c, hudHint, 16 * d, 38 * d, Math.min(sw * 0.4f, 300 * d) - 16 * d);
+        drawFitted(c, hudHint, 16 * d, 38 * d, infoW - 16 * d);
         p.setColor(0x88ffffff);
         p.setTextSize(9 * d);
         if (showFps) c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), 16 * d, 52 * d, p);
@@ -118,14 +134,7 @@ final class Ui {
             p.setColor(on ? 0xEEf2b134 : 0xCC1b2029);
             r.set(btnX[i], 4 * d, btnX[i] + btnW[i], 4 * d + topH);
             c.drawRoundRect(r, 8 * d, 8 * d, p);
-            p.setColor(on ? 0xFF1b2029 : 0xFFe9edf4);
-            p.setTextSize(11 * d);
-            p.setTextAlign(Paint.Align.CENTER);
-            p.setFakeBoldText(true);
-            String t = btnLabel[i] == null ? "" : btnLabel[i];
-            if (i == BTN_CLEAR && confirmClear) t = "¿Seguro?";
-            c.drawText(t, btnX[i] + btnW[i] / 2, 4 * d + topH / 2 + 4 * d, p);
-            p.setFakeBoldText(false);
+            btnIcon(c, i, btnX[i] + btnW[i] / 2, 4 * d + topH / 2, topH * 0.27f, on ? 0xFF1b2029 : 0xFFe9edf4, confirmClear);
         }
 
         // strip
@@ -162,7 +171,8 @@ final class Ui {
             c.restore();
         }
 
-        // tabs
+        // tabs (or the challenge tool dock)
+        if (dock) { drawDock(c, selectedTool); drawToast(c); return; }
         int n = cats.length;
         float tw = sw / (float) n;
         for (int i = 0; i < n; i++) {
@@ -174,20 +184,50 @@ final class Ui {
             c.drawRect(r, p);
             p.setColor(0x33ffffff);
             c.drawRect(i * tw, sh - tabH, i * tw + 1.5f, sh, p);
+            catIcon(c, ci, i * tw + tw / 2, sh - tabH + 17 * d, 9 * d, sel);
+            p.setStyle(Paint.Style.FILL);
             p.setColor(sel ? 0xFF161a22 : 0xFFe9edf4);
-            p.setTextSize(13 * d);
+            p.setTextSize(11.5f * d);
             p.setTextAlign(Paint.Align.CENTER);
             p.setFakeBoldText(true);
-            c.drawText(Tools.CAT_NAMES[ci], i * tw + tw / 2, sh - tabH / 2 + 5 * d, p);
+            drawFittedCentered(c, Tools.CAT_NAMES[ci], i * tw + tw / 2, sh - 9 * d, tw - 6 * d);
             p.setFakeBoldText(false);
         }
+        drawToast(c);
+    }
 
-        // toast
+    private void drawDock(Canvas c, int selectedTool) {
+        Tools.Item[] items = Tools.CATS[Tools.CAT_CHAL];
+        int n = Math.max(1, items.length);
+        float tw = sw / (float) n;
+        for (int i = 0; i < items.length; i++) {
+            boolean sel = items[i].id == selectedTool;
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(sel ? 0xFF3a4560 : 0xF0161a22);
+            r.set(i * tw, sh - tabH, (i + 1) * tw, sh);
+            c.drawRect(r, p);
+            if (sel) { p.setColor(0xFFf2b134); c.drawRect(i * tw, sh - tabH, (i + 1) * tw, sh - tabH + 3 * d, p); }
+            p.setColor(0x33ffffff);
+            c.drawRect(i * tw, sh - tabH, i * tw + 1.5f, sh, p);
+            drawIcon(c, items[i].id, i * tw + tw / 2 - 40 * d, sh - tabH / 2, 14 * d);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xFFe9edf4);
+            p.setTextSize(14 * d);
+            p.setTextAlign(Paint.Align.LEFT);
+            p.setFakeBoldText(true);
+            String label = items[i].name + (dockBadge != null && Tools.isWeapon(items[i].id) || dockBadge != null && items[i].id == Tools.DETONATE ? "  " + dockBadge : "");
+            drawFitted(c, label, i * tw + tw / 2 - 20 * d, sh - tabH / 2 + 5 * d, tw / 2 + 10 * d);
+            p.setFakeBoldText(false);
+        }
+    }
+
+    private void drawToast(Canvas c) {
         if (toastT > 0 && toast != null) {
             p.setTextSize(14 * d);
             p.setTextAlign(Paint.Align.CENTER);
+            while (p.measureText(toast) > sw - 60 * d && p.getTextSize() > 8 * d) p.setTextSize(p.getTextSize() - 0.5f * d);
             float w = p.measureText(toast) + 28 * d;
-            float ty = sh - tabH - (stripOpen ? stripH : 0) - 48 * d;
+            float ty = dock ? sh - tabH - 84 * d : sh - tabH - (stripOpen ? stripH : 0) - 48 * d;
             p.setStyle(Paint.Style.FILL);
             p.setColor(alpha(0xE6000000, Math.min(1f, toastT * 2f)));
             r.set(sw / 2f - w / 2, ty - 22 * d, sw / 2f + w / 2, ty + 12 * d);
@@ -219,6 +259,122 @@ final class Ui {
         String t = id == Tools.MOD_CREATE ? "+" : (id == Tools.STYLE_TEX ? "▦" : it.name.substring(0, 1).toUpperCase());
         c.drawText(t, cx, cy + s * 0.42f, p);
         p.setFakeBoldText(false);
+    }
+
+    private final android.graphics.Path path = new android.graphics.Path();
+
+    /** Vector icons for the top bar. */
+    private void btnIcon(Canvas c, int i, float cx, float cy, float s, int col, boolean confirmClear) {
+        p.setColor(col);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeWidth(s * 0.24f);
+        switch (i) {
+            case BTN_MENU:
+                p.setStyle(Paint.Style.STROKE);
+                for (int k = -1; k <= 1; k++) c.drawLine(cx - s, cy + k * s * 0.6f, cx + s, cy + k * s * 0.6f, p);
+                break;
+            case BTN_PAUSE:
+                p.setStyle(Paint.Style.FILL);
+                if (btnOn[BTN_PAUSE]) {
+                    path.reset(); path.moveTo(cx - s * 0.6f, cy - s); path.lineTo(cx + s, cy); path.lineTo(cx - s * 0.6f, cy + s); path.close();
+                    c.drawPath(path, p);
+                } else {
+                    r2.set(cx - s * 0.8f, cy - s, cx - s * 0.25f, cy + s); c.drawRoundRect(r2, s * 0.12f, s * 0.12f, p);
+                    r2.set(cx + s * 0.25f, cy - s, cx + s * 0.8f, cy + s); c.drawRoundRect(r2, s * 0.12f, s * 0.12f, p);
+                }
+                break;
+            case BTN_SLOW:   // stopwatch
+                p.setStyle(Paint.Style.STROKE);
+                c.drawCircle(cx, cy + s * 0.12f, s * 0.85f, p);
+                c.drawLine(cx, cy + s * 0.12f, cx + s * 0.4f, cy - s * 0.3f, p);
+                c.drawLine(cx - s * 0.3f, cy - s * 1.05f, cx + s * 0.3f, cy - s * 1.05f, p);
+                break;
+            case BTN_GRAV:
+                p.setStyle(Paint.Style.STROKE);
+                if (gravMode == 0) {
+                    c.drawLine(cx, cy - s, cx, cy + s * 0.7f, p);
+                    c.drawLine(cx, cy + s * 0.7f, cx - s * 0.5f, cy + s * 0.2f, p);
+                    c.drawLine(cx, cy + s * 0.7f, cx + s * 0.5f, cy + s * 0.2f, p);
+                    c.drawLine(cx - s, cy + s * 1.05f, cx + s, cy + s * 1.05f, p);
+                } else if (gravMode == 1) {
+                    p.setStyle(Paint.Style.FILL);
+                    c.drawCircle(cx, cy, s * 0.95f, p);
+                    p.setColor(btnOn[BTN_GRAV] ? 0xFFf2b134 : 0xFF1b2029);
+                    c.drawCircle(cx + s * 0.45f, cy - s * 0.3f, s * 0.8f, p);
+                } else {
+                    c.drawCircle(cx, cy, s * 0.45f, p);
+                    r2.set(cx - s * 1.1f, cy - s * 0.45f, cx + s * 1.1f, cy + s * 0.45f);
+                    c.drawOval(r2, p);
+                }
+                break;
+            case BTN_UNDO:
+                p.setStyle(Paint.Style.STROKE);
+                r2.set(cx - s * 0.8f, cy - s * 0.7f, cx + s * 0.9f, cy + s * 0.9f);
+                c.drawArc(r2, 180f, 230f, false, p);
+                c.drawLine(cx - s * 0.8f, cy + s * 0.1f, cx - s * 1.1f, cy - s * 0.4f, p);
+                c.drawLine(cx - s * 0.8f, cy + s * 0.1f, cx - s * 0.25f, cy - s * 0.15f, p);
+                break;
+            case BTN_CLEAR:
+                if (confirmClear) {
+                    p.setStyle(Paint.Style.FILL);
+                    p.setTextAlign(Paint.Align.CENTER);
+                    p.setTextSize(s * 1.7f);
+                    p.setFakeBoldText(true);
+                    c.drawText("?", cx, cy + s * 0.6f, p);
+                    p.setFakeBoldText(false);
+                    break;
+                }
+                p.setStyle(Paint.Style.STROKE);
+                c.drawLine(cx - s, cy - s * 0.6f, cx + s, cy - s * 0.6f, p);
+                c.drawLine(cx - s * 0.3f, cy - s * 0.95f, cx + s * 0.3f, cy - s * 0.95f, p);
+                c.drawLine(cx - s * 0.7f, cy - s * 0.4f, cx - s * 0.55f, cy + s, p);
+                c.drawLine(cx + s * 0.7f, cy - s * 0.4f, cx + s * 0.55f, cy + s, p);
+                c.drawLine(cx - s * 0.55f, cy + s, cx + s * 0.55f, cy + s, p);
+                break;
+            case BTN_SOUND:
+                p.setStyle(Paint.Style.FILL);
+                path.reset(); path.moveTo(cx - s, cy - s * 0.35f); path.lineTo(cx - s * 0.5f, cy - s * 0.35f);
+                path.lineTo(cx, cy - s * 0.9f); path.lineTo(cx, cy + s * 0.9f); path.lineTo(cx - s * 0.5f, cy + s * 0.35f);
+                path.lineTo(cx - s, cy + s * 0.35f); path.close();
+                c.drawPath(path, p);
+                p.setStyle(Paint.Style.STROKE);
+                if (btnOn[BTN_SOUND]) {
+                    c.drawLine(cx + s * 0.35f, cy - s * 0.45f, cx + s * 1.1f, cy + s * 0.45f, p);
+                    c.drawLine(cx + s * 0.35f, cy + s * 0.45f, cx + s * 1.1f, cy - s * 0.45f, p);
+                } else {
+                    r2.set(cx - s * 0.4f, cy - s * 0.7f, cx + s * 0.9f, cy + s * 0.7f);
+                    c.drawArc(r2, -45f, 90f, false, p);
+                }
+                break;
+            default: break;
+        }
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    /** Small icon per category tab. */
+    private void catIcon(Canvas c, int ci, float cx, float cy, float s, boolean sel) {
+        int[] rep = {Tools.HAND, Tools.HUMAN, Tools.CRATE, Tools.DYNAMITE, Tools.PISTOL, Tools.FIRE};
+        if (ci < rep.length) { drawIcon(c, rep[ci], cx, cy, s); return; }
+        p.setStyle(Paint.Style.FILL);
+        if (ci == Tools.CAT_MODS) {            // puzzle-piece-ish gear
+            p.setColor(sel ? 0xFF161a22 : 0xFFb06ad8);
+            c.drawCircle(cx, cy, s * 0.7f, p);
+            for (int k = 0; k < 6; k++) {
+                double a = k * Math.PI / 3;
+                c.drawCircle(cx + (float) Math.cos(a) * s * 0.85f, cy + (float) Math.sin(a) * s * 0.85f, s * 0.25f, p);
+            }
+            p.setColor(sel ? 0xFFf2b134 : 0xF0161a22);
+            c.drawCircle(cx, cy, s * 0.3f, p);
+        } else {                               // palette
+            int[] cols = {0xFFe0463c, 0xFF3aa0e0, 0xFF4cbf6b, 0xFFf2b134};
+            p.setColor(sel ? 0xFF161a22 : 0xFFe9edf4);
+            c.drawCircle(cx, cy, s * 0.95f, p);
+            for (int k = 0; k < 4; k++) {
+                double a = -Math.PI * 0.9 + k * 0.55;
+                p.setColor(cols[k]);
+                c.drawCircle(cx + (float) Math.cos(a) * s * 0.55f, cy + (float) Math.sin(a) * s * 0.55f, s * 0.2f, p);
+            }
+        }
     }
 
     private static int alpha(int c, float a) {
@@ -261,14 +417,16 @@ final class Ui {
         c.drawRoundRect(r2, rad, rad, p);
     }
 
-    private void person(Canvas c, float cx, float cy, float s, int shirt) {
+    private void person(Canvas c, float cx, float cy, float s, int shirt) { person(c, cx, cy, s, shirt, 0xFFf1c7a0, 0xFF2c3e60, 1f); }
+
+    private void person(Canvas c, float cx, float cy, float s, int shirt, int skin, int pants, float thick) {
         float w = Math.max(1.6f, s * 0.13f);
-        disc(c, cx, cy - s * 0.78f, s * 0.2f, 0xFFf1c7a0);
-        line(c, cx, cy - s * 0.55f, cx, cy + s * 0.05f, s * 0.3f, shirt);
-        line(c, cx, cy - s * 0.45f, cx - s * 0.3f, cy - s * 0.05f, w, 0xFFf1c7a0);
-        line(c, cx, cy - s * 0.45f, cx + s * 0.3f, cy - s * 0.05f, w, 0xFFf1c7a0);
-        line(c, cx - s * 0.08f, cy + s * 0.05f, cx - s * 0.2f, cy + s * 0.7f, w * 1.4f, 0xFF2c3e60);
-        line(c, cx + s * 0.08f, cy + s * 0.05f, cx + s * 0.2f, cy + s * 0.7f, w * 1.4f, 0xFF2c3e60);
+        disc(c, cx, cy - s * 0.78f, s * 0.2f, skin);
+        line(c, cx, cy - s * 0.55f, cx, cy + s * 0.05f, s * 0.3f * thick, shirt);
+        line(c, cx, cy - s * 0.45f, cx - s * 0.3f, cy - s * 0.05f, w * thick, skin);
+        line(c, cx, cy - s * 0.45f, cx + s * 0.3f, cy - s * 0.05f, w * thick, skin);
+        line(c, cx - s * 0.08f, cy + s * 0.05f, cx - s * 0.2f, cy + s * 0.7f, w * 1.4f * thick, pants);
+        line(c, cx + s * 0.08f, cy + s * 0.05f, cx + s * 0.2f, cy + s * 0.7f, w * 1.4f * thick, pants);
     }
 
     void drawIcon(Canvas c, int id, float cx, float cy, float s) {
@@ -297,6 +455,37 @@ final class Ui {
                 person(c, cx - s * 0.45f, cy + s * 0.3f, s * 0.55f, 0xFFd4a62a);
                 person(c, cx + s * 0.45f, cy + s * 0.3f, s * 0.55f, 0xFF7a4aa8);
                 person(c, cx, cy + s * 0.2f, s * 0.7f, 0xFF3b6ea8);
+                break;
+            case Tools.ROBOT:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFF68788a, 0xFFa9b4bf, 0xFF4b5666, 1f);
+                line(c, cx, cy - s * 0.88f, cx, cy - s * 1.05f, w * 0.5f, 0xFF9aa5b1);
+                disc(c, cx, cy - s * 1.08f, s * 0.07f, 0xFFff4d4d);
+                disc(c, cx + s * 0.08f, cy - s * 0.62f, s * 0.05f, 0xFF35e0ff);
+                break;
+            case Tools.ZOMBIE:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFF5d5a4a, 0xFF7fa65a, 0xFF3b3f4c, 1f);
+                line(c, cx, cy - s * 0.3f, cx + s * 0.55f, cy - s * 0.32f, w, 0xFF7fa65a);
+                disc(c, cx + s * 0.07f, cy - s * 0.62f, s * 0.05f, 0xFFd62020);
+                break;
+            case Tools.SKELETON:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFFe9e5d3, 0xFFe9e5d3, 0xFFe3dfcc, 0.55f);
+                disc(c, cx + s * 0.06f, cy - s * 0.62f, s * 0.05f, 0xFF2a2820);
+                break;
+            case Tools.WHEEL:
+                disc(c, cx, cy, s * 0.62f, 0xFF25272c);
+                disc(c, cx, cy, s * 0.32f, 0xFF9aa3ad);
+                disc(c, cx, cy, s * 0.12f, 0xFF4a525c);
+                break;
+            case Tools.BOWLING:
+                disc(c, cx, cy, s * 0.5f, 0xFF1d2a5a);
+                disc(c, cx - s * 0.12f, cy - s * 0.2f, s * 0.07f, 0xFF05070f);
+                disc(c, cx + s * 0.1f, cy - s * 0.22f, s * 0.07f, 0xFF05070f);
+                disc(c, cx, cy - s * 0.04f, s * 0.07f, 0xFF05070f);
+                break;
+            case Tools.MELON:
+                disc(c, cx, cy, s * 0.55f, 0xFF3f9a3c);
+                line(c, cx - s * 0.25f, cy - s * 0.4f, cx - s * 0.2f, cy + s * 0.4f, w * 0.6f, 0xFF2a6e29);
+                line(c, cx + s * 0.15f, cy - s * 0.45f, cx + s * 0.2f, cy + s * 0.42f, w * 0.6f, 0xFF2a6e29);
                 break;
             case Tools.CRATE: case Tools.BIGCRATE: {
                 float k = id == Tools.CRATE ? 0.55f : 0.72f;

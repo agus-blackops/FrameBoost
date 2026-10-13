@@ -29,7 +29,7 @@ public class FlowTest {
         check("tutorial shown on first sandbox", g.screens.screen == Screens.TUTORIAL);
         Harness.run(g, 0.5f);
         Harness.shot(g, out + "/tutorial.png");
-        for (int i = 0; i < 4; i++) tap(g, 1200, 500);
+        for (int i = 0; i < 4; i++) tap(g, g.sw / 2f, g.ui.topH + 60 * g.density);
         check("tutorial finished", g.screens.screen == Screens.NONE && g.settings.tutorialDone);
 
         // save / load: dismember a human, pin a crate

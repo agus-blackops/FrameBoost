@@ -42,7 +42,9 @@ final class Body {
     int walk;              // -1, 0, +1
     float stepT, biteCd, thinkT, infected = -1f, panic;
     int stepFoot;
-    boolean held, bitten;
+    boolean held, bitten, stood;
+    float flashT;           // hit flash
+    Stick[] jointList;      // cached for drawing stumps
     float param;           // spawn parameter (crate size, plank length, ball radius...) for save files
     float scale = 1f;
     int skin, shirt, pants, hair;
