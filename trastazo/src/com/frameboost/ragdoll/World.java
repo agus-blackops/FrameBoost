@@ -435,7 +435,6 @@ final class World implements Sim.Listener, Sim.Hook {
             if (p.removed) return;
             int part = Person.partOf(p, s);
             if (part < 0 || p.hitCd[part] > 0f) return;
-            if (System.getProperty("dbgimp") != null && dv > 400f) System.out.println("IMPACT part=" + Person.PART_NAMES[part] + " dv=" + dv + " other=" + (other == null ? "room" : other.body.user) + " t=" + time);
             float thr = part == Person.HEAD ? 520f : (part == Person.FOOT_F || part == Person.FOOT_B ? 1250f : (part == Person.SHIN_F || part == Person.SHIN_B ? 1000f : (part >= Person.THIGH_F ? 880f : 640f)));
             if (p.kind == Person.ROBOT) thr *= 1.6f;
             boolean sharp = other != null && other.body.user instanceof Prop && ((Prop) other.body.user).sharp;

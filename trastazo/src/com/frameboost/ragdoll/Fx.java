@@ -102,7 +102,7 @@ final class Fx {
         int n = (int) (R / 7f);
         for (int i = 0; i < n; i++) {
             float a = rf() * 6.28f, sp = R * (0.5f + rf() * 1.8f);
-            add(FLAME, px + rr(R * 0.15f), py + rr(R * 0.15f), (float) Math.cos(a) * sp * 0.5f, (float) Math.sin(a) * sp * 0.5f - 40f, 0.4f + rf() * 0.5f, R * 0.12f + rf() * R * 0.1f, 0xFFff8a1f);
+            add(FLAME, px + rr(R * 0.15f), py + rr(R * 0.15f), (float) Math.cos(a) * sp * 0.5f, (float) Math.sin(a) * sp * 0.5f - 40f, 0.3f + rf() * 0.4f, R * 0.07f + rf() * R * 0.06f, 0xFFff8a1f);
         }
         for (int i = 0; i < n / 2; i++) smoke(px + rr(R * 0.3f), py + rr(R * 0.2f), R * 0.12f, 0xFF3a3a3a);
         sparks(px, py, 18, 0xFFffd25a);

@@ -20,7 +20,7 @@ final class Sim {
     float gravity = 1800f, gravMul = 1f;
     float floorY = 0f, ceilY = -2600f, wallL = -400f, wallR = 3400f;
     float floorFriction = 0.9f, wallFriction = 0.3f, floorRestitution = 0.08f;
-    int iters = 10;
+    int iters = 6;
     Listener listener;
     interface Hook { void before(float dt); }
     Hook hook;

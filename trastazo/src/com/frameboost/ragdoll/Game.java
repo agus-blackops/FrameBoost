@@ -417,7 +417,7 @@ final class Game {
 
     /** The world, through any engine. */
     void drawWorld(Draw2D d) {
-        float shake = fx.shake * 14f * (settings.haptics || true ? 1f : 0f);
+        float shake = fx.shake * 14f;
         float ox = shake > 0.01f ? (rnd.nextFloat() - 0.5f) * shake : 0f, oy = shake > 0.01f ? (rnd.nextFloat() - 0.5f) * shake : 0f;
         renderer.draw(d, world, camX + ox, camY + oy, zoom, sw, sh);
     }

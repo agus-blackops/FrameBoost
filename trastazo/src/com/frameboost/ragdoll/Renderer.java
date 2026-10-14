@@ -513,7 +513,6 @@ final class Renderer {
     }
 
     private void part(Draw2D c, Person b, int idx, int col) {
-        if (b.severed[Person.PART_JOINT[idx] < 0 ? 0 : Person.PART_JOINT[idx]] && false) return;
         Shape s = b.rb[idx].shapes.get(0);
         if (s.type == Shape.CAPSULE) capsuleShape(c, s, bodyColor(b, col));
         else if (s.type == Shape.CIRCLE) circleShape(c, s, bodyColor(b, col));
