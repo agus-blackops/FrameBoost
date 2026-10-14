@@ -129,7 +129,14 @@ function renderScreen() {
     return;
   }
   const n = now();
-  scr.append(el('img', { class: 'wp', src: wp.src, alt: 'Fondo ' + wp.name }));
+  if (wp.video) {
+    const v = el('video', { class: 'wp', src: wp.video, poster: wp.src, muted: '', loop: '', autoplay: '', playsinline: '' });
+    v.muted = true;
+    scr.append(v);
+    v.play().catch(() => {});
+  } else {
+    scr.append(el('img', { class: 'wp', src: wp.src, alt: 'Fondo ' + wp.name }));
+  }
   scr.append(el('div', { class: 'hole' }));
   scr.append(el('div', { class: 'status' }, [el('span', {}, [n.t]), el('span', {}, ['100%'])]));
   const icons = D.icons[state.icons];
@@ -159,7 +166,7 @@ function sync() {
 }
 
 D.wallpapers.forEach((w, i) => {
-  const b = el('button', { type: 'button', class: 'chip', 'data-i': i }, [el('img', { src: w.src, alt: '' }), w.name]);
+  const b = el('button', { type: 'button', class: 'chip', 'data-i': i }, [el('img', { src: w.src, alt: '' }), w.name + (w.video ? ' ▶' : '')]);
   b.addEventListener('click', () => { state.wp = i; if (state.screen === 'boot') state.screen = 'lock'; sync(); });
   $('#wps').append(b);
 });

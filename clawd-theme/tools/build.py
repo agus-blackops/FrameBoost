@@ -372,8 +372,20 @@ def png_uri(img):
 def build_preview(wall_imgs, icon_imgs, gif_path):
     with open(os.path.join(HERE, "preview.template.html"), encoding="utf-8") as f:
         tpl = f.read()
+    walls = [{"id": i, "name": n, "tone": t, "src": jpeg_uri(im, (360, 800))} for (i, n, t, _), im in wall_imgs]
+    extra = []
+    for fid, name in (("07-atardecer", "Atardecer"), ("08-aurora", "Aurora"), ("09-ultravioleta", "Ultravioleta")):
+        fp = os.path.join(ROOT, "wallpapers", f"{fid}-1080x2400.png")
+        if os.path.exists(fp):
+            extra.append({"id": fid, "name": name, "tone": "dark", "src": jpeg_uri(Image.open(fp).convert("RGB"), (360, 800))})
+    walls = extra + walls
+    vid = os.path.join(ROOT, "animated", "vista-previa.mp4")
+    if extra and os.path.exists(vid):
+        with open(vid, "rb") as f:
+            walls.insert(0, {"id": "animado", "name": "Animado", "tone": "dark", "src": extra[0]["src"],
+                             "video": data_uri(f.read(), "video/mp4")})
     data = {
-        "wallpapers": [{"id": i, "name": n, "tone": t, "src": jpeg_uri(im, (360, 800))} for (i, n, t, _), im in wall_imgs],
+        "wallpapers": walls,
         "icons": {st: [{"name": n, "src": png_uri(icon_imgs[st][n].resize((96, 96), Image.LANCZOS))} for n in ICON_ORDER]
                   for st in icon_imgs},
         "boot": data_uri(open(gif_path, "rb").read(), "image/gif"),
@@ -404,7 +416,7 @@ def main():
     if os.path.exists(zpath):
         os.remove(zpath)
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-        for folder in ("wallpapers", "icons", "palette", "bootanimation"):
+        for folder in ("wallpapers", "animated", "icons", "palette", "bootanimation"):
             for dp, _, fns in os.walk(os.path.join(ROOT, folder)):
                 for fn in fns:
                     full = os.path.join(dp, fn)
