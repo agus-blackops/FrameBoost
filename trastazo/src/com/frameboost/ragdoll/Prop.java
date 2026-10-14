@@ -14,6 +14,7 @@ final class Prop extends Ent {
     float fireCd, shotCd, reloadT, thinkT, work, aimA;
     int ammo = 12;
     float hp = 100f, flash, age, trim;
+    float dens = 1f;                // block density (constructions)
     float goalX, goalY, homeX;      // drone flight
     Ent target;
     String mood = "";
@@ -28,6 +29,14 @@ final class Prop extends Ent {
     @Override float cx() { return bodies.get(0).x; }
     @Override float cy() { return bodies.get(0).y; }
     RB main() { return bodies.get(0); }
+
+    /** A plain rigid block (building pieces): half sizes, colour and density decide mass and look. */
+    static Prop block(float x, float y, float hw, float hh, int color, float dens, boolean flammable) {
+        Prop p = of(Items.BLOCK);
+        p.color = color; p.hw = hw; p.hh = hh; p.dens = dens; p.flammable = flammable;
+        box(p, x, y, hw, hh, dens, 0.7f, 0.05f);
+        return p;
+    }
 
     static Prop of(int item) { Prop p = new Prop(); p.item = item; p.type = item; p.flammable = false; return p; }
 

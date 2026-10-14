@@ -1,4 +1,4 @@
-# Trastazo 3.3 — rehecho desde cero
+# Trastazo 3.4 — construcciones y destrucción
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,6 +6,17 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 3.4
+
+* **Construir (pestaña primera):** casa, puente, torre de ladrillos, muro y coche ya montados. Un toque
+  coloca la construcción entera. El coche arranca solo.
+* **Destrucción de verdad:** cada construcción son bloques unidos por soldaduras con fuerza de rotura. Un
+  golpe fuerte o una explosión las rompe, y las piezas caen y se separan. Una persona que cae sobre una casa
+  no la derriba; una caja pesada o una explosión sí. Logro *Demoledor* (10 uniones rotas).
+* **Interfaz:** la pestaña de construcciones es la primera y el juego arranca con ella a mano.
+
+## Novedades de la 3.3
 
 ## Qué hay de nuevo respecto a la 3.2
 

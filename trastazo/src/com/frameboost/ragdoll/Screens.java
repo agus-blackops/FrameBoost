@@ -261,7 +261,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.3 · rehecho desde cero · física de cuerpos rígidos propia", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.4 · construcciones y destrucción · física propia", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {

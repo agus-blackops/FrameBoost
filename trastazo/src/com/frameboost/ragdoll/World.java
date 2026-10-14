@@ -8,7 +8,7 @@ final class World implements Sim.Listener, Sim.Hook {
     static final int MAX_BODIES = 900;
 
     static final class Stats {
-        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits;
+        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed;
         float recentT;
     }
 
@@ -101,6 +101,7 @@ final class World implements Sim.Listener, Sim.Hook {
     /** Places an item. Returns the first entity created (or null when nothing could be added). */
     Ent spawn(int item, float x, float y, int dir, float headScale) {
         Person.headScale = headScale;
+        if (Items.isBuild(item)) return null;   // constructions are placed with buildAt()
         float fl = sim.floorY;
         x = Math.max(sim.wallL + 70, Math.min(sim.wallR - 70, x));
         y = Math.max(sim.ceilY + 120, y);
@@ -391,6 +392,15 @@ final class World implements Sim.Listener, Sim.Hook {
     }
 
     @Override public void jointBroken(Joint j) {
+        if (j.tag == Build.TAG) {                       // a construction let go: pieces fall and debris flies
+            float x = j.anchorBX(), y = j.anchorBY();
+            fx.debris(x, y, 7, Build.WOOD, 200f);
+            fx.smoke(x, y, 10, 0xFF9a9a9a);
+            if (sfx != null) sfx.crunch();
+            stats.destroyed++;
+            rumble += 0.12f;
+            return;
+        }
         if (j.user instanceof Person) {
             Person p = (Person) j.user;
             int idx = j.tag;
@@ -559,6 +569,19 @@ final class World implements Sim.Listener, Sim.Hook {
         }
     }
 
+    /** The shock wave snaps construction welds near the blast, the nearer the likelier. */
+    private void shockWelds(float x, float y, float R) {
+        for (int i = sim.joints.size() - 1; i >= 0; i--) {
+            Joint j = sim.joints.get(i);
+            if (j.tag != Build.TAG || j.removed) continue;
+            float dx = j.anchorBX() - x, dy = j.anchorBY() - y;
+            float f = 1f - (float) Math.sqrt(dx * dx + dy * dy) / R;
+            if (f <= 0.1f || rnd.nextFloat() >= (f - 0.05f) * 1.6f) continue;
+            sim.remove(j);
+            jointBroken(j);
+        }
+    }
+
     // ------------------------------------------------------------------------------- explosions --
 
     /** Blast: damages and throws everything, sets fire, detonates neighbours. power is a speed in units/s. */
@@ -570,6 +593,7 @@ final class World implements Sim.Listener, Sim.Hook {
         stats.recentT = 2f;
         if (sfx != null) sfx.boom(Math.min(1f, R / 600f));
         sim.blast(x, y, R, power);
+        shockWelds(x, y, R);
         Ent[] list = snapshot();
         int n = ents.size();
         for (int i = n - 1; i >= 0; i--) {
@@ -966,6 +990,15 @@ final class World implements Sim.Listener, Sim.Hook {
             j.motorSpeed = wheel.motor * 9.5f * (j.b == w ? 1f : -1f);
             j.motorMax = 6e7f;
         }
+    }
+
+    /** Places a ready-made construction. Returns its pieces (for undo). */
+    java.util.ArrayList<Ent> buildAt(int item, float x, float y) {
+        float fl = sim.floorY;
+        x = Math.max(sim.wallL + 150, Math.min(sim.wallR - 150, x));
+        java.util.ArrayList<Ent> list = Build.build(this, item, x, fl);
+        if (!list.isEmpty()) fx.add(Fx.GLOW, x, fl - 60, 0, 0, 0.25f, 120f, 0xFFffffff);
+        return list;
     }
 
     /** Loading: a person of the given item, without the spawn effects or position clamping. */

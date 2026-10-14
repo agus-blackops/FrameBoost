@@ -12,7 +12,7 @@ final class Items {
             PISTOL = 60, RIFLE = 61, SHOTGUN = 62, ROCKET = 63, KNIFE = 64, SWORD = 65, GUN_PISTOL = 66, GUN_RIFLE = 67, GUN_MG = 68, TURRET = 69, DRONE = 70,
             FIRE = 80, LIGHTNING = 81, PUSH = 82,
             SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95,
-            ROPE_ITEM = 100, ANCHOR_ITEM = 101, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+            ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, BLOCK = 130, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
     static final class Item {
         final int id;
@@ -21,8 +21,10 @@ final class Items {
     }
 
     static final String PLACE = "Toca para colocar";
-    static final String[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Jeringas", "Taller", "Estilo", "Desafío"};
-    static final int CAT_TOOLS = 0, CAT_PEOPLE = 1, CAT_OBJECTS = 2, CAT_EXPLOSIVES = 3, CAT_WEAPONS = 4, CAT_FX = 5, CAT_SYRINGES = 6, CAT_MODS = 7, CAT_STYLE = 8, CAT_CHAL = 9;
+    static final String[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Jeringas", "Taller", "Estilo", "Desafío", "Construir"};
+    static final int CAT_TOOLS = 0, CAT_PEOPLE = 1, CAT_OBJECTS = 2, CAT_EXPLOSIVES = 3, CAT_WEAPONS = 4, CAT_FX = 5, CAT_SYRINGES = 6, CAT_MODS = 7, CAT_STYLE = 8, CAT_CHAL = 9, CAT_BUILD = 10;
+    /** Tabs shown in the normal sandbox, the constructions first (the easiest way to start building). */
+    static final int[] PALETTE = {CAT_BUILD, 0, 1, 2, 3, 4, 5, 6, 7, 8};
 
     static Item[][] CATS = {
         {
@@ -100,6 +102,13 @@ final class Items {
             new Item(SYR_SEDATIVE, "Sedante", "Se duerme un buen rato"),
         },
         {}, {}, {},
+        {
+            new Item(HOUSE, "Casa", PLACE + " · paredes, suelo y tejado unidos; se derrumba con un golpe fuerte"),
+            new Item(BRIDGE, "Puente", PLACE + " · tablero sobre dos pilares"),
+            new Item(TOWER, "Torre", PLACE + " · ladrillos apilados; tirarla es divertido"),
+            new Item(WALL, "Muro", PLACE + " · un muro de ladrillos para derribar"),
+            new Item(CAR, "Coche", PLACE + " · un coche con motor que arranca solo"),
+        },
     };
 
     static final String[] THEMES = {"Habitación", "Laboratorio", "Noche", "Ladrillos", "Neón", "Desierto"};
@@ -119,8 +128,10 @@ final class Items {
         return CATS[0][0];
     }
 
+    static boolean isBuild(int id) { return id >= HOUSE && id <= CAR; }
+
     static boolean isSpawn(int id) {
-        return (id >= HUMAN && id <= PLATFORM) || (id >= GRENADE && id <= XBARREL) || id == C4 || id == KNIFE || id == SWORD
+        return isBuild(id) || (id >= HUMAN && id <= PLATFORM) || (id >= GRENADE && id <= XBARREL) || id == C4 || id == KNIFE || id == SWORD
                 || (id >= GUN_PISTOL && id <= DRONE);
     }
 

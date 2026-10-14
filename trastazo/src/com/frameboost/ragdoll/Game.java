@@ -185,7 +185,7 @@ final class Game {
             ui.toast(d.goal);
             if (music != null) music.play(Music.CHALLENGE);
         } else {
-            ui.cats = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8};
+            ui.cats = Items.PALETTE;
             ui.dock = false; ui.dockBadge = null;
             tool = Items.HAND;
             if (music != null) music.play(Music.LAB);
@@ -950,6 +950,12 @@ final class Game {
     // ----------------------------------------------------------------------------- spawning -----
 
     void spawn(int id, float x, float y) {
+        if (Items.isBuild(id)) {
+            java.util.ArrayList<Ent> pieces = world.buildAt(id, x, y);
+            if (pieces.isEmpty()) { if (!silentSpawn) ui.toast("Límite de objetos alcanzado"); return; }
+            undo.addAll(pieces);
+            return;
+        }
         int dir = rnd.nextBoolean() ? 1 : -1;
         Ent e = world.spawn(id, x, y, dir, mods.hscale);
         if (e == null) { if (!silentSpawn) ui.toast("Límite de objetos alcanzado"); return; }

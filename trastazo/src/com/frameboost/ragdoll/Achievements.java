@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-/** Fifteen goals for the sandbox, with a pop-up when one unlocks. Saved in Settings.ach. */
+/** Sixteen goals for the sandbox, with a pop-up when one unlocks. Saved in Settings.ach. */
 final class Achievements {
     static final String[][] LIST = {
         {"Primer trastazo", "Provoca tu primera explosión"},
@@ -19,6 +19,7 @@ final class Achievements {
         {"Multitud", "Ten 25 personas a la vez"},
         {"Creador", "Crea tu propio mod en el Taller"},
         {"Maestro", "Consigue 15 estrellas en Desafíos"},
+        {"Demoledor", "Derriba 10 uniones de construcciones"},
         {"Primeros auxilios", "Un médico reanima a alguien"},
         {"Escuadrón", "Tus soldados, torretas y drones abaten 10 enemigos"},
         {"Brigada", "Un bombero apaga un incendio"},
@@ -67,6 +68,7 @@ final class Achievements {
         if (st.revives > 0) unlock(g, 12);
         if (st.aiKills >= 10) unlock(g, 13);
         if (st.fires > 0) unlock(g, 14);
+        if (st.destroyed >= 10) unlock(g, 15);
         int people = 0;
         for (int i = 0; i < g.world.ents.size(); i++) {
             Ent e = g.world.ents.get(i);

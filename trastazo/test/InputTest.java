@@ -21,7 +21,9 @@ public class InputTest {
         // palette: tabs and cards
         int tabs = g.ui.cats.length;
         float tabY = g.sh - g.ui.tabH / 2f;
-        Harness.tapScreen(g, g.sw / tabs * 1.5f, tabY);               // Gente
+        int ti = 0; for (int i = 0; i < tabs; i++) if (g.ui.cats[i] == 1) ti = i;   // find the Gente tab
+        Harness.tapScreen(g, g.sw / (float) tabs * (ti + 0.5f), tabY);
+        check("the construction tab comes first", g.ui.cats[0] == Items.CAT_BUILD);
         check("tapping a tab opens the strip", g.ui.stripOpen && g.ui.cat == 1);
         float cardY = g.ui.stripTop() + g.ui.stripH / 2f;
         Harness.tapScreen(g, g.ui.gap + g.ui.cardW / 2f, cardY);       // Humano
@@ -147,6 +149,16 @@ public class InputTest {
         for (int i = 0; i < 50; i++) g.update(1f / 60);
         g.touch(Game.UP, 0, sx(g, 1500), sy(g, fl - 40));
         Harness.shot(g, out + "/in_context.png");
+        // constructions: pick the Construir tab, the first card (Casa), tap the floor
+        g.clearWorldForLoad();
+        g.ui.stripOpen = false;
+        Harness.tapScreen(g, g.sw / (float) g.ui.cats.length * 0.5f, g.sh - g.ui.tabH / 2f);
+        check("Construir opens its strip", g.ui.stripOpen && g.ui.cat == Items.CAT_BUILD);
+        Harness.tapScreen(g, g.ui.gap + g.ui.cardW / 2f, g.ui.stripTop() + g.ui.stripH / 2f);
+        check("the first card is the house", g.tool == Items.HOUSE);
+        Harness.tap(g, 1200, fl - 120);
+        check("one tap places a whole house", g.world.ents.size() == 4);
+        Harness.shot(g, out + "/in_house.png");
         Harness.tapScreen(g, 5, 5);
         System.out.println(fails == 0 ? "INPUT ALL PASS" : "INPUT FAILURES " + fails);
     }

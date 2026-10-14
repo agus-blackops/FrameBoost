@@ -34,8 +34,8 @@ final class SceneIO {
                 o.println(sb);
             } else {
                 Prop q = (Prop) e;
-                o.println(String.format(Locale.US, "Q %d %.2f %.2f %d %d %d %d %d %.2f %d %d %d", q.item, q.param, q.fuse, q.burning ? 1 : 0, q.motor, q.thrust ? 1 : 0,
-                        q.on ? 1 : 0, q.firing ? 1 : 0, q.burnT, q.dead ? 1 : 0, q.homeDirV, q.bodies.size()));
+                o.println(String.format(Locale.US, "Q %d %.2f %.2f %d %d %d %d %d %.2f %d %d %d %.2f %.2f %d %.2f %d", q.item, q.param, q.fuse, q.burning ? 1 : 0, q.motor, q.thrust ? 1 : 0,
+                        q.on ? 1 : 0, q.firing ? 1 : 0, q.burnT, q.dead ? 1 : 0, q.homeDirV, q.bodies.size(), q.hw, q.hh, q.color, q.dens, q.flammable ? 1 : 0));
             }
             for (RB b : e.bodies) o.println(String.format(Locale.US, "B %.2f %.2f %.4f %d", b.x, b.y, b.a, b.frozen ? 1 : 0));
             o.println("X");
@@ -52,8 +52,8 @@ final class SceneIO {
                 }
             }
             if (ea < 0 || eb < 0) continue;
-            o.println(String.format(Locale.US, "J %d %d %d %d %d %.2f %.2f %.2f %.2f %.2f %d %.2f %.0f %.0f", j.kind, ea, ba, eb, bb, j.lax, j.lay, j.lbx, j.lby, j.ref,
-                    j.motor ? 1 : 0, j.motorSpeed, j.motorMax, j.breakForce));
+            o.println(String.format(Locale.US, "J %d %d %d %d %d %.2f %.2f %.2f %.2f %.2f %d %.2f %.0f %.0f %d", j.kind, ea, ba, eb, bb, j.lax, j.lay, j.lbx, j.lby, j.ref,
+                    j.motor ? 1 : 0, j.motorSpeed, j.motorMax, j.breakForce, j.tag));
         }
         o.close();
     }
@@ -105,8 +105,10 @@ final class SceneIO {
                     case "Q": {
                         int item = Integer.parseInt(t[1]);
                         int n = Integer.parseInt(t[12]);
-                        Prop q = item == Items.ROPE_ITEM ? w.ropeShell(Math.max(2, (int) Float.parseFloat(t[2])), 0, 0, 16f * Math.max(2, (int) Float.parseFloat(t[2])), 0)
+                        Prop q = item == Items.BLOCK ? Prop.block(400f, -100f, Float.parseFloat(t[13]), Float.parseFloat(t[14]), Integer.parseInt(t[15]),
+                                Float.parseFloat(t[16]), t[17].equals("1")) : item == Items.ROPE_ITEM ? w.ropeShell(Math.max(2, (int) Float.parseFloat(t[2])), 0, 0, 16f * Math.max(2, (int) Float.parseFloat(t[2])), 0)
                                 : (item == Items.ANCHOR_ITEM ? Prop.anchor(w.sim, 0, 0) : (Prop) w.spawnRaw(item));
+                        if (q != null && item == Items.BLOCK) { q.register(w.sim); w.ents.add(q); }
                         if (q != null && item == Items.ANCHOR_ITEM) w.ents.add(q);
                         cur = q; bi = 0;
                         if (q != null) {
@@ -143,6 +145,7 @@ final class SceneIO {
                         j.ref = Float.parseFloat(t[10]);
                         j.motor = t[11].equals("1"); j.motorSpeed = Float.parseFloat(t[12]); j.motorMax = Float.parseFloat(t[13]);
                         j.breakForce = Float.parseFloat(t[14]);
+                        if (t.length > 15) j.tag = Integer.parseInt(t[15]);
                         if (ea instanceof Prop && ((Prop) ea).type == Items.ROPE_ITEM) j.user = ea;
                         else if (eb instanceof Prop && ((Prop) eb).type == Items.ROPE_ITEM) j.user = eb;
                         w.sim.add(j);

@@ -23,7 +23,7 @@ final class Ui {
     final String[] btnLabel = new String[BTN_COUNT];
     final boolean[] btnOn = new boolean[BTN_COUNT];
     final boolean[] btnHidden = new boolean[BTN_COUNT];
-    int[] cats = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    int[] cats = Items.PALETTE;
     boolean showFps;
     boolean dock;              // challenge mode: the bottom bar holds the allowed tools directly
     String dockBadge;          // e.g. "x3" uses left
@@ -354,6 +354,7 @@ final class Ui {
     /** Small icon per category tab. */
     private void catIcon(Canvas c, int ci, float cx, float cy, float s, boolean sel) {
         int[] rep = {Items.HAND, Items.HUMAN, Items.CRATE, Items.DYNAMITE, Items.PISTOL, Items.FIRE, Items.SYR_HEAL};
+        if (ci == Items.CAT_BUILD) { drawIcon(c, Items.HOUSE, cx, cy, s); return; }
         if (ci < rep.length) { drawIcon(c, rep[ci], cx, cy, s); return; }
         p.setStyle(Paint.Style.FILL);
         if (ci == Items.CAT_MODS) {            // puzzle-piece-ish gear
@@ -706,6 +707,30 @@ final class Ui {
                     p.setStrokeWidth(w * 0.8f);
                     c.drawCircle(cx, cy, s * 0.25f * i, p);
                 }
+                break;
+            case Items.HOUSE:
+                box(c, cx - s * 0.6f, cy - s * 0.05f, cx + s * 0.6f, cy + s * 0.6f, 0xFFc9a066, s * 0.05f);
+                p.setColor(0xFF6d4a2f);
+                c.drawLine(cx - s * 0.75f, cy - s * 0.05f, cx, cy - s * 0.75f, p);
+                c.drawLine(cx, cy - s * 0.75f, cx + s * 0.75f, cy - s * 0.05f, p);
+                break;
+            case Items.BRIDGE:
+                line(c, cx - s * 0.9f, cy - s * 0.25f, cx + s * 0.9f, cy - s * 0.25f, w * 1.6f, 0xFFc9a066);
+                line(c, cx - s * 0.7f, cy - s * 0.25f, cx - s * 0.7f, cy + s * 0.6f, w * 1.2f, 0xFF8d96a3);
+                line(c, cx + s * 0.7f, cy - s * 0.25f, cx + s * 0.7f, cy + s * 0.6f, w * 1.2f, 0xFF8d96a3);
+                break;
+            case Items.TOWER:
+                for (int r = 0; r < 4; r++) for (int k = -1; k <= 1; k++)
+                    box(c, cx + k * s * 0.38f - s * 0.19f, cy - s * 0.8f + r * s * 0.4f, cx + k * s * 0.38f + s * 0.19f, cy - s * 0.4f + r * s * 0.4f, 0xFFa8553a, s * 0.02f);
+                break;
+            case Items.WALL:
+                for (int r = 0; r < 3; r++) for (int k = -2; k <= 2; k++)
+                    box(c, cx + k * s * 0.34f - s * 0.17f, cy - s * 0.5f + r * s * 0.36f, cx + k * s * 0.34f + s * 0.17f, cy - s * 0.18f + r * s * 0.36f, 0xFFa8553a, s * 0.02f);
+                break;
+            case Items.CAR:
+                box(c, cx - s * 0.8f, cy - s * 0.3f, cx + s * 0.8f, cy + s * 0.05f, 0xFFd33a2c, s * 0.08f);
+                disc(c, cx - s * 0.45f, cy + s * 0.35f, s * 0.3f, 0xFF25272c);
+                disc(c, cx + s * 0.45f, cy + s * 0.35f, s * 0.3f, 0xFF25272c);
                 break;
             default:
                 disc(c, cx, cy, s * 0.4f, 0xFFaaaaaa);
