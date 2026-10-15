@@ -74,6 +74,8 @@ def voronoi(P, scale, seed):
     return f1, f2, cid
 
 
+RAMP = [(0.22, Y1), (0.50, O1), (0.80, O2), (1.05, O3), (1.35, DR1), (1.75, DR2), (2.2, DR3)]
+
 # ------------------------------------------------------------------ geometria
 FACES = ["right", "front", "left", "back", "top", "bottom"]
 PARTS = {
@@ -144,7 +146,7 @@ def surface(P, face, seed, heat_fn, tone=0):
     w = np.where(heat > 0.16, 0.05 + 0.26 * heat, 0.0)
     with np.errstate(divide="ignore", invalid="ignore"):
         t = np.where(w > 0, ce / np.maximum(w, 1e-6), 9.0)
-    ramp = [(0.22, Y1), (0.50, O1), (0.80, O2), (1.05, O3), (1.35, DR1), (1.75, DR2), (2.2, DR3)]
+    ramp = RAMP
     for lim, col in reversed(ramp):
         rgb = np.where((t < lim)[..., None], np.array(col, dtype=np.float64), rgb)
     return rgb.astype(np.uint8)
@@ -209,7 +211,7 @@ def pattern(part, layer, face, x0, y0, rows):
     """rows: lista de cadenas; '.' = no tocar, ' ' = transparente, letra = color."""
     key = {"Y": Y1, "1": O1, "2": O2, "3": O3, "R": RD, "a": DR1, "b": DR2, "c": DR3, "d": DR4,
            "k": K0, "n": OBS[1], "N": OBS[2], "g": OBS[4], "G": OBS[5], "h": OBS[6], "H": OBS[7],
-           "v": OBS[0]}
+           "v": OBS[0], "W": (255, 244, 200)}
     for j, row in enumerate(rows):
         for i, ch in enumerate(row):
             if ch == ".":
