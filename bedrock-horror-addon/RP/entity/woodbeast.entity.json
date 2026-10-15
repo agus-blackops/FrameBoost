@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "horror:woodbeast",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/woodbeast"
+      },
+      "geometry": {
+        "default": "geometry.horror_woodbeast"
+      },
+      "animations": {
+        "walk": "animation.horror.walk"
+      },
+      "scripts": {
+        "animate": [
+          "walk"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.horror_default"
+      ],
+      "spawn_egg": {
+        "base_color": "#2a1c12",
+        "overlay_color": "#ffbe1e"
+      }
+    }
+  }
+}

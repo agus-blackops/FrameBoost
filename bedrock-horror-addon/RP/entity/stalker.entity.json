@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "horror:stalker",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/stalker"
+      },
+      "geometry": {
+        "default": "geometry.horror_stalker"
+      },
+      "animations": {
+        "walk": "animation.horror.walk"
+      },
+      "scripts": {
+        "animate": [
+          "walk"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.horror_default"
+      ],
+      "spawn_egg": {
+        "base_color": "#0b0b0d",
+        "overlay_color": "#b01010"
+      }
+    }
+  }
+}

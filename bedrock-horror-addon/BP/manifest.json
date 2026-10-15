@@ -1,0 +1,54 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Horror Stalkers [BP]",
+    "description": "Terrifying stalking creatures: The Stalker, The Woodbeast and The Whisperer.",
+    "uuid": "1198378e-61c2-42cf-9250-c911f122ba86",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "e17c57c4-21e2-4e61-95b8-278899234605",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "4314d6ff-421e-4c6f-bc3d-be3ea6e888a0",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "19f8b22e-a0a5-4125-bb6a-35d944dcb15f",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.11.0"
+    }
+  ]
+}

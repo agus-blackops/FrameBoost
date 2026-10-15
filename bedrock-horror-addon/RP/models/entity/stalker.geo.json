@@ -1,0 +1,191 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.horror_stalker",
+        "texture_width": 64,
+        "texture_height": 64,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 4,
+        "visible_bounds_offset": [
+          0,
+          1.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "leg_r",
+          "pivot": [
+            -2,
+            20,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                -3,
+                0,
+                -1
+              ],
+              "size": [
+                2,
+                20,
+                2
+              ],
+              "uv": [
+                16,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "leg_l",
+          "pivot": [
+            2,
+            20,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                1,
+                0,
+                -1
+              ],
+              "size": [
+                2,
+                20,
+                2
+              ],
+              "uv": [
+                24,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "body",
+          "pivot": [
+            0,
+            20,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                -3,
+                20,
+                -1.5
+              ],
+              "size": [
+                6,
+                16,
+                3
+              ],
+              "uv": [
+                32,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "arm_r",
+          "pivot": [
+            -4.5,
+            36,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                -5.5,
+                8,
+                -1
+              ],
+              "size": [
+                2,
+                28,
+                2
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "arm_l",
+          "pivot": [
+            4.5,
+            36,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                3.5,
+                8,
+                -1
+              ],
+              "size": [
+                2,
+                28,
+                2
+              ],
+              "uv": [
+                8,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "head",
+          "pivot": [
+            0,
+            36,
+            0
+          ],
+          "parent": "root",
+          "cubes": [
+            {
+              "origin": [
+                -2.5,
+                36,
+                -2.5
+              ],
+              "size": [
+                5,
+                8,
+                5
+              ],
+              "uv": [
+                0,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

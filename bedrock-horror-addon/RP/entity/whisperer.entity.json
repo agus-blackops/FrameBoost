@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "horror:whisperer",
+      "materials": {
+        "default": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/whisperer"
+      },
+      "geometry": {
+        "default": "geometry.horror_whisperer"
+      },
+      "animations": {
+        "walk": "animation.horror.walk"
+      },
+      "scripts": {
+        "animate": [
+          "walk"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.horror_default"
+      ],
+      "spawn_egg": {
+        "base_color": "#3c3e4a",
+        "overlay_color": "#e6f0ff"
+      }
+    }
+  }
+}
