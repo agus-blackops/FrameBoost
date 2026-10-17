@@ -36,7 +36,8 @@ public class WorldTest {
         run(w, 4);
         shot(w, out + "/w_people.png", 1000, -200, 0.95f);
         // zombies would attack: they are there; just check survival of the structure
-        check("people spawn and stand", w.ents.size() == 10);
+        int np = 0; for (Ent e : w.ents) if (e instanceof Person) np++;
+        check("people spawn and stand", np == 10);
         w = new World(null);
         int[] props = {Items.CRATE, Items.BIGCRATE, Items.PLANK, Items.BARREL, Items.BALL, Items.BALLOON, Items.WHEEL, Items.MOTOR, Items.THRUSTER, Items.BOWLING, Items.MELON, Items.STEEL,
                 Items.TNT, Items.XBARREL, Items.GRENADE, Items.DYNAMITE, Items.C4, Items.KNIFE, Items.SWORD, Items.GUN_PISTOL, Items.GUN_RIFLE, Items.GUN_MG, Items.TURRET, Items.DRONE};

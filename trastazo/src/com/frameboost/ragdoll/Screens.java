@@ -22,7 +22,7 @@ final class Screens {
     private float d = 1f;
 
     static final String[] TUT = {
-        "Abre la pestaña \"Gente\" de abajo.",
+        "Abre la categoría \"Gente\" en la barra de la izquierda.",
         "Elige \"Humano\" y toca el escenario para colocarlo. Se mantendrá en pie... hasta que algo lo tumbe.",
         "Ahora agarra a alguien: elige \"Mano\" en Herramientas y arrástralo. Con dos dedos, zoom.",
         "Prueba zombis, explosivos y el Taller de mods. ¡A experimentar!",
@@ -261,7 +261,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.4 · construcciones y destrucción · física propia", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.5 · remodelado y destrucción total · física propia", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {
@@ -352,7 +352,7 @@ final class Screens {
     private void achievements(Canvas c, Game g, int sw, int sh) {
         dim(c, sw, sh, 0xE60b0e14);
         text(c, "Logros  " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, sw / 2f, 46 * d, 24 * d, 0xFF2fd0b5, Paint.Align.CENTER, true);
-        int n = Achievements.LIST.length, cols = 3, rows = (n + cols - 1) / cols;
+        int n = Achievements.LIST.length, cols = n > 15 ? 4 : 3, rows = (n + cols - 1) / cols;
         float gap = 10 * d, cw = Math.min(280 * d, (sw - gap * (cols + 1)) / cols), ch = Math.min(64 * d, (sh - 140 * d) / rows - gap);
         float x0 = (sw - (cw * cols + gap * (cols - 1))) / 2, y0 = 64 * d;
         for (int i = 0; i < n; i++) {
@@ -440,11 +440,12 @@ final class Screens {
         float blink = 0.5f + 0.5f * (float) Math.sin(time * 4f);
         text(c, tutStep == TUT.length - 1 ? "Toca para cerrar" : "Toca aquí para saltar", x + w - 20 * d, y + h - 14 * d, 11 * d, Renderer.alpha(0xFFffffff, 0.4f + 0.5f * blink), Paint.Align.RIGHT, false);
         if (tutStep == 0) {   // point at the "Gente" tab
-            float tx = sw / (float) g.ui.cats.length * 1.5f, ty = sh - g.ui.tabH - 14 * d - blink * 10 * d;
+            int ri = Math.max(0, g.ui.railIndex(1));
+            float tx = g.ui.railW + 6 * d + blink * 10 * d, ty = g.ui.railRowY(ri) + g.ui.rowH() / 2;
             p.setStyle(Paint.Style.FILL);
             p.setColor(0xFF2fd0b5);
             android.graphics.Path a = new android.graphics.Path();
-            a.moveTo(tx, ty); a.lineTo(tx - 14 * d, ty - 22 * d); a.lineTo(tx + 14 * d, ty - 22 * d); a.close();
+            a.moveTo(tx, ty); a.lineTo(tx + 22 * d, ty - 14 * d); a.lineTo(tx + 22 * d, ty + 14 * d); a.close();
             c.drawPath(a, p);
         }
     }

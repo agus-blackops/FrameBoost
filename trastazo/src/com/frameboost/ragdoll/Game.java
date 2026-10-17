@@ -18,7 +18,7 @@ final class Game {
     final World world;
     final Fx fx;
     final ModEngine mods = new ModEngine();
-    int userTheme = 0;
+    int userTheme = Renderer.SANDBOX;
     boolean textures = true;
     private boolean silentSpawn;
 
@@ -179,7 +179,7 @@ final class Game {
             for (int i = 0; i < d.tools.length; i++) items[i] = Items.find(d.tools[i]);
             Items.CATS[Items.CAT_CHAL] = items;
             ui.cats = new int[]{Items.CAT_CHAL};
-            ui.cat = Items.CAT_CHAL; ui.stripOpen = false; ui.scrollX = 0; ui.dock = true;
+            ui.cat = Items.CAT_CHAL; ui.stripOpen = false; ui.scrollY = 0; ui.dock = true;
             tool = d.tools[0];
             chUses = d.uses; chTime = 0; chIdle = 0; chResult = 0; chSpawnT = 3f; chEndT = 0;
             ui.toast(d.goal);
@@ -269,9 +269,10 @@ final class Game {
     void resetCamera() {
         zoom = sw / 1750f;
         camX = ROOM_W / 2;
-        float floorScreenY = sh - ui.tabH - ui.stripH - 26 * density;
+        float floorScreenY = sh - 64 * density;
         floorScreenY = Math.max(sh * 0.45f, floorScreenY);
         camY = floorY() - (floorScreenY - sh / 2f) / zoom;
+        camX = ROOM_W / 2 - ui.railW / 2f / zoom;      // keep the room centred in the space right of the rail
         clampCam();
     }
 
@@ -423,7 +424,7 @@ final class Game {
     }
 
     private static final float[][] AMBIENT = {
-        {0.93f, 0.93f, 0.97f}, {1.0f, 1.0f, 1.0f}, {0.42f, 0.47f, 0.66f}, {0.84f, 0.78f, 0.72f}, {0.55f, 0.48f, 0.68f}, {1.0f, 0.97f, 0.9f},
+        {0.93f, 0.93f, 0.97f}, {1.0f, 1.0f, 1.0f}, {0.42f, 0.47f, 0.66f}, {0.84f, 0.78f, 0.72f}, {0.55f, 0.48f, 0.68f}, {1.0f, 0.97f, 0.9f}, {0.96f, 0.97f, 1.0f},
     };
 
     /** Per-frame settings for the GPU engine (lighting mood, flash, quality). */
@@ -539,7 +540,7 @@ final class Game {
         pt.dragged = false; pt.grab = null; pt.role = R_NONE; pt.holdT = 0;
         int a = ui.hit(x, y);
         if (a != Ui.NONE) {
-            pt.role = R_UI; pt.uiAction = a; pt.scrollStart = ui.scrollX;
+            pt.role = R_UI; pt.uiAction = a; pt.scrollStart = ui.scrollY;
             return;
         }
         Ptr other = firstOther(pt);
@@ -614,7 +615,7 @@ final class Game {
         switch (pt.role) {
             case R_UI:
                 if (pt.uiAction >= Ui.ITEM && pt.uiAction < Ui.BTN || pt.uiAction == Ui.BLOCK) {
-                    if (pt.dragged) ui.scrollX = Math.max(0, Math.min(ui.maxScroll(), pt.scrollStart - (x - pt.sx)));
+                    if (pt.dragged) ui.scrollY = Math.max(0, Math.min(ui.maxScrollY(), pt.scrollStart - (y - pt.sy)));
                 }
                 break;
             case R_PAN:
@@ -698,7 +699,7 @@ final class Game {
         if (a >= Ui.TAB && a < Ui.ITEM) {
             int c = a - Ui.TAB;
             if (ui.cat == c && ui.stripOpen) ui.stripOpen = false;
-            else { ui.cat = c; ui.stripOpen = true; ui.scrollX = 0; }
+            else { ui.cat = c; ui.stripOpen = true; ui.scrollY = 0; }
         } else if (a >= Ui.ITEM && a < Ui.BTN) {
             Items.Item[] items = Items.CATS[ui.cat];
             int i = a - Ui.ITEM;
@@ -715,6 +716,7 @@ final class Game {
                 } else {
                     tool = id;
                     ui.toast(items[i].name + " · " + items[i].hint);
+                    ui.stripOpen = false;          // the catalog gets out of the way once something is picked
                 }
             }
         } else if (a >= Ui.BTN) {
@@ -1132,7 +1134,7 @@ final class Game {
 
     private void drawInspection(Canvas c) {
         Person b = inspected;
-        float d = density, x = 8 * d, y = 74 * d, w = Math.min(250 * d, sw * 0.32f);
+        float d = density, x = ui.infoX(), y = 74 * d, w = Math.min(250 * d, sw * 0.32f);
         float rowH = Math.min(18 * d, (sh - y - 64 * d) / 18.4f);
         float h = rowH * 18.2f;
         p.setStyle(Paint.Style.FILL);

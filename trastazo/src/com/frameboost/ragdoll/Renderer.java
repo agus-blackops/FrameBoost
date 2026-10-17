@@ -12,6 +12,7 @@ final class Renderer {
     boolean detail = true;
     Person inspect;
     float time;
+    private boolean gore = true;
 
     Renderer() {
         p.setStrokeCap(Paint.Cap.ROUND);
@@ -37,7 +38,9 @@ final class Renderer {
         {0xFF74483a, 0xFF8a5a47, 0xFF55504b, 0xFF3f3b37, 0xFF5e3a2d},
         {0xFF140a2b, 0xFF24134a, 0xFF2a1c4a, 0xFF1c1336, 0xFFff2bd6},
         {0xFFf0c277, 0xFFf8dca5, 0xFFd8a65d, 0xFFbf8d47, 0xFFe9ba70},
+        {0xFF2a2e35, 0xFF22252b, 0xFF5a5f68, 0xFF34373d, 0xFF3d424b},
     };
+    static final int SANDBOX = 6;
 
     private void bands(Draw2D c, float x0, float x1, float y0, float y1, int top, int bot) {
         int n = 14;
@@ -117,6 +120,18 @@ final class Renderer {
                 c.emissive(false);
                 break;
             }
+            case SANDBOX: {
+                // the classic sandbox look: a flat dark room with a fine and a bold grid
+                p.setStrokeWidth(1.2f);
+                p.setColor(alpha(0xFF59606c, 0.35f));
+                for (float x = wl; x <= wr; x += 50f) c.drawLine(x, ct, x, fl, p);
+                for (float y = fl; y >= ct; y -= 50f) c.drawLine(wl, y, wr, y, p);
+                p.setStrokeWidth(2.4f);
+                p.setColor(alpha(0xFF6c7480, 0.45f));
+                for (float x = wl; x <= wr; x += 250f) c.drawLine(x, ct, x, fl, p);
+                for (float y = fl; y >= ct; y -= 250f) c.drawLine(wl, y, wr, y, p);
+                break;
+            }
             default: {
                 p.setStyle(Paint.Style.FILL);
                 p.setColor(0xFFe8b56a);
@@ -134,8 +149,14 @@ final class Renderer {
         p.setColor(dark(th[3], 0.25f));
         c.drawRect(wl - 400f, fl + 14f, wr + 400f, fl + 20f, p);
         p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(alpha(0xFF000000, 0.18f));
-        for (float x = wl - 400f; x < wr + 400f; x += 160f) c.drawLine(x, fl + 20f, x - 40f, fl + 700f, p);
-        for (float y = fl + 100f; y < fl + 700f; y += 100f) c.drawLine(wl - 400f, y, wr + 400f, y, p);
+        if (theme == SANDBOX) {
+            p.setColor(alpha(0xFF000000, 0.25f));
+            for (float x = wl - 400f; x < wr + 400f; x += 250f) c.drawLine(x, fl + 20f, x, fl + 700f, p);
+            for (float y = fl + 125f; y < fl + 700f; y += 125f) c.drawLine(wl - 400f, y, wr + 400f, y, p);
+        } else {
+            for (float x = wl - 400f; x < wr + 400f; x += 160f) c.drawLine(x, fl + 20f, x - 40f, fl + 700f, p);
+            for (float y = fl + 100f; y < fl + 700f; y += 100f) c.drawLine(wl - 400f, y, wr + 400f, y, p);
+        }
         // walls' edge
         p.setStyle(Paint.Style.FILL);
         p.setColor(dark(th[0], 0.55f));
@@ -154,6 +175,7 @@ final class Renderer {
         c.translate(sw / 2f, sh / 2f);
         c.scale(zoom, zoom);
         c.translate(-camX, -camY);
+        gore = w.fx.gore;
         background(c, w, x0, x1, y0, y1);
         w.fx.drawStains(c, p);
         // ground shadows
@@ -405,6 +427,7 @@ final class Renderer {
                 if (q.firing) { p.setStyle(Paint.Style.FILL); p.setColor(0xFFff5a3a); c.drawCircle(m.x, m.y, 3f, p); }
                 break;
             }
+            case Items.BLOCK: drawBlock(c, q, col); break;
             case Items.TURRET: drawTurret(c, q); break;
             case Items.DRONE: drawDrone(c, q); break;
             case Items.ROPE_ITEM: {
@@ -414,6 +437,54 @@ final class Renderer {
             default: for (RB b : q.bodies) for (Shape s : b.shapes) { if (s.type == Shape.CIRCLE) circleShape(c, s, col); else if (s.type == Shape.BOX) boxShape(c, s, col, true); else capsuleShape(c, s, col); }
         }
         if (m.frozen) pin(c, m.x, m.y);
+    }
+
+    /** Building blocks by material, fragments with cracks, and flesh/metal chunks. */
+    private void drawBlock(Draw2D c, Prop q, int col) {
+        RB m = q.main();
+        Shape s = m.shapes.get(0);
+        float hw = s.hl, hh = s.hh;
+        if (q.gib) {
+            local(c, m.x, m.y, m.a);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(dark(col, 0.5f));
+            rf.set(-hw - 1.4f, -hh - 1.4f, hw + 1.4f, hh + 1.4f); c.drawRoundRect(rf, hh, hh, p);
+            p.setColor(col);
+            rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, hh * 0.8f, hh * 0.8f, p);
+            p.setColor(alpha(0xFFffffff, 0.22f));
+            c.drawCircle(-hw * 0.35f, -hh * 0.35f, Math.min(hw, hh) * 0.35f, p);
+            c.restore();
+            return;
+        }
+        boxShape(c, s, col, true);
+        local(c, m.x, m.y, m.a);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeCap(Paint.Cap.BUTT);
+        if (q.color == Build.BRICK) {
+            p.setStrokeWidth(1.6f); p.setColor(alpha(0xFFe8d8c8, 0.45f));
+            float rh = Math.min(10f, hh);
+            int row = 0;
+            for (float y = -hh + rh; y < hh - 0.5f; y += rh, row++) c.drawLine(-hw + 1, y, hw - 1, y, p);
+            row = 0;
+            for (float y = -hh; y < hh - 0.5f; y += rh, row++) for (float x = -hw + (row % 2 == 0 ? 10f : 20f); x < hw - 2f; x += 20f) c.drawLine(x, y + 1, x, Math.min(hh, y + rh) - 1, p);
+        } else if (q.color == Build.STEEL) {
+            p.setStyle(Paint.Style.FILL); p.setColor(dark(col, 0.4f));
+            if (hw > 8f && hh > 8f) for (int sx = -1; sx <= 1; sx += 2) for (int sy = -1; sy <= 1; sy += 2) c.drawCircle(sx * (hw - 5f), sy * (hh - 5f), 1.8f, p);
+            p.setColor(alpha(0xFFffffff, 0.22f)); rf.set(-hw + 1.5f, -hh + 1.5f, hw - 1.5f, -hh + 4f); c.drawRect(rf, p);
+        } else {
+            p.setStrokeWidth(1.3f); p.setColor(alpha(dark(col, 0.45f), 0.8f));
+            if (hw >= hh) for (float y = -hh + 5f; y < hh - 2f; y += 6f) c.drawLine(-hw + 3f, y, hw - 3f, y + 1f, p);
+            else for (float x = -hw + 5f; x < hw - 2f; x += 6f) c.drawLine(x, -hh + 3f, x + 1f, hh - 3f, p);
+        }
+        if (q.frag || q.wear > 0f) {
+            // cracks grow with the damage taken
+            float k = q.frag ? 0.5f : Math.min(1f, q.wear / World.toughness(q));
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.6f); p.setColor(alpha(0xFF14100c, 0.75f));
+            if (k > 0.15f) { c.drawLine(-hw * 0.9f, -hh * 0.2f, -hw * 0.2f, hh * 0.15f, p); c.drawLine(-hw * 0.2f, hh * 0.15f, hw * 0.1f, -hh * 0.5f, p); }
+            if (k > 0.45f) { c.drawLine(hw * 0.1f, -hh * 0.5f, hw * 0.8f, hh * 0.3f, p); c.drawLine(-hw * 0.2f, hh * 0.15f, -hw * 0.05f, hh * 0.9f, p); }
+        }
+        p.setStrokeCap(Paint.Cap.ROUND);
+        c.restore();
     }
 
     private void label(Draw2D c, String t, float size) {
@@ -512,18 +583,95 @@ final class Renderer {
         return tint(b, col, b.flash);
     }
 
+    /** Colour of a hurt part: flesh reddens and darkens, metal blackens. */
+    private int hurtColor(Person b, int idx, int col) {
+        float dmg = 1f - b.hp[idx] / Person.maxHp(b, idx);
+        if (dmg > 0.05f) {
+            float k = Math.min(1f, dmg) * 0.42f;
+            int to = b.kind == Person.ROBOT ? 0xFF22252a : (b.kind == Person.ZOMBIE ? 0xFF3e5a22 : (b.kind == Person.SKELETON ? 0xFF8a8268 : 0xFF6e1f22));
+            col = mix(col, to, k);
+        }
+        return bodyColor(b, col);
+    }
+
+    /** A limb in the sandbox style: dark outline, flat fill, a lit edge on top and a shaded one below. */
+    private void limb(Draw2D c, Shape s, int col) {
+        float x0 = s.cx - s.ax * s.hl, y0 = s.cy - s.ay * s.hl, x1 = s.cx + s.ax * s.hl, y1 = s.cy + s.ay * s.hl;
+        p.setStyle(Paint.Style.STROKE);
+        p.setColor(dark(col, 0.62f));
+        p.setStrokeWidth(s.r * 2f + 2.6f);
+        c.drawLine(x0, y0, x1, y1, p);
+        p.setColor(col);
+        p.setStrokeWidth(s.r * 2f);
+        c.drawLine(x0, y0, x1, y1, p);
+        if (!detail) return;
+        float nx = -s.ay, ny = s.ax;
+        if (ny > 0f) { nx = -nx; ny = -ny; }          // n points up
+        float o = s.r * 0.42f;
+        p.setStrokeWidth(s.r * 0.5f);
+        p.setColor(light(col, 0.16f));
+        c.drawLine(x0 + nx * o, y0 + ny * o, x1 + nx * o, y1 + ny * o, p);
+        p.setColor(dark(col, 0.16f));
+        c.drawLine(x0 - nx * o, y0 - ny * o, x1 - nx * o, y1 - ny * o, p);
+    }
+
     private void part(Draw2D c, Person b, int idx, int col) {
+        if (b.gibbed[idx]) return;
         Shape s = b.rb[idx].shapes.get(0);
-        if (s.type == Shape.CAPSULE) capsuleShape(c, s, bodyColor(b, col));
-        else if (s.type == Shape.CIRCLE) circleShape(c, s, bodyColor(b, col));
+        if (s.type == Shape.CAPSULE) limb(c, s, hurtColor(b, idx, col));
+        else if (s.type == Shape.CIRCLE) circleShape(c, s, hurtColor(b, idx, col));
+        wounds(c, b, idx);
     }
 
     private void foot(Draw2D c, Person b, int idx) {
+        if (b.gibbed[idx]) return;
         Shape s = b.rb[idx].shapes.get(0);
-        capsuleShape(c, s, bodyColor(b, 0xFF2b2b30));
+        limb(c, s, hurtColor(b, idx, b.kind == Person.SKELETON ? 0xFFe9e5d3 : (b.kind == Person.ROBOT ? 0xFF5d6670 : 0xFF2b2b30)));
+        wounds(c, b, idx);
+    }
+
+    /** Bullet holes, cuts, burns and bruises in the part's own frame. */
+    private void wounds(Draw2D c, Person b, int idx) {
+        if (b.nw == 0) return;
+        Shape s = b.rb[idx].shapes.get(0);
+        boolean open = false;
+        boolean metal = b.kind == Person.ROBOT, bone = b.kind == Person.SKELETON, z = b.kind == Person.ZOMBIE;
+        int deep = metal ? 0xFF15171b : (bone ? 0xFF4a4536 : (z ? 0xFF2c4a14 : (gore ? 0xFF5c0a0e : 0xFF2e2e33)));
+        int red = metal ? 0xFF3a3f47 : (bone ? 0xFF8d8774 : (z ? 0xFF4f8a2a : (gore ? 0xFFa3141c : 0xFF5d5d66)));
+        for (int i = 0; i < b.nw; i++) {
+            if (b.wpart[i] != idx || b.ws[i] <= 0f) continue;
+            if (!open) { local(c, s.cx, s.cy, (float) Math.atan2(s.ay, s.ax)); open = true; }
+            float u = b.wu[i], v = b.wv[i], r = b.ws[i];
+            p.setStyle(Paint.Style.FILL);
+            switch (b.wkind[i]) {
+                case Person.W_HOLE:
+                    p.setColor(red); c.drawCircle(u, v, r * 1.25f, p);
+                    p.setColor(deep); c.drawCircle(u, v, r * 0.75f, p);
+                    if (metal) { p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(0xFFb5bcc6); c.drawCircle(u, v, r * 1.3f, p); }
+                    break;
+                case Person.W_CUT: {
+                    float dx = (float) Math.cos(b.wa[i]) * r, dy = (float) Math.sin(b.wa[i]) * r;
+                    p.setStyle(Paint.Style.STROKE);
+                    p.setStrokeWidth(Math.max(2f, r * 0.42f)); p.setColor(red);
+                    c.drawLine(u - dx, v - dy, u + dx, v + dy, p);
+                    p.setStrokeWidth(Math.max(1f, r * 0.16f)); p.setColor(deep);
+                    c.drawLine(u - dx * 0.8f, v - dy * 0.8f, u + dx * 0.8f, v + dy * 0.8f, p);
+                    break;
+                }
+                case Person.W_BURN:
+                    p.setColor(alpha(0xFF16120f, 0.55f)); c.drawCircle(u, v, r, p);
+                    p.setColor(alpha(0xFF2a1e17, 0.5f)); c.drawCircle(u + r * 0.3f, v - r * 0.2f, r * 0.55f, p);
+                    break;
+                default:
+                    p.setColor(alpha(metal ? 0xFF1b1d22 : 0xFF5a2a5e, 0.32f)); c.drawCircle(u, v, r, p);
+            }
+        }
+        if (open) c.restore();
+        p.setStyle(Paint.Style.FILL);
     }
 
     private void hand(Draw2D c, Person b, int idx) {
+        if (b.gibbed[idx]) return;
         RB r = b.rb[idx];
         float hl = r.shapes.get(0).hl, rad = r.shapes.get(0).r;
         float hx = r.localToWorldX(0, hl), hy = r.localToWorldY(0, hl);
@@ -543,26 +691,39 @@ final class Renderer {
         torsoDetail(c, b);
         // head
         drawHead(c, b);
+        wounds(c, b, Person.HEAD);
         // front leg
         part(c, b, Person.THIGH_F, b.pants); part(c, b, Person.SHIN_F, b.pants); foot(c, b, Person.FOOT_F);
         gear(c, b);
         part(c, b, Person.UARM_F, b.shirt); part(c, b, Person.FARM_F, skin); hand(c, b, Person.FARM_F);
         if (b == inspect) inspectOverlay(c, b);
-        // stumps
+        // stumps (not on the side that was blown to pieces)
         p.setStyle(Paint.Style.FILL);
         for (int j = 0; j < Person.NJOINTS; j++) {
             if (!b.severed[j]) continue;
             Joint jn = b.jt[j];
-            p.setColor(b.organic() || b.kind == Person.ZOMBIE ? (b.kind == Person.ZOMBIE ? 0xFF3b6e1a : 0xFF8e1111) : 0xFF6b6f78);
+            int stump = b.organic() || b.kind == Person.ZOMBIE ? (b.kind == Person.ZOMBIE ? 0xFF3b6e1a : 0xFF8e1111) : 0xFF6b6f78;
             float r = (j == Person.NECK ? 4.8f : 4.3f) * b.scale;
-            c.drawCircle(jn.anchorAX(), jn.anchorAY(), r, p);
-            c.drawCircle(jn.anchorBX(), jn.anchorBY(), r, p);
+            for (int side = 0; side < 2; side++) {
+                RB body = side == 0 ? jn.a : jn.b;
+                if (body == null || gibbedBody(b, body)) continue;
+                float x = side == 0 ? jn.anchorAX() : jn.anchorBX(), y = side == 0 ? jn.anchorAY() : jn.anchorBY();
+                p.setColor(dark(stump, 0.35f)); c.drawCircle(x, y, r + 1.2f, p);
+                p.setColor(stump); c.drawCircle(x, y, r, p);
+                if (b.organic()) { p.setColor(0xFFe9e2cf); c.drawCircle(x, y, r * 0.35f, p); }
+            }
         }
         if (b.rb[Person.PELVIS].frozen) pin(c, b.rb[Person.PELVIS].x, b.rb[Person.PELVIS].y);
         if (b.adrenaline > 0f) { p.setStyle(Paint.Style.FILL); c.emissive(true); p.setColor(alpha(0xFFffd23f, 0.25f)); c.drawCircle(b.cx(), b.cy() - 40f, b.radius() * 0.5f, p); c.emissive(false); }
     }
 
+    private static boolean gibbedBody(Person b, RB body) {
+        for (int i = 0; i < Person.NPARTS; i++) if (b.rb[i] == body) return b.gibbed[i];
+        return false;
+    }
+
     private void torsoDetail(Draw2D c, Person b) {
+        if (b.gibbed[Person.CHEST]) return;
         RB ch = b.rb[Person.CHEST];
         float s = b.scale;
         local(c, ch.x, ch.y, ch.a);
@@ -619,6 +780,7 @@ final class Renderer {
         }
         c.restore();
         // belt on the pelvis
+        if (b.gibbed[Person.PELVIS]) { p.setStrokeCap(Paint.Cap.ROUND); return; }
         if (b.kind == Person.HUMAN || b.kind == Person.SOLDIER || b.kind == Person.MEDIC || b.kind == Person.THUG) {
             RB pel = b.rb[Person.PELVIS];
             local(c, pel.x, pel.y, pel.a);
@@ -630,16 +792,22 @@ final class Renderer {
     }
 
     private void drawHead(Draw2D c, Person b) {
+        if (b.gibbed[Person.HEAD]) return;
         RB h = b.rb[Person.HEAD];
         float r = h.shapes.get(0).r;
-        int col = bodyColor(b, b.skin);
+        int col = hurtColor(b, Person.HEAD, b.skin);
         local(c, h.x, h.y, h.a);
         int d = b.dir;
         p.setStyle(Paint.Style.FILL);
-        p.setColor(dark(col, 0.55f));
-        c.drawCircle(0, 0, r + 1.6f, p);
+        boolean boxy = b.kind != Person.SKELETON && b.kind != Person.ROBOT;
+        p.setColor(dark(col, 0.62f));
+        if (boxy) { rf.set(-r - 1.4f, -r - 1.4f, r + 1.4f, r + 1.4f); c.drawRoundRect(rf, r * 0.5f, r * 0.5f, p); }
+        else c.drawCircle(0, 0, r + 1.6f, p);
         p.setColor(col);
-        c.drawCircle(0, 0, r, p);
+        if (boxy) {
+            rf.set(-r, -r, r, r); c.drawRoundRect(rf, r * 0.42f, r * 0.42f, p);
+            if (detail) { p.setColor(dark(col, 0.14f)); rf.set(-r, r * 0.35f, r, r); c.drawRoundRect(rf, r * 0.42f, r * 0.42f, p); }
+        } else c.drawCircle(0, 0, r, p);
         float ex = d * r * 0.5f, ey = -r * 0.12f;
         if (b.kind == Person.ROBOT) {
             p.setColor(bodyColor(b, 0xFF7f8c99));
@@ -666,12 +834,11 @@ final class Renderer {
         } else {
             boolean z = b.kind == Person.ZOMBIE;
             if (!z) {
+                // short boxy hair: a cap on top and a block at the back
                 p.setColor(bodyColor(b, b.hair));
-                rf.set(-r, -r, r, r);
-                c.drawArc(rf, 180f, 180f, true, p);
-                c.drawCircle(-d * r * 0.42f, -r * 0.1f, r * 0.62f, p);
-                p.setColor(col);
-                c.drawCircle(d * r * 0.28f, r * 0.02f, r * 0.62f, p);
+                rf.set(-r * 1.04f, -r * 1.06f, r * 1.04f, -r * 0.38f); c.drawRoundRect(rf, r * 0.45f, r * 0.3f, p);
+                if (d > 0) rf.set(-r * 1.04f, -r * 0.7f, -r * 0.35f, r * 0.2f); else rf.set(r * 0.35f, -r * 0.7f, r * 1.04f, r * 0.2f);
+                c.drawRoundRect(rf, r * 0.3f, r * 0.3f, p);
             }
             p.setColor(z ? 0xFFd62020 : 0xFF1b1b1b);
             if (b.dead && !z) {
@@ -727,7 +894,7 @@ final class Renderer {
 
     private void gear(Draw2D c, Person b) {
         if (b.kind != Person.SOLDIER && b.kind != Person.FIREFIGHTER) return;
-        if (b.severed[Person.SH_F] || b.severed[Person.EL_F]) return;
+        if (b.severed[Person.SH_F] || b.severed[Person.EL_F] || b.gibbed[Person.FARM_F] || b.gibbed[Person.CHEST]) return;
         float s = b.scale;
         RB f = b.rb[Person.FARM_F];
         float hl = f.shapes.get(0).hl;
@@ -766,7 +933,7 @@ final class Renderer {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeCap(Paint.Cap.ROUND);
         for (int i = 0; i < Person.NPARTS; i++) {
-            if (i == Person.HEAD) continue;
+            if (i == Person.HEAD || b.gibbed[i]) continue;
             Shape s = b.rb[i].shapes.get(0);
             float h = Math.max(0f, Math.min(1f, b.hp[i] / Person.maxHp(b, i)));
             int col = b.broken[i] ? 0xFFc061ff : (h > 0.5f ? mix(0xFFf2d13a, 0xFF4cdc6b, (h - 0.5f) * 2f) : mix(0xFFe0463c, 0xFFf2d13a, h * 2f));

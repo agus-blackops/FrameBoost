@@ -7,7 +7,7 @@ public class GLStress {
         GLTest.context();
         GLTest.engine = new GLEngine(); GLTest.engine.targetFbo = GLTest.screenFbo; GLTest.engine.init(); GLTest.engine.resize(GLTest.W, GLTest.H);
         Random r = new Random(3);
-        for (int theme = 0; theme < 6; theme++) {
+        for (int theme = 0; theme < Items.THEMES.length; theme++) {
             Game g = Harness.newGame(); g.settings = new Settings(); g.userTheme = theme;
             for (int i = 0; i < 60; i++) g.spawn(Items.KEY_IDS[r.nextInt(Items.KEY_IDS.length)], 150 + r.nextFloat() * 2300, -100 - r.nextFloat() * 700);
             long worst = 0;
@@ -19,6 +19,7 @@ public class GLStress {
                 worst = Math.max(worst, t);
             }
             if (theme == 2) GLTest.shot(g, a[0] + "/gl_stress_night.png", true);
+            if (theme == Renderer.SANDBOX) GLTest.shot(g, a[0] + "/gl_stress_sandbox.png", true);
             System.out.printf("theme %d ok: bodies=%d worst frame %.1f ms (software GL)%n", theme, g.world.sim.bodies.size(), worst / 1e6);
         }
         // zoom extremes and screen resize

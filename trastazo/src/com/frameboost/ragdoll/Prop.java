@@ -15,6 +15,9 @@ final class Prop extends Ent {
     int ammo = 12;
     float hp = 100f, flash, age, trim;
     float dens = 1f;                // block density (constructions)
+    float lastSp;                   // speed at the end of the previous frame
+    float wear;                     // damage taken by breakable things (crates, planks, blocks)
+    boolean gib, frag;              // flesh chunk / fragment of something that broke
     float goalX, goalY, homeX;      // drone flight
     Ent target;
     String mood = "";

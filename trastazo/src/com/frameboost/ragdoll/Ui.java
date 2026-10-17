@@ -4,7 +4,10 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-/** Screen-space interface: category tabs, item strip and top buttons. Hit testing + drawing. */
+/**
+ * Screen-space interface in the sandbox style: a category rail on the left, a catalog panel with a grid of
+ * items next to it, and the top buttons. In challenges a bottom dock holds the allowed tools. Hit testing + drawing.
+ */
 final class Ui {
     static final int NONE = 0, BLOCK = 1, TAB = 100, ITEM = 200, BTN = 300;
     static final int BTN_PAUSE = 0, BTN_SLOW = 1, BTN_GRAV = 2, BTN_UNDO = 3, BTN_CLEAR = 4, BTN_SOUND = 5, BTN_MENU = 6, BTN_COUNT = 7;
@@ -17,9 +20,9 @@ final class Ui {
     int sw, sh;
     int cat = 0;
     boolean stripOpen = false;
-    float scrollX;
+    float scrollX, scrollY;
     // layout
-    float tabH, stripH, topH, cardW, cardH, gap;
+    float tabH, stripH, topH, cardW, cardH, gap, railW, panelW, headH;
     final String[] btnLabel = new String[BTN_COUNT];
     final boolean[] btnOn = new boolean[BTN_COUNT];
     final boolean[] btnHidden = new boolean[BTN_COUNT];
@@ -38,7 +41,8 @@ final class Ui {
     void layout(int w, int h, float density) {
         sw = w; sh = h; d = density;
         tabH = 50 * d; stripH = 88 * d; topH = 40 * d;
-        cardW = 88 * d; cardH = 76 * d; gap = 8 * d;
+        cardW = 84 * d; cardH = 74 * d; gap = 7 * d;
+        railW = 70 * d; panelW = 2 * cardW + 3 * gap; headH = 34 * d;
         p.setTextSize(12 * d);
         float x = sw - 8 * d;
         int[] order = {BTN_MENU, BTN_PAUSE, BTN_SLOW, BTN_GRAV, BTN_UNDO, BTN_CLEAR, BTN_SOUND};
@@ -50,7 +54,24 @@ final class Ui {
             btnX[i] = x;
             x -= 6 * d;
         }
-        infoW = Math.max(120 * d, Math.min(300 * d, buttonsLeft() - 20 * d));
+        infoW = Math.max(120 * d, Math.min(300 * d, buttonsLeft() - railW - 20 * d));
+    }
+
+    /** Width covered by the rail (and the open catalog) on the left. */
+    float leftW() { return dock ? 0f : railW + (stripOpen ? panelW : 0f); }
+    float infoX() { return dock ? 8 * d : leftW() + 8 * d; }
+
+    float rowH() { return Math.min(60 * d, (sh - 8 * d) / (float) Math.max(1, cats.length)); }
+    float railRowY(int i) { return 4 * d + i * rowH(); }
+    /** Rail row of a category, or -1. */
+    int railIndex(int cat) { for (int i = 0; i < cats.length; i++) if (cats[i] == cat) return i; return -1; }
+
+    float cardX(int i) { return railW + gap + (i % 2) * (cardW + gap); }
+    float cardY(int i) { return headH + (i / 2) * (cardH + gap) - scrollY; }
+
+    float maxScrollY() {
+        int rows = (Items.CATS[cat].length + 1) / 2;
+        return Math.max(0, headH + rows * (cardH + gap) + gap - sh);
     }
 
     void toast(String s) { toast = s; toastT = 2.2f; }
@@ -78,19 +99,18 @@ final class Ui {
             int i = (int) (x / (sw / (float) n));
             return ITEM + Math.max(0, Math.min(n - 1, i));
         }
-        if (y >= sh - tabH) {
-            int n = cats.length;
-            int i = (int) (x / (sw / (float) n));
-            return TAB + cats[Math.max(0, Math.min(n - 1, i))];
+        if (!dock && x < railW) {
+            int i = (int) ((y - 4 * d) / rowH());
+            if (i >= 0 && i < cats.length) return TAB + cats[i];
+            return BLOCK;
         }
-        if (stripOpen && y >= stripTop()) {
-            float cy0 = stripTop() + (stripH - cardH) / 2;
-            int n = Items.CATS[cat].length;
-            if (y >= cy0 && y <= cy0 + cardH) {
-                float rel = x + scrollX - gap;
-                int i = (int) Math.floor(rel / (cardW + gap));
-                float inCard = rel - i * (cardW + gap);
-                if (i >= 0 && i < n && inCard <= cardW) return ITEM + i;
+        if (!dock && stripOpen && x < railW + panelW) {
+            if (y > headH) {
+                int col = x < railW + gap + cardW + gap / 2 ? 0 : 1;
+                int row = (int) Math.floor((y + scrollY - headH) / (cardH + gap));
+                float inRow = (y + scrollY - headH) - row * (cardH + gap);
+                int i = row * 2 + col;
+                if (row >= 0 && i < Items.CATS[cat].length && inRow <= cardH) return ITEM + i;
             }
             return BLOCK;
         }
@@ -111,21 +131,22 @@ final class Ui {
         // top-left info
         p.setStyle(Paint.Style.FILL);
         p.setColor(0x99141820);
-        r.set(8 * d, 4 * d, 8 * d + infoW, 4 * d + topH + 14 * d);
+        float ix = infoX(), iw = Math.max(90 * d, Math.min(infoW, buttonsLeft() - ix - 12 * d));
+        r.set(ix, 4 * d, ix + iw, 4 * d + topH + 14 * d);
         c.drawRoundRect(r, 8 * d, 8 * d, p);
         p.setColor(0xFF2fd0b5);
         p.setTextSize(14 * d);
         p.setTextAlign(Paint.Align.LEFT);
         p.setFakeBoldText(true);
-        drawFitted(c, hudName, 16 * d, 22 * d, infoW - 16 * d);
+        drawFitted(c, hudName, ix + 8 * d, 22 * d, iw - 16 * d);
         p.setFakeBoldText(false);
         p.setColor(0xFFd5dbe6);
         p.setTextSize(10 * d);
-        drawFitted(c, hudHint, 16 * d, 38 * d, infoW - 16 * d);
+        drawFitted(c, hudHint, ix + 8 * d, 38 * d, iw - 16 * d);
         p.setColor(0x88ffffff);
         p.setTextSize(9 * d);
-        if (showFps) c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), 16 * d, 52 * d, p);
-        else c.drawText(bodies + " objetos", 16 * d, 52 * d, p);
+        if (showFps) c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), ix + 8 * d, 52 * d, p);
+        else c.drawText(bodies + " objetos", ix + 8 * d, 52 * d, p);
 
         // top-right buttons
         for (int i = 0; i < BTN_COUNT; i++) {
@@ -137,60 +158,91 @@ final class Ui {
             btnIcon(c, i, btnX[i] + btnW[i] / 2, 4 * d + topH / 2, topH * 0.27f, on ? 0xFF1b2029 : 0xFFe9edf4, confirmClear);
         }
 
-        // strip
+        if (dock) { drawDock(c, selectedTool); drawToast(c); return; }
+
+        // catalog panel: a two-column grid of the open category
         if (stripOpen) {
+            float px0 = railW, px1 = railW + panelW;
             p.setStyle(Paint.Style.FILL);
-            p.setColor(0xE6161a22);
-            c.drawRect(0, stripTop(), sw, sh - tabH, p);
+            p.setColor(0xEE1a1d23);
+            c.drawRect(px0, 0, px1, sh, p);
+            p.setColor(0x22ffffff);
+            c.drawRect(px1 - 1.5f * d, 0, px1, sh, p);
             c.save();
-            c.clipRect(0, stripTop(), sw, sh - tabH);
+            c.clipRect(px0, headH - 2 * d, px1, sh);
             Items.Item[] items = Items.CATS[cat];
-            float cy0 = stripTop() + (stripH - cardH) / 2;
             for (int i = 0; i < items.length; i++) {
-                float x0 = gap + i * (cardW + gap) - scrollX;
-                if (x0 + cardW < 0 || x0 > sw) continue;
+                float x0 = cardX(i), cy0 = cardY(i);
+                if (cy0 + cardH < headH || cy0 > sh) continue;
                 boolean sel = items[i].id == selectedTool || active.contains(items[i].id);
                 p.setStyle(Paint.Style.FILL);
-                p.setColor(sel ? 0xFF3a4560 : 0xFF262d3b);
+                p.setColor(sel ? 0xFF3a4252 : 0xFF2a2e36);
                 r.set(x0, cy0, x0 + cardW, cy0 + cardH);
-                c.drawRoundRect(r, 10 * d, 10 * d, p);
+                c.drawRoundRect(r, 6 * d, 6 * d, p);
+                p.setColor(0x14ffffff);
+                r2.set(x0, cy0, x0 + cardW, cy0 + cardH * 0.62f);
+                c.drawRoundRect(r2, 6 * d, 6 * d, p);
                 if (sel) {
                     p.setStyle(Paint.Style.STROKE);
                     p.setStrokeWidth(2.5f * d);
                     p.setColor(0xFF2fd0b5);
-                    c.drawRoundRect(r, 10 * d, 10 * d, p);
+                    c.drawRoundRect(r, 6 * d, 6 * d, p);
                     p.setStyle(Paint.Style.FILL);
                 }
-                if (items[i].id >= Items.MOD_CREATE) letterIcon(c, items[i], x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.36f);
-                else drawIcon(c, items[i].id, x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.36f);
+                if (items[i].id >= Items.MOD_CREATE) letterIcon(c, items[i], x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.34f);
+                else drawIcon(c, items[i].id, x0 + cardW / 2, cy0 + cardH * 0.4f, cardH * 0.34f);
                 p.setColor(0xFFe9edf4);
-                p.setTextSize(11.5f * d);
+                p.setTextSize(11 * d);
                 p.setTextAlign(Paint.Align.CENTER);
-                drawFittedCentered(c, items[i].name, x0 + cardW / 2, cy0 + cardH - 9 * d, cardW - 8 * d);
+                drawFittedCentered(c, items[i].name, x0 + cardW / 2, cy0 + cardH - 8 * d, cardW - 8 * d);
             }
             c.restore();
+            // header with the category name and a scroll hint
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xFF2fd0b5);
+            p.setTextSize(14 * d);
+            p.setTextAlign(Paint.Align.LEFT);
+            p.setFakeBoldText(true);
+            drawFitted(c, Items.CAT_NAMES[cat], px0 + gap + 2 * d, headH - 11 * d, panelW - 2 * gap);
+            p.setFakeBoldText(false);
+            float ms = maxScrollY();
+            if (ms > 0) {
+                float trackH = sh - headH - 8 * d, barH = Math.max(24 * d, trackH * sh / (sh + ms));
+                float by = headH + (trackH - barH) * (scrollY / ms);
+                p.setColor(0x55ffffff);
+                r.set(px1 - 5 * d, by, px1 - 2.5f * d, by + barH);
+                c.drawRoundRect(r, 2 * d, 2 * d, p);
+            }
         }
 
-        // tabs (or the challenge tool dock)
-        if (dock) { drawDock(c, selectedTool); drawToast(c); return; }
+        // category rail
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xF2121418);
+        c.drawRect(0, 0, railW, sh, p);
+        p.setColor(0x22ffffff);
+        c.drawRect(railW - 1.5f * d, 0, railW, sh, p);
         int n = cats.length;
-        float tw = sw / (float) n;
+        float rh = rowH();
         for (int i = 0; i < n; i++) {
             int ci = cats[i];
             boolean sel = ci == cat && stripOpen;
+            float y0 = railRowY(i);
+            if (sel) {
+                p.setColor(0xFF2a2e36);
+                r.set(3 * d, y0 + 1.5f * d, railW - 3 * d, y0 + rh - 1.5f * d);
+                c.drawRoundRect(r, 6 * d, 6 * d, p);
+                p.setColor(0xFF2fd0b5);
+                c.drawRect(0, y0 + 4 * d, 3 * d, y0 + rh - 4 * d, p);
+            }
+            boolean small = rh < 44 * d;
+            float iconS = Math.min(9 * d, rh * 0.22f);
+            catIcon(c, ci, railW / 2, y0 + (small ? rh * 0.36f : rh * 0.4f), iconS, false);
             p.setStyle(Paint.Style.FILL);
-            p.setColor(sel ? 0xFF2fd0b5 : 0xF0161a22);
-            r.set(i * tw, sh - tabH, (i + 1) * tw, sh);
-            c.drawRect(r, p);
-            p.setColor(0x33ffffff);
-            c.drawRect(i * tw, sh - tabH, i * tw + 1.5f, sh, p);
-            catIcon(c, ci, i * tw + tw / 2, sh - tabH + 17 * d, 9 * d, sel);
-            p.setStyle(Paint.Style.FILL);
-            p.setColor(sel ? 0xFF161a22 : 0xFFe9edf4);
-            p.setTextSize(11.5f * d);
+            p.setColor(sel ? 0xFF2fd0b5 : 0xFFd5dbe6);
+            p.setTextSize(Math.min(10.5f * d, rh * 0.26f));
             p.setTextAlign(Paint.Align.CENTER);
-            p.setFakeBoldText(true);
-            drawFittedCentered(c, Items.CAT_NAMES[ci], i * tw + tw / 2, sh - 9 * d, tw - 6 * d);
+            p.setFakeBoldText(sel);
+            drawFittedCentered(c, Items.CAT_NAMES[ci], railW / 2, y0 + rh - (small ? 3 * d : 7 * d), railW - 6 * d);
             p.setFakeBoldText(false);
         }
         drawToast(c);
@@ -227,13 +279,14 @@ final class Ui {
             p.setTextAlign(Paint.Align.CENTER);
             while (p.measureText(toast) > sw - 60 * d && p.getTextSize() > 8 * d) p.setTextSize(p.getTextSize() - 0.5f * d);
             float w = p.measureText(toast) + 28 * d;
-            float ty = dock ? sh - tabH - 84 * d : sh - tabH - (stripOpen ? stripH : 0) - 48 * d;
+            float ty = dock ? sh - tabH - 84 * d : sh - 30 * d;
+            float tx = (leftW() + sw) / 2f;
             p.setStyle(Paint.Style.FILL);
             p.setColor(alpha(0xE6000000, Math.min(1f, toastT * 2f)));
-            r.set(sw / 2f - w / 2, ty - 22 * d, sw / 2f + w / 2, ty + 12 * d);
+            r.set(tx - w / 2, ty - 22 * d, tx + w / 2, ty + 12 * d);
             c.drawRoundRect(r, 14 * d, 14 * d, p);
             p.setColor(alpha(0xFFffffff, Math.min(1f, toastT * 2f)));
-            c.drawText(toast, sw / 2f, ty, p);
+            c.drawText(toast, tx, ty, p);
         }
     }
 
@@ -243,10 +296,14 @@ final class Ui {
         int[] pal = {0xFFe0463c, 0xFF3aa0e0, 0xFF4cbf6b, 0xFF2fd0b5, 0xFFb06ad8, 0xFFf27ab0, 0xFF2fb5a8, 0xFFdd7b2f};
         int col = id == Items.MOD_CREATE ? 0xFF4a5568 : pal[Math.abs(id * 7 + it.name.length()) % pal.length];
         if (id >= Items.STYLE_BASE) {
-            int[] wall = {0xFF2f3846, 0xFFdde5ea, 0xFF0f1630, 0xFF6b3b32, 0xFF0a0612, 0xFFe8c98a};
-            int[] flr = {0xFF666d7a, 0xFFf2f6f8, 0xFF3a4258, 0xFF7a5636, 0xFF00e5ff, 0xFFe6b867};
-            int k = id - Items.STYLE_BASE;
+            int[] wall = {0xFF2f3846, 0xFFdde5ea, 0xFF0f1630, 0xFF6b3b32, 0xFF0a0612, 0xFFe8c98a, 0xFF2a2e35};
+            int[] flr = {0xFF666d7a, 0xFFf2f6f8, 0xFF3a4258, 0xFF7a5636, 0xFF00e5ff, 0xFFe6b867, 0xFF5a5f68};
+            int k = Math.max(0, Math.min(wall.length - 1, id - Items.STYLE_BASE));
             box(c, cx - s * 0.9f, cy - s * 0.7f, cx + s * 0.9f, cy + s * 0.7f, wall[k], s * 0.12f);
+            if (k == Renderer.SANDBOX) for (int g = -1; g <= 1; g++) {
+                line(c, cx + g * s * 0.45f, cy - s * 0.6f, cx + g * s * 0.45f, cy + s * 0.25f, Math.max(1f, s * 0.05f), 0xFF59606c);
+                line(c, cx - s * 0.8f, cy - s * 0.2f + g * s * 0.3f, cx + s * 0.8f, cy - s * 0.2f + g * s * 0.3f, Math.max(1f, s * 0.05f), 0xFF59606c);
+            }
             box(c, cx - s * 0.9f, cy + s * 0.25f, cx + s * 0.9f, cy + s * 0.7f, flr[k], s * 0.12f);
             return;
         }

@@ -18,16 +18,24 @@ public class InputTest {
         Game g = Harness.newGame();
         float fl = g.floorY();
 
-        // palette: tabs and cards
-        int tabs = g.ui.cats.length;
-        float tabY = g.sh - g.ui.tabH / 2f;
-        int ti = 0; for (int i = 0; i < tabs; i++) if (g.ui.cats[i] == 1) ti = i;   // find the Gente tab
-        Harness.tapScreen(g, g.sw / (float) tabs * (ti + 0.5f), tabY);
-        check("the construction tab comes first", g.ui.cats[0] == Items.CAT_BUILD);
-        check("tapping a tab opens the strip", g.ui.stripOpen && g.ui.cat == 1);
-        float cardY = g.ui.stripTop() + g.ui.stripH / 2f;
-        Harness.tapScreen(g, g.ui.gap + g.ui.cardW / 2f, cardY);       // Humano
+        // catalog: the category rail on the left, item cards in the panel next to it
+        int ti = g.ui.railIndex(1);                                   // the Gente row
+        float railX = g.ui.railW / 2f;
+        Harness.tapScreen(g, railX, g.ui.railRowY(ti) + g.ui.rowH() / 2f);
+        check("the construction category comes first", g.ui.cats[0] == Items.CAT_BUILD);
+        check("tapping a category opens the catalog", g.ui.stripOpen && g.ui.cat == 1);
+        Harness.tapScreen(g, g.ui.cardX(0) + g.ui.cardW / 2f, g.ui.cardY(0) + g.ui.cardH / 2f);       // Humano
         check("tapping a card selects the item", g.tool == Items.HUMAN);
+        check("the catalog closes after picking", !g.ui.stripOpen);
+        // a long category scrolls vertically
+        Harness.tapScreen(g, railX, g.ui.railRowY(g.ui.railIndex(1)) + g.ui.rowH() / 2f);
+        g.ui.scrollY = g.ui.maxScrollY();
+        int last = Items.CATS[1].length - 1;
+        if (g.ui.maxScrollY() > 0) {
+            Harness.tapScreen(g, g.ui.cardX(last) + g.ui.cardW / 2f, g.ui.cardY(last) + g.ui.cardH / 2f);
+            check("the last card is reachable after scrolling", g.tool == Items.CATS[1][last].id);
+        }
+        g.tool = Items.HUMAN; g.ui.stripOpen = false; g.ui.scrollY = 0;
         Harness.tap(g, 1500, fl - 120);
         check("tap places the selected item", count(g, Items.HUMAN) == 1);
         Harness.run(g, 2f);
@@ -74,9 +82,9 @@ public class InputTest {
 
         // weld + hinge + motor car
         g.clearWorldForLoad();
-        g.spawn(Items.PLANK, 800, fl - 60);
-        g.spawn(Items.MOTOR, 740, fl - 60);
-        g.spawn(Items.MOTOR, 860, fl - 60);
+        g.spawn(Items.PLANK, 1100, fl - 60);
+        g.spawn(Items.MOTOR, 1040, fl - 60);
+        g.spawn(Items.MOTOR, 1160, fl - 60);
         Harness.run(g, 1.5f);
         Ent plank = null; java.util.ArrayList<Ent> wheels = new java.util.ArrayList<>();
         for (Ent e : g.world.ents) if (e.item == Items.PLANK) plank = e; else wheels.add(e);
@@ -152,9 +160,10 @@ public class InputTest {
         // constructions: pick the Construir tab, the first card (Casa), tap the floor
         g.clearWorldForLoad();
         g.ui.stripOpen = false;
-        Harness.tapScreen(g, g.sw / (float) g.ui.cats.length * 0.5f, g.sh - g.ui.tabH / 2f);
-        check("Construir opens its strip", g.ui.stripOpen && g.ui.cat == Items.CAT_BUILD);
-        Harness.tapScreen(g, g.ui.gap + g.ui.cardW / 2f, g.ui.stripTop() + g.ui.stripH / 2f);
+        Harness.tapScreen(g, g.ui.railW / 2f, g.ui.railRowY(0) + g.ui.rowH() / 2f);
+        check("Construir opens its catalog", g.ui.stripOpen && g.ui.cat == Items.CAT_BUILD);
+        Harness.shot(g, out + "/in_catalog.png");
+        Harness.tapScreen(g, g.ui.cardX(0) + g.ui.cardW / 2f, g.ui.cardY(0) + g.ui.cardH / 2f);
         check("the first card is the house", g.tool == Items.HOUSE);
         Harness.tap(g, 1200, fl - 120);
         check("one tap places a whole house", g.world.ents.size() == 4);

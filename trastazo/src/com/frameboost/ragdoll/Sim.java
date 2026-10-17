@@ -655,7 +655,7 @@ final class Sim {
             RB b = bodies.get(i);
             for (int k = 0; k < b.shapes.size(); k++) {
                 Shape s = b.shapes.get(k);
-                if (s.maxX < x0 || s.minX > x1 || s.maxY < y0 || s.minY > y1) continue;
+                if (s.sensor || s.maxX < x0 || s.minX > x1 || s.maxY < y0 || s.minY > y1) continue;
                 if (!rayShape(s, ox, oy, dx, dy, maxT)) continue;
                 Hit h = hit();
                 h.shape = s; h.t = rt; h.nx = rnx; h.ny = rny;
@@ -687,6 +687,7 @@ final class Sim {
             if (!includeStatic && b.isStatic) continue;
             for (int k = 0; k < b.shapes.size(); k++) {
                 Shape s = b.shapes.get(k);
+                if (s.sensor) continue;
                 if (px < s.minX - tol || px > s.maxX + tol || py < s.minY - tol || py > s.maxY + tol) continue;
                 sdf(s, px, py);
                 float d = dd - rad(s);

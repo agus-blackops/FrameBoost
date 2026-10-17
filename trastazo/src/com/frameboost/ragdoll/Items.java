@@ -111,7 +111,7 @@ final class Items {
         },
     };
 
-    static final String[] THEMES = {"Habitación", "Laboratorio", "Noche", "Ladrillos", "Neón", "Desierto"};
+    static final String[] THEMES = {"Habitación", "Laboratorio", "Noche", "Ladrillos", "Neón", "Desierto", "Sandbox"};
 
     static void rebuild(java.util.List<String[]> mods) {
         Item[] m = new Item[mods.size() + 1];

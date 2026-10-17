@@ -237,7 +237,7 @@ final class Mind {
 
     private static boolean needsCare(Person o) {
         if (!o.organic() || o.infected > 0f || o.bitten) return false;
-        if (o.dead) return !o.severed[Person.NECK] && o.acid <= 0f;
+        if (o.dead) return o.intact() && o.acid <= 0f;
         if (o.blood < o.maxBlood * 0.8f || o.ko > 0.5f || o.legsBroken()) return true;
         for (int i = 0; i < Person.NPARTS; i++) if (o.bleed[i] > 0f || o.broken[i] || o.hp[i] < Person.maxHp(o, i) * 0.6f) return true;
         return false;

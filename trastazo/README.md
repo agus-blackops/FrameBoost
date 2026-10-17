@@ -1,4 +1,4 @@
-# Trastazo 3.4 — construcciones y destrucción
+# Trastazo 3.5 — remodelado y destrucción total
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,6 +6,27 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 3.5
+
+* **Destrucción estilo sandbox:**
+  * **Heridas visibles** en cada parte del cuerpo: agujeros de bala, cortes de armas afiladas, quemaduras de
+    explosión y moratones de golpes, pegados a la pieza y girando con ella. Las partes dañadas se enrojecen
+    (o se ennegrecen en robots). La jeringa de curación las cierra.
+  * **Gibs:** una explosión a quemarropa, una bala pesada en la cabeza o un golpe brutal revientan la parte en
+    trozos físicos (carne, metal o hueso según el personaje) que rebotan por la sala. Con la sangre
+    desactivada los trozos salen del color de la ropa/piel. Sin cabeza, torso o pelvis no hay resurrección.
+  * **Objetos que se rompen:** cajas, tablas y bloques de construcción acumulan daño (balas, golpes, explosiones),
+    se agrietan y se parten en fragmentos más pequeños, que a su vez pueden romperse hasta quedar en astillas.
+    Los ladrillos aguantan más que la madera y el acero mucho más. Hay un límite de 90 trozos en la sala.
+* **Remodelado:** cuerpos con contorno oscuro, relleno plano, borde iluminado y sombra; cabezas cuadradas con
+  pelo en bloque; bloques con textura de ladrillo, madera o acero; nuevo fondo **Sandbox** (sala oscura con
+  cuadrícula), que es el fondo por defecto.
+* **Interfaz como un sandbox de PC:** barra de categorías a la izquierda y catálogo de objetos en cuadrícula
+  de dos columnas al lado, con desplazamiento vertical. Al elegir algo el catálogo se cierra solo. En los
+  desafíos se mantiene la barra de herramientas abajo.
+* Logros nuevos *Carnicero* y *Escombros*; corregido el orden de los logros (en la 3.4 reanimar mostraba
+  *Demoledor*).
 
 ## Novedades de la 3.4
 

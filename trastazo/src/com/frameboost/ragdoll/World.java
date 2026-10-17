@@ -8,7 +8,7 @@ final class World implements Sim.Listener, Sim.Hook {
     static final int MAX_BODIES = 900;
 
     static final class Stats {
-        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed;
+        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken;
         float recentT;
     }
 
@@ -204,12 +204,25 @@ final class World implements Sim.Listener, Sim.Hook {
         }
         spreadT -= dt;
         if (spreadT <= 0f) { spreadT = 0.12f; spreadFire(); }
+        // breakage found during the physics step is applied here, outside the solver
+        for (int i = 0; i < breakQ.size(); i++) { Prop q = breakQ.get(i); if (!q.removed) fracture(q, q.cx(), q.cy()); }
+        breakQ.clear();
+        for (int i = 0; i < gibQ.size(); i++) { Person p = gibQ.get(i); int part = gibQP.get(i); if (!p.removed) gib(p, part, 0f, -1f); }
+        gibQ.clear(); gibQP.clear();
     }
+
+    private final ArrayList<Prop> breakQ = new ArrayList<>();
+    private final ArrayList<Person> gibQ = new ArrayList<>();
+    private final ArrayList<Integer> gibQP = new ArrayList<>();
+    /** gib chunks and fragments, oldest first: the oldest go away past the cap */
+    private final ArrayList<Prop> chunks = new ArrayList<>();
+    static final int MAX_CHUNKS = 90;
 
     // ------------------------------------------------------------------------------- persons ---
 
     private void updatePerson(Person p, float dt) {
         if (p.flash > 0f) p.flash -= dt;
+        for (int k = 0; k < Person.NPARTS; k++) if (p.gibbed[k] && !p.rb[k].frozen) p.rb[k].setFrozen(true);
         if (p.punchT > 0f) { p.punchT -= dt; if (p.punchT <= 0f) p.punch = false; }
         if (p.shotCd > 0f) p.shotCd -= dt;
         if (p.reloadT > 0f) { p.reloadT -= dt; if (p.reloadT <= 0f) p.ammo = 12; }
@@ -286,7 +299,7 @@ final class World implements Sim.Listener, Sim.Hook {
 
     /** A bitten person rises again as a zombie. */
     void reanimate(Person p) {
-        if (p.severed[Person.NECK] || p.removed) return;
+        if (!p.intact() || p.removed) return;
         p.kind = Person.ZOMBIE;
         p.item = Items.ZOMBIE;
         p.target = null;
@@ -341,6 +354,8 @@ final class World implements Sim.Listener, Sim.Hook {
             else if (!p.dead) { p.ko = Math.max(p.ko, 0.6f); p.tone = 0f; }
         }
         if (p.blood <= 0f && !p.dead) kill(p);
+        // a part far beyond destroyed bursts into pieces
+        if (p.hp[part] < -Person.maxHp(p, part) * 1.7f && dmg > 20f && !p.gibbed[part]) { gib(p, part, dx, dy); return; }
         // deep damage tears the joint (dismemberment) for the extremities
         if (p.hp[part] < -60f) {
             int j = Person.PART_JOINT[part];
@@ -456,6 +471,7 @@ final class World implements Sim.Listener, Sim.Hook {
             }
             if (sharp && dv > 140f) {
                 p.hitCd[part] = 0.18f;
+                wound(p, part, Person.W_CUT, px, py, dx, dy, 5f + Math.min(9f, dv * 0.01f));
                 hurt(p, part, 8f + dv * 0.05f, px, py, dx, dy);
                 if (dv > 330f && rnd.nextFloat() < 0.55f) {
                     int j = Person.PART_JOINT[part];
@@ -464,7 +480,10 @@ final class World implements Sim.Listener, Sim.Hook {
                 stats.hits++;
             } else if (dv > thr) {
                 p.hitCd[part] = 0.2f;
-                hurt(p, part, (dv - thr) * 0.05f * heavy, px, py, dx, dy);
+                if (dv > thr * 4.5f && heavy >= 0.9f && p.kind != Person.ROBOT) { gibQ.add(p); gibQP.add(part); return; }
+                float d = (dv - thr) * 0.05f * heavy;
+                if (d > 6f) wound(p, part, Person.W_BRUISE, px, py, dx, dy, 3f + Math.min(7f, d * 0.25f));
+                hurt(p, part, d, px, py, dx, dy);
             }
             // a hurt person drops what they were doing when thrown hard
             if (dv > 1000f && !p.dead && p.ko <= 0f && (part == Person.PELVIS || part == Person.CHEST || part == Person.HEAD)) { p.ko = 0.9f; p.tone = 0f; }
@@ -476,6 +495,176 @@ final class World implements Sim.Listener, Sim.Hook {
             if (q.type == Items.MELON) { if (dv > 480f || (sharp && dv > 100f)) smash(q); return; }
             if (q.explosive && q.fuse < 0f && q.type != Items.C4 && dv > 1500f && q.age > 0.8f) q.fuse = 0.05f;
             if (q.machine() && dv > 600f) damageMachine(q, (dv - 600f) * 0.08f);
+            if (breakable(q)) {
+                float th = sharp ? 200f : 650f;
+                // the contact speed is noisy for heavy welded stacks: cap it by how fast things were really moving
+                float osp = other == null ? 0f : (other.body.user instanceof Prop ? ((Prop) other.body.user).lastSp : (float) Math.hypot(other.body.vx, other.body.vy));
+                dv = Math.min(dv, q.lastSp + osp);
+                if (dv > th) {
+                    float heavy = 1f;
+                    if (other != null) {
+                        float om = other.body.invM > 0f ? other.body.m : 20000f;
+                        heavy = Math.max(0.3f, Math.min(2.5f, (float) Math.sqrt(om / Math.max(1f, s.body.m))));
+                    }
+                    wear(q, (dv - th) * 0.04f * heavy * (sharp ? 2f : 1f), true);
+                }
+            }
+        }
+    }
+
+    // --------------------------------------------------------------------------- destruction ---
+
+    /** Records a wound on the skin of a part (bullet hole, cut, burn, bruise) in its own frame. */
+    void wound(Person p, int part, int kind, float x, float y, float dx, float dy, float size) {
+        if (part < 0 || p.gibbed[part] || p.rb[part].shapes.isEmpty()) return;
+        Shape s = p.rb[part].shapes.get(0);
+        float ex = x - s.cx, ey = y - s.cy;
+        float u = ex * s.ax + ey * s.ay, v = -ex * s.ay + ey * s.ax;
+        if (s.type == Shape.CAPSULE) {
+            u = Math.max(-s.hl - s.r * 0.4f, Math.min(s.hl + s.r * 0.4f, u));
+            v = Math.max(-s.r * 0.62f, Math.min(s.r * 0.62f, v));
+        } else if (s.type == Shape.CIRCLE) {
+            float d = (float) Math.sqrt(u * u + v * v), m = s.r * 0.62f;
+            if (d > m) { u *= m / d; v *= m / d; }
+        } else {
+            u = Math.max(-s.hl * 0.85f, Math.min(s.hl * 0.85f, u));
+            v = Math.max(-s.hh * 0.85f, Math.min(s.hh * 0.85f, v));
+        }
+        int i = p.wNext;
+        p.wNext = (p.wNext + 1) % Person.MAXW;
+        if (p.nw < Person.MAXW) p.nw++;
+        p.wpart[i] = (byte) part; p.wkind[i] = (byte) kind;
+        p.wu[i] = u; p.wv[i] = v; p.ws[i] = size * p.scale;
+        // cuts follow the blow direction, in the shape frame
+        p.wa[i] = (float) Math.atan2(-dx * s.ay + dy * s.ax, dx * s.ax + dy * s.ay) + (rnd.nextFloat() - 0.5f) * 0.6f;
+    }
+
+    /** Blows a part of a person into meat (or metal, or bone) chunks. */
+    void gib(Person p, int part, float dx, float dy) {
+        if (p.removed || part < 0 || p.gibbed[part]) return;
+        RB b = p.rb[part];
+        float bx = b.x, by = b.y, vx = b.vx, vy = b.vy;
+        for (int j = 0; j < Person.NJOINTS; j++) {
+            Joint jn = p.jt[j];
+            if (!p.severed[j] && (jn.a == b || jn.b == b)) sever(p, j, bx, by);
+        }
+        p.gibbed[part] = true;
+        p.bleed[part] = 0f;
+        for (Shape s : b.shapes) s.sensor = true;
+        b.vx = b.vy = 0f; b.w = 0f;
+        b.setFrozen(true);
+        for (int k = 0; k < p.nw; k++) if (p.wpart[k] == part) p.ws[k] = 0f;
+        stats.gibs++;
+        bloodStyle(p);
+        boolean metal = p.kind == Person.ROBOT, bone = p.kind == Person.SKELETON;
+        Shape s0 = b.shapes.get(0);
+        int n = part == Person.CHEST || part == Person.PELVIS ? 6 : (part == Person.HEAD ? 5 : 3);
+        float size = s0.type == Shape.CIRCLE ? s0.r : (s0.type == Shape.CAPSULE ? s0.r + s0.hl * 0.35f : (s0.hl + s0.hh) * 0.4f);
+        int outer = s0.color;
+        for (int k = 0; k < n && canAdd(); k++) {
+            float hw = Math.max(3.5f, size * (0.35f + rnd.nextFloat() * 0.3f)), hh = Math.max(3f, hw * (0.6f + rnd.nextFloat() * 0.5f));
+            int col = metal ? (k % 2 == 0 ? 0xFF6b737d : dark(outer, 0.2f)) : bone ? 0xFFe9e5d3
+                    : !fx.gore ? (k % 2 == 0 ? outer : dark(outer, 0.25f))
+                    : (k % 3 == 0 ? outer : (p.kind == Person.ZOMBIE ? 0xFF4f7d2a : (k % 3 == 1 ? 0xFFa3202a : 0xFFc94a52)));
+            Prop c = Prop.block(bx + fx.rr(size), by + fx.rr(size), hw, hh, col, metal ? 2f : 1f, false);
+            c.gib = true;
+            c.register(sim);
+            RB r = c.main();
+            r.setAngle(rnd.nextFloat() * 6.283f);
+            float sp = 260f + rnd.nextFloat() * 420f, ang = rnd.nextFloat() * 6.283f;
+            r.vx = vx * 0.5f + dx * 200f + (float) Math.cos(ang) * sp;
+            r.vy = vy * 0.5f + dy * 200f + (float) Math.sin(ang) * sp - 150f;
+            r.w = fx.rr(30f);
+            add(c);
+            keepChunk(c);
+        }
+        if (metal) { fx.sparks(bx, by, 24, 0xFFffd25a); fx.smoke(bx, by, 10f, 0xFF3c3c3c); }
+        else if (bone) fx.debris(bx, by, 12, 0xFFf0ead6, 320f);
+        else { fx.blood(bx, by, 0f, -0.4f, 30); fx.blood(bx, by, dx, dy, 18); fx.debris(bx, by, 6, 0xFF8e1111, 300f); }
+        if (sfx != null) { sfx.splat(); sfx.crunch(); }
+        if (!p.dead && (part == Person.HEAD || part == Person.CHEST || part == Person.PELVIS)) kill(p);
+        else if (!p.dead) { p.ko = Math.max(p.ko, 2f); p.tone = 0f; p.blood -= 15f; if (p.blood <= 0f) kill(p); }
+        rumble += 0.35f;
+    }
+
+    private static int dark(int c, float t) { return Renderer.dark(c, t); }
+
+    private void keepChunk(Prop c) {
+        chunks.add(c);
+        while (chunks.size() > MAX_CHUNKS) {
+            Prop o = chunks.remove(0);
+            if (!o.removed) { fx.debris(o.cx(), o.cy(), 2, o.color, 80f); remove(o); }
+        }
+    }
+
+    /** Things that splinter and break apart (not machines, bombs or static pillars). */
+    static boolean breakable(Prop q) {
+        if (q.bodies.isEmpty() || q.main().isStatic) return false;
+        return q.type == Items.CRATE || q.type == Items.BIGCRATE || q.type == Items.PLANK || q.type == Items.BLOCK;
+    }
+
+    /** How much damage a breakable thing takes before it breaks. */
+    static float toughness(Prop q) {
+        float base;
+        if (q.gib) base = 30f;
+        else if (q.type == Items.CRATE) base = 70f;
+        else if (q.type == Items.BIGCRATE) base = 120f;
+        else if (q.type == Items.PLANK) base = 80f;
+        else if (q.color == Build.STEEL) base = 420f;
+        else if (q.color == Build.BRICK) base = 150f;
+        else base = 85f;
+        float size = Math.max(q.hw, q.hh);
+        return base * Math.max(0.3f, Math.min(1f, size / 30f));
+    }
+
+    /** Adds damage to a breakable thing; it breaks when it has taken enough. */
+    void wear(Prop q, float dmg, boolean deferred) {
+        if (q.removed || dmg <= 0f || !breakable(q)) return;
+        q.wear += dmg;
+        if (q.wear < toughness(q)) return;
+        if (deferred) { if (!breakQ.contains(q)) breakQ.add(q); }
+        else fracture(q, q.cx(), q.cy());
+    }
+
+    /** Splits a block/crate/plank into smaller fragments; small ones just turn to splinters. */
+    void fracture(Prop q, float ix, float iy) {
+        if (q.removed) return;
+        RB b = q.main();
+        float hw = q.hw, hh = q.hh, bx = b.x, by = b.y, a = b.a, vx = b.vx, vy = b.vy, w = b.w;
+        boolean burning = q.burning;
+        int col = q.color;
+        boolean brick = col == Build.BRICK, steel = col == Build.STEEL;
+        remove(q);
+        stats.broken++;
+        if (!q.gib) stats.destroyed++;
+        fx.debris(bx, by, 10, col, 260f);
+        fx.smoke(bx, by, brick ? 14f : 8f, brick ? 0xFFb09a8a : 0xFF9a9a9a);
+        if (steel) fx.sparks(bx, by, 10, 0xFFffd25a);
+        if (sfx != null) sfx.crunch();
+        rumble += 0.1f;
+        if (Math.max(hw, hh) < 9f || q.gib) return;
+        int nx = hw >= 2f * hh ? Math.min(4, Math.round(hw / hh)) : (hw >= 10f ? 2 : 1);
+        int ny = hh >= 2f * hw ? Math.min(4, Math.round(hh / hw)) : (hh >= 10f ? 2 : 1);
+        if (nx * ny < 2) return;
+        float pw = hw / nx, ph = hh / ny, ca = (float) Math.cos(a), sa = (float) Math.sin(a);
+        for (int i = 0; i < nx; i++) for (int j = 0; j < ny; j++) {
+            if (!canAdd()) return;
+            float lx = -hw + (i + 0.5f) * 2f * pw, ly = -hh + (j + 0.5f) * 2f * ph;
+            float wx = bx + ca * lx - sa * ly, wy = by + sa * lx + ca * ly;
+            float jw = pw * (0.82f + rnd.nextFloat() * 0.14f), jh = ph * (0.82f + rnd.nextFloat() * 0.14f);
+            Prop f = Prop.block(wx, wy, jw, jh, col, q.type == Items.BLOCK ? q.dens : 0.7f, q.flammable);
+            f.frag = true;
+            f.register(sim);
+            RB r = f.main();
+            r.setAngle(a + (rnd.nextFloat() - 0.5f) * 0.3f);
+            float ox = wx - ix, oy = wy - iy, ol = (float) Math.sqrt(ox * ox + oy * oy) + 1f;
+            float kick = 90f + rnd.nextFloat() * 160f;
+            r.vx = vx - w * (wy - by) + ox / ol * kick;
+            r.vy = vy + w * (wx - bx) + oy / ol * kick;
+            r.w = w + fx.rr(6f);
+            add(f);
+            keepChunk(f);
+            if (burning) ignite(f);
         }
     }
 
@@ -498,6 +687,7 @@ final class World implements Sim.Listener, Sim.Hook {
 
     private void updateProp(Prop q, float dt) {
         if (q.flash > 0f) q.flash -= dt;
+        if (!q.bodies.isEmpty()) { RB r = q.main(); q.lastSp = (float) Math.hypot(r.vx, r.vy) + Math.abs(r.w) * Math.max(q.hw, q.hh); }
         q.age += dt;
         RB m = q.main();
         if (q.fuse >= 0f) {
@@ -612,6 +802,7 @@ final class World implements Sim.Listener, Sim.Hook {
                 if (q.explosive && q.fuse < 0f && f > 0.15f) q.fuse = 0.06f + rnd.nextFloat() * 0.25f;
                 if (q.flammable && f > 0.35f) ignite(q);
                 if (q.machine()) damageMachine(q, dmg * f * f * 2f);
+                if (f > 0.1f) wear(q, dmg * f * f * 2.6f, false);
             } else {
                 Person p = (Person) e;
                 if (p.flammable && f > 0.35f) ignite(p);
@@ -620,7 +811,12 @@ final class World implements Sim.Listener, Sim.Hook {
                     float px = b.x - x, py = b.y - y, pd = (float) Math.sqrt(px * px + py * py);
                     float pf = Math.max(0f, 1f - pd / R);
                     if (pf <= 0.02f) continue;
-                    hurt(p, part, dmg * pf * pf * 0.9f, b.x, b.y, px / (pd + 1f), py / (pd + 1f));
+                    if (p.gibbed[part]) continue;
+                    float hd = dmg * pf * pf * 0.9f;
+                    if (hd > 8f) wound(p, part, Person.W_BURN, b.x - px / (pd + 1f) * 8f, b.y - py / (pd + 1f) * 8f, px, py, 4f + Math.min(8f, hd * 0.12f));
+                    // point blank: the part bursts
+                    if (hd > 55f && rnd.nextFloat() < (pf - 0.7f) * 2.2f) { gib(p, part, px / (pd + 1f), py / (pd + 1f)); continue; }
+                    hurt(p, part, hd, b.x, b.y, px / (pd + 1f), py / (pd + 1f));
                 }
                 if (f > 0.4f) {
                     for (int j = 0; j < Person.NJOINTS; j++) {
@@ -737,6 +933,7 @@ final class World implements Sim.Listener, Sim.Hook {
             b.applyImpulse(dx * J, dy * J, hx, hy);
             fx.sparks(hx, hy, 5, q.type == Items.CRATE || q.type == Items.PLANK ? 0xFFe8c48a : 0xFFffe08a);
             if (q.type == Items.CRATE || q.type == Items.PLANK) fx.debris(hx, hy, 2, q.color, 180f);
+            if (breakable(q)) { fx.debris(hx, hy, 2, q.color, 160f); wear(q, dmg * 1.3f, false); }
         } else if (u instanceof Person) {
             Person p = (Person) u;
             int part = Person.partOf(p, s);
@@ -744,7 +941,10 @@ final class World implements Sim.Listener, Sim.Hook {
             bloodStyle(p);
             fx.blood(hx, hy, dx, dy, 7);
             if (part < 0) return;
+            wound(p, part, Person.W_HOLE, hx, hy, dx, dy, 2.2f + dmg * 0.03f);
             if (p.organic()) p.bleed[part] = Math.max(p.bleed[part], 6f);
+            // heavy rounds burst heads
+            if (part == Person.HEAD && dmg >= 40f && rnd.nextFloat() < 0.6f) { boolean alive = !p.dead; gib(p, part, dx, dy); if (alive) { stats.headshots++; if (shooter != null && !(shooter instanceof Person && ((Person) shooter).kind == Person.THUG)) stats.aiKills++; } return; }
             boolean wasAlive = !p.dead;
             if (part == Person.HEAD && wasAlive) {
                 stats.headshots++;
@@ -837,14 +1037,14 @@ final class World implements Sim.Listener, Sim.Hook {
                 break;
             case Items.SYR_LIFE:
                 if (!p.dead) return "Todavía está vivo";
-                if (p.severed[Person.NECK]) return "Sin cabeza no hay resurrección";
+                if (!p.intact()) return "Está hecho pedazos: no hay resurrección";
                 heal(p); p.dead = false; p.ko = 2.5f; p.tone = 0f; p.blood = p.maxBlood * 0.6f;
                 stats.revives++;
                 col = 0xFF7fd1ff; msg = "¡Ha vuelto a la vida!";
                 break;
             case Items.SYR_ZOMBIE:
                 if (p.kind == Person.ZOMBIE) return "Ya es un zombi";
-                if (p.severed[Person.NECK]) return "Sin cabeza no hay zombi";
+                if (!p.intact()) return "Está hecho pedazos: no hay zombi";
                 p.infected = 2.5f; p.bitten = true;
                 col = 0xFF5aa02a; msg = "Infectado... en unos segundos";
                 break;
@@ -868,6 +1068,7 @@ final class World implements Sim.Listener, Sim.Hook {
             if (p.broken[i]) p.broken[i] = false;
             p.hp[i] = Person.maxHp(p, i);
         }
+        p.nw = 0; p.wNext = 0;          // wounds close
         stats.heals++;
     }
 
