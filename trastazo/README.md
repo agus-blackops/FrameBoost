@@ -1,4 +1,4 @@
-# Trastazo 3.5 — remodelado y destrucción total
+# Trastazo 3.6 — animales, mano siempre activa y armas nuevas
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,6 +6,22 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 3.6
+
+* **La mano ya no es una herramienta:** como en el original, siempre está activa. Elijas lo que elijas en el
+  catálogo, arrastrar algo con el dedo lo agarra; tocar sin arrastrar usa la herramienta elegida (colocar,
+  disparar, inyectar...); mantener pulsado abre el menú del objeto. Tocar otra vez la carta elegida la
+  deselecciona. Borrar, Cortar, Fuego y Rifle siguen usando el arrastre para sí mismos.
+* **Animales (nueva categoría):** perro, cerdo y rata. Pasean, se caen y se levantan; el perro ladra a zombis
+  y matones, el cerdo y la rata huyen. **Se comen los cadáveres pieza a pieza** (con mordiscos, sangre y algún
+  hueso que dejan tirado) y unos segundos después **hacen caca**, que huele (humo verde) y se aplasta si la
+  pisas o le disparas. Se les puede herir, matar o reventar. También hay *Caca* colocable.
+* **Remodelado de armas y objetos:** pistola, rifle con mira y culata de madera, ametralladora de tres
+  cañones, cuchillo y espada con hoja afilada, cajas con tablas y refuerzo, barriles con aros, TNT en
+  cartuchos con temporizador, granada, C4, ruedas, propulsor, viga de acero y plataforma con franjas. Los
+  soldados llevan el mismo rifle nuevo.
+* Sonidos nuevos (ladrido/gruñido/chillido, mordisco, pedo) y logro *Ciclo de la vida*.
 
 ## Novedades de la 3.5
 

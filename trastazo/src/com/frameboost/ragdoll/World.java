@@ -8,7 +8,7 @@ final class World implements Sim.Listener, Sim.Hook {
     static final int MAX_BODIES = 900;
 
     static final class Stats {
-        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken;
+        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops;
         float recentT;
     }
 
@@ -142,11 +142,18 @@ final class World implements Sim.Listener, Sim.Hook {
                     case Items.STEEL: ry = Math.min(y, fl - 27f); break;
                     case Items.PLATFORM: ry = y; break;
                     case Items.THRUSTER: ry = Math.min(y, fl - 20f); break;
+                    case Items.DOG: case Items.PIG: case Items.RAT: {
+                        float[] d = Prop.ANIMAL[item - Items.DOG];
+                        ry = Math.min(y, fl - d[1] - d[5] - 2f);
+                        break;
+                    }
+                    case Items.POOP: ry = Math.min(y, fl - 9f); break;
                     default: ry = Math.min(y, fl - 14f); break;
                 }
                 Prop p = Prop.make(sim, item, x, ry, rnd);
                 if (p == null) return null;
                 if (item == Items.MOTOR) p.motorized = true;
+                if (p.animal()) p.turn(dir >= 0 ? 1 : -1);
                 if (p.fuse >= 0f) p.fuse = item == Items.GRENADE ? 3f : 4f;
                 if (item == Items.KNIFE || item == Items.SWORD) { /* sharp bodies are registered by the factory */ }
                 p.register(sim);
@@ -222,7 +229,9 @@ final class World implements Sim.Listener, Sim.Hook {
 
     private void updatePerson(Person p, float dt) {
         if (p.flash > 0f) p.flash -= dt;
-        for (int k = 0; k < Person.NPARTS; k++) if (p.gibbed[k] && !p.rb[k].frozen) p.rb[k].setFrozen(true);
+        int whole = 0;
+        for (int k = 0; k < Person.NPARTS; k++) { if (p.gibbed[k]) { if (!p.rb[k].frozen) p.rb[k].setFrozen(true); } else whole++; }
+        if (whole == 0) { remove(p); return; }     // nothing left of them
         if (p.punchT > 0f) { p.punchT -= dt; if (p.punchT <= 0f) p.punch = false; }
         if (p.shotCd > 0f) p.shotCd -= dt;
         if (p.reloadT > 0f) { p.reloadT -= dt; if (p.reloadT <= 0f) p.ammo = 12; }
@@ -493,6 +502,12 @@ final class World implements Sim.Listener, Sim.Hook {
             boolean sharp = other != null && (other.body.user instanceof Prop && ((Prop) other.body.user).sharp);
             if (q.type == Items.BALLOON) { if (dv > 90f || sharp) pop(q); return; }
             if (q.type == Items.MELON) { if (dv > 480f || (sharp && dv > 100f)) smash(q); return; }
+            if (q.type == Items.POOP) { if (dv > 700f && q.age > 0.5f) squish(q); return; }
+            if (q.animal()) {
+                if (sharp && dv > 150f) hurtAnimal(q, 10f + dv * 0.04f, px, py, dx, dy);
+                if (!sharp && dv > 750f) hurtAnimal(q, (dv - 750f) * 0.05f, px, py, dx, dy);
+                return;
+            }
             if (q.explosive && q.fuse < 0f && q.type != Items.C4 && dv > 1500f && q.age > 0.8f) q.fuse = 0.05f;
             if (q.machine() && dv > 600f) damageMachine(q, (dv - 600f) * 0.08f);
             if (breakable(q)) {
@@ -540,7 +555,10 @@ final class World implements Sim.Listener, Sim.Hook {
     }
 
     /** Blows a part of a person into meat (or metal, or bone) chunks. */
-    void gib(Person p, int part, float dx, float dy) {
+    void gib(Person p, int part, float dx, float dy) { gib(p, part, dx, dy, true); }
+
+    /** chunks=false: the part just disappears (eaten) with a little blood. */
+    void gib(Person p, int part, float dx, float dy, boolean chunks) {
         if (p.removed || part < 0 || p.gibbed[part]) return;
         RB b = p.rb[part];
         float bx = b.x, by = b.y, vx = b.vx, vy = b.vy;
@@ -558,7 +576,7 @@ final class World implements Sim.Listener, Sim.Hook {
         bloodStyle(p);
         boolean metal = p.kind == Person.ROBOT, bone = p.kind == Person.SKELETON;
         Shape s0 = b.shapes.get(0);
-        int n = part == Person.CHEST || part == Person.PELVIS ? 6 : (part == Person.HEAD ? 5 : 3);
+        int n = !chunks ? 0 : part == Person.CHEST || part == Person.PELVIS ? 6 : (part == Person.HEAD ? 5 : 3);
         float size = s0.type == Shape.CIRCLE ? s0.r : (s0.type == Shape.CAPSULE ? s0.r + s0.hl * 0.35f : (s0.hl + s0.hh) * 0.4f);
         int outer = s0.color;
         for (int k = 0; k < n && canAdd(); k++) {
@@ -578,18 +596,70 @@ final class World implements Sim.Listener, Sim.Hook {
             add(c);
             keepChunk(c);
         }
-        if (metal) { fx.sparks(bx, by, 24, 0xFFffd25a); fx.smoke(bx, by, 10f, 0xFF3c3c3c); }
+        if (!chunks) { fx.blood(bx, by, 0f, -0.4f, 8); if (sfx != null) sfx.splat(); }
+        else if (metal) { fx.sparks(bx, by, 24, 0xFFffd25a); fx.smoke(bx, by, 10f, 0xFF3c3c3c); }
         else if (bone) fx.debris(bx, by, 12, 0xFFf0ead6, 320f);
         else { fx.blood(bx, by, 0f, -0.4f, 30); fx.blood(bx, by, dx, dy, 18); fx.debris(bx, by, 6, 0xFF8e1111, 300f); }
-        if (sfx != null) { sfx.splat(); sfx.crunch(); }
+        if (sfx != null && chunks) { sfx.splat(); sfx.crunch(); }
         if (!p.dead && (part == Person.HEAD || part == Person.CHEST || part == Person.PELVIS)) kill(p);
         else if (!p.dead) { p.ko = Math.max(p.ko, 2f); p.tone = 0f; p.blood -= 15f; if (p.blood <= 0f) kill(p); }
-        rumble += 0.35f;
+        if (chunks) rumble += 0.35f;
+    }
+
+    // ------------------------------------------------------------------------------ animals ---
+
+    /** Damage to an animal: blood, a yelp, and it dies at zero (bursts far below). */
+    void hurtAnimal(Prop a, float dmg, float x, float y, float dx, float dy) {
+        if (a.removed || dmg <= 0f) return;
+        a.hp -= dmg;
+        a.flash = 0.12f;
+        fx.bloodA = 0xFFc0121b; fx.bloodB = 0xFF7d0a10;
+        if (dmg > 3f) fx.blood(x, y, dx, dy, (int) Math.min(8, 2 + dmg * 0.2f));
+        int k = a.type - Items.DOG;
+        if (!a.dead && dmg > 4f && a.barkT <= 0f) { a.barkT = 0.5f; if (sfx != null) sfx.call(Fauna.PITCH[k] * 1.35f); }
+        if (!a.dead && a.hp <= 0f) { a.dead = true; a.mood = "Muerto"; a.meal = null; if (sfx != null) sfx.crunch(); }
+        if (a.hp < -Prop.ANIMAL_HP[k] * 1.3f) gibAnimal(a, dx, dy);
+    }
+
+    void gibAnimal(Prop a, float dx, float dy) {
+        if (a.removed) return;
+        RB b = a.main();
+        float[] d = a.dims();
+        float bx = b.x, by = b.y, vx = b.vx, vy = b.vy;
+        remove(a);
+        stats.gibs++;
+        int n = a.type == Items.RAT ? 3 : 6;
+        for (int k = 0; k < n && canAdd(); k++) {
+            float hw = Math.max(3f, d[1] * (0.4f + rnd.nextFloat() * 0.4f)), hh = Math.max(2.5f, hw * (0.6f + rnd.nextFloat() * 0.4f));
+            int col = !fx.gore ? (k % 2 == 0 ? a.color : dark(a.color, 0.25f)) : (k % 3 == 0 ? a.color : (k % 3 == 1 ? 0xFFa3202a : 0xFFc94a52));
+            Prop c = Prop.block(bx + fx.rr(d[0]), by + fx.rr(d[1]), hw, hh, col, 1f, false);
+            c.gib = true;
+            c.register(sim);
+            RB r = c.main();
+            r.setAngle(rnd.nextFloat() * 6.283f);
+            float sp = 240f + rnd.nextFloat() * 380f, ang = rnd.nextFloat() * 6.283f;
+            r.vx = vx * 0.5f + dx * 200f + (float) Math.cos(ang) * sp;
+            r.vy = vy * 0.5f + dy * 200f + (float) Math.sin(ang) * sp - 150f;
+            add(c);
+            keepChunk(c);
+        }
+        fx.bloodA = 0xFFc0121b; fx.bloodB = 0xFF7d0a10;
+        fx.blood(bx, by, 0f, -0.4f, 24);
+        if (sfx != null) { sfx.splat(); sfx.crunch(); }
+        rumble += 0.25f;
+    }
+
+    /** A poop is squashed: brown splat. */
+    void squish(Prop q) {
+        if (q.removed) return;
+        for (int i = 0; i < 10; i++) fx.add(Fx.BLOOD, q.cx(), q.cy(), fx.rr(220), -fx.rf() * 220f, 1.2f, 2.5f + fx.rf() * 2.5f, i % 2 == 0 ? 0xFF6b4423 : 0xFF4f3018);
+        if (sfx != null) sfx.splat();
+        remove(q);
     }
 
     private static int dark(int c, float t) { return Renderer.dark(c, t); }
 
-    private void keepChunk(Prop c) {
+    void keepChunk(Prop c) {
         chunks.add(c);
         while (chunks.size() > MAX_CHUNKS) {
             Prop o = chunks.remove(0);
@@ -715,6 +785,8 @@ final class World implements Sim.Listener, Sim.Hook {
             if (q.fireCd <= 0f) { q.fireCd = 0.075f; fireGun(q); }
         }
         if (q.machine()) Mind.machineThink(this, q, dt);
+        if (q.animal()) Fauna.think(this, q, dt);
+        else if (q.type == Items.POOP) Fauna.stink(this, q, dt);
     }
 
     /** Fires a gun object along its barrel with recoil. */
@@ -799,6 +871,12 @@ final class World implements Sim.Listener, Sim.Hook {
                 Prop q = (Prop) e;
                 if (q.type == Items.BALLOON) { if (f > 0.1f) pop(q); continue; }
                 if (q.type == Items.MELON) { if (f > 0.15f) smash(q); continue; }
+                if (q.type == Items.POOP) { if (f > 0.15f) squish(q); continue; }
+                if (q.animal()) {
+                    if (f > 0.7f && dmg > 55f) gibAnimal(q, dx / (d + 1f), dy / (d + 1f));
+                    else { hurtAnimal(q, dmg * f * f * 1.6f, q.cx(), q.cy(), dx / (d + 1f), dy / (d + 1f)); if (f > 0.35f) ignite(q); }
+                    continue;
+                }
                 if (q.explosive && q.fuse < 0f && f > 0.15f) q.fuse = 0.06f + rnd.nextFloat() * 0.25f;
                 if (q.flammable && f > 0.35f) ignite(q);
                 if (q.machine()) damageMachine(q, dmg * f * f * 2f);
@@ -857,6 +935,10 @@ final class World implements Sim.Listener, Sim.Hook {
         if (e instanceof Person) {
             Person p = (Person) e;
             if (!p.dead) { p.blood -= 4.5f * dt; if (p.blood <= 0f) kill(p); }
+        } else if (((Prop) e).animal()) {
+            Prop a = (Prop) e;
+            a.hp -= 6f * dt;
+            if (!a.dead && a.hp <= 0f) { a.dead = true; a.mood = "Muerto"; }
         }
         if (e.burnT <= 0f) e.burning = false;
     }
@@ -928,6 +1010,8 @@ final class World implements Sim.Listener, Sim.Hook {
             Prop q = (Prop) u;
             if (q.type == Items.BALLOON) { pop(q); return; }
             if (q.type == Items.MELON) { smash(q); return; }
+            if (q.type == Items.POOP) { squish(q); return; }
+            if (q.animal()) { b.applyImpulse(dx * J, dy * J, hx, hy); hurtAnimal(q, dmg * 1.4f, hx, hy, dx, dy); if (sfx != null) sfx.splat(); return; }
             if (q.explosive && q.fuse < 0f && q.type != Items.GRENADE && q.type != Items.DYNAMITE) q.fuse = 0.05f;
             if (q.machine()) damageMachine(q, dmg * 1.1f);
             b.applyImpulse(dx * J, dy * J, hx, hy);

@@ -18,9 +18,10 @@ final class Sfx {
     float volume = 0.9f;
 
     private SoundPool pool;
-    private final int[] ids = new int[9];
-    private static final int BOOM = 0, SHOT = 1, THUD = 2, SPLAT = 3, POP = 4, ZAP = 5, LAUNCH = 6, CLICK = 7, CRUNCH = 8;
-    private final long[] last = new long[9];
+    private final int[] ids = new int[12];
+    private static final int BOOM = 0, SHOT = 1, THUD = 2, SPLAT = 3, POP = 4, ZAP = 5, LAUNCH = 6, CLICK = 7, CRUNCH = 8,
+            BARK = 9, FART = 10, CHOMP = 11;
+    private final long[] last = new long[12];
     private final Random rnd = new Random();
 
     Sfx(File cacheDir) {
@@ -38,6 +39,9 @@ final class Sfx {
                 noise(r, 0.5f, 0.7f, 4f, 700f, 0.7f),
                 noise(r, 0.035f, 0.55f, 90f, 2600f, 0.1f),
                 noise(r, 0.22f, 0.9f, 16f, 380f, 0.7f),
+                voice(0.2f, 520f, 300f),
+                fart(r, 0.75f),
+                noise(r, 0.09f, 0.8f, 40f, 900f, 0.8f),
             };
             for (int i = 0; i < data.length; i++) {
                 File f = new File(cacheDir, "sfx" + i + ".wav");
@@ -68,6 +72,40 @@ final class Sfx {
         return out;
     }
 
+    /** A short animal call: a falling tone with a few harmonics (barks, oinks and squeaks by playback rate). */
+    static short[] voice(float secs, float f0, float f1) {
+        int n = (int) (secs * RATE);
+        short[] out = new short[n];
+        double ph = 0;
+        for (int i = 0; i < n; i++) {
+            float t = i / (float) n;
+            float env = (float) Math.sin(Math.PI * Math.min(1f, t * 1.15f)) * (1f - t * 0.4f);
+            ph += 2 * Math.PI * (f0 + (f1 - f0) * t) / RATE;
+            float v = (float) (Math.sin(ph) * 0.6 + Math.sin(ph * 2) * 0.3 + Math.sin(ph * 3) * 0.18 + Math.signum(Math.sin(ph)) * 0.12) * env;
+            out[i] = (short) (Math.max(-1f, Math.min(1f, v * 0.8f)) * 30000);
+        }
+        return out;
+    }
+
+    /** A low, fluttering raspberry. */
+    static short[] fart(Random r, float secs) {
+        int n = (int) (secs * RATE);
+        short[] out = new short[n];
+        double ph = 0;
+        float lp = 0f;
+        for (int i = 0; i < n; i++) {
+            float t = i / (float) n;
+            float env = Math.min(1f, t * 12f) * (1f - t) * (0.75f + 0.25f * (float) Math.sin(t * 60f));
+            float f = 95f - 35f * t + 12f * (float) Math.sin(t * 23f);
+            ph += 2 * Math.PI * f / RATE;
+            float pulse = (float) (ph % (2 * Math.PI)) < 1.2f ? 1f : -0.35f;
+            lp += ((r.nextFloat() * 2f - 1f) - lp) * 0.08f;
+            float v = (pulse * 0.75f + lp * 0.6f) * env;
+            out[i] = (short) (Math.max(-1f, Math.min(1f, v * 0.7f)) * 30000);
+        }
+        return out;
+    }
+
     private static void writeWav(File f, short[] d) throws Exception {
         DataOutputStream o = new DataOutputStream(new FileOutputStream(f));
         int bytes = d.length * 2;
@@ -82,13 +120,15 @@ final class Sfx {
         o.close();
     }
 
-    private void play(int s, float vol, long minGapMs, float pitchVar) {
+    private void play(int s, float vol, long minGapMs, float pitchVar) { play(s, vol, minGapMs, pitchVar, 1f); }
+
+    private void play(int s, float vol, long minGapMs, float pitchVar, float base) {
         if (!enabled || pool == null || ids[s] == 0) return;
         long now = System.currentTimeMillis();
         if (now - last[s] < minGapMs) return;
         last[s] = now;
         float v = Math.max(0f, Math.min(1f, vol * volume));
-        float rate = 1f + (rnd.nextFloat() * 2f - 1f) * pitchVar;
+        float rate = Math.max(0.5f, Math.min(2f, base * (1f + (rnd.nextFloat() * 2f - 1f) * pitchVar)));
         try { pool.play(ids[s], v, v, 1, 0, rate); } catch (Throwable ignored) { }
     }
 
@@ -101,6 +141,10 @@ final class Sfx {
     void zap() { play(ZAP, 0.8f, 60, 0.1f); }
     void launch() { play(LAUNCH, 0.7f, 60, 0.05f); }
     void click() { play(CLICK, 0.45f, 30, 0.03f); }
+    /** Animal call at a pitch (1 = dog, lower = pig, higher = rat). */
+    void call(float pitch) { play(BARK, 0.7f, 120, 0.05f, pitch); }
+    void fart() { play(FART, 0.85f, 300, 0.12f); }
+    void chomp() { play(CHOMP, 0.6f, 90, 0.2f); }
 
     void release() { if (pool != null) { try { pool.release(); } catch (Throwable ignored) { } pool = null; } }
 }

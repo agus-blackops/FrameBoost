@@ -298,45 +298,127 @@ final class Renderer {
         RB m = q.main();
         int col = tint(q, q.color, q.flash);
         switch (q.type) {
-            case Items.CRATE: case Items.BIGCRATE: case Items.PLANK: case Items.PLATFORM: case Items.STEEL: {
+            case Items.CRATE: case Items.BIGCRATE: {
                 Shape s = m.shapes.get(0);
-                boxShape(c, s, col, true);
-                local(c, m.x, m.y, m.a);
                 float hw = s.hl, hh = s.hh;
-                p.setStyle(Paint.Style.STROKE);
-                if (q.type == Items.CRATE || q.type == Items.BIGCRATE) {
-                    p.setStrokeWidth(3f); p.setColor(dark(col, 0.45f));
-                    c.drawLine(-hw + 4, -hh + 4, hw - 4, hh - 4, p);
-                    c.drawLine(hw - 4, -hh + 4, -hw + 4, hh - 4, p);
-                    p.setStrokeWidth(4f);
-                    rf.set(-hw + 3, -hh + 3, hw - 3, hh - 3);
-                    c.drawRect(rf, p);
-                    if (detail) { p.setStyle(Paint.Style.FILL); p.setColor(dark(col, 0.6f)); for (int sx = -1; sx <= 1; sx += 2) for (int sy = -1; sy <= 1; sy += 2) c.drawCircle(sx * (hw - 7), sy * (hh - 7), 2f, p); }
-                } else if (q.type == Items.PLANK) {
-                    p.setStrokeWidth(1.4f); p.setColor(dark(col, 0.4f));
-                    for (float x = -hw + 20; x < hw; x += 40) c.drawLine(x, -hh + 2, x + 10, hh - 2, p);
+                local(c, m.x, m.y, m.a);
+                orect(c, -hw, -hh, hw, hh, 2f, col);
+                // planks with a dark frame and a diagonal brace
+                p.setStyle(Paint.Style.STROKE); p.setStrokeCap(Paint.Cap.BUTT);
+                int seam = dark(col, 0.35f);
+                p.setColor(seam); p.setStrokeWidth(1.4f);
+                int planks = q.type == Items.BIGCRATE ? 5 : 3;
+                for (int i = 1; i < planks; i++) { float y = -hh + i * 2f * hh / planks; c.drawLine(-hw + 3f, y, hw - 3f, y, p); }
+                float fw = hw * 0.16f;
+                p.setStyle(Paint.Style.FILL); p.setColor(dark(col, 0.18f));
+                rf.set(-hw, -hh, hw, -hh + fw); c.drawRect(rf, p); rf.set(-hw, hh - fw, hw, hh); c.drawRect(rf, p);
+                rf.set(-hw, -hh, -hw + fw, hh); c.drawRect(rf, p); rf.set(hw - fw, -hh, hw, hh); c.drawRect(rf, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(fw * 0.9f); p.setColor(dark(col, 0.1f));
+                c.drawLine(-hw + fw, hh - fw, hw - fw, -hh + fw, p);
+                p.setStrokeWidth(1.2f); p.setColor(seam);
+                c.drawLine(-hw + fw, -hh + fw, hw - fw, -hh + fw, p); c.drawLine(-hw + fw, hh - fw, hw - fw, hh - fw, p);
+                if (detail) {
+                    p.setStyle(Paint.Style.FILL); p.setColor(0xFF6f7177);
+                    for (int sx = -1; sx <= 1; sx += 2) for (int sy = -1; sy <= 1; sy += 2) c.drawCircle(sx * (hw - fw * 0.5f), sy * (hh - fw * 0.5f), 1.6f, p);
+                    p.setColor(alpha(0xFFffffff, 0.14f)); rf.set(-hw + 2f, -hh + 2f, hw - 2f, -hh + fw * 0.6f); c.drawRect(rf, p);
+                }
+                p.setStrokeCap(Paint.Cap.ROUND);
+                c.restore();
+                break;
+            }
+            case Items.PLANK: {
+                Shape s = m.shapes.get(0);
+                float hw = s.hl, hh = s.hh;
+                local(c, m.x, m.y, m.a);
+                orect(c, -hw, -hh, hw, hh, 2f, col);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.1f); p.setColor(alpha(dark(col, 0.4f), 0.8f));
+                for (float x = -hw + 14f; x < hw - 6f; x += 46f) { c.drawLine(x, -hh + 3f, x + 22f, -hh + 4.5f, p); c.drawLine(x + 10f, hh - 3f, x + 34f, hh - 4f, p); }
+                p.setStyle(Paint.Style.FILL); p.setColor(dark(col, 0.45f));
+                c.drawCircle(-hw * 0.35f, 0f, 2f, p); c.drawCircle(hw * 0.55f, hh * 0.2f, 1.6f, p);
+                p.setColor(0xFF6f7177); c.drawCircle(-hw + 6f, 0f, 1.5f, p); c.drawCircle(hw - 6f, 0f, 1.5f, p);
+                c.restore();
+                break;
+            }
+            case Items.PLATFORM: {
+                Shape s = m.shapes.get(0);
+                float hw = s.hl, hh = s.hh;
+                local(c, m.x, m.y, m.a);
+                orect(c, -hw, -hh, hw, hh, 1.5f, col);
+                p.setStyle(Paint.Style.FILL);
+                // hazard stripes at both ends
+                for (int e = -1; e <= 1; e += 2) for (int i = 0; i < 4; i++) {
+                    float x0 = e < 0 ? -hw + i * 10f : hw - (i + 1) * 10f;
+                    p.setColor((i & 1) == 0 ? 0xFFf2c200 : 0xFF222222);
+                    poly[0] = x0; poly[1] = hh; poly[2] = x0 + 5f; poly[3] = -hh; poly[4] = x0 + 10f; poly[5] = -hh; poly[6] = x0 + 5f; poly[7] = hh;
+                    c.drawPoly(poly, 4, p);
+                }
+                p.setColor(alpha(0xFFffffff, 0.2f)); rf.set(-hw + 40f, -hh + 1.5f, hw - 40f, -hh + 4f); c.drawRect(rf, p);
+                p.setColor(dark(col, 0.4f)); for (float x = -hw + 52f; x < hw - 45f; x += 34f) c.drawCircle(x, 2f, 2f, p);
+                c.restore();
+                break;
+            }
+            case Items.STEEL: {
+                Shape s = m.shapes.get(0);
+                float hw = s.hl, hh = s.hh;
+                local(c, m.x, m.y, m.a);
+                // an I-beam section: web and two flanges
+                orect(c, -hw, -hh, hw, hh, 1.5f, dark(col, 0.12f));
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(col); rf.set(-hw, -hh, hw, -hh + hh * 0.38f); c.drawRect(rf, p); rf.set(-hw, hh - hh * 0.38f, hw, hh); c.drawRect(rf, p);
+                p.setColor(light(col, 0.25f)); rf.set(-hw + 1f, -hh + 1f, hw - 1f, -hh + 3.5f); c.drawRect(rf, p);
+                p.setColor(dark(col, 0.3f)); rf.set(-hw + 1f, hh - hh * 0.38f, hw - 1f, hh - hh * 0.38f + 2f); c.drawRect(rf, p);
+                p.setColor(dark(col, 0.45f));
+                for (float x = -hw + 8f; x < hw; x += 16f) { c.drawCircle(x, -hh + hh * 0.19f, 1.7f, p); c.drawCircle(x, hh - hh * 0.19f, 1.7f, p); }
+                c.restore();
+                break;
+            }
+            case Items.BARREL: case Items.XBARREL: {
+                Shape s = m.shapes.get(0);
+                float hw = s.hl, hh = s.hh;
+                local(c, m.x, m.y, m.a);
+                orect(c, -hw, -hh, hw, hh, 5f, col);
+                p.setStyle(Paint.Style.FILL);
+                // cylinder shading
+                p.setColor(dark(col, 0.25f)); rf.set(hw * 0.45f, -hh + 2f, hw - 1f, hh - 2f); c.drawRoundRect(rf, 4f, 4f, p);
+                p.setColor(alpha(0xFFffffff, 0.22f)); rf.set(-hw * 0.6f, -hh + 3f, -hw * 0.3f, hh - 3f); c.drawRoundRect(rf, 3f, 3f, p);
+                // ribs and lid
+                p.setColor(dark(col, 0.45f));
+                for (int i = -1; i <= 1; i += 2) { rf.set(-hw, i * hh * 0.45f - 2f, hw, i * hh * 0.45f + 2f); c.drawRect(rf, p); }
+                rf.set(-hw * 0.85f, -hh - 2.5f, hw * 0.85f, -hh + 1f); c.drawRoundRect(rf, 2f, 2f, p);
+                if (q.type == Items.XBARREL) {
+                    // hazard diamond with a flame
+                    p.setColor(0xFFffd23f);
+                    poly[0] = 0; poly[1] = -9f; poly[2] = 9f; poly[3] = 0; poly[4] = 0; poly[5] = 9f; poly[6] = -9f; poly[7] = 0;
+                    c.drawPoly(poly, 4, p);
+                    p.setColor(0xFF1b1b1b);
+                    poly[0] = -3.5f; poly[1] = 4f; poly[2] = 3.5f; poly[3] = 4f; poly[4] = 0.5f; poly[5] = -5f; c.drawPoly(poly, 3, p);
                 } else {
-                    p.setStyle(Paint.Style.FILL); p.setColor(dark(col, 0.4f));
-                    for (float x = -hw + 12; x < hw; x += (q.type == Items.PLATFORM ? 30f : 22f)) c.drawCircle(x, 0, 2.6f, p);
-                    p.setColor(alpha(0xFFffffff, 0.25f)); rf.set(-hw + 2, -hh + 2, hw - 2, -hh + 6); c.drawRect(rf, p);
+                    p.setColor(alpha(0xFFffffff, 0.75f)); rf.set(-hw * 0.5f, -3.5f, hw * 0.5f, 3.5f); c.drawRect(rf, p);
                 }
                 c.restore();
                 break;
             }
-            case Items.BARREL: case Items.XBARREL: case Items.TNT: {
+            case Items.TNT: {
                 Shape s = m.shapes.get(0);
-                boxShape(c, s, col, true);
-                local(c, m.x, m.y, m.a);
                 float hw = s.hl, hh = s.hh;
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(3f); p.setColor(dark(col, 0.45f));
-                if (q.type == Items.TNT) {
-                    for (int i = -1; i <= 1; i++) c.drawLine(i * hw * 0.55f, -hh + 2, i * hw * 0.55f, hh - 2, p);
-                    p.setStyle(Paint.Style.FILL); p.setColor(0xFFfff2cf); label(c, "TNT", hh * 0.9f);
-                } else {
-                    c.drawLine(-hw + 1, -hh * 0.55f, hw - 1, -hh * 0.55f, p);
-                    c.drawLine(-hw + 1, hh * 0.55f, hw - 1, hh * 0.55f, p);
-                    if (q.type == Items.XBARREL) { p.setStyle(Paint.Style.FILL); p.setColor(0xFFffd23f); label(c, "!", hh * 0.9f); }
+                local(c, m.x, m.y, m.a);
+                // three sticks taped together with a timer
+                float sw = hw * 2f / 3f;
+                for (int i = 0; i < 3; i++) {
+                    float x0 = -hw + i * sw;
+                    orect(c, x0 + 0.5f, -hh, x0 + sw - 0.5f, hh, sw * 0.45f, i == 1 ? light(col, 0.06f) : col);
+                    p.setStyle(Paint.Style.FILL); p.setColor(alpha(0xFFffffff, 0.2f)); rf.set(x0 + sw * 0.2f, -hh + 3f, x0 + sw * 0.4f, hh - 3f); c.drawRoundRect(rf, 2f, 2f, p);
                 }
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFF3a3a3a); rf.set(-hw - 1f, -hh * 0.3f, hw + 1f, hh * 0.15f); c.drawRect(rf, p);
+                p.setColor(0xFF15171b); rf.set(-hw * 0.45f, -hh * 0.25f, hw * 0.45f, hh * 0.1f); c.drawRoundRect(rf, 2f, 2f, p);
+                boolean blink = q.fuse >= 0f ? ((int) (time * 8f) & 1) == 0 : true;
+                p.setColor(blink ? 0xFFff3b30 : 0xFF5a1a16);
+                c.emissive(blink && q.fuse >= 0f);
+                label(c, "TNT", hh * 0.42f);
+                c.emissive(false);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.6f); p.setColor(0xFFe9e0c9);
+                c.drawLine(0f, -hh, 3f, -hh - 7f, p); c.drawLine(3f, -hh - 7f, -1f, -hh - 11f, p);
                 c.restore();
                 break;
             }
@@ -344,8 +426,11 @@ final class Renderer {
                 Shape s = m.shapes.get(0);
                 circleShape(c, s, col);
                 p.setStyle(Paint.Style.FILL);
-                p.setColor(alpha(0xFFffffff, 0.35f));
-                c.drawCircle(s.cx - s.r * 0.35f, s.cy - s.r * 0.38f, s.r * 0.22f, p);
+                // shade below, shine above
+                p.setColor(alpha(0xFF000000, 0.18f)); c.drawCircle(s.cx + s.r * 0.15f, s.cy + s.r * 0.18f, s.r * 0.82f, p);
+                p.setColor(col); c.drawCircle(s.cx - s.r * 0.08f, s.cy - s.r * 0.1f, s.r * 0.8f, p);
+                p.setColor(alpha(0xFFffffff, 0.4f));
+                c.drawCircle(s.cx - s.r * 0.38f, s.cy - s.r * 0.4f, s.r * 0.22f, p);
                 local(c, m.x, m.y, m.a);
                 if (q.type == Items.BOWLING) {
                     p.setColor(0xFF05070f);
@@ -353,81 +438,136 @@ final class Renderer {
                 } else if (q.type == Items.MELON) {
                     p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(3f); p.setColor(0xFF2a6e29);
                     for (int i = -1; i <= 1; i++) c.drawLine(i * 8f, -s.r + 3, i * 11f, s.r - 3, p);
+                    p.setStrokeWidth(2f); p.setColor(0xFF6b4a23); c.drawLine(0, -s.r, 2f, -s.r - 5f, p);
                 } else if (q.type == Items.BALL) {
-                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2.2f); p.setColor(dark(col, 0.4f));
-                    c.drawLine(-s.r + 2, 0, s.r - 2, 0, p);
+                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2.2f); p.setColor(0xFFf4f4f4);
+                    rf.set(-s.r + 2, -s.r * 0.35f, s.r - 2, s.r * 0.35f); c.drawArc(rf, 0f, 180f, false, p);
+                    c.drawLine(0, -s.r + 2, 0, s.r - 2, p);
                 }
                 c.restore();
                 if (q.type == Items.BALLOON) {
+                    p.setStyle(Paint.Style.FILL); p.setColor(dark(col, 0.3f));
+                    poly[0] = s.cx - 3f; poly[1] = s.cy + s.r + 4f; poly[2] = s.cx + 3f; poly[3] = s.cy + s.r + 4f; poly[4] = s.cx; poly[5] = s.cy + s.r - 1f; c.drawPoly(poly, 3, p);
                     p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.4f); p.setColor(0xCC333333);
-                    c.drawLine(s.cx, s.cy + s.r, s.cx + (float) Math.sin(time * 2f + q.id) * 6f, s.cy + s.r + 38f, p);
+                    c.drawLine(s.cx, s.cy + s.r + 4f, s.cx + (float) Math.sin(time * 2f + q.id) * 6f, s.cy + s.r + 40f, p);
                 }
                 break;
             }
             case Items.WHEEL: case Items.MOTOR: {
                 Shape s = m.shapes.get(0);
                 p.setStyle(Paint.Style.FILL);
-                p.setColor(0xFF1f2126); c.drawCircle(s.cx, s.cy, s.r, p);
+                p.setColor(0xFF111215); c.drawCircle(s.cx, s.cy, s.r + 1.4f, p);
+                p.setColor(0xFF24262b); c.drawCircle(s.cx, s.cy, s.r, p);
                 local(c, m.x, m.y, m.a);
-                p.setColor(0xFF363a42);
-                for (int i = 0; i < 10; i++) { float a = i * 0.6283f; c.drawCircle((float) Math.cos(a) * (s.r - 3.5f), (float) Math.sin(a) * (s.r - 3.5f), 2.6f, p); }
-                p.setColor(q.motorized ? 0xFFf2b134 : 0xFF9aa3ad); c.drawCircle(0, 0, s.r * 0.55f, p);
-                p.setColor(0xFF4a525c); c.drawCircle(0, 0, s.r * 0.2f, p);
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(dark(q.motorized ? 0xFFf2b134 : 0xFF9aa3ad, 0.5f));
-                for (int i = 0; i < 5; i++) { float a = i * 1.2566f; c.drawLine(0, 0, (float) Math.cos(a) * s.r * 0.52f, (float) Math.sin(a) * s.r * 0.52f, p); }
+                p.setColor(0xFF34373e);
+                for (int i = 0; i < 12; i++) { float a = i * 0.5236f; c.drawCircle((float) Math.cos(a) * (s.r - 2.5f), (float) Math.sin(a) * (s.r - 2.5f), 2.4f, p); }
+                int hub = q.motorized ? 0xFFf2b134 : 0xFFb3bac3;
+                p.setColor(dark(hub, 0.5f)); c.drawCircle(0, 0, s.r * 0.6f, p);
+                p.setColor(hub); c.drawCircle(0, 0, s.r * 0.52f, p);
+                p.setColor(dark(hub, 0.35f));
+                for (int i = 0; i < 5; i++) { float a = i * 1.2566f; c.drawCircle((float) Math.cos(a) * s.r * 0.33f, (float) Math.sin(a) * s.r * 0.33f, s.r * 0.08f, p); }
+                p.setColor(light(hub, 0.3f)); c.drawCircle(0, 0, s.r * 0.16f, p);
+                if (q.motorized) { p.setColor(0xFF2b2b30); rf.set(-s.r * 0.14f, -s.r * 0.14f, s.r * 0.14f, s.r * 0.14f); c.drawRect(rf, p); }
                 c.restore();
+                p.setColor(alpha(0xFFffffff, 0.1f)); c.drawCircle(s.cx - s.r * 0.3f, s.cy - s.r * 0.3f, s.r * 0.5f, p);
                 break;
             }
             case Items.GRENADE: {
-                circleShape(c, m.shapes.get(0), col);
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2.6f); p.setColor(0xFFb9bcc2);
                 Shape s = m.shapes.get(0);
-                c.drawLine(s.cx, s.cy - 6f, s.cx + 5f, s.cy - 12f, p);
+                local(c, m.x, m.y, m.a);
+                float r = s.r;
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(dark(col, 0.6f)); rf.set(-r - 1.3f, -r * 1.15f - 1.3f, r + 1.3f, r * 1.15f + 1.3f); c.drawOval(rf, p);
+                p.setColor(col); rf.set(-r, -r * 1.15f, r, r * 1.15f); c.drawOval(rf, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(dark(col, 0.4f));
+                c.drawLine(-r, 0, r, 0, p); c.drawLine(0, -r * 1.1f, 0, r * 1.1f, p);
+                c.drawLine(-r * 0.8f, -r * 0.55f, r * 0.8f, -r * 0.55f, p); c.drawLine(-r * 0.8f, r * 0.55f, r * 0.8f, r * 0.55f, p);
+                p.setStyle(Paint.Style.FILL); p.setColor(0xFF8c9096); rf.set(-r * 0.45f, -r * 1.55f, r * 0.45f, -r * 1.05f); c.drawRect(rf, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.6f); p.setColor(0xFFb9bcc2);
+                c.drawLine(r * 0.3f, -r * 1.4f, r * 1.2f, -r * 0.3f, p);
+                if (q.fuse < 0f) { p.setStrokeWidth(1.2f); p.setColor(0xFFd8b23a); c.drawCircle(-r * 0.8f, -r * 1.5f, r * 0.35f, p); }
+                c.restore();
                 break;
             }
             case Items.DYNAMITE: {
-                Shape s = m.shapes.get(0);
                 local(c, m.x, m.y, m.a);
                 p.setStyle(Paint.Style.FILL);
-                for (int i = -1; i <= 1; i++) { p.setColor(dark(col, 0.5f)); rf.set(-18f, i * 7f - 4.4f, 18f, i * 7f + 4.4f); c.drawRoundRect(rf, 3, 3, p); p.setColor(col); rf.set(-17f, i * 7f - 3.2f, 17f, i * 7f + 3.2f); c.drawRoundRect(rf, 3, 3, p); }
+                for (int i = -1; i <= 1; i++) { p.setColor(dark(col, 0.55f)); rf.set(-18f, i * 7f - 4.4f, 18f, i * 7f + 4.4f); c.drawRoundRect(rf, 3, 3, p); p.setColor(col); rf.set(-17f, i * 7f - 3.2f, 17f, i * 7f + 3.2f); c.drawRoundRect(rf, 3, 3, p); p.setColor(alpha(0xFFffffff, 0.22f)); rf.set(-15f, i * 7f - 2.6f, 15f, i * 7f - 1.2f); c.drawRect(rf, p); }
+                p.setColor(0xFF3a3a3a); rf.set(-6f, -11f, 0f, 11f); c.drawRect(rf, p);
                 p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(0xFFe9e0c9);
-                c.drawLine(16f, -2f, 24f, -12f, p);
+                c.drawLine(16f, -2f, 22f, -8f, p); c.drawLine(22f, -8f, 24f, -14f, p);
                 c.restore();
                 break;
             }
             case Items.C4: {
-                boxShape(c, m.shapes.get(0), col, true);
-                boolean on = ((int) (time * 2.5f) & 1) == 0;
+                Shape s = m.shapes.get(0);
+                float hw = s.hl, hh = s.hh;
+                local(c, m.x, m.y, m.a);
+                orect(c, -hw, -hh, hw, hh, 2f, col);
                 p.setStyle(Paint.Style.FILL);
+                p.setColor(dark(col, 0.2f)); rf.set(-hw + 2f, -hh + 2f, -hw * 0.1f, hh - 2f); c.drawRect(rf, p);
+                p.setColor(0xFF15171b); rf.set(hw * 0.05f, -hh + 2f, hw - 2f, hh * 0.25f); c.drawRect(rf, p);
+                boolean on = ((int) (time * 2.5f) & 1) == 0;
                 p.setColor(on ? 0xFFff3b30 : 0xFF5a1a16);
                 c.emissive(on);
-                c.drawCircle(m.x, m.y - 2f, 2.8f, p);
+                c.drawCircle(hw * 0.5f, -hh * 0.35f, 1.8f, p);
                 c.emissive(false);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.2f);
+                p.setColor(0xFFd33a2c); c.drawLine(-hw * 0.6f, -hh, -hw * 0.9f, -hh - 5f, p);
+                p.setColor(0xFF3a7bd5); c.drawLine(-hw * 0.3f, -hh, -hw * 0.1f, -hh - 5f, p);
+                c.restore();
                 if (on) c.light(m.x, m.y - 4f, 60f, 0xFFff3b30, 0.6f);
                 break;
             }
             case Items.KNIFE: case Items.SWORD: {
-                for (Shape s : m.shapes) capsuleShape(c, s, s.color);
+                boolean sw = q.type == Items.SWORD;
+                local(c, m.x, m.y, m.a);
+                float bl0 = sw ? -32f : -10f, bl1 = sw ? 64f : 24f, bw = sw ? 3.6f : 3.4f;
+                // blade: a tapered polygon with an edge shine
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFF6b7380);
+                poly[0] = bl0; poly[1] = -bw - 1.2f; poly[2] = bl1 - bw * 2.5f; poly[3] = -bw - 1.2f; poly[4] = bl1 + 1.5f; poly[5] = 0f; poly[6] = bl1 - bw * 2.5f; poly[7] = bw + 1.2f; poly[8] = bl0; poly[9] = bw + 1.2f;
+                c.drawPoly(poly, 5, p);
+                p.setColor(0xFFdfe4ea);
+                poly[0] = bl0; poly[1] = -bw; poly[2] = bl1 - bw * 2.5f; poly[3] = -bw; poly[4] = bl1; poly[5] = 0f; poly[6] = bl1 - bw * 2.5f; poly[7] = bw; poly[8] = bl0; poly[9] = bw;
+                c.drawPoly(poly, 5, p);
+                p.setColor(0xFFf7f9fc); rf.set(bl0 + 2f, -bw, bl1 - bw * 3f, -bw * 0.35f); c.drawRect(rf, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(0xFFa9b0ba); c.drawLine(bl0 + 2f, 0.5f, bl1 - bw * 3f, 0.5f, p);
+                // guard, handle and pommel
+                float gx = bl0 - 1.5f, hl0 = sw ? -52f : -22f;
+                orect(c, gx - 2.5f, sw ? -9f : -6f, gx + 1f, sw ? 9f : 6f, 1.2f, sw ? 0xFFc9a23a : 0xFF3a3d44);
+                orect(c, hl0, -3.4f, gx - 2.5f, 3.4f, 2.5f, 0xFF5b3a1e);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(0xFF3a2410);
+                for (float x = hl0 + 3f; x < gx - 3f; x += 3.5f) c.drawLine(x, -3f, x + 1.5f, 3f, p);
+                if (sw) { p.setStyle(Paint.Style.FILL); p.setColor(0xFF8a6d1f); c.drawCircle(hl0 - 2f, 0, 3.6f, p); p.setColor(0xFFc9a23a); c.drawCircle(hl0 - 2f, 0, 2.6f, p); }
+                c.restore();
                 break;
             }
             case Items.THRUSTER: {
                 Shape s = m.shapes.get(0);
-                boxShape(c, s, col, true);
+                float hw = s.hl, hh = s.hh;
                 local(c, m.x, m.y, m.a);
+                orect(c, -hw, -hh, hw, hh, hw * 0.7f, col);
                 p.setStyle(Paint.Style.FILL);
-                p.setColor(0xFFd33a2c); c.drawCircle(0, -s.hh, s.hl, p);
-                p.setColor(0xFF3a3f48); rf.set(-s.hl * 0.8f, s.hh - 2, s.hl * 0.8f, s.hh + 8); c.drawRect(rf, p);
-                p.setColor(q.thrust ? 0xFF6dff8a : 0xFF555b66); c.drawCircle(0, 0, 2.8f, p);
-                if (q.thrust) { c.emissive(true); p.setColor(0xFFffe27a); poly[0] = -5; poly[1] = s.hh + 8; poly[2] = 5; poly[3] = s.hh + 8; poly[4] = 0; poly[5] = s.hh + 24 + (float) Math.sin(time * 50f) * 5f; c.drawPoly(poly, 3, p); c.emissive(false); }
+                p.setColor(alpha(0xFFffffff, 0.3f)); rf.set(-hw * 0.6f, -hh + 3f, -hw * 0.2f, hh - 3f); c.drawRoundRect(rf, 2f, 2f, p);
+                p.setColor(0xFFd33a2c); rf.set(-hw, -hh * 0.55f, hw, -hh * 0.3f); c.drawRect(rf, p);
+                // nose cone and nozzle
+                p.setColor(0xFFd33a2c); poly[0] = -hw; poly[1] = -hh + 1f; poly[2] = hw; poly[3] = -hh + 1f; poly[4] = 0; poly[5] = -hh - hw * 1.3f; c.drawPoly(poly, 3, p);
+                p.setColor(0xFF3a3f48); poly[0] = -hw * 0.6f; poly[1] = hh; poly[2] = hw * 0.6f; poly[3] = hh; poly[4] = hw * 1.05f; poly[5] = hh + 8f; poly[6] = -hw * 1.05f; poly[7] = hh + 8f; c.drawPoly(poly, 4, p);
+                p.setColor(q.thrust ? 0xFF6dff8a : 0xFF555b66); c.drawCircle(0, hh * 0.25f, 2.4f, p);
+                if (q.thrust) { c.emissive(true); p.setColor(0xFFffe27a); poly[0] = -5; poly[1] = hh + 8; poly[2] = 5; poly[3] = hh + 8; poly[4] = 0; poly[5] = hh + 24 + (float) Math.sin(time * 50f) * 5f; c.drawPoly(poly, 3, p); c.emissive(false); }
                 c.restore();
                 break;
             }
             case Items.GUN_PISTOL: case Items.GUN_RIFLE: case Items.GUN_MG: {
-                for (Shape s : m.shapes) { if (s.type == Shape.CAPSULE) capsuleShape(c, s, s.color); else boxShape(c, s, s.color, true); }
-                if (q.firing) { p.setStyle(Paint.Style.FILL); p.setColor(0xFFff5a3a); c.drawCircle(m.x, m.y, 3f, p); }
+                local(c, m.x, m.y, m.a);
+                drawGun(c, (int) q.param, q.hw, q.firing, q.dead ? 0 : 1);
+                c.restore();
                 break;
             }
             case Items.BLOCK: drawBlock(c, q, col); break;
+            case Items.DOG: case Items.PIG: case Items.RAT: drawAnimal(c, q, col); break;
+            case Items.POOP: drawPoop(c, q, col); break;
             case Items.TURRET: drawTurret(c, q); break;
             case Items.DRONE: drawDrone(c, q); break;
             case Items.ROPE_ITEM: {
@@ -437,6 +577,121 @@ final class Renderer {
             default: for (RB b : q.bodies) for (Shape s : b.shapes) { if (s.type == Shape.CIRCLE) circleShape(c, s, col); else if (s.type == Shape.BOX) boxShape(c, s, col, true); else capsuleShape(c, s, col); }
         }
         if (m.frozen) pin(c, m.x, m.y);
+    }
+
+    private void limbLine(Draw2D c, float x0, float y0, float x1, float y1, float wdt, int col) {
+        p.setStyle(Paint.Style.STROKE);
+        p.setColor(dark(col, 0.6f)); p.setStrokeWidth(wdt + 2.2f); c.drawLine(x0, y0, x1, y1, p);
+        p.setColor(col); p.setStrokeWidth(wdt); c.drawLine(x0, y0, x1, y1, p);
+    }
+
+    /** Dogs, pigs and rats, drawn in the body frame and mirrored to face their head. */
+    private void drawAnimal(Draw2D c, Prop q, int col) {
+        RB m = q.main();
+        float[] d = q.dims();
+        float hw = d[0], hh = d[1], hr = d[2], hx = Math.abs(d[3]), hy = d[4], leg = d[5], fr = d[6];
+        int k = q.type - Items.DOG;
+        local(c, m.x, m.y, m.a);
+        c.scale(q.face, 1f);
+        float ph = q.legPhase, sw = q.dead ? 0f : (float) Math.sin(ph) * leg * 0.5f, sw2 = q.dead ? 0f : (float) Math.sin(ph + Math.PI) * leg * 0.5f;
+        float lift = q.dead ? 0f : Math.max(0f, (float) -Math.cos(ph)) * leg * 0.25f, lift2 = q.dead ? 0f : Math.max(0f, (float) Math.cos(ph)) * leg * 0.25f;
+        float lw = k == Fauna.PIG ? fr * 1.9f : (k == Fauna.RAT ? fr * 1.1f : fr * 1.5f);
+        float fy = hh + leg - fr;
+        int back = dark(col, 0.22f);
+        // far legs
+        limbLine(c, hw * 0.62f, hh * 0.5f, hw * 0.72f + sw2, fy - lift2, lw, back);
+        limbLine(c, -hw * 0.62f, hh * 0.5f, -hw * 0.72f + sw, fy - lift, lw, back);
+        // tail
+        float wag = q.dead ? 0f : (float) Math.sin(time * (q.mood.equals("Comiendo") ? 14f : 6f)) * 5f;
+        p.setStyle(Paint.Style.STROKE);
+        if (k == Fauna.DOG) { limbLine(c, -hw, -hh * 0.4f, -hw - 10f, -hh - 9f + wag, 3.2f, col); }
+        else if (k == Fauna.PIG) {
+            p.setColor(dark(col, 0.25f)); p.setStrokeWidth(2.4f);
+            rf.set(-hw - 9f, -hh * 0.6f - 4f, -hw - 1f, -hh * 0.6f + 4f); c.drawArc(rf, 0f, 300f, false, p);
+        } else {
+            p.setColor(0xFFd9a3a8); p.setStrokeWidth(1.6f);
+            c.drawLine(-hw, 0f, -hw - 9f, hh * 0.8f + wag * 0.3f, p); c.drawLine(-hw - 9f, hh * 0.8f + wag * 0.3f, -hw - 20f, hh * 0.4f, p);
+        }
+        // body
+        p.setStyle(Paint.Style.FILL);
+        float rr = hh * 0.85f;
+        p.setColor(dark(col, 0.6f)); rf.set(-hw - 1.4f, -hh - 1.4f, hw + 1.4f, hh + 1.4f); c.drawRoundRect(rf, rr, rr, p);
+        p.setColor(col); rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, rr, rr, p);
+        if (detail) {
+            p.setColor(light(col, 0.18f)); rf.set(-hw * 0.8f, hh * 0.25f, hw * 0.8f, hh); c.drawRoundRect(rf, rr * 0.6f, rr * 0.6f, p);
+            p.setColor(alpha(0xFFffffff, 0.16f)); rf.set(-hw * 0.7f, -hh * 0.85f, hw * 0.6f, -hh * 0.45f); c.drawRoundRect(rf, rr * 0.4f, rr * 0.4f, p);
+            if (k == Fauna.DOG) { p.setColor(dark(col, 0.3f)); c.drawCircle(-hw * 0.3f, -hh * 0.2f, hh * 0.55f, p); }
+        }
+        // near legs
+        limbLine(c, hw * 0.72f, hh * 0.5f, hw * 0.72f + sw, fy - lift, lw, col);
+        limbLine(c, -hw * 0.72f, hh * 0.5f, -hw * 0.72f + sw2, fy - lift2, lw, col);
+        // head
+        p.setStyle(Paint.Style.FILL);
+        float bob = q.eatT > 0f ? (float) Math.abs(Math.sin(time * 16f)) * 2.5f : 0f;
+        float cy = hy + bob;
+        if (k == Fauna.PIG) {
+            p.setColor(dark(col, 0.25f)); poly[0] = hx - hr * 0.5f; poly[1] = cy - hr * 0.6f; poly[2] = hx - hr * 0.1f; poly[3] = cy - hr * 1.35f; poly[4] = hx + hr * 0.25f; poly[5] = cy - hr * 0.7f; c.drawPoly(poly, 3, p);
+        } else if (k == Fauna.RAT) {
+            p.setColor(0xFFd9a3a8); c.drawCircle(hx - hr * 0.3f, cy - hr * 0.95f, hr * 0.62f, p);
+        }
+        p.setColor(dark(col, 0.6f)); c.drawCircle(hx, cy, hr + 1.4f, p);
+        p.setColor(col); c.drawCircle(hx, cy, hr, p);
+        if (k == Fauna.DOG) {
+            p.setColor(dark(col, 0.6f)); rf.set(hx + hr * 0.3f, cy - hr * 0.1f - 1.4f, hx + hr * 1.55f + 1.4f, cy + hr * 0.6f + 1.4f); c.drawRoundRect(rf, hr * 0.3f, hr * 0.3f, p);
+            p.setColor(light(col, 0.12f)); rf.set(hx + hr * 0.3f, cy - hr * 0.1f, hx + hr * 1.55f, cy + hr * 0.6f); c.drawRoundRect(rf, hr * 0.3f, hr * 0.3f, p);
+            p.setColor(0xFF1b1b1b); c.drawCircle(hx + hr * 1.5f, cy + hr * 0.05f, hr * 0.22f, p);
+            p.setColor(dark(col, 0.35f)); rf.set(hx - hr * 0.75f, cy - hr * 0.9f, hx - hr * 0.1f, cy + hr * 0.5f); c.drawRoundRect(rf, hr * 0.3f, hr * 0.3f, p);
+        } else if (k == Fauna.PIG) {
+            p.setColor(dark(col, 0.12f)); rf.set(hx + hr * 0.55f, cy - hr * 0.3f, hx + hr * 1.3f, cy + hr * 0.5f); c.drawRoundRect(rf, hr * 0.25f, hr * 0.25f, p);
+            p.setColor(dark(col, 0.45f)); c.drawCircle(hx + hr * 1.05f, cy, hr * 0.1f, p); c.drawCircle(hx + hr * 1.05f, cy + hr * 0.25f, hr * 0.1f, p);
+        } else {
+            p.setColor(col); poly[0] = hx + hr * 0.6f; poly[1] = cy - hr * 0.55f; poly[2] = hx + hr * 2.0f; poly[3] = cy + hr * 0.15f; poly[4] = hx + hr * 0.6f; poly[5] = cy + hr * 0.75f; c.drawPoly(poly, 3, p);
+            p.setColor(0xFFd9a3a8); c.drawCircle(hx + hr * 1.95f, cy + hr * 0.12f, hr * 0.22f, p);
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(0.8f); p.setColor(0x99222222);
+            c.drawLine(hx + hr * 1.5f, cy, hx + hr * 2.6f, cy - hr * 0.3f, p); c.drawLine(hx + hr * 1.5f, cy + hr * 0.2f, hx + hr * 2.6f, cy + hr * 0.4f, p);
+            p.setStyle(Paint.Style.FILL);
+        }
+        // eye and mouth
+        float ex = hx + hr * 0.35f, ey = cy - hr * 0.3f;
+        if (q.dead) {
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.4f); p.setColor(0xFF1b1b1b);
+            float e = hr * 0.18f; c.drawLine(ex - e, ey - e, ex + e, ey + e, p); c.drawLine(ex - e, ey + e, ex + e, ey - e, p);
+        } else {
+            p.setColor(0xFF1b1b1b); c.drawCircle(ex, ey, Math.max(1.2f, hr * 0.15f), p);
+            if (q.eatT > 0f && ((int) (time * 8f) & 1) == 0) {
+                p.setColor(0xFF7d1a1a); c.drawCircle(hx + hr * (k == Fauna.RAT ? 1.4f : 1.1f), cy + hr * 0.6f, hr * 0.25f, p);
+            }
+        }
+        c.restore();
+    }
+
+    /** A soft-serve swirl with stink. */
+    private void drawPoop(Draw2D c, Prop q, int col) {
+        RB m = q.main();
+        float hw = q.hw, hh = q.hh;
+        local(c, m.x, m.y, m.a);
+        p.setStyle(Paint.Style.FILL);
+        int out = dark(col, 0.55f);
+        float[][] tiers = {{-hw, hh * 0.05f, hw, hh}, {-hw * 0.72f, -hh * 0.55f, hw * 0.72f, hh * 0.35f}, {-hw * 0.42f, -hh * 1.05f, hw * 0.42f, -hh * 0.3f}};
+        for (float[] t : tiers) { p.setColor(out); rf.set(t[0] - 1.2f, t[1] - 1.2f, t[2] + 1.2f, t[3] + 1.2f); c.drawOval(rf, p); }
+        for (int i = 0; i < tiers.length; i++) {
+            float[] t = tiers[i];
+            p.setColor(i == 1 ? light(col, 0.06f) : col); rf.set(t[0], t[1], t[2], t[3]); c.drawOval(rf, p);
+        }
+        poly[0] = -hw * 0.2f; poly[1] = -hh * 0.95f; poly[2] = hw * 0.25f; poly[3] = -hh * 0.9f; poly[4] = hw * 0.05f; poly[5] = -hh * 1.45f;
+        p.setColor(col); c.drawPoly(poly, 3, p);
+        p.setColor(alpha(0xFFffffff, 0.22f)); c.drawCircle(-hw * 0.4f, -hh * 0.1f, hh * 0.22f, p);
+        c.restore();
+        if (q.stinkT > 0f && detail) {
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.4f);
+            p.setColor(alpha(0xFF8fa23e, Math.min(0.6f, q.stinkT * 0.05f)));
+            for (int i = -1; i <= 1; i++) {
+                float bx = m.x + i * hw * 0.6f, t = time * 3f + i;
+                float o = (float) Math.sin(t) * 3f;
+                c.drawLine(bx, m.y - hh * 1.6f, bx + o, m.y - hh * 2.4f, p);
+                c.drawLine(bx + o, m.y - hh * 2.4f, bx - o, m.y - hh * 3.2f, p);
+            }
+        }
     }
 
     /** Building blocks by material, fragments with cracks, and flesh/metal chunks. */
@@ -485,6 +740,70 @@ final class Renderer {
         }
         p.setStrokeCap(Paint.Cap.ROUND);
         c.restore();
+    }
+
+    /** Rounded rectangle with the dark outline used everywhere (current transform). */
+    private void orect(Draw2D c, float x0, float y0, float x1, float y1, float rad, int col) {
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(dark(col, 0.6f)); rf.set(x0 - 1.3f, y0 - 1.3f, x1 + 1.3f, y1 + 1.3f); c.drawRoundRect(rf, rad + 1f, rad + 1f, p);
+        p.setColor(col); rf.set(x0, y0, x1, y1); c.drawRoundRect(rf, rad, rad, p);
+    }
+
+    /**
+     * Guns in their own frame (barrel along +x, grip below): 0 pistol, 1 rifle, 2 machine gun. hl is the half
+     * length of the physical barrel. Shared by the loose guns and the ones soldiers carry.
+     */
+    void drawGun(Draw2D c, int k, float hl, boolean firing, int alive) {
+        int metal = 0xFF4a4f57, dark = 0xFF2b2d33, light = 0xFF7a818c;
+        p.setStyle(Paint.Style.FILL);
+        if (k == 0) {
+            orect(c, -hl * 0.95f, 1.5f, hl * 0.55f, 5f, 1f, dark);                    // frame
+            poly[0] = -hl * 0.9f; poly[1] = 3f; poly[2] = -hl * 0.25f; poly[3] = 3f; poly[4] = -hl * 0.4f; poly[5] = 15f; poly[6] = -hl * 1.0f; poly[7] = 14f;
+            p.setColor(0xFF15171b); c.drawPoly(poly, 4, p);
+            poly[0] = -hl * 0.82f; poly[1] = 4f; poly[2] = -hl * 0.33f; poly[3] = 4f; poly[4] = -hl * 0.45f; poly[5] = 13.5f; poly[6] = -hl * 0.92f; poly[7] = 12.8f;
+            p.setColor(0xFF3b2a1c); c.drawPoly(poly, 4, p);
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.4f); p.setColor(0xFF15171b);
+            rf.set(-hl * 0.3f, 3f, hl * 0.15f, 10f); c.drawArc(rf, 0f, 180f, false, p);
+            orect(c, -hl, -5f, hl, 1.8f, 1.2f, metal);                                 // slide
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(0.9f); p.setColor(dark);
+            for (int i = 0; i < 4; i++) c.drawLine(-hl * 0.85f + i * 2.2f, -4f, -hl * 0.85f + i * 2.2f, 0.8f, p);
+            p.setStyle(Paint.Style.FILL); p.setColor(light); rf.set(-hl * 0.6f, -4.6f, hl * 0.9f, -3.4f); c.drawRect(rf, p);
+            p.setColor(0xFF15171b); c.drawCircle(hl, -1.6f, 1.3f, p);
+        } else if (k == 1) {
+            poly[0] = -hl * 1.3f; poly[1] = -3.5f; poly[2] = -hl * 0.5f; poly[3] = -3.5f; poly[4] = -hl * 0.5f; poly[5] = 3.5f; poly[6] = -hl * 1.3f; poly[7] = 9f;
+            p.setColor(0xFF15171b); c.drawPoly(poly, 4, p);
+            poly[0] = -hl * 1.27f; poly[1] = -2.4f; poly[2] = -hl * 0.52f; poly[3] = -2.4f; poly[4] = -hl * 0.52f; poly[5] = 2.6f; poly[6] = -hl * 1.27f; poly[7] = 7.8f;
+            p.setColor(0xFF5b3a1e); c.drawPoly(poly, 4, p);                           // wooden stock
+            orect(c, hl * 0.25f, -2.2f, hl + 7f, 0.6f, 0.8f, dark);                    // barrel
+            orect(c, -hl * 0.05f, -4f, hl * 0.6f, 3f, 1.5f, 0xFF5b3a1e);               // handguard
+            orect(c, -hl * 0.6f, -5f, hl * 0.05f, 3.5f, 1.2f, metal);                  // receiver
+            orect(c, -hl * 0.12f, 3f, hl * 0.12f, 13f, 2f, dark);                      // magazine
+            orect(c, -hl * 0.5f, 3f, -hl * 0.32f, 12f, 1.5f, 0xFF15171b);              // grip
+            orect(c, -hl * 0.45f, -10.5f, hl * 0.15f, -7f, 1.6f, 0xFF15171b);          // scope
+            p.setColor(0xFF15171b); rf.set(-hl * 0.3f, -7.5f, -hl * 0.22f, -5f); c.drawRect(rf, p); rf.set(hl * 0.0f, -7.5f, hl * 0.08f, -5f); c.drawRect(rf, p);
+            p.setColor(alive > 0 ? 0xFF6fd6ff : 0xFF3b4652); c.drawCircle(hl * 0.15f, -8.7f, 1.4f, p);
+            p.setColor(light); rf.set(-hl * 0.55f, -4.4f, hl * 0.0f, -3.4f); c.drawRect(rf, p);
+        } else {
+            float spin = firing ? (float) Math.sin(time * 60f) * 1.2f : 0f;
+            orect(c, -hl * 0.35f, 6f, hl * 0.12f, 15f, 1.2f, 0xFF4d5a2f);              // ammo box
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.5f); p.setColor(0xFFc9a23a);
+            for (int i = 0; i < 4; i++) c.drawLine(-hl * 0.3f + i * 3f, 6f, -hl * 0.2f + i * 3f, 2f, p);
+            for (int i = -1; i <= 1; i++) orect(c, hl * 0.15f, i * 3.2f - 1.2f + spin * (i == 0 ? 0f : 1f), hl + 5f, i * 3.2f + 1.2f + spin * (i == 0 ? 0f : 1f), 0.8f, i == 0 ? metal : dark);
+            orect(c, hl * 0.85f, -5.5f, hl * 0.98f, 5.5f, 1f, 0xFF15171b);             // barrel collar
+            orect(c, -hl * 0.8f, -7f, hl * 0.2f, 6f, 2.5f, metal);                     // body
+            orect(c, -hl * 1.0f, -3f, -hl * 0.78f, 9f, 1.5f, 0xFF15171b);              // rear grip
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2.2f); p.setColor(0xFF15171b);
+            c.drawLine(-hl * 0.55f, -7f, -hl * 0.45f, -12f, p); c.drawLine(-hl * 0.45f, -12f, -hl * 0.05f, -12f, p); c.drawLine(-hl * 0.05f, -12f, hl * 0.02f, -7f, p);
+            p.setStyle(Paint.Style.FILL); p.setColor(light); rf.set(-hl * 0.7f, -6f, hl * 0.1f, -4.6f); c.drawRect(rf, p);
+        }
+        if (firing) {
+            float mx = (k == 0 ? hl + 1f : hl + 7f);
+            c.emissive(true);
+            p.setStyle(Paint.Style.FILL); p.setColor(0xFFffd27a);
+            float fl = 6f + (float) Math.abs(Math.sin(time * 70f)) * 6f;
+            poly[0] = mx; poly[1] = -3f; poly[2] = mx + fl; poly[3] = -1f; poly[4] = mx; poly[5] = 1f; c.drawPoly(poly, 3, p);
+            c.emissive(false);
+        }
     }
 
     private void label(Draw2D c, String t, float size) {
@@ -903,17 +1222,16 @@ final class Renderer {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeCap(Paint.Cap.ROUND);
         if (b.kind == Person.SOLDIER) {
-            float bx = hx - ux * 24f * s, by = hy - uy * 24f * s, ex = hx + ux * 30f * s, ey = hy + uy * 30f * s;
-            p.setColor(bodyColor(b, 0xFF1d2024)); p.setStrokeWidth(6.5f * s);
-            c.drawLine(bx, by, hx + ux * 8f * s, hy + uy * 8f * s, p);
-            p.setStrokeWidth(3.6f * s);
-            c.drawLine(bx, by, ex, ey, p);
-            p.setColor(bodyColor(b, 0xFF5b4024)); p.setStrokeWidth(6f * s);
-            c.drawLine(bx - ux * 10f * s, by - uy * 10f * s, bx, by, p);
-            p.setColor(bodyColor(b, 0xFF2b2b30)); p.setStrokeWidth(4f * s);
-            float nx = -uy * b.dir, ny = ux * b.dir;
-            if (ny < 0) { nx = -nx; ny = -ny; }
-            c.drawLine(hx - ux * 6f * s, hy - uy * 6f * s, hx - ux * 8f * s + nx * 10f * s, hy - uy * 8f * s + ny * 10f * s, p);
+            // the same rifle model as the loose one, gripped at the hand
+            c.save();
+            c.translate(hx, hy);
+            c.rotate((float) Math.toDegrees(Math.atan2(uy, ux)));
+            if (ux < 0) c.scale(1f, -1f);
+            c.scale(s * 0.85f, s * 0.85f);
+            c.translate(11f, -8f);
+            drawGun(c, 1, 25f, false, b.dead ? 0 : 1);
+            c.restore();
+            p.setStyle(Paint.Style.STROKE);
         } else {
             RB ch = b.rb[Person.CHEST];
             float tx = ch.localToWorldX(-b.dir * 13f * s, 6f * s), ty = ch.localToWorldY(-b.dir * 13f * s, 6f * s);

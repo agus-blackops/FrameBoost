@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-/** Eighteen goals for the sandbox, with a pop-up when one unlocks. Saved in Settings.ach. */
+/** Nineteen goals for the sandbox, with a pop-up when one unlocks. Saved in Settings.ach. */
 final class Achievements {
     static final String[][] LIST = {
         {"Primer trastazo", "Provoca tu primera explosión"},
@@ -25,6 +25,7 @@ final class Achievements {
         {"Demoledor", "Derriba 10 uniones de construcciones"},
         {"Carnicero", "Haz pedazos 10 partes del cuerpo"},
         {"Escombros", "Rompe 30 cajas, tablas o bloques"},
+        {"Ciclo de la vida", "Un animal se come a un muerto y hace caca"},
     };
 
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -73,6 +74,7 @@ final class Achievements {
         if (st.destroyed >= 10) unlock(g, 15);
         if (st.gibs >= 10) unlock(g, 16);
         if (st.broken >= 30) unlock(g, 17);
+        if (st.poops > 0) unlock(g, 18);
         int people = 0;
         for (int i = 0; i < g.world.ents.size(); i++) {
             Ent e = g.world.ents.get(i);

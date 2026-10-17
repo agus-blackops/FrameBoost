@@ -11,7 +11,7 @@ import java.util.Random;
 /** Game controller: input, tools, camera, update loop and drawing. No Android view code in here. */
 final class Game {
     static final int DOWN = 0, MOVE = 1, UP = 2, CANCEL = 3;
-    private static final int R_NONE = 0, R_UI = 1, R_TOOL = 2, R_PAN = 3, R_CAM = 4;
+    private static final int R_NONE = 0, R_UI = 1, R_TOOL = 2, R_PAN = 3, R_CAM = 4, R_HOLD = 5;
     static final float ROOM_W = 3200f;
 
     final Sfx sfx;
@@ -42,7 +42,7 @@ final class Game {
     private float slowmoT, demoT;
     // inspection + long-press context menu
     Person inspected;
-    private Ent ctxEnt;
+    Ent ctxEnt;
     private float ctxX, ctxY;
     private final int[] ctxActs = new int[6];
     private int ctxN;
@@ -175,12 +175,15 @@ final class Game {
         if (chal >= 0) {
             Challenges.setup(this, chal);
             Challenges.Def d = Challenges.LIST[chal];
-            Items.Item[] items = new Items.Item[d.tools.length];
-            for (int i = 0; i < d.tools.length; i++) items[i] = Items.find(d.tools[i]);
+            // the hand is always there, so it never takes a slot in the dock
+            int nt = 0; for (int t : d.tools) if (t != Items.HAND) nt++;
+            Items.Item[] items = new Items.Item[Math.max(1, nt)];
+            int k = 0; for (int t : d.tools) if (t != Items.HAND) items[k++] = Items.find(t);
+            if (nt == 0) items[0] = Items.find(Items.HAND);
             Items.CATS[Items.CAT_CHAL] = items;
             ui.cats = new int[]{Items.CAT_CHAL};
             ui.cat = Items.CAT_CHAL; ui.stripOpen = false; ui.scrollY = 0; ui.dock = true;
-            tool = d.tools[0];
+            tool = items[0].id;
             chUses = d.uses; chTime = 0; chIdle = 0; chResult = 0; chSpawnT = 3f; chEndT = 0;
             ui.toast(d.goal);
             if (music != null) music.play(Music.CHALLENGE);
@@ -337,14 +340,12 @@ final class Game {
         ui.active.clear();
         for (int i = 0; i < mods.mods.size(); i++) if (mods.mods.get(i).on) ui.active.add(Items.MOD_BASE + i);
         ui.active.add(Items.STYLE_BASE + (mods.theme >= 0 ? mods.theme : userTheme));
-        // long-press on an object with the hand opens its context menu
+        // long-press on an object (whatever the tool) opens its context menu
         for (Ptr pt : ptrs) {
-            if (!pt.down || pt.role != R_TOOL || pt.grab == null || pt.dragged) continue;
+            if (!pt.down || pt.role != R_HOLD || pt.dragged) continue;
             pt.holdT += dtReal;
             if (pt.holdT > 0.55f) {
-                Ent e = pt.grab.b.user instanceof Ent ? (Ent) pt.grab.b.user : null;
-                world.sim.remove(pt.grab);
-                pt.grab = null;
+                Ent e = entAt(pt.sx, pt.sy);
                 pt.role = R_NONE;
                 if (e != null) openContext(e, pt.x, pt.y);
             }
@@ -544,25 +545,36 @@ final class Game {
             return;
         }
         Ptr other = firstOther(pt);
-        boolean grabbed = false;
-        if (tool == Items.HAND) grabbed = tryGrab(pt, x, y);
-        if (other != null && !grabbed && other.grab == null) {
+        if (other != null && other.grab == null) {
             cancelTool(other);
             other.role = R_CAM; pt.role = R_CAM;
             beginCam(other, pt);
             return;
         }
+        // the hand is always on: a finger that lands on something waits to see if it drags (grab),
+        // holds still (context menu) or lifts (the selected tool acts there)
+        if (handActive() && entAt(x, y) != null) { pt.role = R_HOLD; return; }
         if (tool == Items.HAND) {
-            pt.role = grabbed ? R_TOOL : R_PAN;
+            pt.role = R_PAN;
             boolean dbl = clock - lastTapT < 0.32f && Math.abs(x - lastTapX) < 40 * density && Math.abs(y - lastTapY) < 40 * density;
             lastTapT = clock; lastTapX = x; lastTapY = y;
-            if (dbl) {
-                Ent e = grabbed && pt.grab != null && pt.grab.b.user instanceof Ent ? (Ent) pt.grab.b.user : null;
-                if (e != null && e != follow) { follow = e; ui.toast("Cámara siguiendo · doble toque en el fondo para soltar"); }
-                else if (e == null && follow != null) { follow = null; ui.toast("Cámara libre"); }
-            }
+            if (dbl && follow != null) { follow = null; ui.toast("Cámara libre"); }
             return;
         }
+        toolDown(pt, x, y);
+    }
+
+    /** Tools that act by dragging over things keep the finger for themselves; with the rest the hand grabs. */
+    private boolean handActive() {
+        return tool != Items.DELETE && tool != Items.CUT && tool != Items.FIRE && tool != Items.RIFLE;
+    }
+
+    private Ent entAt(float sx, float sy) {
+        Shape s = world.sim.pick(toWorldX(sx), toWorldY(sy), 46f / zoom, false);
+        return s != null && !s.body.isStatic && s.body.user instanceof Ent ? (Ent) s.body.user : null;
+    }
+
+    private void toolDown(Ptr pt, float x, float y) {
         pt.role = R_TOOL;
         float wx = toWorldX(x), wy = toWorldY(y);
         pt.fireCd = 0.09f;
@@ -618,6 +630,12 @@ final class Game {
                     if (pt.dragged) ui.scrollY = Math.max(0, Math.min(ui.maxScrollY(), pt.scrollStart - (y - pt.sy)));
                 }
                 break;
+            case R_HOLD:
+                if (pt.dragged) {
+                    if (tryGrab(pt, pt.sx, pt.sy)) { pt.role = R_TOOL; pt.grab.tx = toWorldX(x); pt.grab.ty = toWorldY(y); }
+                    else pt.role = R_NONE;
+                }
+                break;
             case R_PAN:
                 if (pt.dragged) follow = null;
                 camX -= (x - pt.lx) / zoom;
@@ -652,6 +670,21 @@ final class Game {
         }
         if (role == R_CAM) {
             for (Ptr o : ptrs) if (o != pt && o.down && o.role == R_CAM) { o.role = R_PAN; o.lx = o.x; o.ly = o.y; }
+            return;
+        }
+        if (role == R_HOLD) {
+            if (cancelled) return;
+            if (tool == Items.HAND) {
+                // double tap on something: the camera follows it
+                Ent e = entAt(x, y);
+                boolean dbl = clock - lastTapT < 0.32f && Math.abs(x - lastTapX) < 40 * density && Math.abs(y - lastTapY) < 40 * density;
+                lastTapT = clock; lastTapX = x; lastTapY = y;
+                if (dbl && e != null && e != follow) { follow = e; ui.toast("Cámara siguiendo · doble toque en el fondo para soltar"); }
+                return;
+            }
+            toolDown(pt, pt.sx, pt.sy);
+            pt.role = R_NONE;
+            if (Items.isSpawn(tool) && useCharge()) spawn(tool, toWorldX(x), toWorldY(y));
             return;
         }
         if (role == R_TOOL) {
@@ -713,6 +746,9 @@ final class Game {
                     Mod m = mods.mods.get(id - Items.MOD_BASE);
                     mods.toggle(m, this);
                     ui.toast((m.on ? "Mod activado: " : "Mod desactivado: ") + m.name);
+                } else if (id == tool && id != Items.HAND && challenge < 0) {
+                    tool = Items.HAND;
+                    ui.toast("Sin herramienta · la mano siempre está activa");
                 } else {
                     tool = id;
                     ui.toast(items[i].name + " · " + items[i].hint);

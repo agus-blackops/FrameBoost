@@ -54,7 +54,7 @@ public class InputTest {
         g.ui.stripOpen = false;
         g.tool = Items.DELETE;
         Harness.tap(g, h.rb[Person.CHEST].x, h.rb[Person.CHEST].y);
-        check("delete removes it", g.world.ents.isEmpty());
+        check("delete removes it", first(g, Person.HUMAN) == null);
 
         // crates, freeze, cut a rope
         g.spawn(Items.CRATE, 1300, fl - 40);
@@ -168,6 +168,34 @@ public class InputTest {
         Harness.tap(g, 1200, fl - 120);
         check("one tap places a whole house", g.world.ents.size() == 4);
         Harness.shot(g, out + "/in_house.png");
+        // the hand is always on: with a crate selected, dragging a person moves it and spawns nothing
+        g.clearWorldForLoad();
+        g.spawn(Items.HUMAN, 1300, fl - 120);
+        Harness.run(g, 2f);
+        Person ph = first(g, Person.HUMAN);
+        g.tool = Items.CRATE;
+        float px0 = ph.rb[Person.CHEST].x, py0 = ph.rb[Person.CHEST].y;
+        g.touch(Game.DOWN, 0, sx(g, px0), sy(g, py0)); g.update(1f / 60);
+        for (int i = 1; i <= 20; i++) { g.touch(Game.MOVE, 0, sx(g, px0 + i * 15), sy(g, py0 - i * 12)); g.update(1f / 60); }
+        float lifted = py0 - ph.rb[Person.CHEST].y;
+        g.touch(Game.UP, 0, sx(g, px0 + 300), sy(g, py0 - 240)); g.update(1f / 60);
+        System.out.println("   lifted with a crate selected: " + (int) lifted);
+        check("dragging grabs even with another tool selected", lifted > 80f);
+        check("dragging does not spawn the selected item", count(g, Items.CRATE) == 0);
+        Harness.run(g, 2f);
+        Harness.tap(g, 1800, fl - 200);
+        check("tapping empty space places the selected item", count(g, Items.CRATE) == 1);
+        // a tap on a person with a syringe still injects
+        g.tool = Items.SYR_SEDATIVE;
+        Harness.tap(g, ph.rb[Person.CHEST].x, ph.rb[Person.CHEST].y);
+        check("tapping a person uses the tool on it", g.inspected == ph);
+        // long press opens the context menu whatever the tool
+        g.tool = Items.CRATE;
+        g.touch(Game.DOWN, 0, sx(g, ph.rb[Person.CHEST].x), sy(g, ph.rb[Person.CHEST].y));
+        for (int i = 0; i < 50; i++) g.update(1f / 60);
+        check("long press opens the context menu", g.ctxEnt == ph);
+        g.touch(Game.UP, 0, sx(g, ph.rb[Person.CHEST].x), sy(g, ph.rb[Person.CHEST].y)); g.update(1f / 60);
+        check("the hand is not a catalog item", Items.find(Items.HAND) == Items.HAND_ITEM && Items.CATS[Items.CAT_TOOLS][0].id != Items.HAND);
         Harness.tapScreen(g, 5, 5);
         System.out.println(fails == 0 ? "INPUT ALL PASS" : "INPUT FAILURES " + fails);
     }

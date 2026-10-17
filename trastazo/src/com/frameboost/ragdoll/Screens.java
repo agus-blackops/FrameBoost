@@ -24,7 +24,7 @@ final class Screens {
     static final String[] TUT = {
         "Abre la categoría \"Gente\" en la barra de la izquierda.",
         "Elige \"Humano\" y toca el escenario para colocarlo. Se mantendrá en pie... hasta que algo lo tumbe.",
-        "Ahora agarra a alguien: elige \"Mano\" en Herramientas y arrástralo. Con dos dedos, zoom.",
+        "Arrastra a alguien con el dedo: la mano siempre está activa, elijas lo que elijas. Con dos dedos, zoom.",
         "Prueba zombis, explosivos y el Taller de mods. ¡A experimentar!",
     };
 
@@ -261,7 +261,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.5 · remodelado y destrucción total · física propia", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.6 · animales, mano siempre activa y armas nuevas", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {

@@ -18,6 +18,12 @@ final class Prop extends Ent {
     float lastSp;                   // speed at the end of the previous frame
     float wear;                     // damage taken by breakable things (crates, planks, blocks)
     boolean gib, frag;              // flesh chunk / fragment of something that broke
+    // animals
+    int face = 1;                   // which way the head points
+    float hunger, digestT = -1f, biteT, legPhase, barkT, stinkT, eatT;
+    int stomach;                    // body parts eaten and not yet pooped
+    Person meal;                    // the corpse being eaten
+    int mealPart = -1;
     float goalX, goalY, homeX;      // drone flight
     Ent target;
     String mood = "";
@@ -28,6 +34,26 @@ final class Prop extends Ent {
     int homeDir() { return homeDirV; }
     int homeDirV = 1;
     boolean machine() { return type == Items.TURRET || type == Items.DRONE; }
+    boolean animal() { return Items.isAnimal(type); }
+
+    // animal sizes: body half width/height, head radius, head x/y, leg length, foot radius, density, colour, hp
+    static final float[][] ANIMAL = {
+        {26f, 10f, 10f, 31f, -12f, 16f, 4f, 0.9f},
+        {30f, 15f, 13f, 33f, -3f, 11f, 5f, 1.0f},
+        {11f, 5f, 5.5f, 13f, -2f, 5f, 2.5f, 0.8f},
+    };
+    static final int[] ANIMAL_COL = {0xFFa8743f, 0xFFeea3ad, 0xFF8d8a86};
+    static final float[] ANIMAL_HP = {70f, 110f, 20f};
+    float[] dims() { return ANIMAL[type - Items.DOG]; }
+    float legLen() { return dims()[5]; }
+
+    /** Turns an animal round: the head (a physical shape) moves to the other end. */
+    void turn(int f) {
+        if (f == face || !animal()) return;
+        face = f;
+        Shape head = main().shapes.get(1);
+        head.ox = Math.abs(head.ox) * f;
+    }
 
     @Override float cx() { return bodies.get(0).x; }
     @Override float cy() { return bodies.get(0).y; }
@@ -152,6 +178,27 @@ final class Prop extends Ent {
                 b.add(Shape.box(4f, 9f).at(-hl * 0.55f, 9f, 0).mat(1.5f, 0.5f, 0.05f).col(0xFF2b2b30));
                 p.hw = hl;
                 b.user = p; p.bodies.add(b); sim.add(b);
+                break;
+            }
+            case Items.DOG: case Items.PIG: case Items.RAT: {
+                float[] d = ANIMAL[item - Items.DOG];
+                p.color = ANIMAL_COL[item - Items.DOG]; p.hp = ANIMAL_HP[item - Items.DOG];
+                p.hw = d[0]; p.hh = d[1]; p.flammable = true;
+                p.face = rnd.nextBoolean() ? 1 : -1;
+                p.hunger = 0.4f + rnd.nextFloat() * 0.4f;
+                b = new RB(x, y, 0);
+                Shape torso = Shape.box(d[0], d[1]).mat(d[7], 0.5f, 0.05f).col(p.color); torso.user = p;
+                Shape head = Shape.circle(d[2]).at(d[3] * p.face, d[4], 0).mat(d[7] * 0.8f, 0.5f, 0.05f).col(p.color); head.user = p;
+                Shape ff = Shape.circle(d[6]).at(d[0] * 0.72f, d[1] + d[5] - d[6], 0).mat(0.5f, 0.06f, 0f).col(p.color); ff.user = p;
+                Shape fb = Shape.circle(d[6]).at(-d[0] * 0.72f, d[1] + d[5] - d[6], 0).mat(0.5f, 0.06f, 0f).col(p.color); fb.user = p;
+                b.add(torso); b.add(head); b.add(ff); b.add(fb);
+                b.angDamp = 0.5f;
+                b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.POOP: {
+                p.hw = 10f; p.hh = 7f; p.color = 0xFF6b4423; p.stinkT = 40f;
+                b = box(p, x, y, 10f, 7f, 1.1f, 0.95f, 0f);
                 break;
             }
             default: return null;

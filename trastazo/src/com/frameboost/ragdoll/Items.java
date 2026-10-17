@@ -12,7 +12,7 @@ final class Items {
             PISTOL = 60, RIFLE = 61, SHOTGUN = 62, ROCKET = 63, KNIFE = 64, SWORD = 65, GUN_PISTOL = 66, GUN_RIFLE = 67, GUN_MG = 68, TURRET = 69, DRONE = 70,
             FIRE = 80, LIGHTNING = 81, PUSH = 82,
             SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95,
-            ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, BLOCK = 130, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+            ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
     static final class Item {
         final int id;
@@ -21,14 +21,13 @@ final class Items {
     }
 
     static final String PLACE = "Toca para colocar";
-    static final String[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Jeringas", "Taller", "Estilo", "Desafío", "Construir"};
-    static final int CAT_TOOLS = 0, CAT_PEOPLE = 1, CAT_OBJECTS = 2, CAT_EXPLOSIVES = 3, CAT_WEAPONS = 4, CAT_FX = 5, CAT_SYRINGES = 6, CAT_MODS = 7, CAT_STYLE = 8, CAT_CHAL = 9, CAT_BUILD = 10;
+    static final String[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Jeringas", "Taller", "Estilo", "Desafío", "Construir", "Animales"};
+    static final int CAT_TOOLS = 0, CAT_PEOPLE = 1, CAT_OBJECTS = 2, CAT_EXPLOSIVES = 3, CAT_WEAPONS = 4, CAT_FX = 5, CAT_SYRINGES = 6, CAT_MODS = 7, CAT_STYLE = 8, CAT_CHAL = 9, CAT_BUILD = 10, CAT_ANIMALS = 11;
     /** Tabs shown in the normal sandbox, the constructions first (the easiest way to start building). */
-    static final int[] PALETTE = {CAT_BUILD, 0, 1, 2, 3, 4, 5, 6, 7, 8};
+    static final int[] PALETTE = {CAT_BUILD, 0, 1, CAT_ANIMALS, 2, 3, 4, 5, 6, 7, 8};
 
     static Item[][] CATS = {
         {
-            new Item(HAND, "Mano", "Arrastra lo que quieras · 2 dedos: mover y zoom"),
             new Item(DELETE, "Borrar", "Toca o desliza sobre algo para borrarlo"),
             new Item(FREEZE, "Clavar", "Toca una pieza para fijarla en el aire (otra vez para soltarla)"),
             new Item(CUT, "Cortar", "Desliza para cortar articulaciones, cuerdas y uniones"),
@@ -109,6 +108,12 @@ final class Items {
             new Item(WALL, "Muro", PLACE + " · un muro de ladrillos para derribar"),
             new Item(CAR, "Coche", PLACE + " · un coche con motor que arranca solo"),
         },
+        {
+            new Item(DOG, "Perro", PLACE + " · pasea, ladra a los zombis y se come a los muertos"),
+            new Item(PIG, "Cerdo", PLACE + " · lento y glotón: se lo come todo"),
+            new Item(RAT, "Rata", PLACE + " · pequeña, rápida y carroñera"),
+            new Item(POOP, "Caca", PLACE + " · huele fatal"),
+        },
     };
 
     static final String[] THEMES = {"Habitación", "Laboratorio", "Noche", "Ladrillos", "Neón", "Desierto", "Sandbox"};
@@ -123,16 +128,21 @@ final class Items {
         CATS[CAT_STYLE] = st;
     }
 
+    /** The hand is not in any palette: it is always active. This is what the HUD shows with no tool picked. */
+    static final Item HAND_ITEM = new Item(HAND, "Mano", "Arrastra cualquier cosa · mantén pulsado: menú · elige algo a la izquierda");
+
     static Item find(int id) {
+        if (id == HAND) return HAND_ITEM;
         for (Item[] cat : CATS) for (Item it : cat) if (it.id == id) return it;
-        return CATS[0][0];
+        return HAND_ITEM;
     }
 
     static boolean isBuild(int id) { return id >= HOUSE && id <= CAR; }
+    static boolean isAnimal(int id) { return id >= DOG && id <= RAT; }
 
     static boolean isSpawn(int id) {
         return isBuild(id) || (id >= HUMAN && id <= PLATFORM) || (id >= GRENADE && id <= XBARREL) || id == C4 || id == KNIFE || id == SWORD
-                || (id >= GUN_PISTOL && id <= DRONE);
+                || (id >= GUN_PISTOL && id <= DRONE) || (id >= DOG && id <= POOP);
     }
 
     static boolean isSyringe(int id) { return id >= SYR_HEAL && id <= SYR_SEDATIVE; }
@@ -140,10 +150,10 @@ final class Items {
 
     static final String[] KEYS = {"human", "giant", "kid", "robot", "zombie", "skeleton", "soldier", "medic", "firefighter", "thug", "crate", "bigcrate",
             "plank", "barrel", "ball", "balloon", "steel", "wheel", "motor", "thruster", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel",
-            "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone"};
+            "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop"};
     static final int[] KEY_IDS = {HUMAN, GIANT, KID, ROBOT, ZOMBIE, SKELETON, SOLDIER, MEDIC, FIREFIGHTER, THUG, CRATE, BIGCRATE,
             PLANK, BARREL, BALL, BALLOON, STEEL, WHEEL, MOTOR, THRUSTER, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL,
-            KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE};
+            KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP};
 
     static int keyId(String k) {
         for (int i = 0; i < KEYS.length; i++) if (KEYS[i].equals(k)) return KEY_IDS[i];

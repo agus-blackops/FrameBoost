@@ -412,6 +412,7 @@ final class Ui {
     private void catIcon(Canvas c, int ci, float cx, float cy, float s, boolean sel) {
         int[] rep = {Items.HAND, Items.HUMAN, Items.CRATE, Items.DYNAMITE, Items.PISTOL, Items.FIRE, Items.SYR_HEAL};
         if (ci == Items.CAT_BUILD) { drawIcon(c, Items.HOUSE, cx, cy, s); return; }
+        if (ci == Items.CAT_ANIMALS) { drawIcon(c, Items.DOG, cx, cy, s); return; }
         if (ci < rep.length) { drawIcon(c, rep[ci], cx, cy, s); return; }
         p.setStyle(Paint.Style.FILL);
         if (ci == Items.CAT_MODS) {            // puzzle-piece-ish gear
@@ -788,6 +789,27 @@ final class Ui {
                 box(c, cx - s * 0.8f, cy - s * 0.3f, cx + s * 0.8f, cy + s * 0.05f, 0xFFd33a2c, s * 0.08f);
                 disc(c, cx - s * 0.45f, cy + s * 0.35f, s * 0.3f, 0xFF25272c);
                 disc(c, cx + s * 0.45f, cy + s * 0.35f, s * 0.3f, 0xFF25272c);
+                break;
+            case Items.DOG: case Items.PIG: case Items.RAT: {
+                int col = Prop.ANIMAL_COL[id - Items.DOG];
+                float k = id == Items.RAT ? 0.7f : 1f, w2 = Math.max(2f, s * 0.12f);
+                for (int i = -1; i <= 1; i += 2) line(c, cx + i * s * 0.4f * k, cy, cx + i * s * 0.42f * k, cy + s * 0.5f * k, w2, Renderer.dark(col, 0.2f));
+                if (id == Items.RAT) line(c, cx - s * 0.5f * k, cy, cx - s * 0.95f, cy + s * 0.3f, Math.max(1f, s * 0.05f), 0xFFd9a3a8);
+                if (id == Items.DOG) line(c, cx - s * 0.55f, cy - s * 0.1f, cx - s * 0.75f, cy - s * 0.45f, w2, col);
+                box(c, cx - s * 0.6f * k, cy - s * 0.25f * k, cx + s * 0.45f * k, cy + s * 0.15f * k, col, s * 0.2f * k);
+                disc(c, cx + s * 0.55f * k, cy - s * 0.3f * k, s * 0.28f * k, col);
+                if (id == Items.DOG) { box(c, cx + s * 0.6f, cy - s * 0.33f, cx + s * 0.95f, cy - s * 0.12f, Renderer.light(col, 0.15f), s * 0.06f); disc(c, cx + s * 0.94f, cy - s * 0.27f, s * 0.07f, 0xFF1b1b1b); }
+                if (id == Items.PIG) { box(c, cx + s * 0.72f, cy - s * 0.42f, cx + s * 0.9f, cy - s * 0.16f, Renderer.dark(col, 0.12f), s * 0.05f); }
+                if (id == Items.RAT) disc(c, cx + s * 0.4f * k, cy - s * 0.55f * k, s * 0.17f, 0xFFd9a3a8);
+                disc(c, cx + s * 0.62f * k, cy - s * 0.38f * k, Math.max(1f, s * 0.05f), 0xFF1b1b1b);
+                break;
+            }
+            case Items.POOP:
+                box(c, cx - s * 0.6f, cy + s * 0.05f, cx + s * 0.6f, cy + s * 0.45f, 0xFF6b4423, s * 0.2f);
+                box(c, cx - s * 0.42f, cy - s * 0.25f, cx + s * 0.42f, cy + s * 0.12f, 0xFF7a4f2a, s * 0.18f);
+                box(c, cx - s * 0.22f, cy - s * 0.5f, cx + s * 0.22f, cy - s * 0.18f, 0xFF6b4423, s * 0.14f);
+                line(c, cx - s * 0.3f, cy - s * 0.7f, cx - s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), 0xFF8fa23e);
+                line(c, cx + s * 0.3f, cy - s * 0.7f, cx + s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), 0xFF8fa23e);
                 break;
             default:
                 disc(c, cx, cy, s * 0.4f, 0xFFaaaaaa);
