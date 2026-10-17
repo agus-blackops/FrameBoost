@@ -1,0 +1,24 @@
+TRASTAZO 3.7 - VERSION PC
+=========================
+
+Requisito: Java 8 o superior (gratis): https://adoptium.net
+
+Windows: doble clic en Trastazo.bat (o en Trastazo.jar si Java esta asociado).
+Linux / macOS: ./trastazo.sh  (o: java -jar Trastazo.jar)
+
+CONTROLES
+  Clic izquierdo ........ tocar / arrastrar (la mano siempre esta activa)
+  Mantener clic ......... menu del objeto
+  Clic derecho/central .. mover la camara
+  Rueda ................. zoom (sobre el catalogo: desplazar)
+  1-9, 0 ................ abrir categorias del catalogo
+  H ..................... soltar la herramienta (solo mano)
+  Espacio / P ........... pausa
+  S ..................... camara lenta
+  G ..................... gravedad
+  Ctrl+Z ................ deshacer
+  Flechas / A D W ....... mover la camara    + / - ... zoom
+  Esc ................... volver / menu
+  F11 o Alt+Enter ....... pantalla completa
+
+Partidas, ajustes y mods se guardan en %APPDATA%\Trastazo (Windows) o ~/.trastazo (Linux/macOS).

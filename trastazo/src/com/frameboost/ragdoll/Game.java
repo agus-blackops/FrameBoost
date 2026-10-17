@@ -28,7 +28,12 @@ final class Game {
         void saveSettings(Settings s);
         void vibrate(int ms);
         void switchEngine(boolean gpu);
+        /** PC: toggles full screen (unused on Android). */
+        void toggleFullscreen();
     }
+    /** True in the PC port: mouse and keyboard, settings show full screen instead of vibration/engine. */
+    static boolean desktop;
+    boolean fullscreen;
     Host host;
     Settings settings = new Settings();
     final Screens screens = new Screens();
@@ -237,11 +242,14 @@ final class Game {
             case Screens.A_MUSIC_UP: settings.music = Math.min(1f, settings.music + 0.1f); saveSettings(); break;
             case Screens.A_SFX_DN: settings.sfx = Math.max(0f, settings.sfx - 0.1f); saveSettings(); break;
             case Screens.A_SFX_UP: settings.sfx = Math.min(1f, settings.sfx + 0.1f); saveSettings(); break;
-            case Screens.A_HAPTICS: settings.haptics = !settings.haptics; saveSettings(); haptic(30); break;
+            case Screens.A_HAPTICS:
+                if (desktop) { if (host != null) host.toggleFullscreen(); break; }
+                settings.haptics = !settings.haptics; saveSettings(); haptic(30); break;
             case Screens.A_GORE: settings.gore = !settings.gore; saveSettings(); break;
             case Screens.A_QUALITY: settings.highQuality = !settings.highQuality; saveSettings(); break;
             case Screens.A_FPS: settings.showFps = !settings.showFps; saveSettings(); break;
             case Screens.A_ENGINE:
+                if (desktop) { ui.toast("En PC se usa el motor Java2D"); break; }
                 settings.gpu = !settings.gpu;
                 saveSettings();
                 if (host != null) host.switchEngine(settings.gpu);
@@ -279,7 +287,7 @@ final class Game {
         clampCam();
     }
 
-    private void clampCam() {
+    void clampCam() {
         float zMin = sw / (ROOM_W + 500f), zMax = sw / 380f;
         if (zoom < zMin) zoom = zMin;
         if (zoom > zMax) zoom = zMax;
@@ -726,6 +734,46 @@ final class Game {
     }
 
     // ---------------------------------------------------------------------------------- UI ----
+
+    /** A top bar button, as if tapped (PC keyboard shortcuts). */
+    void pressButton(int b) { uiAction(Ui.BTN + b); }
+
+    /** Opens/closes a category of the catalog (PC number keys). */
+    void toggleCategory(int cat) { uiAction(Ui.TAB + cat); }
+
+    /** Android back button / PC Escape. Returns false when there is nothing left to go back to. */
+    boolean back() {
+        if (screens.screen == Screens.NONE) {
+            if (ctxEnt != null) { ctxEnt = null; return true; }
+            if (ui.stripOpen) ui.stripOpen = false;
+            else { screens.screen = Screens.PAUSE; saveScene(); }
+            return true;
+        }
+        if (screens.screen != Screens.TITLE) {
+            menuAction(screens.screen == Screens.PAUSE ? Screens.A_RESUME
+                    : (screens.screen == Screens.RESULT ? Screens.A_MENU : Screens.A_BACK));
+            return true;
+        }
+        return false;
+    }
+
+    /** Mouse wheel / pinch zoom around a screen point. */
+    void zoomAt(float sx, float sy, float factor) {
+        float wx = toWorldX(sx), wy = toWorldY(sy);
+        float zMin = sw / (ROOM_W + 500f), zMax = sw / 380f;
+        zoom = Math.max(zMin, Math.min(zMax, zoom * factor));
+        camX = wx - (sx - sw / 2f) / zoom;
+        camY = wy - (sy - sh / 2f) / zoom;
+        follow = null;
+        clampCam();
+    }
+
+    /** Right-button drag pans the camera (screen pixels). */
+    void panBy(float dx, float dy) {
+        camX -= dx / zoom; camY -= dy / zoom;
+        follow = null;
+        clampCam();
+    }
 
     private void uiAction(int a) {
         click();

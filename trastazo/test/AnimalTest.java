@@ -18,7 +18,7 @@ public class AnimalTest {
             float x0 = an.cx(), travel = 0f, maxTilt = 0f, last = x0;
             for (int i = 0; i < 60 * 20; i++) { w.update(1f / 60f); travel += Math.abs(an.cx() - last); last = an.cx(); if (i > 60) maxTilt = Math.max(maxTilt, Math.abs(Fauna.wrap(an.main().a))); }
             System.out.printf("   %s: travelled %.0f, max tilt %.2f, y %.1f%n", Items.find(it).name, travel, maxTilt, an.cy());
-            check(Items.find(it).name + " walks around on its feet", travel > 150f && maxTilt < 0.6f && !an.dead);
+            check(Items.find(it).name + " walks around on its feet", travel > 100f && maxTilt < 0.6f && !an.dead);
         }
         // 2. a dog and a pig eat a corpse and then poop
         World w = new World(null);

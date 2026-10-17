@@ -154,6 +154,8 @@ public class MainActivity extends Activity implements Game.Host, GLGameView.List
                 .putBoolean("textures", s.textures).putBoolean("muted", s.muted).putString("ach", s.ach).putBoolean("gpu", s.gpu).apply();
     }
 
+    @Override public void toggleFullscreen() { }
+
     @Override public void vibrate(int ms) {
         try { if (vibrator != null && vibrator.hasVibrator()) vibrator.vibrate(ms); } catch (Throwable ignored) { }
     }
@@ -177,19 +179,7 @@ public class MainActivity extends Activity implements Game.Host, GLGameView.List
     }
 
     @Override public void onBackPressed() {
-        Game g = game;
-        if (g != null) {
-            if (g.screens.screen == Screens.NONE) {
-                if (g.ui.stripOpen) g.ui.stripOpen = false;
-                else { g.screens.screen = Screens.PAUSE; g.saveScene(); }
-                return;
-            }
-            if (g.screens.screen != Screens.TITLE) {
-                g.menuAction(g.screens.screen == Screens.PAUSE ? Screens.A_RESUME
-                        : (g.screens.screen == Screens.RESULT ? Screens.A_MENU : Screens.A_BACK));
-                return;
-            }
-        }
+        if (game != null) synchronized (game) { if (game.back()) return; }
         super.onBackPressed();
     }
 

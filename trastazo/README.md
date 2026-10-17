@@ -1,11 +1,28 @@
-# Trastazo 3.6 — animales, mano siempre activa y armas nuevas
+# Trastazo 3.7 — versión para PC
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
 motores ni assets externos (el APK pesa ~200 KB).
 
+**PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
+
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 3.7: versión PC
+
+* **El mismo juego en una ventana de escritorio**: misma física, IA, animales, construcciones, desafíos, logros,
+  mods y música. El código del juego es el mismo que en Android; solo cambian el dibujo (Java2D), el sonido
+  (Java Sound, con mezclador propio para los efectos) y la entrada (ratón y teclado).
+* **Controles:** clic izquierdo = dedo (tocar y arrastrar; mantener = menú del objeto), clic derecho o
+  central = mover la cámara, rueda = zoom (sobre el catálogo, desplazar), 1-9/0 = categorías, Espacio/P =
+  pausa, S = cámara lenta, G = gravedad, Ctrl+Z = deshacer, H = soltar la herramienta, flechas/A/D/W y +/- =
+  cámara, Esc = volver/menú, F11 o Alt+Enter = pantalla completa (también en Ajustes).
+* La interfaz se escala con la ventana y la **resolución de dibujo se ajusta sola** si el PC va justo, para
+  mantener la fluidez.
+* Partidas, ajustes y mods en `%APPDATA%\Trastazo` (Windows) o `~/.trastazo` (Linux/macOS).
+* Se compila con `pc/build.sh` (solo necesita un JDK); `pc/test/PcSmoke.java` prueba la ventana real con
+  ratón y teclado simulados.
 
 ## Novedades de la 3.6
 

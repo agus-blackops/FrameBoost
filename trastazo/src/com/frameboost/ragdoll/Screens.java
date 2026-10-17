@@ -261,7 +261,8 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.6 · animales, mano siempre activa y armas nuevas", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.7 · " + (Game.desktop ? "versión PC" : "Android") + " · animales, mano siempre activa", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        if (Game.desktop) text(c, "Ratón: arrastra y toca · clic derecho: mover cámara · rueda: zoom · Esc: menú · Espacio: pausa · 1-9: categorías · F11: pantalla completa", colX, sh - 32 * d, 10 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 
     private void panel(Canvas c, Game g, String title, int sw, int sh, String[] labels, int[] acts) {
@@ -298,14 +299,14 @@ final class Screens {
         ry = slider(c, "Música", s.music, lx, ry, cw, rowH, A_MUSIC_DN, A_MUSIC_UP);
         ry = slider(c, "Efectos", s.sfx, lx, ry, cw, rowH, A_SFX_DN, A_SFX_UP);
         float half = (cw - 12 * d) / 2;
-        button(c, lx, ry, half, rowH * 0.86f, "Vibración: " + (s.haptics ? "Sí" : "No"), A_HAPTICS, false);
+        button(c, lx, ry, half, rowH * 0.86f, Game.desktop ? "Pantalla completa: " + (g.fullscreen ? "Sí" : "No") : "Vibración: " + (s.haptics ? "Sí" : "No"), A_HAPTICS, false);
         button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Sangre: " + (s.gore ? "Sí" : "No"), A_GORE, false);
         ry += rowH;
         button(c, lx, ry, half, rowH * 0.86f, "Calidad: " + (s.highQuality ? "Alta" : "Ahorro"), A_QUALITY, false);
         button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Texturas: " + (g.textures ? "Sí" : "No"), A_TEXTURES, false);
         ry += rowH;
         button(c, lx, ry, half, rowH * 0.86f, "Mostrar FPS: " + (s.showFps ? "Sí" : "No"), A_FPS, false);
-        button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Motor: " + (s.gpu ? "GPU" : "Canvas"), A_ENGINE, false);
+        button(c, lx + half + 12 * d, ry, half, rowH * 0.86f, "Motor: " + (Game.desktop ? "PC (Java2D)" : (s.gpu ? "GPU" : "Canvas")), A_ENGINE, false);
         ry += rowH;
         button(c, lx + cw / 4, ry, cw / 2, rowH * 0.86f, "Volver", A_BACK, true);
     }
