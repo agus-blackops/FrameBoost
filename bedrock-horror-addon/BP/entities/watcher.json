@@ -1,0 +1,69 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "horror:watcher",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "components": {
+      "minecraft:collision_box": {
+        "width": 0.7,
+        "height": 2.9
+      },
+      "minecraft:physics": {},
+      "minecraft:nameable": {},
+      "minecraft:jump.static": {},
+      "minecraft:movement.basic": {},
+      "minecraft:type_family": {
+        "family": [
+          "horror",
+          "watcher"
+        ]
+      },
+      "minecraft:health": {
+        "value": 1000,
+        "max": 1000
+      },
+      "minecraft:movement": {
+        "value": 0.0
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "all",
+            "deals_damage": false
+          }
+        ]
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 0,
+        "look_distance": 96,
+        "probability": 1.0,
+        "angle_of_view_horizontal": 360
+      }
+    },
+    "component_groups": {
+      "horror:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "events": {
+      "horror:vanish": {
+        "add": {
+          "component_groups": [
+            "horror:despawn"
+          ]
+        }
+      }
+    }
+  }
+}

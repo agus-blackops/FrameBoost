@@ -8,16 +8,20 @@
       "is_experimental": false
     },
     "components": {
+      "minecraft:collision_box": {
+        "width": 0.7,
+        "height": 2.9
+      },
+      "minecraft:physics": {},
+      "minecraft:nameable": {},
+      "minecraft:jump.static": {},
+      "minecraft:movement.basic": {},
       "minecraft:type_family": {
         "family": [
           "horror",
           "monster",
           "stalker"
         ]
-      },
-      "minecraft:collision_box": {
-        "width": 0.7,
-        "height": 2.85
       },
       "minecraft:health": {
         "value": 60,
@@ -41,19 +45,26 @@
         "avoid_water": true,
         "can_pass_doors": true
       },
-      "minecraft:movement.basic": {},
-      "minecraft:jump.static": {},
-      "minecraft:physics": {},
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true
       },
-      "minecraft:nameable": {},
       "minecraft:despawn": {
         "despawn_from_distance": {
           "min_distance": 96,
           "max_distance": 128
         }
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/horror_stalker.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "query.last_hit_by_player ? 15 : 0"
+      },
+      "minecraft:ambient_sound_interval": {
+        "value": 8,
+        "range": 12,
+        "event_name": "ambient"
       },
       "minecraft:behavior.float": {
         "priority": 0

@@ -6,36 +6,96 @@
       "bones": {
         "leg_r": {
           "rotation": [
-            "Math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed",
+            "math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed",
             0,
             0
           ]
         },
         "leg_l": {
           "rotation": [
-            "-(Math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed)",
+            "-(math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed)",
             0,
             0
           ]
         },
         "arm_r": {
           "rotation": [
-            "-(Math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed)",
+            "-(math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed)",
             0,
             0
           ]
         },
         "arm_l": {
           "rotation": [
-            "Math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed",
+            "math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed",
             0,
             0
           ]
-        },
+        }
+      }
+    },
+    "animation.horror.look_at": {
+      "loop": true,
+      "bones": {
         "head": {
           "rotation": [
             "query.target_x_rotation",
             "query.target_y_rotation",
+            0
+          ]
+        }
+      }
+    },
+    "animation.horror.idle": {
+      "loop": true,
+      "bones": {
+        "arm_r": {
+          "rotation": [
+            "math.sin(query.life_time * 60) * 3",
+            0,
+            "math.sin(query.life_time * 45) * 2 + 3"
+          ]
+        },
+        "arm_l": {
+          "rotation": [
+            "-math.sin(query.life_time * 60) * 3",
+            0,
+            "-math.sin(query.life_time * 45) * 2 - 3"
+          ]
+        }
+      }
+    },
+    "animation.horror.twitch": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            0,
+            0,
+            "math.mod(query.life_time, 5) < 0.25 ? math.sin(query.life_time * 3000) * 18 : 0"
+          ]
+        }
+      }
+    },
+    "animation.horror.float": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 90) * 1.5 + 1.5",
+            0
+          ]
+        }
+      }
+    },
+    "animation.horror.tail": {
+      "loop": true,
+      "bones": {
+        "tail": {
+          "rotation": [
+            "math.sin(query.life_time * 120) * 8",
+            "math.sin(query.life_time * 80) * 20",
             0
           ]
         }

@@ -4,7 +4,7 @@
     "description": {
       "identifier": "horror:woodbeast",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/woodbeast"
@@ -13,11 +13,15 @@
         "default": "geometry.horror_woodbeast"
       },
       "animations": {
-        "walk": "animation.horror.walk"
+        "walk": "animation.horror.walk",
+        "look_at": "animation.horror.look_at",
+        "tail": "animation.horror.tail"
       },
       "scripts": {
         "animate": [
-          "walk"
+          "walk",
+          "look_at",
+          "tail"
         ]
       },
       "render_controllers": [

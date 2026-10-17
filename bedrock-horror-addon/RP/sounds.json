@@ -1,0 +1,42 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "horror:stalker": {
+        "volume": 1.0,
+        "pitch": [
+          0.45,
+          0.6
+        ],
+        "events": {
+          "ambient": "mob.enderman.idle",
+          "hurt": "mob.enderman.hit",
+          "death": "mob.enderman.death"
+        }
+      },
+      "horror:woodbeast": {
+        "volume": 1.0,
+        "pitch": [
+          0.7,
+          0.9
+        ],
+        "events": {
+          "ambient": "mob.ravager.ambient",
+          "hurt": "mob.ravager.hurt",
+          "death": "mob.ravager.death"
+        }
+      },
+      "horror:whisperer": {
+        "volume": 1.0,
+        "pitch": [
+          0.4,
+          0.55
+        ],
+        "events": {
+          "ambient": "mob.vex.ambient",
+          "hurt": "mob.vex.hurt",
+          "death": "mob.vex.death"
+        }
+      }
+    }
+  }
+}

@@ -8,16 +8,20 @@
       "is_experimental": false
     },
     "components": {
+      "minecraft:collision_box": {
+        "width": 1.0,
+        "height": 1.9
+      },
+      "minecraft:physics": {},
+      "minecraft:nameable": {},
+      "minecraft:jump.static": {},
+      "minecraft:movement.basic": {},
       "minecraft:type_family": {
         "family": [
           "horror",
           "monster",
           "woodbeast"
         ]
-      },
-      "minecraft:collision_box": {
-        "width": 1.0,
-        "height": 1.9
       },
       "minecraft:health": {
         "value": 40,
@@ -41,19 +45,26 @@
         "avoid_water": true,
         "can_pass_doors": true
       },
-      "minecraft:movement.basic": {},
-      "minecraft:jump.static": {},
-      "minecraft:physics": {},
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true
       },
-      "minecraft:nameable": {},
       "minecraft:despawn": {
         "despawn_from_distance": {
           "min_distance": 96,
           "max_distance": 128
         }
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/horror_woodbeast.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "query.last_hit_by_player ? 10 : 0"
+      },
+      "minecraft:ambient_sound_interval": {
+        "value": 8,
+        "range": 12,
+        "event_name": "ambient"
       },
       "minecraft:behavior.float": {
         "priority": 0
@@ -92,6 +103,54 @@
       },
       "minecraft:behavior.random_look_around": {
         "priority": 8
+      },
+      "minecraft:burns_in_daylight": {},
+      "minecraft:behavior.avoid_mob_type": {
+        "priority": 1,
+        "entity_types": [
+          {
+            "filters": {
+              "all_of": [
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "player"
+                },
+                {
+                  "any_of": [
+                    {
+                      "test": "has_equipment",
+                      "subject": "other",
+                      "domain": "hand",
+                      "value": "minecraft:torch"
+                    },
+                    {
+                      "test": "has_equipment",
+                      "subject": "other",
+                      "domain": "hand",
+                      "value": "minecraft:soul_torch"
+                    },
+                    {
+                      "test": "has_equipment",
+                      "subject": "other",
+                      "domain": "hand",
+                      "value": "minecraft:lantern"
+                    },
+                    {
+                      "test": "has_equipment",
+                      "subject": "other",
+                      "domain": "hand",
+                      "value": "minecraft:soul_lantern"
+                    }
+                  ]
+                }
+              ]
+            },
+            "max_dist": 8,
+            "walk_speed_multiplier": 1.0,
+            "sprint_speed_multiplier": 1.4
+          }
+        ]
       }
     }
   }

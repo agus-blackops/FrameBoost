@@ -4,7 +4,7 @@
     "description": {
       "identifier": "horror:stalker",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/stalker"
@@ -13,11 +13,17 @@
         "default": "geometry.horror_stalker"
       },
       "animations": {
-        "walk": "animation.horror.walk"
+        "walk": "animation.horror.walk",
+        "idle": "animation.horror.idle",
+        "look_at": "animation.horror.look_at",
+        "twitch": "animation.horror.twitch"
       },
       "scripts": {
         "animate": [
-          "walk"
+          "walk",
+          "idle",
+          "look_at",
+          "twitch"
         ]
       },
       "render_controllers": [

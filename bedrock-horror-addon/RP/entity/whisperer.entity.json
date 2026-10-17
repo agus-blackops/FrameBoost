@@ -13,11 +13,19 @@
         "default": "geometry.horror_whisperer"
       },
       "animations": {
-        "walk": "animation.horror.walk"
+        "walk": "animation.horror.walk",
+        "idle": "animation.horror.idle",
+        "look_at": "animation.horror.look_at",
+        "float": "animation.horror.float",
+        "twitch": "animation.horror.twitch"
       },
       "scripts": {
         "animate": [
-          "walk"
+          "walk",
+          "idle",
+          "look_at",
+          "float",
+          "twitch"
         ]
       },
       "render_controllers": [
