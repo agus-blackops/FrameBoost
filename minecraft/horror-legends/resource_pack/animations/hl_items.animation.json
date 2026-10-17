@@ -1,0 +1,175 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.hl.item.flashlight.first": {
+      "loop": true,
+      "bones": {
+        "flashlight": {
+          "rotation": [
+            -90,
+            -120,
+            -50
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.flashlight.third": {
+      "loop": true,
+      "bones": {
+        "flashlight": {
+          "rotation": [
+            20,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.battery.first": {
+      "loop": true,
+      "bones": {
+        "battery": {
+          "rotation": [
+            -80,
+            -110,
+            -60
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.battery.third": {
+      "loop": true,
+      "bones": {
+        "battery": {
+          "rotation": [
+            20,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.journal.first": {
+      "loop": true,
+      "bones": {
+        "journal": {
+          "rotation": [
+            50,
+            -60,
+            130
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.journal.third": {
+      "loop": true,
+      "bones": {
+        "journal": {
+          "rotation": [
+            70,
+            0,
+            -180
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.page.first": {
+      "loop": true,
+      "bones": {
+        "page": {
+          "rotation": [
+            70,
+            60,
+            -50
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.page.third": {
+      "loop": true,
+      "bones": {
+        "page": {
+          "rotation": [
+            20,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.hollow_pickaxe.first": {
+      "loop": true,
+      "bones": {
+        "hollow_pickaxe": {
+          "rotation": [
+            30,
+            60,
+            -70
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.item.hollow_pickaxe.third": {
+      "loop": true,
+      "bones": {
+        "hollow_pickaxe": {
+          "rotation": [
+            -60,
+            -180,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  }
+}

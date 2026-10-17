@@ -25,6 +25,7 @@ import importlib
 
 import art
 import content
+import items3d
 from animations import ANIMATIONS
 from geometry import render
 from lang import LANG
@@ -84,6 +85,32 @@ def write_models():
     path.write_text(text + "\n", encoding="utf-8")
     anims = {"format_version": "1.8.0", "animations": ANIMATIONS}
     (RP / "animations" / "hl.animation.json").write_text(json.dumps(anims, indent=2) + "\n", encoding="utf-8")
+
+
+def write_items():
+    """The items' 3D models in your hand (see items3d.py)."""
+    models = {name: make() for name, make in items3d.MODELS.items()}
+    errors = [e for m in models.values() for e in m.check_uv()]
+    if errors:
+        print("\n".join(errors))
+        sys.exit(1)
+    geo = {"format_version": "1.16.0", "minecraft:geometry": [m.to_json() for m in models.values()]}
+    (RP / "models" / "entity" / "hl_items.geo.json").write_text(json.dumps(geo) + "\n", encoding="utf-8")
+    anims = {"format_version": "1.8.0", "animations": items3d.animations()}
+    (RP / "animations" / "hl_items.animation.json").write_text(json.dumps(anims, indent=2) + "\n", encoding="utf-8")
+    tex = RP / "textures" / "models" / "hl"
+    painters = {"flashlight": items3d.paint_flashlight, "battery": items3d.paint_battery,
+                "journal": items3d.paint_journal, "hollow_pickaxe": items3d.paint_hollow_pickaxe}
+    for name, paint in painters.items():
+        paint(7, models[name]).save(tex / f"{name}.png")
+    for n in range(1, 8):
+        items3d.paint_page(7, models["page"], art.page(n)).save(tex / f"page_{n}.png")
+    folder = RP / "attachables"
+    folder.mkdir(parents=True, exist_ok=True)
+    for identifier, model in items3d.ITEMS.items():
+        short = identifier.split(":")[1]
+        texture = short if model == "page" else model
+        content.write(folder / f"{short}.json", items3d.attachable(identifier, model, texture))
 
 
 def paint_textures():
@@ -189,6 +216,18 @@ def validate():
     for pattern in re.findall(r"`(hl\.[a-z0-9_.]*)\$\{", scripts):
         if not any(k.startswith(pattern) for k in LANG):
             errors.append(f"scripts use unknown text family: {pattern}*")
+    # Every item model has its geometry, animations and texture.
+    item_geo = {g["description"]["identifier"] for g in
+                json.loads((RP / "models" / "entity" / "hl_items.geo.json").read_text())["minecraft:geometry"]}
+    item_anims = json.loads((RP / "animations" / "hl_items.animation.json").read_text())["animations"]
+    for path in (RP / "attachables").glob("*.json"):
+        desc = json.loads(path.read_text())["minecraft:attachable"]["description"]
+        if desc["geometry"]["default"] not in item_geo:
+            errors.append(f"{path.name}: missing geometry")
+        if any(a not in item_anims for a in desc["animations"].values()):
+            errors.append(f"{path.name}: missing animation")
+        if not (RP / f"{desc['textures']['default']}.png").exists():
+            errors.append(f"{path.name}: missing texture")
     for s in sounds.values():
         for f in s["sounds"]:
             if not (RP / f"{f['name']}.ogg").exists():
@@ -215,6 +254,7 @@ if __name__ == "__main__":
     content.write_all()
     write_models()
     paint_textures()
+    write_items()
     if "--preview" in sys.argv:
         write_previews(Path(sys.argv[sys.argv.index("--preview") + 1]))
     validate()

@@ -26,8 +26,8 @@ Después, al crear o editar un mundo, activa **Horror Legends** en *Packs de
 comportamiento* (el de recursos se añade solo). Requiere **Minecraft Bedrock
 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **7.0.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 7.0.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **7.1.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 7.1.0. Los
 días que llevas en el mundo se conservan; las páginas que ya habías leído
 siguen leídas (ahora hacen falta siete).
 
@@ -138,6 +138,23 @@ también: con huevo pelea incluso de día).
   objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un
   día.
 
+## Objetos en 3D (7.1.0)
+
+Los objetos tienen **modelo 3D cuando los llevas en la mano** (en primera y en
+tercera persona), en vez del dibujo plano de siempre:
+
+- **Linterna**: cuerpo negro con empuñadura rugosa, anillo de latón,
+  interruptor rojo, correa y un **cristal que brilla**. Apunta hacia donde
+  miras.
+- **Pila**: con el polo de cobre y el rayo amarillo.
+- **Diario**: tapa de cuero con costuras, **una mano de sangre**, el canto de
+  las hojas, el cierre y la cinta roja.
+- **Páginas I–VII**: una hoja de papel con su propio dibujo, mirando hacia ti.
+- **Pico del Minero Hueco**: de piedra negra con **grietas de lava que brillan**.
+
+En el inventario se siguen viendo los iconos. El Farol Protector ya era un
+bloque con modelo propio.
+
 ## Modelos, texturas y sonidos (7.0.0)
 
 Los **15 modelos están hechos desde cero** en esta versión, con texturas
@@ -186,6 +203,7 @@ tools/
   molang.py          evalúa las animaciones para las vistas previas
   paint.py           rampas de color y tramado
   art.py             iconos, bloques e icono del pack
+  items3d.py         los objetos en 3D en la mano
   sounds.py          crea los sonidos (necesita numpy y soundfile; ya van generados)
   geometry.py        modelos en Python, comprobación de UV y renderizador 3D
   pixels.py          lienzo PNG

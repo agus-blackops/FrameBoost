@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [7, 0, 0]
+VERSION = [7, 1, 0]
 UUID = {
     "bp": "95cc20cd-1272-4a55-8a97-f2b1dfd18e3f",
     "bp_data": "71d0f013-b17b-4635-843d-5f11ba161bba",
