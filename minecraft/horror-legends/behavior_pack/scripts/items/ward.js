@@ -1,12 +1,11 @@
 // The Ward Lantern: a lantern with an amethyst heart. Nothing haunts you
-// within its light: the Presence can't reach the lights round it, the Cave
-// Dweller and null won't come near it, the Man From The Fog stays out of its
-// circle and Herobrine builds nothing inside it. But on a Red Night,
+// within its light: no creature will step into it, nothing is built or
+// broken inside it, and the lights round it stay lit. But on a Red Night,
 // something may snuff it out.
 
 import { BlockPermutation } from "@minecraft/server";
-import { OVERWORLD, actionBar, block, distance, soundAt, tr, tryRun } from "../lib/util.js";
-import { setWorldProp, worldProp } from "../lib/state.js";
+import { OVERWORLD, actionBar, block, distance, soundAt, tr, tryRun } from "../core/util.js";
+import { setWorldProp, worldProp } from "../core/store.js";
 
 export const WARD = "hl:ward_lantern";
 export const WARD_RADIUS = 14;

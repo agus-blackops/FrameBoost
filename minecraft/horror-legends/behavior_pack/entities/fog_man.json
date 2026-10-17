@@ -5,46 +5,46 @@
       "identifier": "hl:fog_man",
       "is_spawnable": true,
       "is_summonable": true,
-      "is_experimental": false
+      "is_experimental": false,
+      "properties": {
+        "hl:mode": {
+          "type": "enum",
+          "values": [
+            "watch",
+            "chase"
+          ],
+          "default": "watch",
+          "client_sync": true
+        }
+      }
     },
     "component_groups": {
       "hl:vanish": {
         "minecraft:instant_despawn": {}
       },
-      "hl:watching": {
-        "minecraft:mark_variant": {
-          "value": 0
-        },
-        "minecraft:type_family": {
-          "family": [
-            "hl_fog_man",
-            "hl_watching",
-            "monster",
-            "mob"
-          ]
-        },
+      "hl:watch": {
         "minecraft:movement": {
           "value": 0.0
         },
-        "minecraft:navigation.walk": {}
-      },
-      "hl:chasing": {
-        "minecraft:mark_variant": {
-          "value": 1
-        },
+        "minecraft:navigation.walk": {},
         "minecraft:type_family": {
           "family": [
             "hl_fog_man",
-            "hl_chasing",
             "monster",
             "mob"
           ]
-        },
+        }
+      },
+      "hl:chase": {
         "minecraft:movement": {
           "value": 0.46
         },
         "minecraft:attack": {
           "damage": 8
+        },
+        "minecraft:follow_range": {
+          "value": 96,
+          "max": 96
         },
         "minecraft:behavior.nearest_attackable_target": {
           "priority": 1,
@@ -58,7 +58,7 @@
                 "subject": "other",
                 "value": "player"
               },
-              "max_dist": 96
+              "max_dist": 128
             }
           ]
         },
@@ -67,11 +67,11 @@
           "speed_multiplier": 1.0,
           "track_target": true
         },
+        "minecraft:can_climb": {},
         "minecraft:navigation.climb": {
           "can_path_over_water": true,
           "avoid_water": true
         },
-        "minecraft:can_climb": {},
         "minecraft:break_blocks": {
           "breakable_blocks": [
             "minecraft:glass",
@@ -99,6 +99,13 @@
             "minecraft:crimson_door",
             "minecraft:warped_door"
           ]
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_fog_man",
+            "monster",
+            "mob"
+          ]
         }
       }
     },
@@ -113,8 +120,8 @@
       "minecraft:fire_immune": {},
       "minecraft:despawn": {
         "despawn_from_distance": {
-          "min_distance": 96,
-          "max_distance": 128
+          "min_distance": 128,
+          "max_distance": 160
         }
       },
       "minecraft:conditional_bandwidth_optimization": {},
@@ -134,23 +141,19 @@
         "max": 120
       },
       "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
       "minecraft:loot": {
         "table": "loot_tables/empty.json"
       },
       "minecraft:knockback_resistance": {
-        "value": 0.8
+        "value": 0.6
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
       },
       "minecraft:pushable": {
         "is_pushable": false,
         "is_pushable_by_piston": true
-      },
-      "minecraft:follow_range": {
-        "value": 96,
-        "max": 96
-      },
-      "minecraft:jump.static": {},
-      "minecraft:behavior.float": {
-        "priority": 0
       },
       "minecraft:behavior.look_at_player": {
         "priority": 6,
@@ -167,34 +170,34 @@
           ]
         }
       },
-      "minecraft:entity_spawned": {
+      "hl:watch": {
+        "remove": {
+          "component_groups": [
+            "hl:chase"
+          ]
+        },
         "add": {
           "component_groups": [
-            "hl:watching"
+            "hl:watch"
           ]
         }
       },
       "hl:chase": {
         "remove": {
           "component_groups": [
-            "hl:watching"
+            "hl:watch"
           ]
         },
         "add": {
           "component_groups": [
-            "hl:chasing"
+            "hl:chase"
           ]
         }
       },
-      "hl:watch": {
-        "remove": {
-          "component_groups": [
-            "hl:chasing"
-          ]
-        },
+      "minecraft:entity_spawned": {
         "add": {
           "component_groups": [
-            "hl:watching"
+            "hl:watch"
           ]
         }
       }

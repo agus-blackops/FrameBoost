@@ -5,7 +5,14 @@
       "identifier": "hl:herobrine",
       "is_spawnable": true,
       "is_summonable": true,
-      "is_experimental": false
+      "is_experimental": false,
+      "properties": {
+        "hl:strike": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
     },
     "component_groups": {
       "hl:vanish": {
@@ -23,8 +30,8 @@
       "minecraft:fire_immune": {},
       "minecraft:despawn": {
         "despawn_from_distance": {
-          "min_distance": 96,
-          "max_distance": 128
+          "min_distance": 128,
+          "max_distance": 160
         }
       },
       "minecraft:conditional_bandwidth_optimization": {},
@@ -36,13 +43,14 @@
       },
       "minecraft:collision_box": {
         "width": 0.6,
-        "height": 2.7
+        "height": 3.0
       },
       "minecraft:health": {
         "value": 100,
         "max": 100
       },
       "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
       "minecraft:loot": {
         "table": "loot_tables/empty.json"
       },

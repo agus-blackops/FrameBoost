@@ -180,6 +180,102 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "hl.siren": {
+      "category": "hostile",
+      "min_distance": 8,
+      "max_distance": 160,
+      "sounds": [
+        {
+          "name": "sounds/hl/siren",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.voice": {
+      "category": "hostile",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/hl/voice",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.stone": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 20,
+      "sounds": [
+        {
+          "name": "sounds/hl/stone",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.gurgle": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 20,
+      "sounds": [
+        {
+          "name": "sounds/hl/gurgle",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.shriek": {
+      "category": "hostile",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/hl/shriek",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.whistle": {
+      "category": "hostile",
+      "min_distance": 4,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hl/whistle",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.hack": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 24,
+      "sounds": [
+        {
+          "name": "sounds/hl/hack",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.chomp": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 20,
+      "sounds": [
+        {
+          "name": "sounds/hl/chomp",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

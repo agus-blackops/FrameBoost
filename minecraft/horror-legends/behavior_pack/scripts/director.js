@@ -7,38 +7,36 @@
 //
 //   calm   rare small things; when fear reaches 30 (or after a few quiet
 //          minutes) the tension builds
-//   build  small scares every half minute or so: sounds, signs, glimpses
+//   build  small scares every half minute or so
 //   peak   when fear reaches 65 (or the build-up has gone on long enough),
-//          one big encounter chosen for where you are
+//          one real encounter
 //   relax  a few minutes to breathe, then it starts again
 //
-// Chapters decide which threats are in the pool.
+// What happens is chosen by where you are: every creature in the registry
+// says how much it wants to happen here (in a cave, in the woods, in the
+// snow, by the water, at home, in the open) and only those whose act has
+// begun are in the pool.
 
 import { system } from "@minecraft/server";
-import { isIndoors, isNight, isUnderground, overworldPlayers, pick, randInt, sound, tr, tryRun } from "./lib/util.js";
+import { overworldPlayers, pick, randInt, sound, tr, tryRun } from "./core/util.js";
 import {
-  active, addFear, chapterIndex, flags, getFear, intensity, setFear, setWorldProp, worldProp,
-} from "./lib/state.js";
-import { allFor, encounterActive } from "./lib/actors.js";
+  THREATS, actIndex, active, addFear, arrivalDay, flags, getFear, intensity, setFear, setWorldProp, unlocked, worldProp,
+} from "./core/store.js";
+import { DEFS, allFor, encounterActive } from "./core/creatures.js";
+import { context } from "./core/hunt.js";
 import { nearWard } from "./items/ward.js";
-import { ambience } from "./threats/ambience.js";
-import { fakeAlive, gamerJoin } from "./threats/gamer.js";
-import { dwellerMajor, dwellerMinor } from "./threats/dweller.js";
-import { herobrineMajor, herobrineMinor } from "./threats/herobrine.js";
-import { presenceMajor, presenceMinor } from "./threats/presence.js";
-import { fog, fogMajor, fogMinor } from "./threats/fog.js";
-import { nullMajor, nullMinor } from "./threats/null.js";
+import { fog } from "./creatures/fog.js";
 
 const SECOND = 20;
 export const pace = new Map(); // playerId -> { phase, since, next }
 
-export function baseline(player) {
+export function baseline(player, ctx = context(player)) {
   let b = 5;
-  const under = isUnderground(player);
-  if (isNight()) b += 15;
-  if (under) b += 20;
-  if (fog.active && !under) b += 12;
-  if (flags.bloodNight) b += 25;
+  if (ctx.night) b += 15;
+  if (ctx.under) b += 20;
+  if (fog.active && !ctx.under) b += 12;
+  if (ctx.swimming) b += 8;
+  if (flags.redNight) b += 25;
   const health = tryRun(() => player.getComponent("minecraft:health"));
   if (health && health.currentValue < health.effectiveMax * 0.4) b += 10;
   if (allFor(player).length) b += 20;
@@ -46,58 +44,30 @@ export function baseline(player) {
   return Math.max(0, Math.min(95, b));
 }
 
-const MINOR = {
-  ambience: ambience,
-  herobrine: herobrineMinor,
-  dweller: dwellerMinor,
-  presence: presenceMinor,
-  fog: fogMinor,
-  null: nullMinor,
-  gamer: gamerJoin,
-};
-
-const MAJOR = {
-  dweller: dwellerMajor,
-  fog: fogMajor,
-  herobrine: herobrineMajor,
-  presence: presenceMajor,
-  null: nullMajor,
-};
-
-export function minorEvent(player) {
-  const under = isUnderground(player);
-  const night = isNight();
-  const choice = pick([
-    ["ambience", active("ambience") ? 4 : 0],
-    ["herobrine", active("herobrine") ? 3 : 0],
-    ["dweller", active("dweller") && under ? 5 : 0],
-    ["presence", active("presence") && (night || isIndoors(player)) ? 3 : 0],
-    ["fog", active("fog") && !under && !fog.active ? 1 : 0],
-    ["null", active("null") ? 2 : 0],
-    ["gamer", active("gamer") && !fakeAlive() ? 1 : 0],
-  ]);
-  return !!(choice && tryRun(() => MINOR[choice](player)));
-}
-
-export function majorEvent(player) {
-  const under = isUnderground(player);
-  const night = isNight();
-  const options = [
-    ["dweller", active("dweller") && under ? 6 : 0],
-    ["fog", active("fog") && fog.active && !under ? 5 : 0],
-    ["herobrine", active("herobrine") && !under ? 3 : 0],
-    ["presence", active("presence") && (night || isIndoors(player)) ? 4 : 0],
-    ["null", active("null") ? 2 : 0],
-  ].filter(([, w]) => w > 0);
-  // The favourite first; if it can't happen here (no lights to put out, no
-  // cave to crawl out of), any of the others.
-  while (options.length) {
-    const choice = pick(options);
-    if (tryRun(() => MAJOR[choice](player))) return true;
-    options.splice(options.findIndex(([k]) => k === choice), 1);
+function pool(player, which) {
+  const ctx = context(player);
+  const options = [];
+  for (const [kind, def] of Object.entries(DEFS)) {
+    if (!def[which] || !THREATS.includes(kind) || !active(kind)) continue;
+    const w = tryRun(() => def.weights?.(ctx))?.[which === "minor" ? 0 : 1] ?? 0;
+    if (w > 0) options.push([kind, w]);
   }
-  return false;
+  return { ctx, options };
 }
+
+// The favourite first; if it can't happen here, any of the others.
+function happen(player, which) {
+  const { ctx, options } = pool(player, which);
+  while (options.length) {
+    const kind = pick(options);
+    if (tryRun(() => DEFS[kind][which](player, ctx))) return kind;
+    options.splice(options.findIndex(([k]) => k === kind), 1);
+  }
+  return undefined;
+}
+
+export const minorEvent = (player) => happen(player, "minor");
+export const majorEvent = (player) => happen(player, "major");
 
 function phase(s, name) {
   s.phase = name;
@@ -106,13 +76,14 @@ function phase(s, name) {
 
 function direct(player) {
   const now = system.currentTick;
-  const P = intensity().pace * (isNight() || flags.bloodNight ? 0.7 : 1);
+  const ctx = context(player);
+  const P = intensity().pace * (ctx.night ? 0.7 : 1);
   const s = pace.get(player.id) ?? { phase: "calm", since: now, next: now + 60 * SECOND * P };
   pace.set(player.id, s);
 
   // Fear drifts towards what the surroundings deserve.
   const f = getFear(player);
-  const base = baseline(player);
+  const base = baseline(player, ctx);
   setFear(player, f < base ? Math.min(base, f + 1.5) : Math.max(base, f - (s.phase === "relax" ? 1.5 : 0.35)));
   const fear = getFear(player);
 
@@ -159,19 +130,33 @@ export function tickDirector() {
   for (const player of overworldPlayers()) tryRun(() => direct(player));
 }
 
-// When a chapter opens it is announced at nightfall (the first two right
-// away): a title, a low drone, and a line in the chat.
-export function announceChapters() {
-  const n = chapterIndex();
-  const shown = worldProp("hl:chapter_shown", -1);
-  if (n <= shown || (n >= 2 && !isNight())) return;
-  setWorldProp("hl:chapter_shown", n);
-  for (const p of overworldPlayers()) {
-    tryRun(() =>
-      p.onScreenDisplay.setTitle(n === 0 ? tr("hl.j.prologue") : tr("hl.j.chapter_n", String(n)), { subtitle: tr(`hl.ch.${n}.name`), fadeInDuration: 20, stayDuration: 60, fadeOutDuration: 30 })
-    );
-    sound(p, "hl.drone", 0.8);
-    p.sendMessage(tr(`hl.ch.${n}.intro`));
+// Each act is announced at nightfall (the first one right away): a title,
+// a low drone, a line in the chat. And each new horror, the night it
+// arrives, gets a line of its own.
+export function announce() {
+  const players = overworldPlayers();
+  if (!players.length) return;
+  const night = !!tryRun(() => context(players[0]).night);
+  const n = actIndex();
+  if (n > worldProp("hl:act_shown", 0) && (n === 1 || night)) {
+    setWorldProp("hl:act_shown", n);
+    for (const p of players) {
+      tryRun(() =>
+        p.onScreenDisplay.setTitle(tr("hl.act.n", String(n)), { subtitle: tr(`hl.act.${n}.name`), fadeInDuration: 20, stayDuration: 60, fadeOutDuration: 30 })
+      );
+      sound(p, "hl.drone", 0.8);
+      p.sendMessage(tr(`hl.act.${n}.intro`));
+    }
+  }
+  for (const kind of THREATS) {
+    if (!unlocked(kind) || worldProp(`hl:arrived_${kind}`, false)) continue;
+    if (arrivalDay(kind) === 0) {
+      setWorldProp(`hl:arrived_${kind}`, true); // the prologue needs no herald
+      continue;
+    }
+    if (!night) continue;
+    setWorldProp(`hl:arrived_${kind}`, true);
+    for (const p of players) p.sendMessage(tr(`hl.arrive.${kind}`));
   }
 }
 
@@ -179,3 +164,4 @@ export function onPlayerDied(player) {
   setFear(player, 0);
   pace.delete(player.id);
 }
+

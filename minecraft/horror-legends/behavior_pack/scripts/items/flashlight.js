@@ -1,21 +1,17 @@
 // The flashlight: use it to switch it on and off. While it is on and in
 // your hand it really lights the way: invisible light blocks follow your
 // head and the spot you're pointing at. It runs on batteries (five minutes
-// each); a spare battery in your inventory goes in by itself. Its beam
-// drives off the Cave Dweller, makes Herobrine, null and a watching Man From
-// The Fog vanish, and burns Herobrine's true form. A running Man From The
-// Fog doesn't care.
+// each); a spare battery in your inventory goes in by itself. What its beam
+// does to each creature is up to the creature (its `shine` in the registry):
+// some flee, some vanish, the Hollow Miner burns, a few don't care at all.
 
 import { BlockPermutation, system, world } from "@minecraft/server";
 import {
   OVERWORLD, actionBar, block, canSee, heldItem, later, overworldPlayers, playerById, sound, takeItem, tr, tryRun, valid,
-} from "../lib/util.js";
-import { tracked, vanish } from "../lib/actors.js";
-import { playerProp, setPlayerProp } from "../lib/state.js";
-import { saveBlocks, savedBlocks } from "../lib/saved.js";
-import { flee } from "../threats/dweller.js";
-import { glitch } from "../threats/null.js";
-import { burnWithLight } from "../threats/boss.js";
+} from "../core/util.js";
+import { DEFS, tracked } from "../core/creatures.js";
+import { playerProp, setPlayerProp } from "../core/store.js";
+import { saveBlocks, savedBlocks } from "../core/blocks.js";
 
 export const FLASHLIGHT = "hl:flashlight";
 export const BATTERY = "hl:battery";
@@ -192,15 +188,7 @@ function shine(player) {
   for (const s of [...tracked.values()]) {
     const e = s.entity;
     if (s.playerId !== player.id || !valid(e) || !canSee(player, e, 24, 0.93)) continue;
-    if (s.kind === "dweller" && s.mode !== "fleeing" && !s.minion) flee(e, player, true);
-    else if (s.kind === "herobrine" && s.mode !== "reveal") vanish(e);
-    else if (s.kind === "null") {
-      glitch(player);
-      vanish(e, false);
-    } else if (s.kind === "fogMan") {
-      if (s.mode === "chasing") actionBar(player, tr("hl.flash.fog"));
-      else vanish(e);
-    } else if (s.kind === "boss") burnWithLight(e, player);
+    tryRun(() => DEFS[s.kind]?.shine?.(e, s, player));
   }
 }
 

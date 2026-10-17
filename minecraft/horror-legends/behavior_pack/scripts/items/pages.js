@@ -1,12 +1,12 @@
-// The five torn pages of a survivor's diary. Each creature leaves one behind
-// the first time you live through it; reading all five teaches you the
-// ritual that calls Herobrine out to fight.
+// The seven torn pages of a survivor's diary. Seven of them each keep one
+// and leave it behind when you live through them; reading all seven teaches
+// you the ritual that calls Herobrine out to fight.
 
 import { ItemStack } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 import { world } from "@minecraft/server";
-import { actionBar, countItem, later, sound, soundAt, takeItem, tr, tryRun } from "../lib/util.js";
-import { PAGES, pageRead, pagesRead, setPageRead, setWorldProp, worldProp } from "../lib/state.js";
+import { actionBar, countItem, later, sound, soundAt, takeItem, tr, tryRun } from "../core/util.js";
+import { PAGES, pageRead, pagesRead, setPageRead, setWorldProp, worldProp } from "../core/store.js";
 
 export const pageItem = (n) => `hl:page_${n}`;
 export const PAGE_OF = Object.fromEntries(PAGES.map((n) => [pageItem(n), n]));

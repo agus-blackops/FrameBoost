@@ -335,6 +335,108 @@ def dawn():
         place(out, bell * 0.3, 1.5 + k * 0.6)
     return finish(out, 0.75)
 
+
+def siren():
+    """Siren Head: an air-raid siren winding up and down, torn by distortion."""
+    length = 6.0
+    t = t_axis(length)
+    pitch = 260 + 420 * (0.5 - 0.5 * np.cos(2 * np.pi * t / length * 1.5))
+    tone = saw(pitch, length) * 0.5 + saw(pitch * 1.505, length) * 0.35 + sine(pitch * 0.5, length) * 0.3
+    tone = resonator(tone, 900, 1.2) * 0.6 + tone * 0.4
+    wobble = 1 + 0.25 * sine(7.0, length)
+    out = soft_clip(tone * wobble * env(len(t), 0.6, 1.5, 1.2), 3.0)
+    return finish(out, 0.85)
+
+
+def voice():
+    """A voice through the sirens: babbling formants over radio static,
+    words that are nearly words."""
+    length = 3.5
+    n = int(length * RATE)
+    t = t_axis(length)
+    pitch = 110 + 30 * sine(0.9, length) + 25 * sine(5.3, length)
+    buzz = saw(pitch, length)
+    f1 = 500 + 350 * np.sign(sine(3.1, length)) * np.abs(sine(1.7, length))
+    f2 = 1500 + 700 * sine(2.3, length)
+    speech = resonator(buzz, np.abs(f1) + 250, 6) + 0.6 * resonator(buzz, np.abs(f2) + 400, 8)
+    gate = (sine(4.2, length) + 0.3 * sine(9.7, length)) > -0.2
+    radio = resonator(speech * gate, 1400, 0.8)
+    hiss = one_pole(noise(length), 2000, high=True) * 0.25
+    crackle = (rng.random(n) > 0.995) * rng.uniform(-1, 1, n)
+    return finish(soft_clip(radio * 2 + hiss + crackle, 2.5) * env(n, 0.05, 0.3), 0.8)
+
+
+def stone():
+    """The statue moves: stone grinding on stone, a short heavy scrape."""
+    length = 0.9
+    n = int(length * RATE)
+    grit = noise(length) * (rng.random(n) > 0.4)
+    body = resonator(grit, 180, 2.0) * 1.5 + resonator(grit, 520, 3) * 0.6 + one_pole(grit, 900) * 0.4
+    return finish(body * env(n, 0.04, 0.35, 1.5), 0.9)
+
+
+def gurgle():
+    """The Drowned One: water in a throat, bubbling up."""
+    length = 2.2
+    n = int(length * RATE)
+    out = np.zeros(n)
+    for _ in range(40):
+        at = rng.uniform(0, length - 0.2)
+        dur = rng.uniform(0.04, 0.12)
+        f0 = rng.uniform(250, 700)
+        m = int(dur * RATE)
+        bub = sine(np.linspace(f0, f0 * 1.8, m), dur) * decay(m, dur / 3)
+        place(out, bub * rng.uniform(0.3, 1.0), at)
+    throat = resonator(saw(70 + 10 * sine(3, length), length), 400, 3) * 0.4
+    return finish((out + throat) * env(n, 0.1, 0.5), 0.8)
+
+
+def shriek():
+    """The Wendigo: a high, broken shriek, half animal, half wind."""
+    length = 2.0
+    n = int(length * RATE)
+    t = t_axis(length)
+    f = 1100 + 500 * np.sin(2 * np.pi * 0.6 * t) + 90 * sine(23, length)
+    tone = saw(f, length) * 0.5 + saw(f * 1.33, length) * 0.4
+    tone = resonator(tone, 2600, 2) + resonator(tone, 1300, 3) * 0.5
+    air = resonator(noise(length), 3000, 1.5) * 0.5
+    return finish(soft_clip((tone + air) * env(n, 0.05, 0.9, 1.3), 2.0), 0.85)
+
+
+def whistle():
+    """Something whistling in the trees, one falling note, too long."""
+    length = 2.5
+    n = int(length * RATE)
+    f = np.linspace(1500, 900, n) * (1 + 0.01 * sine(6, length))
+    tone = sine(f, length) + 0.15 * resonator(noise(length), 1200, 4)
+    return finish(tone * env(n, 0.3, 1.0, 1.5), 0.6)
+
+
+def hack():
+    """Entity 303: data being torn apart, beeps and bit-crushed bursts."""
+    length = 1.6
+    n = int(length * RATE)
+    out = np.zeros(n)
+    for k in range(14):
+        at = k * length / 14 + rng.uniform(0, 0.03)
+        dur = rng.uniform(0.03, 0.09)
+        f = rng.choice([220, 440, 880, 1760, 3520]) * rng.uniform(0.98, 1.02)
+        beep = np.sign(sine(f, dur)) * 0.6
+        place(out, beep, at)
+    crush = np.round(noise(length) * 3) / 3 * (rng.random(n) > 0.7) * 0.3
+    return finish(out + crush, 0.75)
+
+
+def chomp():
+    """The Mimic's lid slamming shut on something."""
+    length = 0.5
+    n = int(length * RATE)
+    slam = resonator(noise(length), 160, 3) * decay(n, 0.05) * 2
+    wood = resonator(noise(length), 900, 6) * decay(n, 0.03)
+    teeth = resonator(noise(length), 3500, 4) * decay(n, 0.015) * 0.6
+    return finish(soft_clip(slam + wood + teeth, 1.5), 0.95)
+
+
 SOUNDS = {
     # name: (generator, category, min_distance, max_distance, volume)
     "heartbeat": (heartbeat, "hostile", 0.5, 8, 1.0),
@@ -352,6 +454,14 @@ SOUNDS = {
     "page": (page, "player", 0.5, 8, 0.9),
     "click": (click, "player", 0.5, 8, 0.8),
     "dawn": (dawn, "ambient", 0.5, 16, 1.0),
+    "siren": (siren, "hostile", 8, 160, 1.0),
+    "voice": (voice, "hostile", 4, 96, 1.0),
+    "stone": (stone, "hostile", 1, 20, 1.0),
+    "gurgle": (gurgle, "hostile", 1, 20, 1.0),
+    "shriek": (shriek, "hostile", 4, 96, 1.0),
+    "whistle": (whistle, "hostile", 4, 64, 0.8),
+    "hack": (hack, "hostile", 1, 24, 0.9),
+    "chomp": (chomp, "hostile", 1, 20, 1.0),
 }
 
 

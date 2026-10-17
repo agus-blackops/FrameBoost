@@ -28,6 +28,9 @@
         },
         {
           "halo": "math.mod(math.floor(query.life_time * 7.0), 3) != 0"
+        },
+        {
+          "hitbox": "math.mod(math.floor(query.life_time * 2.0), 5) != 0"
         }
       ]
     },
@@ -59,6 +62,143 @@
       ],
       "textures": [
         "query.property('hl:phase') == 2 ? Texture.phase2 : Texture.default"
+      ]
+    },
+    "controller.render.hl.mimic": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "tongue": "query.property('hl:awake')"
+        },
+        {
+          "tongueTip": "query.property('hl:awake')"
+        },
+        {
+          "legFrontRight": "query.property('hl:awake')"
+        },
+        {
+          "legFrontRightTip": "query.property('hl:awake')"
+        },
+        {
+          "legFrontLeft": "query.property('hl:awake')"
+        },
+        {
+          "legFrontLeftTip": "query.property('hl:awake')"
+        },
+        {
+          "legMidRight": "query.property('hl:awake')"
+        },
+        {
+          "legMidRightTip": "query.property('hl:awake')"
+        },
+        {
+          "legMidLeft": "query.property('hl:awake')"
+        },
+        {
+          "legMidLeftTip": "query.property('hl:awake')"
+        },
+        {
+          "legBackRight": "query.property('hl:awake')"
+        },
+        {
+          "legBackRightTip": "query.property('hl:awake')"
+        },
+        {
+          "legBackLeft": "query.property('hl:awake')"
+        },
+        {
+          "legBackLeftTip": "query.property('hl:awake')"
+        }
+      ]
+    },
+    "controller.render.hl.skinwalker": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "cowBody": "!query.property('hl:revealed')"
+        },
+        {
+          "cow": "!query.property('hl:revealed')"
+        },
+        {
+          "cowHead": "!query.property('hl:revealed')"
+        },
+        {
+          "cowLegFR": "!query.property('hl:revealed')"
+        },
+        {
+          "cowLegFL": "!query.property('hl:revealed')"
+        },
+        {
+          "cowLegBR": "!query.property('hl:revealed')"
+        },
+        {
+          "cowLegBL": "!query.property('hl:revealed')"
+        },
+        {
+          "walker": "query.property('hl:revealed')"
+        },
+        {
+          "hips": "query.property('hl:revealed')"
+        },
+        {
+          "torso": "query.property('hl:revealed')"
+        },
+        {
+          "hide": "query.property('hl:revealed')"
+        },
+        {
+          "skull": "query.property('hl:revealed')"
+        },
+        {
+          "jaw": "query.property('hl:revealed')"
+        },
+        {
+          "rightArm": "query.property('hl:revealed')"
+        },
+        {
+          "rightForearm": "query.property('hl:revealed')"
+        },
+        {
+          "leftArm": "query.property('hl:revealed')"
+        },
+        {
+          "leftForearm": "query.property('hl:revealed')"
+        },
+        {
+          "rightLeg": "query.property('hl:revealed')"
+        },
+        {
+          "rightShin": "query.property('hl:revealed')"
+        },
+        {
+          "leftLeg": "query.property('hl:revealed')"
+        },
+        {
+          "leftShin": "query.property('hl:revealed')"
+        }
       ]
     }
   }

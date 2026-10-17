@@ -23,8 +23,8 @@
       "minecraft:fire_immune": {},
       "minecraft:despawn": {
         "despawn_from_distance": {
-          "min_distance": 96,
-          "max_distance": 128
+          "min_distance": 128,
+          "max_distance": 160
         }
       },
       "minecraft:conditional_bandwidth_optimization": {},
@@ -36,13 +36,14 @@
       },
       "minecraft:collision_box": {
         "width": 0.6,
-        "height": 1.8
+        "height": 2.5
       },
       "minecraft:health": {
         "value": 100,
         "max": 100
       },
       "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
       "minecraft:loot": {
         "table": "loot_tables/empty.json"
       },

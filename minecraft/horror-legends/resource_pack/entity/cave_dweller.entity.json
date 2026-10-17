@@ -17,8 +17,8 @@
         "idle": "animation.hl.dweller.idle",
         "look": "animation.hl.dweller.look",
         "twitch": "animation.hl.dweller.twitch",
-        "jaw_idle": "animation.hl.dweller.jaw_idle",
-        "jaw_snap": "animation.hl.dweller.jaw_snap",
+        "lips_idle": "animation.hl.dweller.lips_idle",
+        "lips_open": "animation.hl.dweller.lips_open",
         "attack": "animation.hl.dweller.attack",
         "hurt": "animation.hl.dweller.hurt"
       },
@@ -29,10 +29,10 @@
           "look",
           "twitch",
           {
-            "jaw_idle": "query.mark_variant != 1"
+            "lips_idle": "!(query.property('hl:mode') == 'chase')"
           },
           {
-            "jaw_snap": "query.mark_variant == 1"
+            "lips_open": "query.property('hl:mode') == 'chase'"
           },
           {
             "attack": "variable.attack_time > 0.0"
@@ -46,8 +46,8 @@
         "controller.render.hl.default"
       ],
       "spawn_egg": {
-        "base_color": "#9e9a8e",
-        "overlay_color": "#06060a"
+        "base_color": "#d6d6ce",
+        "overlay_color": "#48121c"
       }
     }
   }

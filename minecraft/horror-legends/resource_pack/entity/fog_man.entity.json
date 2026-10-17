@@ -4,7 +4,7 @@
     "description": {
       "identifier": "hl:fog_man",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/hl/fog_man"
@@ -13,22 +13,22 @@
         "default": "geometry.hl.fog_man"
       },
       "animations": {
+        "look": "animation.hl.fog_man.look",
         "walk": "animation.hl.fog_man.walk",
-        "look": "animation.hl.look_at_target",
         "watch": "animation.hl.fog_man.watch",
-        "sprint": "animation.hl.fog_man.sprint",
+        "chase": "animation.hl.fog_man.chase",
         "attack": "animation.hl.fog_man.attack",
         "hurt": "animation.hl.fog_man.hurt"
       },
       "scripts": {
         "animate": [
-          "walk",
           "look",
+          "walk",
           {
-            "watch": "query.mark_variant == 0"
+            "watch": "query.property('hl:mode') == 'watch'"
           },
           {
-            "sprint": "query.mark_variant == 1"
+            "chase": "query.property('hl:mode') == 'chase'"
           },
           {
             "attack": "variable.attack_time > 0.0"
@@ -42,8 +42,8 @@
         "controller.render.hl.default"
       ],
       "spawn_egg": {
-        "base_color": "#c4c2ba",
-        "overlay_color": "#2e2e32"
+        "base_color": "#b8b8b2",
+        "overlay_color": "#161b17"
       }
     }
   }

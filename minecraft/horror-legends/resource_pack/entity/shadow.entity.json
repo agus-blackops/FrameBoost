@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:shadow",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/shadow"
+      },
+      "geometry": {
+        "default": "geometry.hl.shadow"
+      },
+      "animations": {
+        "look": "animation.hl.shadow.look",
+        "idle": "animation.hl.shadow.idle",
+        "walk": "animation.hl.shadow.walk"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "idle",
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#030304",
+        "overlay_color": "#b01010"
+      }
+    }
+  }
+}

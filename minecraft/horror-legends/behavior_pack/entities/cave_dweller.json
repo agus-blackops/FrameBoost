@@ -5,25 +5,29 @@
       "identifier": "hl:cave_dweller",
       "is_spawnable": true,
       "is_summonable": true,
-      "is_experimental": false
+      "is_experimental": false,
+      "properties": {
+        "hl:mode": {
+          "type": "enum",
+          "values": [
+            "stalk",
+            "chase",
+            "flee"
+          ],
+          "default": "stalk",
+          "client_sync": true
+        }
+      }
     },
     "component_groups": {
       "hl:vanish": {
         "minecraft:instant_despawn": {}
       },
-      "hl:stalking": {
+      "hl:stalk": {
         "minecraft:navigation.walk": {
           "can_path_over_water": true,
           "avoid_water": true,
           "avoid_damage_blocks": true
-        },
-        "minecraft:type_family": {
-          "family": [
-            "hl_cave_dweller",
-            "hl_stalking",
-            "monster",
-            "mob"
-          ]
         },
         "minecraft:movement": {
           "value": 0.18
@@ -34,29 +38,29 @@
           "probability": 1.0,
           "angle_of_view_horizontal": 360
         },
-        "minecraft:mark_variant": {
-          "value": 0
+        "minecraft:type_family": {
+          "family": [
+            "hl_cave_dweller",
+            "monster",
+            "mob"
+          ]
         }
       },
-      "hl:chasing": {
+      "hl:chase": {
         "minecraft:navigation.walk": {
           "can_path_over_water": true,
           "avoid_water": true,
           "avoid_damage_blocks": true
-        },
-        "minecraft:type_family": {
-          "family": [
-            "hl_cave_dweller",
-            "hl_chasing",
-            "monster",
-            "mob"
-          ]
         },
         "minecraft:movement": {
           "value": 0.44
         },
         "minecraft:attack": {
           "damage": 7
+        },
+        "minecraft:follow_range": {
+          "value": 64,
+          "max": 64
         },
         "minecraft:behavior.nearest_attackable_target": {
           "priority": 1,
@@ -70,7 +74,7 @@
                 "subject": "other",
                 "value": "player"
               },
-              "max_dist": 96
+              "max_dist": 128
             }
           ]
         },
@@ -84,23 +88,19 @@
           "yd": 0.4,
           "must_be_on_ground": true
         },
-        "minecraft:mark_variant": {
-          "value": 1
+        "minecraft:type_family": {
+          "family": [
+            "hl_cave_dweller",
+            "monster",
+            "mob"
+          ]
         }
       },
-      "hl:fleeing": {
+      "hl:flee": {
         "minecraft:navigation.walk": {
           "can_path_over_water": true,
           "avoid_water": true,
           "avoid_damage_blocks": true
-        },
-        "minecraft:type_family": {
-          "family": [
-            "hl_cave_dweller",
-            "hl_fleeing",
-            "monster",
-            "mob"
-          ]
         },
         "minecraft:movement": {
           "value": 0.5
@@ -116,12 +116,16 @@
               },
               "max_dist": 48,
               "walk_speed_multiplier": 1.2,
-              "sprint_speed_multiplier": 1.4
+              "sprint_speed_multiplier": 1.5
             }
           ]
         },
-        "minecraft:mark_variant": {
-          "value": 2
+        "minecraft:type_family": {
+          "family": [
+            "hl_cave_dweller",
+            "monster",
+            "mob"
+          ]
         }
       }
     },
@@ -136,8 +140,8 @@
       "minecraft:fire_immune": {},
       "minecraft:despawn": {
         "despawn_from_distance": {
-          "min_distance": 96,
-          "max_distance": 128
+          "min_distance": 128,
+          "max_distance": 160
         }
       },
       "minecraft:conditional_bandwidth_optimization": {},
@@ -157,29 +161,25 @@
         "max": 70
       },
       "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
       "minecraft:loot": {
         "table": "loot_tables/empty.json"
       },
       "minecraft:knockback_resistance": {
-        "value": 0.5
+        "value": 0.6
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
       },
       "minecraft:pushable": {
         "is_pushable": false,
         "is_pushable_by_piston": true
       },
-      "minecraft:follow_range": {
-        "value": 64,
-        "max": 64
-      },
-      "minecraft:jump.static": {},
       "minecraft:can_climb": {},
       "minecraft:ambient_sound_interval": {
         "value": 5.0,
         "range": 8.0,
         "event_name": "ambient"
-      },
-      "minecraft:behavior.float": {
-        "priority": 0
       }
     },
     "events": {
@@ -190,36 +190,49 @@
           ]
         }
       },
-      "minecraft:entity_spawned": {
+      "hl:stalk": {
+        "remove": {
+          "component_groups": [
+            "hl:chase",
+            "hl:flee"
+          ]
+        },
         "add": {
           "component_groups": [
-            "hl:stalking"
+            "hl:stalk"
           ]
         }
       },
       "hl:chase": {
         "remove": {
           "component_groups": [
-            "hl:stalking",
-            "hl:fleeing"
+            "hl:stalk",
+            "hl:flee"
           ]
         },
         "add": {
           "component_groups": [
-            "hl:chasing"
+            "hl:chase"
           ]
         }
       },
       "hl:flee": {
         "remove": {
           "component_groups": [
-            "hl:stalking",
-            "hl:chasing"
+            "hl:stalk",
+            "hl:chase"
           ]
         },
         "add": {
           "component_groups": [
-            "hl:fleeing"
+            "hl:flee"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:stalk"
           ]
         }
       }

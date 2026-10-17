@@ -28,6 +28,12 @@
     },
     "hl_page_5": {
       "textures": "textures/items/hl/page_5"
+    },
+    "hl_page_6": {
+      "textures": "textures/items/hl/page_6"
+    },
+    "hl_page_7": {
+      "textures": "textures/items/hl/page_7"
     }
   }
 }

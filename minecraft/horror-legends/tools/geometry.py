@@ -208,7 +208,8 @@ def _add(a, b):
 
 def bone_transforms(model, pose=None, model_scale=1.0):
     """World transform of every bone. A pose entry is either a rotation
-    (x, y, z) added to the bone's own, or {"rotation": ..., "scale": ...}.
+    (x, y, z) added to the bone's own, or {"rotation": ..., "scale": ...,
+    "position": ...} (position in in-game pixels, like an animation's).
     `model_scale` is the entity's minecraft:scale."""
     pose = pose or {}
     s = model_scale
@@ -217,13 +218,15 @@ def bone_transforms(model, pose=None, model_scale=1.0):
     for bone in model.bones:  # parents are always listed before children
         parent = out[bone.parent] if bone.parent else root
         extra = pose.get(bone.name)
-        scale = (1, 1, 1)
+        scale, move = (1, 1, 1), (0, 0, 0)
         if isinstance(extra, dict):
             scale = extra.get("scale", scale)
+            move = tuple(v * model.detail for v in extra.get("position", move))
             extra = extra.get("rotation")
         rx, ry, rz = _add(bone.rotation, extra)
         rot = _mm(_rot(rx, ry, rz), [[scale[0], 0, 0], [0, scale[1], 0], [0, 0, scale[2]]])
         local = _about(_mirror(bone.pivot), rot)
+        local = (local[0], _add(local[1], _mirror(move)))
         out[bone.name] = _compose(parent, local)
     return out
 

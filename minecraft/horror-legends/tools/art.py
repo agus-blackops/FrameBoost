@@ -158,6 +158,26 @@ DRAWINGS = {
         "...ii.i.i.i...",
         "..tt.tt.tt....",
     ],
+    6: [  # two loudspeakers on a pole, taller than the trees
+        "..bbb....bbb..",
+        "..bkbiiiibkb..",
+        "..bbb.i..bbb..",
+        "......i.......",
+        "..e...i....e..",
+        ".eee..i...eee.",
+        "..e..i.i...e..",
+        "..tt.tt.tt.tt.",
+    ],
+    7: [  # a white hood, red eyes, red code
+        "....gggggg....",
+        "...gkkkkkkg...",
+        "...gkrkkrkg...",
+        "...gkkkkkkg...",
+        "..r.gggggg.r..",
+        ".r..gggggg..r.",
+        "..r........r..",
+        "..tt.tt.tt....",
+    ],
 }
 
 
@@ -258,9 +278,10 @@ def corrupted(seed):
 
 
 def pack_icon(render_view, seed):
-    """The Red Night: a blood-red fog under a red moon, the Hollow Miner
-    towering in the middle, the Man From The Fog and Herobrine among dead
-    trees, the Cave Dweller crawling out of the dark, null glitching."""
+    """The Red Night: a blood-red fog under a red moon, Siren Head standing
+    among dead trees far behind, the Hollow Miner towering in the middle,
+    the Man From The Fog and Herobrine at his sides, the Cave Dweller
+    crawling out of the dark, null glitching."""
     rng = random.Random(seed)
     cv = Canvas(128, 128)
     for y in range(128):
@@ -278,6 +299,7 @@ def pack_icon(render_view, seed):
         for y in range(0, 110):
             for x in range(tx, tx + w):
                 cv.blend(x, y, (0x0C, 0x0A, 0x0A), 0.85)
+    cv.paste(render_view("siren_head", (30, 100), 20, -4), 2, 6)
     cv.paste(render_view("herobrine", (18, 28), 15, -4), 20, 60)
     cv.paste(render_view("null", (24, 38), -30, -4), 100, 52)
     cv.paste(render_view("fog_man", (30, 58), -20, -6, {"body": (4, 0, 0)}), 88, 36)

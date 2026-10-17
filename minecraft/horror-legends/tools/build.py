@@ -6,10 +6,10 @@
     python3 tools/build.py --preview DIR    # also render model previews into DIR
 
 content.py writes the data (entities, items, blocks, recipes, text),
-creatures.py defines the models and paints their textures, animations.py
-has the animations, art.py draws the icons, and sounds.py (run separately,
-it needs numpy) makes the sounds. The add-on ships no third-party art. Only
-the standard library is used here.
+models/ has one module per creature (its model and the painter for its
+texture), animations.py the animations, art.py the icons, and sounds.py (run
+separately, it needs numpy) makes the sounds. The add-on ships no
+third-party art. Only the standard library is used here.
 
 Produces dist/HorrorLegends.mcaddon and dist/HorrorLegends_WhatsApp.zip (the
 same .mcaddon wrapped in a .zip, which messaging apps accept as an attachment).
@@ -21,12 +21,15 @@ import sys
 import zipfile
 from pathlib import Path
 
+import importlib
+
 import art
 import content
-import creatures
 from animations import ANIMATIONS
 from geometry import render
 from lang import LANG
+from models.kit import K
+from molang import pose as anim_pose
 from pixels import Canvas
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,17 +38,16 @@ RP = ROOT / "resource_pack"
 DIST = ROOT / "dist" / "HorrorLegends.mcaddon"
 DIST_ZIP = ROOT / "dist" / "HorrorLegends_WhatsApp.zip"
 
-MODELS = {
-    "herobrine": creatures.herobrine_model(),
-    "herobrine_boss": creatures.herobrine_boss_model(),
-    "null": creatures.null_model(),
-    "fog_man": creatures.fog_man_model(),
-    "cave_dweller": creatures.cave_dweller_model(),
-    "fake_player": creatures.fake_player_model(),
-}
-SEEDS = {"herobrine": 10, "herobrine_boss": 90, "null": 20, "fog_man": 30, "cave_dweller": 40, "fake_player": 80}
-SCALE = 1.0 / creatures.K  # models are built at double size (see creatures.py)
-FOG_WATCH_POSE = {"body": (4, 0, 0), "jaw": (4, 0, 0)}
+CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "siren_head",
+             "goatman", "weeping_statue", "mimic", "shadow", "skinwalker", "wendigo", "entity_303", "drowned_one"]
+MODULES = {name: importlib.import_module(f"models.{name}") for name in CREATURES}
+MODELS = {name: mod.model() for name, mod in MODULES.items()}
+SEEDS = {name: 10 * (i + 1) for i, name in enumerate(CREATURES)}
+# Extra textures: (file, creature, painter options).
+VARIANTS = [("fake_player_eyes", "fake_player", {"white_eyes": True}),
+            ("herobrine_boss_2", "herobrine_boss", {"phase": 2})]
+SCALE = 1.0 / K  # models are built at double size (see models/kit.py)
+FOG_WATCH_POSE = {"body": (4, 0, 0)}
 
 
 def render_view(name, size, yaw, pitch, pose=None, textures=None):
@@ -86,12 +88,12 @@ def write_models():
 
 def paint_textures():
     for name, model in MODELS.items():
-        TEXTURES[name] = getattr(creatures, f"paint_{name}")(SEEDS[name], model)
+        TEXTURES[name] = MODULES[name].paint(SEEDS[name], model)
     ent = RP / "textures" / "entity" / "hl"
     for name, tex in TEXTURES.items():
         tex.save(ent / f"{name}.png")
-    creatures.paint_fake_player(SEEDS["fake_player"], MODELS["fake_player"], white_eyes=True).save(ent / "fake_player_eyes.png")
-    creatures.paint_herobrine_boss(SEEDS["herobrine_boss"], MODELS["herobrine_boss"], phase=2).save(ent / "herobrine_boss_2.png")
+    for file, name, options in VARIANTS:
+        MODULES[name].paint(SEEDS[name], MODELS[name], **options).save(ent / f"{file}.png")
 
     art.corrupted(50).save(RP / "textures" / "blocks" / "hl" / "corrupted_block.png")
     art.ward_lantern().save(RP / "textures" / "blocks" / "hl" / "ward_lantern.png")
@@ -100,26 +102,36 @@ def paint_textures():
     art.flashlight().save(items / "flashlight.png")
     art.battery().save(items / "battery.png")
     art.hollow_pickaxe().save(items / "hollow_pickaxe.png")
-    for n in range(1, 6):
+    for n in range(1, 8):
         art.page(n).save(items / f"page_{n}.png")
     icon = art.pack_icon(render_view, 70)
     icon.save(BP / "pack_icon.png")
     icon.save(RP / "pack_icon.png")
 
 
+def animated(names, **kw):
+    """A preview pose taken from the creature's own animations."""
+    return anim_pose(ANIMATIONS, [f"animation.hl.{n}" for n in names], **kw)
+
+
 PREVIEW_POSES = {
-    "herobrine": [("", {})],
-    "herobrine_boss": [("", {}), ("attack", {"rightArm": (-140, 0, 10), "chest": (10, -15, 0), "jaw": (20, 0, 0)}),
-                       ("cast", {"rightArm": (-150, 0, 20), "leftArm": (-150, 0, -20), "head": (-25, 0, 0), "jaw": (35, 0, 0)})],
+    "herobrine": [("", {}), ("strike", animated(["herobrine.strike"], attack=0.5))],
+    "herobrine_boss": [("", {}), ("attack", animated(["boss.attack"], attack=0.45)), ("cast", animated(["boss.cast"]))],
     "null": [("", {})],
-    "fog_man": [("watch", FOG_WATCH_POSE),
-                ("sprint", {"body": (28, 0, 0), "chest": (8, 0, 0), "neck": (-18, 0, 0), "head": (-22, 0, -12),
-                            "jaw": (26, 0, 0), "rightArm": (80, 0, 0), "leftArm": (10, 0, 0),
-                            "rightForearm": (-25, 0, 0), "leftForearm": (-25, 0, 0),
-                            "coatBack": (40, 0, 0), "coatRight": (32, 0, 0), "coatLeft": (34, 0, 0),
-                            "rightLeg": (-35, 0, 0), "rightShin": (30, 0, 0), "leftLeg": (25, 0, 0), "leftShin": (50, 0, 0)})],
-    "cave_dweller": [("stalk", {}), ("attack", {"armRight": (-50, 0, 0), "armLeft": (-30, 0, 0), "jaw": (34, 0, 0), "neck": (14, 0, 0)})],
-    "fake_player": [("", {}), ("mining", {"rightArm": (-75, 0, 0), "head": (15, 0, 0)})],
+    "fog_man": [("watch", FOG_WATCH_POSE), ("chase", animated(["fog_man.chase", "fog_man.walk"], dist=2.0, speed=0.8))],
+    "cave_dweller": [("stalk", {}), ("hunt", animated(["dweller.lips_open", "dweller.attack"], attack=0.5))],
+    "fake_player": [("", {}), ("mining", animated(["player.swing"], t=0.05))],
+    "siren_head": [("", {}), ("hunt", animated(["siren.hunt", "siren.walk"], dist=3.0, speed=0.7))],
+    "goatman": [("", {}), ("scream", animated(["goatman.scream"]))],
+    "weeping_statue": [("", {}), ("pose 1", animated(["statue.pose1"])), ("pose 2", animated(["statue.pose2"]))],
+    "mimic": [("chest", {b: {"scale": (0, 0, 0)} for b in ("tongue", "legFrontRight", "legFrontLeft", "legMidRight",
+                                                             "legMidLeft", "legBackRight", "legBackLeft")}),
+              ("awake", animated(["mimic.awake"], t=0.2))],
+    "shadow": [("", {})],
+    "skinwalker": [("cow", {"walker": {"scale": (0, 0, 0)}}), ("revealed", {"cow": {"scale": (0, 0, 0)}})],
+    "wendigo": [("", {}), ("charge", animated(["wendigo.charge", "wendigo.walk"], dist=2.0, speed=0.7))],
+    "entity_303": [("", animated(["e303.float"])), ("cast", animated(["e303.float", "e303.cast"]))],
+    "drowned_one": [("", animated(["drowned.idle"]))],
 }
 
 

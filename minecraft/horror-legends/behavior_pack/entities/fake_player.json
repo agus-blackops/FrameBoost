@@ -69,7 +69,7 @@
                 "subject": "other",
                 "value": "player"
               },
-              "max_dist": 96
+              "max_dist": 128
             }
           ]
         },
@@ -154,13 +154,6 @@
           ]
         }
       },
-      "minecraft:entity_spawned": {
-        "add": {
-          "component_groups": [
-            "hl:roam"
-          ]
-        }
-      },
       "hl:roam": {
         "remove": {
           "component_groups": [
@@ -197,6 +190,13 @@
         "add": {
           "component_groups": [
             "hl:freeze"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:roam"
           ]
         }
       }

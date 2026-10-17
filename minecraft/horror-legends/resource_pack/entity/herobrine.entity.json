@@ -13,18 +13,24 @@
         "default": "geometry.hl.herobrine"
       },
       "animations": {
-        "look": "animation.hl.look_at_target",
+        "look": "animation.hl.herobrine.look",
         "idle": "animation.hl.herobrine.idle",
+        "tail": "animation.hl.herobrine.tail",
         "twitch": "animation.hl.herobrine.twitch",
-        "walk": "animation.hl.herobrine.walk"
+        "walk": "animation.hl.herobrine.walk",
+        "strike": "animation.hl.herobrine.strike"
       },
       "scripts": {
         "animate": [
           "look",
           "idle",
+          "tail",
           "twitch",
           {
             "walk": "query.modified_move_speed > 0.05"
+          },
+          {
+            "strike": "query.property('hl:strike')"
           }
         ]
       },

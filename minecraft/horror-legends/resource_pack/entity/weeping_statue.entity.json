@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:weeping_statue",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/weeping_statue"
+      },
+      "geometry": {
+        "default": "geometry.hl.weeping_statue"
+      },
+      "animations": {
+        "pose1": "animation.hl.statue.pose1",
+        "pose2": "animation.hl.statue.pose2"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "pose1": "query.property('hl:pose') == 1"
+          },
+          {
+            "pose2": "query.property('hl:pose') == 2"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#928d84",
+        "overlay_color": "#3c5222"
+      }
+    }
+  }
+}

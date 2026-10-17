@@ -33,6 +33,62 @@
           "hurt": "mob.zombie.hurt",
           "death": "mob.wither.death"
         }
+      },
+      "hl:goatman": {
+        "volume": 1.0,
+        "pitch": [
+          0.5,
+          0.6
+        ],
+        "events": {
+          "hurt": "mob.goat.hurt",
+          "death": "mob.goat.death"
+        }
+      },
+      "hl:wendigo": {
+        "volume": 1.0,
+        "pitch": [
+          0.4,
+          0.5
+        ],
+        "events": {
+          "hurt": "mob.skeleton.hurt",
+          "death": "mob.skeleton.death"
+        }
+      },
+      "hl:skinwalker": {
+        "volume": 1.0,
+        "pitch": [
+          0.55,
+          0.6
+        ],
+        "events": {
+          "ambient": "mob.cow.say",
+          "hurt": "mob.cow.hurt",
+          "death": "mob.zombie.death"
+        }
+      },
+      "hl:drowned_one": {
+        "volume": 1.0,
+        "pitch": [
+          0.7,
+          0.8
+        ],
+        "events": {
+          "hurt": "mob.drowned.hurt",
+          "death": "mob.drowned.death"
+        }
+      },
+      "hl:mimic": {
+        "volume": 1.0,
+        "pitch": [
+          0.8,
+          1.0
+        ],
+        "events": {
+          "hurt": "random.chestclosed",
+          "death": "random.break"
+        }
       }
     }
   }

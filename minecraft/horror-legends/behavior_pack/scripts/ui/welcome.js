@@ -1,7 +1,7 @@
 // First time in the world: the journal, and a warning.
 
-import { give, tr, valid } from "../lib/util.js";
-import { playerProp, setPlayerProp } from "../lib/state.js";
+import { give, tr, valid } from "../core/util.js";
+import { playerProp, setPlayerProp } from "../core/store.js";
 
 export function onFirstJoin(player) {
   if (!valid(player) || playerProp(player, "hl:intro", false)) return;

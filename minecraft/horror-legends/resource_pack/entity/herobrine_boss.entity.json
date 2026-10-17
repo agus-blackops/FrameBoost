@@ -14,7 +14,7 @@
         "default": "geometry.hl.herobrine_boss"
       },
       "animations": {
-        "look": "animation.hl.look_at_target",
+        "look": "animation.hl.boss.look",
         "idle": "animation.hl.boss.idle",
         "walk": "animation.hl.boss.walk",
         "attack": "animation.hl.boss.attack",
@@ -43,8 +43,8 @@
         "controller.render.hl.boss"
       ],
       "spawn_egg": {
-        "base_color": "#140e0c",
-        "overlay_color": "#ff5a1e"
+        "base_color": "#1a1a20",
+        "overlay_color": "#e8640c"
       }
     }
   }

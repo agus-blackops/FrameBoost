@@ -14,9 +14,9 @@
         "default": "geometry.hl.fake_player"
       },
       "animations": {
+        "look": "animation.hl.player.look",
         "walk": "animation.hl.player.walk",
         "idle": "animation.hl.player.idle",
-        "look": "animation.hl.look_at_target",
         "sneak": "animation.hl.player.sneak",
         "swing": "animation.hl.player.swing",
         "stare": "animation.hl.player.stare",
@@ -24,11 +24,11 @@
       },
       "scripts": {
         "animate": [
-          "walk",
-          "look",
           {
-            "idle": "query.property('hl:state') != 'stare'"
+            "look": "query.property('hl:state') != 'stare'"
           },
+          "walk",
+          "idle",
           {
             "sneak": "query.property('hl:state') == 'sneak'"
           },

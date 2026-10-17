@@ -4,22 +4,14 @@
 
 import { ActionFormData } from "@minecraft/server-ui";
 import { world } from "@minecraft/server";
-import { give, sound, tr, tryRun } from "../lib/util.js";
+import { give, sound, tr, tryRun } from "../core/util.js";
 import {
-  CHAPTERS, PAGES, THREATS, chapterDay, chapterIndex, counter, cursed, cycleIntensity, daysUntil,
-  discovered, enabled, getFear, hauntDay, intensity, jumpscaresOn, pageRead, pagesRead, setWorldProp, toggle, worldProp,
-} from "../lib/state.js";
-import { scare } from "../lib/fx.js";
-import { clearKind } from "../lib/actors.js";
-import { ambience } from "../threats/ambience.js";
-import { gamerJoin, gamerLeave, gamerReveal, fakeAlive } from "../threats/gamer.js";
-import { spawnDweller } from "../threats/dweller.js";
-import { herobrineMinor, sighting } from "../threats/herobrine.js";
-import { clearPresence, lightsOut, presenceMinor, stalk, windowWatcher } from "../threats/presence.js";
-import { endFog, fog, spawnFogMan, startFog } from "../threats/fog.js";
-import { corrupt, nullAppears, restoreCorruption } from "../threats/null.js";
-import { endBlood, startBlood, bloodActive } from "../threats/bloodnight.js";
-import { fighting, ritualBlocker, startRitual } from "../threats/boss.js";
+  ACTS, PAGES, THREATS, actDay, actIndex, counter, cursed, cycleIntensity, daysUntil, discovered, enabled, getFear,
+  hauntDay, intensity, jumpscaresOn, pageRead, pagesRead, setWorldProp, toggle, worldProp,
+} from "../core/store.js";
+import { scare } from "../core/fx.js";
+import { DEFS, clearKind } from "../core/creatures.js";
+import { fighting, ritualBlocker, startRitual } from "../creatures/boss.js";
 import { pageItem, readPage } from "../items/pages.js";
 import { BATTERY, FLASHLIGHT } from "../items/flashlight.js";
 import { WARD } from "../items/ward.js";
@@ -40,11 +32,13 @@ function fearBar(player) {
 }
 
 function mainBody(player) {
-  const ch = chapterIndex();
+  const n = actIndex();
   const raw = [
     { translate: "hl.j.day", with: [String(hauntDay())] },
     { text: "\n" },
-    { translate: `hl.ch.${ch}.name` },
+    { translate: "hl.act.n", with: [String(n)] },
+    { text: ": " },
+    { translate: `hl.act.${n}.name` },
     { text: "\n\n" },
     { translate: "hl.j.fear" },
     { text: ` ${fearBar(player)}\n` },
@@ -59,7 +53,7 @@ export function openJournal(player) {
   sound(player, "hl.page", 0.5, 1.2);
   const ritual = pagesRead() === PAGES.length;
   const buttons = [
-    ["hl.j.chapters", () => openChapters(player)],
+    ["hl.j.acts", () => openActs(player)],
     ["hl.j.bestiary", () => openBestiary(player)],
     ["hl.j.pages", () => openPages(player)],
     ...(ritual ? [["hl.j.ritual", () => openRitual(player)]] : []),
@@ -72,27 +66,23 @@ export function openJournal(player) {
   show(form, player, (i) => buttons[i]?.[1]());
 }
 
-function chapterLabel(n) {
-  return n === 0 ? { translate: "hl.j.prologue" } : { translate: "hl.j.chapter_n", with: [String(n)] };
-}
-
-function openChapters(player) {
-  const form = new ActionFormData().title(tr("hl.j.chapters")).body(tr("hl.j.chapters_body"));
-  const open = CHAPTERS.map((ch) => hauntDay() >= chapterDay(ch));
-  CHAPTERS.forEach((ch, i) => {
-    if (open[i]) form.button({ rawtext: [chapterLabel(ch.n), { text: "\n" }, { translate: `hl.ch.${ch.n}.name` }] });
-    else form.button({ rawtext: [{ text: "§8???\n" }, { translate: "hl.j.in_days", with: [String(chapterDay(ch) - hauntDay())] }] });
+function openActs(player) {
+  const form = new ActionFormData().title(tr("hl.j.acts")).body(tr("hl.j.acts_body"));
+  const open = ACTS.map((act) => hauntDay() >= actDay(act));
+  ACTS.forEach((act, i) => {
+    if (open[i]) form.button({ rawtext: [{ translate: "hl.act.n", with: [String(act.n)] }, { text: "\n" }, { translate: `hl.act.${act.n}.name` }] });
+    else form.button({ rawtext: [{ text: "§8???\n" }, { translate: "hl.j.in_days", with: [String(actDay(act) - hauntDay())] }] });
   });
   form.button(tr("hl.j.back"));
   show(form, player, (i) => {
-    if (i >= CHAPTERS.length) return openJournal(player);
-    if (!open[i]) return openChapters(player);
-    const n = CHAPTERS[i].n;
+    if (i >= ACTS.length) return openJournal(player);
+    if (!open[i]) return openActs(player);
+    const n = ACTS[i].n;
     const page = new ActionFormData()
-      .title({ rawtext: [chapterLabel(n), { text: ": " }, { translate: `hl.ch.${n}.name` }] })
-      .body(tr(`hl.ch.${n}.text`))
+      .title({ rawtext: [{ translate: "hl.act.n", with: [String(n)] }, { text: ": " }, { translate: `hl.act.${n}.name` }] })
+      .body(tr(`hl.act.${n}.text`))
       .button(tr("hl.j.back"));
-    show(page, player, () => openChapters(player));
+    show(page, player, () => openActs(player));
   });
 }
 
@@ -145,7 +135,9 @@ function openSettings(player) {
     .body(tr("hl.j.settings_body"))
     .button({ rawtext: [{ translate: "hl.j.intensity" }, { text: ": " }, { translate: `hl.int.${intensity().key}` }] });
   for (const t of THREATS) {
-    const status = enabled(t) ? (daysUntil(t) > 0 ? { translate: "hl.j.in_days", with: [String(daysUntil(t))] } : { translate: "hl.j.on" }) : { translate: "hl.j.off" };
+    const status = enabled(t)
+      ? daysUntil(t) > 0 ? { translate: "hl.j.in_days", with: [String(daysUntil(t))] } : { translate: "hl.j.on" }
+      : { translate: "hl.j.off" };
     form.button({ rawtext: [{ translate: `hl.threat.${t}` }, { text: ": " }, status] });
   }
   form.button({ rawtext: [{ translate: "hl.j.jumpscares" }, { text: ": " }, { translate: jumpscaresOn() ? "hl.j.on" : "hl.j.off" }] });
@@ -155,40 +147,19 @@ function openSettings(player) {
     else if (i <= THREATS.length) {
       const t = THREATS[i - 1];
       toggle(t);
-      if (!enabled(t)) switchedOff(t);
+      if (!enabled(t)) {
+        clearKind(t);
+        tryRun(() => DEFS[t]?.off?.());
+      }
     } else if (i === THREATS.length + 1) setWorldProp("hl:on_jumpscares", !jumpscaresOn());
     else return openJournal(player);
     openSettings(player);
   });
 }
 
-function switchedOff(t) {
-  if (t === "herobrine") clearKind("herobrine");
-  if (t === "null") {
-    clearKind("null");
-    restoreCorruption(true);
-  }
-  if (t === "dweller") clearKind("dweller");
-  if (t === "fog" && fog.active) endFog();
-  if (t === "gamer") gamerLeave();
-  if (t === "presence") clearPresence();
-  if (t === "bloodnight" && bloodActive()) endBlood();
-}
-
 function openTests(player) {
   const tests = [
-    ["hl.threat.gamer", () => (fakeAlive() ? gamerReveal(player) : (setWorldProp("hl:fp_day", -1), gamerJoin(player)))],
-    ["hl.threat.dweller", () => spawnDweller(player, false)],
-    ["hl.threat.herobrine", () => sighting(player) || herobrineMinor(player)],
-    ["hl.t.lights", () => lightsOut(player) || stalk(player)],
-    ["hl.t.window", () => windowWatcher(player) || presenceMinor(player)],
-    ["hl.threat.fog", () => {
-      if (!fog.active) startFog();
-      else spawnFogMan(player, true);
-    }],
-    ["hl.threat.null", () => nullAppears(player) || corrupt(player)],
-    ["hl.threat.bloodnight", () => (bloodActive() ? endBlood() : startBlood(true))],
-    ["hl.threat.ambience", () => ambience(player)],
+    ...THREATS.map((t) => [`hl.threat.${t}`, () => DEFS[t]?.test?.(player)]),
     ["hl.t.scare", () => scare(player, "§4§lHEROBRINE")],
     ["hl.t.items", () => {
       give(player, FLASHLIGHT);
@@ -207,4 +178,3 @@ function openTests(player) {
   form.button(tr("hl.j.back"));
   show(form, player, (i) => (i < tests.length ? tests[i][1]() : openJournal(player)));
 }
-
