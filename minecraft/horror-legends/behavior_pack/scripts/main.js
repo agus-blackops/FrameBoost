@@ -5,7 +5,7 @@
 //   Act I    Visitors     sounds that aren't there, HerobrineGamer788, the
 //                         Cave Dweller, the Mimic, the Weeping Statue
 //   Act II   The woods    Herobrine, the Goatman, the Man From The Fog, the
-//                         Skinwalker, the Shadow, the Drowned One
+//                         Skinwalker, the Shadow, the Drowned One, the Visit
 //   Act III  The error    null, Entity 303, Siren Head, the Wendigo, the
 //                         Red Night
 //   The end              seven torn pages, a ritual, and Herobrine's true form
@@ -13,7 +13,7 @@
 // core/       helpers, saved state, the creature registry, jumpscares
 // director.js fear and pacing: when things happen, and what, and where
 // creatures/  one module per horror (each registers itself)
-// events/     the Red Night
+// events/     the Red Night, the Visit
 // items/      flashlight, Ward Lantern, pages
 // ui/         the Survivor's Journal
 
@@ -42,6 +42,7 @@ import "./creatures/siren.js";
 import "./creatures/wendigo.js";
 import { onDeath as bossDeath, onPlayerDied as bossDied } from "./creatures/boss.js";
 import { onPlayerSpawn as redSpawn, tickBlood } from "./events/rednight.js";
+import { onPlayerDied as visitDied, tickVisits } from "./events/visit.js";
 import { FLASHLIGHT, cleanupLights, onPlayerLeave, tickBeams, tickFlashlights, toggleFlashlight } from "./items/flashlight.js";
 import { onBreak as wardBreak, onPlace as wardPlace } from "./items/ward.js";
 import { PAGE_OF, readPage } from "./items/pages.js";
@@ -70,12 +71,14 @@ const presence = () => tryRun(() => tickPresence(overworldPlayers()));
 const gamer = () => tryRun(tickGamer);
 const director = () => tryRun(tickDirector);
 const beams = () => tryRun(tickBeams);
+const visit = () => tryRun(tickVisits);
 
 system.runInterval(heart, 2);
 system.runInterval(lights, 3);
 system.runInterval(creatures, 4);
 system.runInterval(presence, 6);
 system.runInterval(gamer, 10);
+system.runInterval(visit, 10);
 system.runInterval(director, 20);
 system.runInterval(beams, 20);
 system.runInterval(worldTick, 100);
@@ -148,6 +151,7 @@ world.afterEvents.entityDie.subscribe(({ deadEntity }) => {
   tryRun(() => directorDied(deadEntity));
   tryRun(() => gamerDied(deadEntity));
   tryRun(() => bossDied(deadEntity));
+  tryRun(() => visitDied(deadEntity));
   // Whatever was after you lets go (the Man From The Fog keeps watching).
   for (const s of [...tracked.values()]) {
     if (s.playerId === deadEntity.id && valid(s.entity) && s.mode !== "watch") vanish(s.entity, false);

@@ -54,14 +54,28 @@ def item_model(name, cubes):
 # --------------------------------------------------------------------------- #
 
 def flashlight():
+    """An old metal flashlight that has been through a lot: an eight-sided
+    body with rubber grip rings and a strip of grey tape (bloody), a side
+    switch between two guards with a small charge light, a pocket clip, a
+    flared head with a toothed bezel round a deep reflector, and a leather
+    strap swinging from the tail cap."""
     return item_model("flashlight", [
-        C((-1, -1, -4), (2, 2, 7), "body"),
-        C((-1.25, -1.25, 3), (2.5, 2.5, 1), "cap"),
-        C((-0.25, -0.5, 4), (0.5, 1, 1.5), "strap"),
-        C((-1.25, -1.25, -5), (2.5, 2.5, 1), "neck"),
-        C((-1.75, -1.75, -7), (3.5, 3.5, 2), "lamp"),
-        C((-1.25, -1.25, -7.25), (2.5, 2.5, 0.5), "lens"),
-        C((-0.5, 1, -3), (1, 0.5, 1.5), "switch"),
+        C((-1.25, -1, -4.5), (2.5, 2, 8), "body"),
+        C((-1, -1.25, -4.5), (2, 2.5, 8), "body"),
+        *[C((-1.5, -1.5, z), (3, 3, 0.5), "grip") for z in (0, 1.25, 2.5)],
+        C((-1.5, -1.5, -2.75), (3, 3, 1), "tape"),
+        C((-1.75, -1.75, 3.5), (3.5, 3.5, 1.25), "tailcap"),
+        C((-0.75, -0.75, 4.75), (1.5, 1.5, 0.5), "button"),
+        C((-0.25, -2.25, 4.5), (0.5, 0.5, 1), "ring"),
+        C((-0.25, -5.75, 4.75), (0.5, 3.5, 0.5), "strap", pivot=(0, -2.25, 5), rotation=(-12, 0, 6)),
+        C((-1.75, -1.75, -5.75), (3.5, 3.5, 1.25), "neck"),
+        C((-2.25, -2.25, -7.5), (4.5, 4.5, 1.75), "head"),
+        *[C((x, y, -8), (1, 1, 0.5), "bezel") for x in (-2.25, 1.25) for y in (-2.25, 1.25)],
+        C((-1.75, -1.75, -7.75), (3.5, 3.5, 0.25), "lens"),
+        C((-0.5, 1.25, -4), (1, 0.5, 1.5), "switch"),
+        *[C((x, 1.25, -4.25), (0.25, 0.75, 2), "guard") for x in (-0.875, 0.625)],
+        C((-0.25, 1.25, -1.75), (0.5, 0.25, 0.5), "led"),
+        C((1.5, -0.5, -1.5), (0.25, 1, 4), "clip"),
     ])
 
 
@@ -113,29 +127,63 @@ LAVA = Ramp(colors=["#6a1404", "#b43008", "#e8640c", "#ffa028", "#ffd872"])
 
 
 def paint_flashlight(seed, m):
-    lit = glow("#fff6c8", 60)
+    hot = glow("#fffbe8", 50)
+    warm = glow("#ffe7a0", 60)
+    rubber = Ramp(colors=["#060606", "#0e0e10", "#18181c", "#24242a"])
+    tape = Ramp(colors=["#4e4e52", "#6c6c70", "#8a8a8e", "#a6a6a8"])
+    blood = Ramp(colors=["#2a0404", "#4a0808", "#6a1010"])
+
+    def scuffed(t, base):
+        # Worn metal: paint scraped back to bright steel along the edges.
+        if t.ridge(2.5, 0.05) > 0.6 or (t.fy == 0 and t.grain() > 0.6):
+            return t.paint(IRON, 0.8, 0.1)
+        return t.paint(METAL, base, 0.3)
 
     def fn(t):
         tag, f = t.tag, t.face
         if tag == "lens":
-            if f == "front":
-                cx, cy = (t.fw - 1) / 2, (t.fh - 1) / 2
-                return lit if math.hypot(t.x - cx, t.y - cy) < 1.6 else glow("#ffe080", 70)
-            return CLEAR
-        if tag == "lamp":
-            if f == "front":
-                return BLACK if 1 <= t.x <= t.fw - 2 and 1 <= t.y <= t.fh - 2 else t.paint(METAL, 0.7, 0.1)
-            return t.paint(METAL, 0.55 + 0.15 * (f == "top"), 0.2)
-        if tag in ("neck", "cap"):
-            return t.paint(BRASS, 0.55, 0.2) if tag == "neck" else t.paint(METAL, 0.45, 0.2)
+            if f != "front":
+                return CLEAR
+            # A bright core, a reflector of rings, a dark rim.
+            cx, cy = (t.ffw - 1) / 2, (t.ffh - 1) / 2
+            r = math.hypot(t.fx - cx, t.fy - cy) / max(1.0, cx)
+            if r < 0.3:
+                return hot
+            if r < 0.85:
+                return warm if int(r * 10) % 2 == 0 else glow("#d8b060", 80)
+            return t.paint(METAL, 0.3, 0.1)
+        if tag in ("head", "neck"):
+            if tag == "head" and f == "front":
+                return t.paint(METAL, 0.75, 0.1)
+            return scuffed(t, 0.55 + 0.1 * (f == "top"))
+        if tag == "bezel":
+            return t.paint(IRON, 0.6 + 0.2 * (f == "front"), 0.2)
         if tag == "body":
-            if t.side and t.y % 3 == 0 and t.y > 6:
-                return t.paint(METAL, 0.2, 0.1)  # knurled grip
-            return t.paint(METAL, 0.5 + 0.1 * (f == "top"), 0.25)
+            return scuffed(t, 0.5 + 0.1 * (f == "top"))
+        if tag == "grip":
+            if f in ("front", "back"):
+                return CLEAR
+            return t.paint(rubber, 0.5 + 0.3 * (t.fx % 2 == 0), 0.2)  # ribbed rubber
+        if tag == "tape":
+            if f in ("front", "back"):
+                return CLEAR
+            if t.n2(1.2) > 0.62:
+                return t.paint(blood, 0.55, 0.3)  # a bloody thumbprint
+            return t.paint(tape, 0.55 + 0.15 * (t.fx % 3 == 0), 0.2)
+        if tag == "tailcap":
+            if f == "back":
+                return t.paint(METAL, 0.35, 0.2)
+            return t.paint(METAL, 0.3 + 0.3 * ((t.fx + t.fy) % 2), 0.1)  # knurled
+        if tag == "button":
+            return t.paint(rubber, 0.4, 0.2)
+        if tag in ("ring", "clip", "guard"):
+            return t.paint(IRON, 0.65, 0.2)
         if tag == "switch":
-            return (0xB0, 0x18, 0x18) if f == "top" else (0x70, 0x0C, 0x0C)
+            return t.paint(rubber, 0.7, 0.2) if f == "top" else t.paint(rubber, 0.4, 0.1)
+        if tag == "led":
+            return glow("#40ff60", 40) if f == "top" else (0x10, 0x30, 0x14)
         if tag == "strap":
-            return t.paint(LEATHER, 0.4, 0.2)
+            return t.paint(LEATHER, 0.45, 0.3)
         return SKIN  # (only the preview's stand-in player)
 
     return paint_model(m, seed, fn)

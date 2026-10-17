@@ -8,6 +8,7 @@ import { flags, getFear, jumpscaresOn } from "./store.js";
 // A proper jumpscare: a sting, a red flash, the screen shaking, the world
 // going dark for a moment and your ears ringing after. With jumpscares off in
 // the journal only a quieter sting is left.
+/** @param {any} [subtitle] a string or a raw message */
 export function scare(player, main, subtitle = " ") {
   const strong = jumpscaresOn();
   sound(player, "hl.stinger", strong ? 1 : 0.4);

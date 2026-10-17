@@ -230,6 +230,7 @@ export function tickGamer() {
     fake = null;
     // Spawn eggs: adopt. Leftovers from a closed session: leave.
     for (const e of world.getDimension(OVERWORLD).getEntities({ type: FAKE })) {
+      if (tryRun(() => e.getDynamicProperty("hl:visitor"))) continue; // the Visit's, not his
       if (tryRun(() => e.getDynamicProperty("hl:director"))) {
         fake = { entity: e };
         gamerLeave(true);

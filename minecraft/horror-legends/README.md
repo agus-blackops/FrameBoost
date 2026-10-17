@@ -26,9 +26,9 @@ Después, al crear o editar un mundo, activa **Horror Legends** en *Packs de
 comportamiento* (el de recursos se añade solo). Requiere **Minecraft Bedrock
 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **8.0.0**, *Remastered*). Si
+**Actualizar:** abre el `.mcaddon` nuevo (versión **8.1.0**, *Remastered*). Si
 en los ajustes del mundo sigue apareciendo una versión antigua, quítala y
-activa la 8.0.0. Los
+activa la 8.1.0. Los
 días que llevas en el mundo se conservan; las páginas que ya habías leído
 siguen leídas (ahora hacen falta siete).
 
@@ -47,6 +47,7 @@ llega con su propio aviso en el chat la noche en que aparece.
 | 2 | La Estatua que Llora | Una estatua con la cara entre las manos. **No se mueve si la miras**; si apartas la vista, o **parpadeas** (la pantalla se va a negro un instante), está más cerca, con las manos más bajas. Si te alcanza sin que la mires, te toca. |
 | 3 | **Acto II: El bosque** · Herobrine | Con la **columna fuera del cuerpo arqueada sobre la cabeza como la cola de un escorpión**. Te observa y desaparece si lo miras; pirámides de arena, árboles sin hojas, túneles, carteles, antorchas rojas. Si le pegas, la cola te alcanza. |
 | 3 | El Hombre Cabra | En el bosque de noche: **gritos de cabra** entre los árboles. Se acerca cuando no miras; cuando lo pillas, grita y huye... o carga. La luz lo espanta. |
+| 3 | La Visita | De noche, en casa, **llaman a la puerta**. En el chat, con tu nombre: *«Ábreme. Soy yo. Hace frío fuera.»* Si abres no hay nadie... y un momento después **estás detrás de ti**. Si no abres, llama más fuerte, prueba el picaporte y, al callarse, deja un cartel en tu puerta. |
 | 4 | El Hombre de la Niebla | Una niebla espesa y, dentro, un hombre en **chubasquero con capucha** y una sonrisa de oreja a oreja. Se acerca cuando apartas la vista; de noche llama a la puerta. |
 | 4 | El Skinwalker | **Una vaca que siempre te mira**, con ojos y dientes de persona. Oyes tu nombre en el campo. Si te acercas, se levanta: cráneo de vaca por cara y su piel a la espalda. |
 | 5 | La Sombra | **El Hombre del Sombrero** entra en tu casa: apaga las luces una a una, te sigue, mira por la ventana, está a los pies de tu cama al despertar. Música de cajita, tu propia muerte en el chat. |
@@ -118,7 +119,7 @@ vez). Si mueres, huyes o sale el sol, se retira: podrás llamarlo otra noche.
 
 | Objeto | Receta | Uso |
 |---|---|---|
-| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 18 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
+| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 19 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
 | **Linterna** | `I G I / _ R _ / _ I _` (I = hierro, G = polvo de piedra luminosa, R = redstone) | Úsala para encenderla o apagarla. **Ilumina de verdad** lo que tienes delante mientras la llevas en la mano. Espanta al Morador y al Hombre Cabra, hace desaparecer a Herobrine, null, la Sombra y al Hombre de la Niebla cuando solo observa, frena al Skinwalker y al Wendigo, y quema al jefe. A la Estatua, a Siren Head y a Entity 303 les da igual. |
 | **Pila** | Redstone + pepita de hierro + lingote de cobre (da 2) | Una pila dura 5 minutos. Si llevas una de repuesto, se cambia sola. |
 | **Farol Protector** | Farol rodeado de 4 fragmentos de amatista (`_ A _ / A F A / _ A _`) | Nada te acecha en su luz: la Sombra no puede entrar, la Estatua no se acerca, el Morador, null, el Hombre Cabra y el Wendigo se apartan, el Hombre de la Niebla no pisa su círculo ni rompe esa puerta, Siren Head te pierde y Herobrine no construye nada dentro. Tu miedo baja. **Pero en la Noche Roja algo puede apagarlo.** |
@@ -136,9 +137,31 @@ también: con huevo pelea incluso de día).
 - **Activar o desactivar** cada amenaza. Cada una dice en cuántos días llega.
 - **Sustos fuertes**: pantalla roja, temblor, oscuridad y pitido en los oídos.
   Si los quitas, queda un susto más suave.
-- **Pruebas**: provoca al momento cualquiera de las 17 amenazas, te da los
+- **Pruebas**: provoca al momento cualquiera de las 18 amenazas, te da los
   objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un
   día.
+
+## Linterna nueva y La Visita (8.1.0)
+
+- **Linterna rehecha en 3D**: cuerpo de metal arañado, empuñadura de goma con
+  anillos, cinta gris con **una huella de sangre**, cabeza ancha con esquinas
+  de bisel, **reflector que brilla** dentro del cristal, interruptor con
+  guarda, **piloto verde** encendido, clip, culata moleteada y una correa de
+  cuero colgando.
+- **Evento nuevo: La Visita** (Acto II, desde el día 3, solo de noche y
+  dentro de casa con una puerta cerca):
+  - tres golpes en la puerta y una voz en el chat **con tu nombre**:
+    *«Ábreme. Soy yo. Hace frío fuera.»*;
+  - **si abres** (o te acercas a la puerta): no hay nadie, solo el viento. Un
+    momento después, *«Gracias por dejarme entrar.»*, y **tú mismo** estás
+    justo detrás, con los ojos brillando. Si te das la vuelta, susto; si no,
+    se va;
+  - **si no abres**: llama más fuerte cada vez (*«¿Por qué no me abres?»*,
+    *«Sé que estás ahí. Te oigo respirar.»*), prueba el picaporte
+    (*«ÁBREME»*) y, al minuto, silencio... y fuera, delante de tu puerta, un
+    **cartel**: *TE VI POR LA VENTANA*.
+  - Tiene su entrada en el Bestiario, su interruptor en Ajustes y su botón
+    en Pruebas.
 
 ## Remastered (8.0.0)
 
@@ -173,9 +196,7 @@ también: con huevo pelea incluso de día).
 Los objetos tienen **modelo 3D cuando los llevas en la mano** (en primera y en
 tercera persona), en vez del dibujo plano de siempre:
 
-- **Linterna**: cuerpo negro con empuñadura rugosa, anillo de latón,
-  interruptor rojo, correa y un **cristal que brilla**. Apunta hacia donde
-  miras.
+- **Linterna**: ver 8.1.0 (modelo nuevo). Apunta hacia donde miras.
 - **Pila**: con el polo de cobre y el rayo amarillo.
 - **Diario**: tapa de cuero con costuras, **una mano de sangre**, el canto de
   las hojas, el cierre y la cinta roja.
@@ -221,7 +242,7 @@ behavior_pack/scripts/
   director.js        miedo, ritmo y hábitats: cuándo pasa algo, qué y dónde
   core/              utilidades, estado guardado, registro de criaturas, sustos
   creatures/         un archivo por criatura (cada una se registra sola)
-  events/            la Noche Roja
+  events/            la Noche Roja, la Visita
   items/             linterna, Farol Protector, páginas
   ui/                el Diario
 tools/
