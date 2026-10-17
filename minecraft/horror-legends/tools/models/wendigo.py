@@ -39,6 +39,7 @@ def model():
         B("hips", "root", (0, 24, 0), cubes=[C((-3, 23, -2), (6, 4, 4), "hips")]),
         B("torso", "hips", (0, 27, 0), rotation=(30, 0, 0), cubes=[
             C((-3, 27, -2), (6, 12, 4), "torso"),
+            *[C((-3.25, y, -2.25), (6.5, 0.5, 4.5), "rib_out") for y in (31, 33, 35)],
             C((-4.5, 36, -3), (9, 4, 6), "shoulders"),
             C((-5, 33, -3.25), (10, 7.5, 6.5), "mane", 0.3),
             *[C((-0.5, y, 2), (1, 1, 1), "spine") for y in (29, 31, 33, 35)]]),
@@ -93,12 +94,14 @@ def paint(seed, m, **_):
             if f == "front" and t.y >= t.fh - 5 and t.n(2) > 0.55:
                 return t.paint(BLOOD, 0.45, 0.3)  # what it last ate, down its chest
             return gaunt(t, 0.45)
+        if tag == "rib_out":
+            return t.paint(skin, 0.8, 0.15) if f in ("front", "right", "left") else CLEAR
         if tag in ("mane", "fur"):
             if f in ("bottom",) or (f == "front" and tag == "mane" and t.y > 3):
                 return CLEAR
             if t.y >= t.fh - 4 and t.n(1.2) > 0.4:
                 return CLEAR
-            v = 0.45 + (t.noise(t.X * 2.5, t.Y * 0.4, 2.0, 1) - 0.5) * 0.5
+            v = 0.45 + (t.noise(t.sx * 2.5, t.sy * 0.4, 2.0, 1) - 0.5) * 0.5
             return t.paint(fur, v, 0.3)
         if tag == "spine":
             return t.paint(BONE, 0.55, 0.2)

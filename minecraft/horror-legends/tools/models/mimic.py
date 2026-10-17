@@ -17,6 +17,8 @@ def model():
         B("root", None, (0, 0, 0)),
         B("body", "root", (0, 0, 0), cubes=[
             C((-7, 0, -7), (14, 10, 14), "base"),
+            *[C((x, 0, z), (1.5, 10, 1.5), "corner", 0.05) for x in (-7.25, 5.75) for z in (-7.25, 5.75)],
+            *[C((x, 9, 6.75), (2, 2, 0.5), "hinge") for x in (-4, 2)],
             C((-6, 1, -6), (12, 8.75, 12), "flesh"),
             *[C((x, 9.5, -6.5), (1, 1.5, 0.5), "tooth") for x in (-5.5, -3.5, -1.5, 0.5, 2.5, 4.5)],
             *[C((x, 9.5, 6), (1, 1.5, 0.5), "tooth") for x in (-4.5, -0.5, 3.5)],
@@ -58,7 +60,7 @@ def paint(seed, m, **_):
             return t.paint(frame, 0.5, 0.3)
         if t.y % 8 == 0:
             return t.paint(oak, 0.1, 0.1)
-        grain = t.noise(t.X * 0.3, t.Y * 2.0, 2.0, 1)
+        grain = t.noise(t.sx * 0.3, t.sy * 2.0, 2.0, 1)
         return t.paint(oak, base + (grain - 0.5) * 0.4, 0.15)
 
     def fn(t):
@@ -67,6 +69,10 @@ def paint(seed, m, **_):
             if f == "top":
                 return CLEAR  # open at the top: the flesh shows inside
             return planks(t, 0.55)
+        if tag in ("corner", "hinge"):
+            if tag == "corner" and f in ("top", "bottom"):
+                return CLEAR
+            return t.paint(IRON, 0.35 + 0.3 * (t.fy == 0), 0.2)
         if tag == "lid":
             if f == "bottom":
                 # Three eyes in the roof of its mouth.

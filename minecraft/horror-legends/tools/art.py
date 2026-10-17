@@ -277,6 +277,30 @@ def corrupted(seed):
     return cv
 
 
+FONT = {  # 3x5
+    "R": ["XX.", "X.X", "XX.", "X.X", "X.X"], "E": ["XXX", "X..", "XX.", "X..", "XXX"],
+    "M": ["X.X", "XXX", "XXX", "X.X", "X.X"], "A": [".X.", "X.X", "XXX", "X.X", "X.X"],
+    "S": [".XX", "X..", ".X.", "..X", "XX."], "T": ["XXX", ".X.", ".X.", ".X.", ".X."],
+    "D": ["XX.", "X.X", "X.X", "X.X", "XX."],
+}
+
+
+def banner(cv, text, y, scale, color, shadow):
+    """Pixel letters, centred."""
+    width = (len(text) * 4 - 1) * scale
+    x0 = (cv.w - width) // 2
+    for i, ch in enumerate(text):
+        for r, row in enumerate(FONT[ch]):
+            for c, bit in enumerate(row):
+                if bit != "X":
+                    continue
+                for dy in range(scale):
+                    for dx in range(scale):
+                        x, yy = x0 + (i * 4 + c) * scale + dx, y + r * scale + dy
+                        cv.set(x + 1, yy + 1, shadow)
+                        cv.set(x, yy, color)
+
+
 def pack_icon(render_view, seed):
     """The Red Night: a blood-red fog under a red moon, Siren Head standing
     among dead trees far behind, the Hollow Miner towering in the middle,
@@ -317,4 +341,5 @@ def pack_icon(render_view, seed):
         for x in range(128):
             if rng.random() < 0.04:
                 cv.set(x, y, jitter(rng, cv.get(x, y), 16))
+    banner(cv, "REMASTERED", 114, 2, (0xE8, 0x24, 0x1C), (0x10, 0x02, 0x02))
     return cv

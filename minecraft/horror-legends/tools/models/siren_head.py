@@ -31,6 +31,7 @@ def model():
             C((-2.5, 48, -1.5), (5, 8, 3), "belly")]),
         B("chest", "waist", (0, 56, 0), rotation=(6, 0, 0), cubes=[
             C((-4, 56, -2.25), (8, 12, 4.5), "chest"),
+            *[C((-4.25, y, -2.5), (8.5, 0.5, 0.25), "rib_out") for y in (58, 60, 62, 64)],
             C((-5, 65, -2.5), (10, 3, 5), "shoulders")]),
         B("pole", "chest", (0, 68, 0), rotation=(-6, 0, 0), cubes=[
             C((-1, 68, -1), (2, 16, 2), "pole"),
@@ -39,6 +40,7 @@ def model():
             C((-8, 84, -1), (16, 2, 2), "crossbar"),
             *[C((x, 82.5, -4), (6, 5, 6), "speaker") for x in (-9, 3)],
             *[C((x, 82, -5), (7, 6, 1), "horn") for x in (-9.5, 2.5)],
+            *[C((x + 0.75, y, -5.25), (5.5, 0.25, 0.25), "grille") for x in (-9.5, 2.5) for y in (83.5, 85, 86.5)],
             C((-1.5, 86, -1.5), (3, 3, 3), "bracket")]),
     ]
     for side, name in ((-1, "right"), (1, "left")):
@@ -65,7 +67,7 @@ def paint(seed, m, **_):
 
     def leather(t, base=0.5):
         # Dried skin pulled tight: long vertical creases and dark patches.
-        if t.noise(t.X * 3.0, t.Y * 0.25, 3.0, 1) > 0.8:
+        if t.noise(t.sx * 3.0, t.sy * 0.25, 3.0, 1) > 0.8:
             return t.paint(hide, base - 0.25, 0.1)
         if t.ridge(4.0, 0.05) > 0.6:
             return t.paint(sinew, 0.5, 0.2)
@@ -79,6 +81,8 @@ def paint(seed, m, **_):
             if f in ("front", "back") and t.y >= 2 and t.y % 3 == 1:
                 return t.paint(hide, 0.15, 0.1)
             return leather(t, 0.45)
+        if tag == "rib_out":
+            return t.paint(BONE, 0.45, 0.25) if f != "back" else CLEAR
         if tag == "belly":
             return leather(t, 0.3)
         if tag == "spine":
@@ -91,6 +95,8 @@ def paint(seed, m, **_):
             return t.paint(rust, 0.45, 0.4) if t.n(2) > 0.4 else t.paint(metal, 0.4, 0.3)
         if tag == "speaker":
             return t.paint(rust, 0.5, 0.45, 2.0) if t.n(2.5) > 0.35 else t.paint(metal, 0.5, 0.3)
+        if tag == "grille":
+            return t.paint(metal, 0.3, 0.1)
         if tag == "horn":
             if f == "front":
                 cx, cy = (t.fw - 1) / 2, (t.fh - 1) / 2

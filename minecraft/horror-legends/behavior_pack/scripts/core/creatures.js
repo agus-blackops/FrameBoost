@@ -145,6 +145,7 @@ export function tickCreatures() {
         continue;
       }
       s.age += 4;
+      if (s.frozen) continue; // a face held still for a jumpscare
       tryRun(() => def.tick?.(e, s, player));
     }
   }

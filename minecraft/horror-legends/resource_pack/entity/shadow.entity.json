@@ -15,7 +15,8 @@
       "animations": {
         "look": "animation.hl.shadow.look",
         "idle": "animation.hl.shadow.idle",
-        "walk": "animation.hl.shadow.walk"
+        "walk": "animation.hl.shadow.walk",
+        "materialize": "animation.hl.shadow.materialize"
       },
       "scripts": {
         "animate": [
@@ -23,7 +24,8 @@
           "idle",
           {
             "walk": "query.modified_move_speed > 0.05"
-          }
+          },
+          "materialize"
         ]
       },
       "render_controllers": [

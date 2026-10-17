@@ -16,7 +16,8 @@
         "awake": "animation.hl.mimic.awake",
         "walk": "animation.hl.mimic.walk",
         "attack": "animation.hl.mimic.attack",
-        "asleep": "animation.hl.mimic.asleep"
+        "asleep": "animation.hl.mimic.asleep",
+        "hurt": "animation.hl.mimic.hurt"
       },
       "scripts": {
         "animate": [
@@ -31,6 +32,9 @@
           },
           {
             "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
           }
         ]
       },

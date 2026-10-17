@@ -9,8 +9,8 @@ from lang_kept import KEPT
 S = {
     # -------------------------------------------- pack, entities, items, acts
     "pack.name": (
-        "§4Horror Legends§r",
-        "§4Horror Legends§r",
+        "§4Horror Legends: §cRemastered§r",
+        "§4Horror Legends: §cRemastered§r",
     ),
     "pack.description": (
         "Terror en tres actos con 15 leyendas: HerobrineGamer788, el Morador, el Mimic, la Estatua que Llora, Herobrine, el Hombre Cabra, el Hombre de la Niebla, el Skinwalker, la Sombra, el Ahogado, null, Entity 303, Siren Head, el Wendigo y el Minero Hueco.",
@@ -536,6 +536,14 @@ S = {
         "§oTodos le sirven a él. El que está en la mina, el de la cola de hueso.\n\nSi juntas estas siete páginas, llámalo por su nombre de noche, bajo el cielo. Vendrá en su forma verdadera, y solo así se le puede herir.\n\nYo ya no puedo. Creo que ya no soy yo el que está jugando.",
         "§oThey all serve him. The one in the mine, the one with the tail of bone.\n\nIf you gather these seven pages, call him by his name at night, under the sky. He will come in his true form, and only then can he be hurt.\n\nI can't any more. I don't think I'm the one playing now.",
     ),
+    "hl.threat.scares": ("Sustos", "Scares"),
+    "hl.lore.scares": (
+        "§lSustos§r\n\nNo es una criatura: son los momentos en que algo está demasiado cerca. Una cara delante de la tuya lo que dura un parpadeo. Un aliento en la nuca y algo que te roza. Una puerta que se cierra de golpe en una casa vacía. La pantalla rota en estática. Un golpe que duele y no deja marca. Tu nombre, escrito delante de tus ojos.",
+        "§lScares§r\n\nNot a creature: the moments when something is too close. A face right in front of yours for the length of a blink. Breath on the back of your neck and something brushing past. A door slamming in an empty house. The screen tearing into static. A blow that hurts and leaves no mark. Your name, written across your eyes.",
+    ),
+    "hl.arrive.scares": ("§8[???]§r §7No parpadees. No te des la vuelta. No mires detrás de la puerta.", "§8[???]§r §7Don't blink. Don't turn round. Don't look behind the door."),
+    "hl.scare.neck": ("§7§oAlgo te ha rozado la nuca.", "§7§oSomething brushed the back of your neck."),
+    "hl.scare.name_sub": ("§8te estoy mirando", "§8i'm watching you"),
     "hl.page.dropped": (
         "§7Algo ha caído al suelo...",
         "§7Something fell to the ground...",

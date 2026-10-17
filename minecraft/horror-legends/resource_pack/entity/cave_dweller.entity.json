@@ -20,7 +20,9 @@
         "lips_idle": "animation.hl.dweller.lips_idle",
         "lips_open": "animation.hl.dweller.lips_open",
         "attack": "animation.hl.dweller.attack",
-        "hurt": "animation.hl.dweller.hurt"
+        "hurt": "animation.hl.dweller.hurt",
+        "emerge": "animation.hl.dweller.emerge",
+        "walk_extra": "animation.hl.dweller.walk_extra"
       },
       "scripts": {
         "animate": [
@@ -39,6 +41,10 @@
           },
           {
             "hurt": "query.hurt_time > 0"
+          },
+          "emerge",
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
           }
         ]
       },

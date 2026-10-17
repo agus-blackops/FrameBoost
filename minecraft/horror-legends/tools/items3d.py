@@ -14,7 +14,7 @@ then moved to the hand.
 import math
 
 from geometry import Model
-from models.kit import B, C, K, CLEAR, BLACK, IRON, WOOD, Ramp, glow, paint_model
+from models.kit import B, C, K, SUB, CLEAR, BLACK, IRON, WOOD, Ramp, glow, paint_model
 
 HAND = (-6, 13, 0)  # where the fist closes (rightItem pivot is (-6, 15, 1))
 SKELETON = [
@@ -46,7 +46,7 @@ def at_hand(cubes):
 def item_model(name, cubes):
     bones = [B(n, p, pv) for n, p, pv in SKELETON]
     bones.append(B(name, "rightItem", HAND, cubes=at_hand(cubes)))
-    return Model(f"geometry.hl.item.{name}", bones, bounds=(2.0, 2.5, (0, 1.0, 0)), detail=K).pack_uv(64)
+    return Model(f"geometry.hl.item.{name}", bones, bounds=(2.0, 2.5, (0, 1.0, 0)), detail=K).pack_uv(64 * SUB)
 
 
 # --------------------------------------------------------------------------- #

@@ -82,7 +82,7 @@ def paint(seed, m, **_):
     pin = glow("#f8f8f0", 40)
 
     def cowhide(t, base=0.5):
-        if t.noise(t.X, t.Y, 7.0, 2) > 0.55:
+        if t.noise(t.sx, t.sy, 7.0, 2) > 0.55:
             return t.paint(white, base + 0.1, 0.2, 2.0)
         return t.paint(brown, base, 0.3, 2.0)
 

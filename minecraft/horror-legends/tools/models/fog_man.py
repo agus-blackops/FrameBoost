@@ -79,7 +79,7 @@ def paint(seed, m, **_):
 
     def wet(t, base=0.45):
         # Rain streaks run down the coat: thin light lines and dark runs.
-        s = t.noise(t.X * 4.0, t.Y * 0.35, 3.0, 1)
+        s = t.noise(t.sx * 4.0, t.sy * 0.35, 3.0, 1)
         v = base + (0.22 if s > 0.78 else -0.1 if s < 0.22 else 0.0)
         return t.paint(coat, v, 0.3, 2.5)
 

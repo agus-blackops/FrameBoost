@@ -14,12 +14,14 @@
       },
       "animations": {
         "look": "animation.hl.null.look",
-        "glitch": "animation.hl.null.glitch"
+        "glitch": "animation.hl.null.glitch",
+        "materialize": "animation.hl.null.materialize"
       },
       "scripts": {
         "animate": [
           "look",
-          "glitch"
+          "glitch",
+          "materialize"
         ]
       },
       "render_controllers": [

@@ -20,7 +20,8 @@
         "sneak": "animation.hl.player.sneak",
         "swing": "animation.hl.player.swing",
         "stare": "animation.hl.player.stare",
-        "air": "animation.hl.player.air"
+        "air": "animation.hl.player.air",
+        "walk_extra": "animation.hl.player.walk_extra"
       },
       "scripts": {
         "animate": [
@@ -40,6 +41,9 @@
           },
           {
             "air": "!query.is_on_ground"
+          },
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
           }
         ]
       },

@@ -61,6 +61,7 @@ def model():
             *horn(-1, center=(44, 1), x=1.75), *horn(1, center=(44, 1), x=1.75)]),
         B("jaw", "head", (0, 39, -2), rotation=(6, 0, 0), cubes=[
             C((-1.5, 37, -7.75), (3, 1.5, 5.5), "jaw"),
+            *[C((x, 38.5, -7.5), (0.5, 0.75, 0.5), "tooth") for x in (-1.25, -0.5, 0.25, 1.0)],
             C((-1, 34.5, -6), (2, 3, 1.5), "beard")]),
     ]
     for side, name in ((-1, "right"), (1, "left")):
@@ -85,7 +86,7 @@ def paint(seed, m, **_):
 
     def pelt(t, base=0.45):
         # Long matted locks: streaks down the fur, ragged at the ends.
-        v = base + (t.noise(t.X * 2.5, t.Y * 0.4, 2.0, 1) - 0.5) * 0.5
+        v = base + (t.noise(t.sx * 2.5, t.sy * 0.4, 2.0, 1) - 0.5) * 0.5
         return t.paint(fur, v, 0.3)
 
     def bare(t, base=0.5):
@@ -149,6 +150,8 @@ def paint(seed, m, **_):
             if f == "top":
                 return t.paint(TEETH, 0.5, 0.2) if t.x % 2 == 0 else BLOOD.colors[1]
             return bare(t, 0.4)
+        if tag == "tooth":
+            return t.paint(TEETH, 0.6 - 0.2 * t.v, 0.1)
         if tag == "beard":
             return pelt(t, 0.4) if t.n(1.2) > 0.25 else CLEAR
         if tag in ("arm", "forearm", "hand"):

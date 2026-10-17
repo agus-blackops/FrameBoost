@@ -34,7 +34,8 @@ def model():
             C((-4, 24.5, -4), (8, 7.5, 8), "hair", 0.2),
             C((-4, 31.5, -4), (8, 0.5, 8), "hair_top", 0.2)]),
         B("hairFront", "head", (0, 31, -4), cubes=[
-            C((-3.5, 14, -4.75), (7, 17, 0.5), "hair_curtain")]),
+            C((-3.5, 14, -4.75), (7, 17, 0.5), "hair_curtain"),
+            *[C((x, y, -5), (0.5, 31 - y, 0.5), "strand") for x, y in ((-3.25, 11), (-1.5, 9), (0.75, 12), (2.75, 10))]]),
         B("hairBack", "head", (0, 30, 4), cubes=[
             C((-4, 13, 3.75), (8, 17, 0.75), "hair_back")]),
     ]
@@ -71,7 +72,7 @@ def paint(seed, m, **_):
 
     def wet_hair(t, base=0.45):
         # Long strands: vertical streaks with a wet shine on some.
-        s = t.noise(t.X * 3.0, t.Y * 0.2, 2.0, 1)
+        s = t.noise(t.sx * 3.0, t.sy * 0.2, 2.0, 1)
         if s > 0.8:
             return t.paint(hair, 0.9, 0.1)
         return t.paint(hair, base + (s - 0.5) * 0.4, 0.2)
@@ -104,6 +105,8 @@ def paint(seed, m, **_):
                     return CLEAR  # ragged ends
                 return wet_hair(t, 0.45)
             return wet_hair(t, 0.3)
+        if tag == "strand":
+            return wet_hair(t, 0.35)
         if tag == "hair_back":
             if t.y >= t.fh - 5 and t.n(1.2) > 0.4:
                 return CLEAR

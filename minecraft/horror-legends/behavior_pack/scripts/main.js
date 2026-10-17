@@ -1,4 +1,4 @@
-// Horror Legends: a horror director that slowly turns an ordinary world
+// Horror Legends: Remastered. A horror director that slowly turns an ordinary world
 // against the player, in the spirit of the classic Java horror mods,
 // creepypastas and internet legends, told in three acts:
 //
@@ -25,6 +25,7 @@ import { tickHeart } from "./core/fx.js";
 import { restoreBlocks } from "./core/blocks.js";
 import { announce, onPlayerDied as directorDied, tickDirector } from "./director.js";
 import "./creatures/ambience.js";
+import "./creatures/scares.js";
 import { onBreakBlock, onHit as gamerHit, onPlaceBlock, onPlayerDied as gamerDied, tickGamer } from "./creatures/gamer.js";
 import "./creatures/dweller.js";
 import "./creatures/mimic.js";

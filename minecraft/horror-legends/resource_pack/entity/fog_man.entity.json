@@ -18,7 +18,8 @@
         "watch": "animation.hl.fog_man.watch",
         "chase": "animation.hl.fog_man.chase",
         "attack": "animation.hl.fog_man.attack",
-        "hurt": "animation.hl.fog_man.hurt"
+        "hurt": "animation.hl.fog_man.hurt",
+        "walk_extra": "animation.hl.fog_man.walk_extra"
       },
       "scripts": {
         "animate": [
@@ -35,6 +36,9 @@
           },
           {
             "hurt": "query.hurt_time > 0"
+          },
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
           }
         ]
       },

@@ -1,8 +1,8 @@
-# Horror Legends — Add-On de terror para Minecraft Bedrock
+# Horror Legends: Remastered — Add-On de terror para Minecraft Bedrock
 
 > *Este mundo no está tan vacío como parece.*
 
-Una historia de terror en **tres actos** que, poco a poco, pone tu mundo en tu
+La edición **Remastered** de una historia de terror en **tres actos** que, poco a poco, pone tu mundo en tu
 contra, con **15 leyendas** del terror de Minecraft y de internet. Tiene un
 final. Está inspirada en los mods de terror más conocidos de Java y en las
 leyendas de la comunidad:
@@ -26,8 +26,9 @@ Después, al crear o editar un mundo, activa **Horror Legends** en *Packs de
 comportamiento* (el de recursos se añade solo). Requiere **Minecraft Bedrock
 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **7.1.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 7.1.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **8.0.0**, *Remastered*). Si
+en los ajustes del mundo sigue apareciendo una versión antigua, quítala y
+activa la 8.0.0. Los
 días que llevas en el mundo se conservan; las páginas que ya habías leído
 siguen leídas (ahora hacen falta siete).
 
@@ -39,6 +40,7 @@ llega con su propio aviso en el chat la noche en que aparece.
 | Día | | Qué pasa |
 |---|---|---|
 | 0 | **Acto I: Visitantes** | Sonidos que no están: pasos, puertas, cofres, uñas en la pared, golpes, tu nombre. |
+| 1 | Sustos | Una cara delante de la tuya en un parpadeo, un aliento en la nuca, puertas que se cierran solas, estática, tu nombre. |
 | 1 | HerobrineGamer788 | Un jugador con cascos de luz roja entra a tu partida. Juega, te regala cosas, **te copia**, se queda quieto cuando lo miras... y deja de fingir. |
 | 1 | El Morador de las Cuevas | Bajo tierra: sin ojos, a cuatro patas, con un **hocico de cuatro labios que se abre como una flor** sobre anillos de dientes. Huye si lo pillas mirando. Odia la luz. |
 | 2 | El Mimic | Un **cofre que no estaba**. Ábrelo, pégale o acércate y la tapa es una boca con dientes y le salen seis patas. Se le puede matar y suelta hierro, oro, esmeraldas o un diamante. |
@@ -116,7 +118,7 @@ vez). Si mueres, huyes o sale el sol, se retira: podrás llamarlo otra noche.
 
 | Objeto | Receta | Uso |
 |---|---|---|
-| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 17 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
+| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 18 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
 | **Linterna** | `I G I / _ R _ / _ I _` (I = hierro, G = polvo de piedra luminosa, R = redstone) | Úsala para encenderla o apagarla. **Ilumina de verdad** lo que tienes delante mientras la llevas en la mano. Espanta al Morador y al Hombre Cabra, hace desaparecer a Herobrine, null, la Sombra y al Hombre de la Niebla cuando solo observa, frena al Skinwalker y al Wendigo, y quema al jefe. A la Estatua, a Siren Head y a Entity 303 les da igual. |
 | **Pila** | Redstone + pepita de hierro + lingote de cobre (da 2) | Una pila dura 5 minutos. Si llevas una de repuesto, se cambia sola. |
 | **Farol Protector** | Farol rodeado de 4 fragmentos de amatista (`_ A _ / A F A / _ A _`) | Nada te acecha en su luz: la Sombra no puede entrar, la Estatua no se acerca, el Morador, null, el Hombre Cabra y el Wendigo se apartan, el Hombre de la Niebla no pisa su círculo ni rompe esa puerta, Siren Head te pierde y Herobrine no construye nada dentro. Tu miedo baja. **Pero en la Noche Roja algo puede apagarlo.** |
@@ -134,9 +136,37 @@ también: con huevo pelea incluso de día).
 - **Activar o desactivar** cada amenaza. Cada una dice en cuántos días llega.
 - **Sustos fuertes**: pantalla roja, temblor, oscuridad y pitido en los oídos.
   Si los quitas, queda un susto más suave.
-- **Pruebas**: provoca al momento cualquiera de las 16 amenazas, te da los
+- **Pruebas**: provoca al momento cualquiera de las 17 amenazas, te da los
   objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un
   día.
+
+## Remastered (8.0.0)
+
+- **Texturas al doble de resolución.** Cada criatura se pinta ahora a 4
+  píxeles de textura por píxel de modelo (una cabeza tiene una cara de 32x32,
+  antes 16x16): degradados más suaves, grano fino en piel, tela y piedra, y
+  un **bisel de luz** en el borde de arriba de cada pieza. Los diseños son los
+  mismos, con el doble de detalle.
+- **Modelos más detallados**: costillas que sobresalen (Siren Head, el
+  Morador, el Wendigo), rejillas en los altavoces de Siren Head, herrajes y
+  bisagras de hierro en el Mimic, mechones mojados sueltos en el Ahogado,
+  dientes en el Hombre Cabra y **cristales de mineral** creciendo de los
+  hombros del Minero Hueco (brillan en su fase de furia).
+- **Animaciones nuevas** (96 en total, antes 74): el Morador y el Minero Hueco
+  **salen del suelo** al aparecer y el Ahogado **sale del agua**; la Sombra y
+  null **se materializan**; al andar, las cabezas cabecean, las colas, el pelo
+  y los altavoces se balancean y las mandíbulas se mueven; casi todas las
+  criaturas **retroceden al recibir un golpe**.
+- **Sustos nuevos** (nueva amenaza "Sustos", desde el día 1):
+  - una **cara justo delante de la tuya** lo que dura un parpadeo (la de
+    Herobrine, null, la Sombra, el Hombre de la Niebla, la Estatua o el
+    Morador, según quién haya llegado);
+  - un **aliento en la nuca** y algo que te roza y te empuja;
+  - una **puerta que se abre o se cierra de golpe** sola;
+  - la pantalla **rota en estática**;
+  - un **golpe que duele y no deja marca**;
+  - **tu nombre** escrito delante de tus ojos.
+- Nombre nuevo, **Horror Legends: Remastered**, e icono nuevo.
 
 ## Objetos en 3D (7.1.0)
 

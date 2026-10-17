@@ -75,7 +75,7 @@ def paint(seed, m, **_):
         # Scanlines: every other row a touch lighter; now and then a bright
         # line of noise across a face.
         v = base + (0.08 if t.Y % 2 == 0 else 0.0)
-        if t.noise(t.X * 0.2, t.Y * 3.0, 1.0, 1) > 0.93:
+        if t.noise(t.sx * 0.2, t.sy * 3.0, 1.0, 1) > 0.93:
             return (0x3A, 0x3A, 0x48)
         return t.paint(void, v, 0.15)
 

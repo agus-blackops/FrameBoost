@@ -19,6 +19,7 @@ def model():
         B("root", None, (0, 0, 0)),
         B("ribcage", "root", (0, 9, 0), rotation=(-6, 0, 0), cubes=[
             C((-3.5, 7, -7), (7, 5, 8.5), "ribcage"),
+            *[C((-3.75, 7.5, z), (7.5, 4, 0.5), "rib_out") for z in (-6, -4.5, -3, -1.5)],
             *[C((-0.75, 12, z), (1.5, 1, 1.5), "vertebra") for z in (-6.5, -4.5, -2.5, -0.5)]]),
         B("pelvis", "ribcage", (0, 9.5, 1.5), rotation=(10, 0, 0), cubes=[
             C((-3, 7.5, 1.5), (6, 4, 5), "pelvis"),
@@ -88,6 +89,8 @@ def paint(seed, m, **_):
             if f == "bottom":
                 return t.paint(skin, 0.4, 0.2)
             return pale(t, 0.55)
+        if tag == "rib_out":
+            return t.paint(skin, 0.75, 0.15) if f in ("right", "left") else CLEAR
         if tag == "pelvis":
             if f in ("right", "left") and 2 <= t.x <= 6 and 2 <= t.y <= 5:
                 return t.paint(skin, 0.75 - 0.08 * abs(t.x - 4), 0.1)  # hip bone

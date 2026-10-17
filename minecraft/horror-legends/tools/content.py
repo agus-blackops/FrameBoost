@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [7, 1, 0]
+VERSION = [8, 0, 0]
 UUID = {
     "bp": "95cc20cd-1272-4a55-8a97-f2b1dfd18e3f",
     "bp_data": "71d0f013-b17b-4635-843d-5f11ba161bba",
@@ -429,6 +429,30 @@ CLIENTS = {
                     "default", ("#5e7278", "#0b0e12")),
 }
 
+
+# Remastered: appearing, recoiling and secondary motion, layered on top.
+REMASTER = {
+    "herobrine": {"walk_extra": ("herobrine.walk_extra", MOVING)},
+    "fake_player": {"walk_extra": ("player.walk_extra", MOVING)},
+    "fog_man": {"walk_extra": ("fog_man.walk_extra", MOVING)},
+    "cave_dweller": {"emerge": ("dweller.emerge", None), "walk_extra": ("dweller.walk_extra", MOVING)},
+    "null": {"materialize": ("null.materialize", None)},
+    "herobrine_boss": {"emerge": ("boss.emerge", None), "walk_extra": ("boss.walk_extra", MOVING),
+                       "hurt": ("boss.hurt", HURT)},
+    "siren_head": {"walk_extra": ("siren.walk_extra", MOVING), "hurt": ("siren.hurt", HURT)},
+    "goatman": {"walk_extra": ("goatman.walk_extra", MOVING), "hurt": ("goatman.hurt", HURT)},
+    "mimic": {"hurt": ("mimic.hurt", HURT)},
+    "shadow": {"materialize": ("shadow.materialize", None)},
+    "skinwalker": {"walk_extra": ("skinwalker.walk_extra", MOVING), "hurt": ("skinwalker.hurt", HURT)},
+    "wendigo": {"walk_extra": ("wendigo.walk_extra", MOVING), "hurt": ("wendigo.hurt", HURT)},
+    "drowned_one": {"emerge": ("drowned.emerge", None), "walk_extra": ("drowned.walk_extra", f"{MOVING} && !query.is_in_water"),
+                    "hurt": ("drowned.hurt", HURT)},
+}
+for _name, _extra in REMASTER.items():
+    _anims, _animate = CLIENTS[_name][1], CLIENTS[_name][2]
+    for _short, (_full, _cond) in _extra.items():
+        _anims[_short] = _full
+        _animate.append({_short: _cond} if _cond else _short)
 
 def clients():
     for name, (textures, anims, animate, controller, egg) in CLIENTS.items():

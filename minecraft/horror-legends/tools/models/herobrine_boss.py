@@ -44,6 +44,8 @@ def model():
             *[C((-5, y, -6), (3.5, 1.5, 1.5), "rib") for y in (45, 48, 51)],
             *[C((1.5, y, -6), (3.5, 1.5, 1.5), "rib") for y in (45, 48, 51)],
             C((-11, 52, -4.5), (7, 7, 9), "pauldron"), C((4, 52, -4.5), (7, 7, 9), "pauldron"),
+            *[C((x, 59, z), (1.5, h, 1.5), "crystal", pivot=(x + 0.75, 59, z + 0.75), rotation=(rx, 0, rz))
+              for x, z, h, rx, rz in ((-9.5, -2, 4, 10, 15), (-7.5, 1, 3, -15, -10), (6.5, -1, 4.5, 12, -18), (8.5, 2, 3, -10, 10))],
             C((-10, 55, -3), (2, 3, 2), "ore"), C((8, 56, 0), (2, 2, 2), "ore"), C((-6, 50, 5.5), (3, 3, 2), "ore")]),
         B("neck", "chest", (0, 58, -2), rotation=(-10, 0, 0), cubes=[
             C((-2.5, 57, -4.5), (5, 3, 5), "neck")]),
@@ -99,7 +101,7 @@ def paint(seed, m, phase=1, **_):
     lamp = glow("#ff3020", 30) if hot else glow("#fff4c0", 30)
 
     def burning(v, t):
-        c = lava(v + (0.25 if hot else 0.0), t.X, t.Y)
+        c = lava(v + (0.25 if hot else 0.0), t.FX, t.FY)
         return glow(c, 70)
 
     def stone(t, base=0.5, cracks=True):
@@ -145,6 +147,9 @@ def paint(seed, m, phase=1, **_):
                 d = math.hypot(t.x - cx, t.y - cy) / max(cx, cy)
                 return burning(1.0 - d * 0.8 + (t.n(1.5) - 0.5) * 0.3, t)
             return burning(0.2, t)
+        if tag == "crystal":
+            return glow((0x3A, 0xE8, 0xE0) if (t.x + t.y) % 3 else (0xA0, 0xFF, 0xF8), 60) if hot else (
+                (0x3A, 0xE8, 0xE0) if (t.x + t.y) % 3 else (0xA0, 0xFF, 0xF8))
         if tag == "rib":
             return stone(t, 0.55, cracks=False)
         if tag in ("chest_back", "chest_side", "collar", "pauldron", "pelvis", "waist", "neck",

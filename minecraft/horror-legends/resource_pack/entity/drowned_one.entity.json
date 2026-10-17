@@ -16,7 +16,10 @@
         "idle": "animation.hl.drowned.idle",
         "walk": "animation.hl.drowned.walk",
         "swim": "animation.hl.drowned.swim",
-        "attack": "animation.hl.drowned.attack"
+        "attack": "animation.hl.drowned.attack",
+        "emerge": "animation.hl.drowned.emerge",
+        "walk_extra": "animation.hl.drowned.walk_extra",
+        "hurt": "animation.hl.drowned.hurt"
       },
       "scripts": {
         "animate": [
@@ -29,6 +32,13 @@
           },
           {
             "attack": "variable.attack_time > 0.0"
+          },
+          "emerge",
+          {
+            "walk_extra": "query.modified_move_speed > 0.05 && !query.is_in_water"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
           }
         ]
       },

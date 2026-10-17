@@ -1,11 +1,17 @@
 """Shared kit for the creature models: double-detail building helpers, the
 texel painter, and the material ramps every creature can use.
 
-Every model is built at twice its in-game size and painted against that (box
-UVs map one texel per unit, so a head gets a 16x16 face instead of 8x8), then
-written out at its real size with the texture size in the JSON halved (see
-Model.detail). Coordinates in the model files are ordinary in-game pixels
-(half-pixel steps allowed); B() and C() double them.
+Every model is built at four times its in-game size and painted against
+that (box UVs map one texel per unit, so a head gets a 32x32 face instead of
+8x8), then written out at its real size with the texture size in the JSON
+divided by four (see Model.detail). Coordinates in the model files are
+ordinary in-game pixels (quarter-pixel steps allowed); B() and C() scale
+them.
+
+The painters were designed on a 2x grid (a head face is 16x16 "design
+pixels"): a Texel gives them design coordinates (x, y, fw, fh, X, Y) for
+patterns and shapes, while noise, lighting and dithering run on the real,
+finer texels, so every surface gets twice the detail it was drawn with.
 """
 
 import math
@@ -14,7 +20,9 @@ from geometry import Bone, Cube, Model
 from paint import Noise, Ramp, form, glow
 from pixels import Canvas, box_faces, paint_box
 
-K = 2  # texels per in-game pixel
+K = 4  # texels per in-game pixel
+DESIGN = 2  # texels per in-game pixel the painters are written for
+SUB = K // DESIGN
 CLEAR = (0, 0, 0, 0)
 BLACK = (0x08, 0x07, 0x09)
 EYE = glow("#ffffff", 40)
@@ -37,7 +45,7 @@ def C(origin, size, tag, inflate=0.0, pivot=None, rotation=None):
 
 
 def hd_model(identifier, bones, bounds, width=256):
-    return Model(identifier, bones, bounds=bounds, detail=K).pack_uv(width)
+    return Model(identifier, bones, bounds=bounds, detail=K).pack_uv(width * SUB)
 
 
 def side_x(side, a, b):
@@ -60,25 +68,38 @@ def arc(n, radius, center, a0, a1, size, tag, z, spike=None):
 
 class Texel:
     """One texel being painted: which part (tag), which face, where on the
-    face and on the sheet, and helpers to paint it with a ramp."""
+    face and on the sheet, and helpers to paint it with a ramp.
 
-    __slots__ = ("tag", "face", "x", "y", "fw", "fh", "X", "Y", "noise")
+    x, y, fw, fh, X, Y are design coordinates (the 2x grid the painters
+    were drawn on); fx, fy, ffw, ffh, FX, FY are the real texels; sx, sy are
+    the real position in design units (for smooth noise)."""
+
+    __slots__ = ("tag", "face", "x", "y", "fw", "fh", "X", "Y", "fx", "fy", "ffw", "ffh", "FX", "FY", "sx", "sy",
+                 "noise")
 
     def lit(self):
-        return form(self.face, self.x, self.y, self.fw, self.fh)
+        v = form(self.face, self.fx, self.fy, self.ffw, self.ffh)
+        # A bevel: the top edge of every side catches the light.
+        if self.face in ("right", "left", "front", "back") and self.fy == 0 and self.ffh >= 4:
+            v += 0.14
+        return v
 
     def n(self, scale=3.0, octaves=2):
-        return self.noise(self.X, self.Y, scale, octaves)
+        return self.noise(self.sx, self.sy, scale, octaves)
 
     def n2(self, scale=3.0, octaves=2):
-        return self.noise(self.X + 911, self.Y + 377, scale, octaves)
+        return self.noise(self.sx + 911, self.sy + 377, scale, octaves)
 
     def ridge(self, scale=4.0, width=0.06):
-        return self.noise.ridge(self.X, self.Y, scale, width)
+        return self.noise.ridge(self.sx, self.sy, scale, width)
+
+    def grain(self):
+        """Fine surface grain, one texel across."""
+        return self.noise(self.FX * 1.7 + 5000, self.FY * 1.7 + 5000, 1.0, 1)
 
     def paint(self, ramp, base=0.55, rough=0.3, scale=3.0, extra=0.0):
-        v = base + self.lit() + (self.n(scale) - 0.5) * rough + extra
-        return ramp(v, self.X, self.Y)
+        v = base + self.lit() + (self.n(scale) - 0.5) * rough + extra + (self.grain() - 0.5) * 0.08
+        return ramp(v, self.FX, self.FY)
 
     @property
     def side(self):
@@ -87,12 +108,12 @@ class Texel:
     @property
     def u(self):
         """0..1 across the face."""
-        return self.x / max(1, self.fw - 1)
+        return self.fx / max(1, self.ffw - 1)
 
     @property
     def v(self):
         """0..1 down the face."""
-        return self.y / max(1, self.fh - 1)
+        return self.fy / max(1, self.ffh - 1)
 
 
 def paint_model(model, seed, fn):
@@ -106,8 +127,13 @@ def paint_model(model, seed, fn):
             origins = box_faces(*cube.uv, w, h, d)
 
             def paint(face, x, y, fw, fh, tag=cube.share, o=origins):
-                t.tag, t.face, t.x, t.y, t.fw, t.fh = tag, face, x, y, fw, fh
-                t.X, t.Y = o[face][0] + x, o[face][1] + y
+                t.tag, t.face = tag, face
+                t.fx, t.fy, t.ffw, t.ffh = x, y, fw, fh
+                t.fw, t.fh = max(1, fw // SUB), max(1, fh // SUB)
+                t.x, t.y = min(x // SUB, t.fw - 1), min(y // SUB, t.fh - 1)
+                t.FX, t.FY = o[face][0] + x, o[face][1] + y
+                t.X, t.Y = t.FX // SUB, t.FY // SUB
+                t.sx, t.sy = t.FX / SUB, t.FY / SUB
                 return fn(t)
             paint_box(cv, *cube.uv, w, h, d, paint)
     return cv

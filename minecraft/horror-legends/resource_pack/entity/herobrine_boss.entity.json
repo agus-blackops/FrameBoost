@@ -19,7 +19,10 @@
         "walk": "animation.hl.boss.walk",
         "attack": "animation.hl.boss.attack",
         "cast": "animation.hl.boss.cast",
-        "rage": "animation.hl.boss.rage"
+        "rage": "animation.hl.boss.rage",
+        "emerge": "animation.hl.boss.emerge",
+        "walk_extra": "animation.hl.boss.walk_extra",
+        "hurt": "animation.hl.boss.hurt"
       },
       "scripts": {
         "animate": [
@@ -36,6 +39,13 @@
           },
           {
             "rage": "query.property('hl:phase') == 2"
+          },
+          "emerge",
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
           }
         ]
       },

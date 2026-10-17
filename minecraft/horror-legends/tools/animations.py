@@ -64,6 +64,23 @@ def tail(bones, rate, amp, lag=40.0, sway=0.0):
 
 LOOK = {"head": rot("query.target_x_rotation", "query.target_y_rotation")}
 
+EMERGE = f"math.max(0.0, 1.0 - {T} * 1.6)"  # 1 -> 0 over the first 0.6 s of its life
+
+
+def emerge(depth, bones=("root",), tilt=0.0):
+    """Climbing up out of the ground (or the water) when it appears."""
+    out = {}
+    for b in bones:
+        out[b] = {"position": [0, f"-{EMERGE} * {EMERGE} * {depth}", 0]}
+        if tilt:
+            out[b]["rotation"] = [f"{EMERGE} * {tilt}", 0, 0]
+    return out
+
+
+def flinch(bones, amount=1.4):
+    """A sharp recoil when hurt (hurt_time counts down from 10)."""
+    return {b: rot(f"-{H} * {amount}", 0, f"{H} * {amount * 0.6}" if i == 0 else 0) for i, b in enumerate(bones)}
+
 
 def look(bone="head", k=1.0, pitch=True):
     x = f"query.target_x_rotation * {k}" if pitch else 0
@@ -491,4 +508,54 @@ ANIMATIONS = {
         "hairFront": rot(-60.0), "hairBack": rot(-40.0)}},
     "animation.hl.drowned.attack": {"loop": True, "bones": {
         "rightArm": rot(f"-{swing(60.0)}"), "leftArm": rot(f"-{swing(50.0)}"), "body": rot(swing(12.0))}},
+
+    # ------------------------------------------------------------------ #
+    # Remastered: appearing, recoiling, and more life in every step
+    # ------------------------------------------------------------------ #
+    "animation.hl.dweller.emerge": {"loop": True, "bones": emerge(12, tilt=-40.0)},
+    "animation.hl.drowned.emerge": {"loop": True, "bones": emerge(30, tilt=30.0)},
+    "animation.hl.boss.emerge": {"loop": True, "bones": emerge(70)},
+    "animation.hl.shadow.materialize": {"loop": True, "bones": {
+        "root": {"scale": [f"1.0 - {EMERGE} * 0.9", f"1.0 + {EMERGE} * 1.5", f"1.0 - {EMERGE} * 0.9"]}}},
+    "animation.hl.null.materialize": {"loop": True, "bones": {
+        "root": {"scale": [f"1.0 + {EMERGE} * math.random(-0.8, 0.8)", f"1.0 - {EMERGE} * 0.9", 1.0]}}},
+    "animation.hl.goatman.hurt": {"loop": True, "bones": flinch(["torso", "head"])},
+    "animation.hl.wendigo.hurt": {"loop": True, "bones": flinch(["torso", "skull"])},
+    "animation.hl.skinwalker.hurt": {"loop": True, "bones": flinch(["torso", "skull"], 1.8)},
+    "animation.hl.drowned.hurt": {"loop": True, "bones": flinch(["body", "head"])},
+    "animation.hl.siren.hurt": {"loop": True, "bones": flinch(["chest", "sirens"], 0.8)},
+    "animation.hl.boss.hurt": {"loop": True, "bones": flinch(["chest", "head"], 0.9)},
+    "animation.hl.mimic.hurt": {"loop": True, "bones": {"lid": rot(f"-{H} * 4.0"), "body": rot(0, 0, f"{H} * 1.5")}},
+    # Secondary motion layered on the walks: heads that bob, tails and hair
+    # that swing, jaws that work.
+    "animation.hl.herobrine.walk_extra": {"loop": True, "bones": {
+        "head": rot(f"math.abs(math.sin({D} * 26.0)) * 8.0 * {S}", 0, sin(13.0, 6.0)),
+        "jaw": rot(f"math.abs(math.sin({D} * 26.0)) * 10.0 * {S}"),
+        "tail2": rot(0, 0, sin(13.0, 8.0)), "tail3": rot(0, 0, sin(13.0, 10.0)), "sting": rot(cos(26, 12.0)),
+        "gutHang": rot(cos(26, 25.0))}},
+    "animation.hl.fog_man.walk_extra": {"loop": True, "bones": {
+        "head": rot(0, sin(14.0, 10.0), sin(28.0, 4.0)), "hood": rot(f"math.abs(math.sin({D} * 28.0)) * 6.0 * {S}"),
+        "rightHand": rot(cos(28, 15.0)), "leftHand": rot(cos(28, -15.0))}},
+    "animation.hl.goatman.walk_extra": {"loop": True, "bones": {
+        "head": rot(f"math.abs(math.sin({D} * 32.0)) * 7.0 * {S}", sin(16.0, 8.0)),
+        "jaw": rot(f"math.abs(math.cos({D} * 32.0)) * 6.0 * {S}"), "torso": rot(0, sin(32.0, -6.0))}},
+    "animation.hl.wendigo.walk_extra": {"loop": True, "bones": {
+        "skull": rot(f"math.abs(math.sin({D} * 26.0)) * 6.0 * {S}", 0, sin(13.0, 9.0)),
+        "neck": rot(sin(26.0, 5.0)), "torso": rot(0, sin(26.0, -7.0), sin(26.0, 3.0))}},
+    "animation.hl.siren.walk_extra": {"loop": True, "bones": {
+        "sirens": rot(cos(14, 6.0), 0, sin(7.0, 10.0)), "rightHand": rot(cos(14, 20.0)), "leftHand": rot(cos(14, -20.0))}},
+    "animation.hl.skinwalker.walk_extra": {"loop": True, "bones": {
+        "cowHead": rot(f"math.abs(math.sin({D} * 38.17)) * 6.0 * {S}"),
+        "skull": rot(0, sin(15.0, 12.0), sin(30.0, 5.0)), "jaw": rot(f"math.abs(math.sin({D} * 30.0)) * 12.0 * {S}")}},
+    "animation.hl.dweller.walk_extra": {"loop": True, "bones": {
+        "head": rot(sin(80.0, 6.0), sin(40.0, 12.0)), "neck": rot(0, sin(40.0, -8.0)),
+        "handRight": rot(0, 0, lift(40, 20.0)), "handLeft": rot(0, 0, f"-{lift(40, 20.0, -1)}")}},
+    "animation.hl.drowned.walk_extra": {"loop": True, "bones": {
+        "hairFront": rot(0, 0, sin(12.0, 10.0)), "hairBack": rot(f"math.abs(math.sin({D} * 24.0)) * -10.0 * {S}"),
+        "head": rot(0, 0, sin(12.0, 10.0)), "rightArm": rot(cos(24, -10.0)), "leftArm": rot(cos(24, 10.0))}},
+    "animation.hl.boss.walk_extra": {"loop": True, "bones": {
+        "tail1": rot(0, 0, sin(11.0, 6.0)), "tail2": rot(0, 0, sin(11.0, 8.0)), "sting": rot(cos(22, 15.0)),
+        "pick": rot(cos(22, 10.0)), "fist": rot(cos(22, -10.0)), "jaw": rot(f"math.abs(math.sin({D} * 22.0)) * 8.0 * {S}")}},
+    "animation.hl.player.walk_extra": {"loop": True, "bones": {
+        "head": rot(f"math.abs(math.sin({D} * 38.17)) * 2.0 * {S}"), "body": rot(sin(76.34, 1.5))}},
 }
