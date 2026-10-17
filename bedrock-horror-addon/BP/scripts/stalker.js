@@ -25,6 +25,7 @@ export function updateStalkers() {
     }
     for (const st of states.values()) {
         try {
+            setFrozen(st.entity, st.seen);
             if (st.seen) {
                 st.entity.addEffect("slowness", 10, { amplifier: 255, showParticles: false });
                 continue;
@@ -37,6 +38,15 @@ export function updateStalkers() {
         } catch {
             // entity unloaded between query and update
         }
+    }
+}
+
+/** Mirrors the freeze into an entity property so the client animation turns to stone. */
+function setFrozen(stalker, frozen) {
+    try {
+        if (stalker.getProperty("horror:frozen") !== frozen) stalker.setProperty("horror:frozen", frozen);
+    } catch {
+        // property API unavailable: the freeze still works, only the pose keeps moving
     }
 }
 

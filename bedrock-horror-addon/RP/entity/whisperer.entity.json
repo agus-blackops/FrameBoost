@@ -13,19 +13,34 @@
         "default": "geometry.horror_whisperer"
       },
       "animations": {
-        "walk": "animation.horror.walk",
-        "idle": "animation.horror.idle",
-        "look_at": "animation.horror.look_at",
-        "float": "animation.horror.float",
-        "twitch": "animation.horror.twitch"
+        "float": "animation.horror.whisperer.float",
+        "cloth": "animation.horror.whisperer.cloth",
+        "idle": "animation.horror.whisperer.idle",
+        "hunt": "animation.horror.whisperer.hunt",
+        "attack": "animation.horror.whisperer.attack",
+        "look_at": "animation.horror.whisperer.look_at",
+        "twitch": "animation.horror.whisperer.twitch"
       },
       "scripts": {
+        "pre_animation": [
+          "variable.dt = math.min(query.delta_time, 0.1);",
+          "variable.speed = math.lerp(variable.speed ?? 0, math.min(query.modified_move_speed * 1.4, 1), math.min(variable.dt * 8, 1));",
+          "variable.hunt = math.lerp(variable.hunt ?? 0, query.has_target, math.min(variable.dt * 2.5, 1));",
+          "variable.atk = variable.attack_time ?? 0;",
+          "variable.still = 0;"
+        ],
         "animate": [
-          "walk",
-          "idle",
           "look_at",
           "float",
-          "twitch"
+          "cloth",
+          {
+            "idle": "1 - variable.hunt"
+          },
+          {
+            "hunt": "variable.hunt"
+          },
+          "twitch",
+          "attack"
         ]
       },
       "render_controllers": [

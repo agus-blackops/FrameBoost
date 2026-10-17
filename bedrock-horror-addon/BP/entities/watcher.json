@@ -10,7 +10,7 @@
     "components": {
       "minecraft:collision_box": {
         "width": 0.7,
-        "height": 2.9
+        "height": 3.4
       },
       "minecraft:physics": {},
       "minecraft:nameable": {},

@@ -5,7 +5,14 @@
       "identifier": "horror:stalker",
       "is_spawnable": true,
       "is_summonable": true,
-      "is_experimental": false
+      "is_experimental": false,
+      "properties": {
+        "horror:frozen": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
     },
     "components": {
       "minecraft:collision_box": {

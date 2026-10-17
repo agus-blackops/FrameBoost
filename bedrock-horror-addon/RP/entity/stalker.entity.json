@@ -13,17 +13,36 @@
         "default": "geometry.horror_stalker"
       },
       "animations": {
-        "walk": "animation.horror.walk",
-        "idle": "animation.horror.idle",
-        "look_at": "animation.horror.look_at",
-        "twitch": "animation.horror.twitch"
+        "walk": "animation.horror.stalker.walk",
+        "idle": "animation.horror.stalker.idle",
+        "hunt": "animation.horror.stalker.hunt",
+        "attack": "animation.horror.stalker.attack",
+        "look_at": "animation.horror.stalker.look_at",
+        "twitch": "animation.horror.stalker.twitch"
       },
       "scripts": {
+        "pre_animation": [
+          "variable.dt = math.min(query.delta_time, 0.1);",
+          "variable.speed = math.lerp(variable.speed ?? 0, math.min(query.modified_move_speed * 1.4, 1), math.min(variable.dt * 8, 1));",
+          "variable.hunt = math.lerp(variable.hunt ?? 0, query.has_target, math.min(variable.dt * 2.5, 1));",
+          "variable.atk = variable.attack_time ?? 0;",
+          "variable.still = query.property('horror:frozen');"
+        ],
         "animate": [
-          "walk",
-          "idle",
           "look_at",
-          "twitch"
+          {
+            "walk": "variable.speed"
+          },
+          {
+            "idle": "(1 - variable.speed) * (1 - variable.still)"
+          },
+          {
+            "hunt": "variable.hunt"
+          },
+          {
+            "twitch": "1 - variable.still"
+          },
+          "attack"
         ]
       },
       "render_controllers": [

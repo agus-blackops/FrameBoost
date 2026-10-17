@@ -13,12 +13,21 @@
         "default": "geometry.horror_watcher"
       },
       "animations": {
-        "look_at": "animation.horror.look_at",
-        "twitch": "animation.horror.twitch"
+        "idle": "animation.horror.watcher.idle",
+        "look_at": "animation.horror.watcher.look_at",
+        "twitch": "animation.horror.watcher.twitch"
       },
       "scripts": {
+        "pre_animation": [
+          "variable.dt = math.min(query.delta_time, 0.1);",
+          "variable.speed = math.lerp(variable.speed ?? 0, math.min(query.modified_move_speed * 1.4, 1), math.min(variable.dt * 8, 1));",
+          "variable.hunt = math.lerp(variable.hunt ?? 0, query.has_target, math.min(variable.dt * 2.5, 1));",
+          "variable.atk = variable.attack_time ?? 0;",
+          "variable.still = 0;"
+        ],
         "animate": [
           "look_at",
+          "idle",
           "twitch"
         ]
       },

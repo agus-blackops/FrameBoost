@@ -28,6 +28,8 @@ class Entity {
   getHeadLocation() { return { ...this.location, y: this.location.y + 1.6 }; }
   addEffect(id) { this.effects.add(id); log.push("effect:" + id); }
   removeEffect(id) { this.effects.delete(id); }
+  getProperty(k) { return (this.props ?? {})[k]; }
+  setProperty(k, v) { (this.props ??= {})[k] = v; log.push("prop:" + k + "=" + v); }
   teleport(loc) { this.location = loc; log.push("teleport:" + this.typeId); }
   triggerEvent(e) { log.push("event:" + e); this.dimension.entities = this.dimension.entities.filter((x) => x !== this); }
 }
@@ -101,6 +103,7 @@ const has = (prefix) => log.some((l) => l.startsWith(prefix));
 const expectations = {
   "stalker frozen when watched": has("effect:slowness"),
   "stalker sprints when unseen": has("effect:speed"),
+  "stalker pose freezes when watched": has("prop:horror:frozen=true"),
   "heartbeat plays": has("sound:mob.warden.heartbeat"),
   "whisperer darkness": has("effect:darkness"),
   "whisperer hides when far": has("effect:invisibility"),

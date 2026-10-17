@@ -89,14 +89,18 @@ def main():
         load(path)
     check_manifests()
 
-    geometries, controllers, animations = {}, set(), set()
+    geometries, geo_bones, controllers, animations = {}, {}, set(), {}
     for path in (RP / "models" / "entity").glob("*.geo.json"):
         g = load(path)
         for geo in (g or {}).get("minecraft:geometry", []):
             desc = geo["description"]
             size = (desc["texture_width"], desc["texture_height"])
             geometries[desc["identifier"]] = size
+            names = [b["name"] for b in geo["bones"]]
+            geo_bones[desc["identifier"]] = set(names)
+            check(len(names) == len(set(names)), f"{path.name}: duplicate bone names")
             for bone in geo["bones"]:
+                check(bone.get("parent", "root") in names, f"{path.name}: {bone['name']} has unknown parent")
                 for c in bone.get("cubes", []):
                     w, h, d = c["size"]
                     u, v = c["uv"]
@@ -105,7 +109,13 @@ def main():
     for path in (RP / "render_controllers").glob("*.json"):
         controllers |= set((load(path) or {}).get("render_controllers", {}))
     for path in (RP / "animations").glob("*.json"):
-        animations |= set((load(path) or {}).get("animations", {}))
+        animations.update((load(path) or {}).get("animations", {}))
+    for name, a in animations.items():
+        for bone, channels in a["bones"].items():
+            for values in channels.values():
+                for expr in values:
+                    if isinstance(expr, str):
+                        check(expr.count("(") == expr.count(")"), f"{name}/{bone}: unbalanced parentheses")
 
     tables = lang_tables()
     en = tables.get("en_US", {})
@@ -146,12 +156,20 @@ def main():
             check(rc in controllers, f"{ident}: unknown render controller {rc}")
         for anim in d["animations"].values():
             check(anim in animations, f"{ident}: unknown animation {anim}")
-        for name in d["scripts"]["animate"]:
-            check(name in d["animations"], f"{ident}: animates undeclared {name}")
+            if anim in animations and geo in geo_bones:
+                missing = set(animations[anim]["bones"]) - geo_bones[geo]
+                check(not missing, f"{ident}: {anim} animates missing bones {sorted(missing)}")
+        for entry in d["scripts"]["animate"]:
+            for name in ([entry] if isinstance(entry, str) else entry):
+                check(name in d["animations"], f"{ident}: animates undeclared {name}")
+        for stmt in d["scripts"].get("pre_animation", []):
+            check(stmt.endswith(";") and stmt.count("(") == stmt.count(")"), f"{ident}: bad pre_animation {stmt}")
         tex = RP / (d["textures"]["default"] + ".png")
         check(tex.is_file(), f"{ident}: texture {tex.name} missing")
         if tex.is_file() and geo in geometries:
-            check(png_size(tex) == geometries[geo], f"{tex.name}: size does not match its geometry")
+            (tw, th), (gw, gh) = png_size(tex), geometries[geo]
+            check(tw % gw == 0 and th % gh == 0 and tw // gw == th // gh,
+                  f"{tex.name}: {tw}x{th} is not a whole multiple of its {gw}x{gh} UV space")
     check(bp_ids == client_ids, f"BP/RP entity mismatch: {bp_ids ^ client_ids}")
 
     snd = load(RP / "sounds.json") or {}

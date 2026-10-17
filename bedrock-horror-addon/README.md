@@ -1,6 +1,9 @@
-# Horror Stalkers v1.1 (Minecraft Bedrock addon)
+# Horror Stalkers v1.2 (Minecraft Bedrock addon)
 
 Criaturas de terror que te acechan. / Stalking horror creatures.
+
+![Vista previa](docs/preview.png)
+![Pose de caza](docs/preview_hunt.png)
 
 | Criatura | Dónde aparece | Comportamiento |
 |---|---|---|
@@ -11,6 +14,12 @@ Criaturas de terror que te acechan. / Stalking horror creatures.
 
 **Noche de Sangre:** cada 7 noches cae una niebla roja, aparece un título en pantalla y
 llegan muchos más cazadores.
+
+**Modelos y animaciones:** modelos articulados (rodillas, codos, manos, mandíbula que se abre,
+cola en tres segmentos, tiras de tela) con texturas HD procedurales: sombreado por cara,
+venas, grietas en hueso, pliegues de tela, pelaje y sangre. Las animaciones se mezclan suavemente
+entre caminar, reposo, caza (la mandíbula tiembla abierta, inclina la cabeza, extiende los brazos)
+y ataque. Mientras miras al Acechador, se queda inmóvil como una estatua.
 
 **Ambiente:** latido del corazón según la cercanía, pasos detrás de ti y sonidos lejanos.
 Los ojos brillan en la oscuridad. Cada criatura tiene sus propios sonidos, animaciones
@@ -34,4 +43,5 @@ python3 tools/generate_assets.py   # regenera JSON, modelos, texturas
 python3 tools/build.py             # crea dist/HorrorStalkers.mcaddon y .zip
 python3 tools/validate.py          # revisa JSON y referencias BP<->RP
 node tools/smoke_test.mjs          # ejecuta los scripts con una API simulada
+python3 tools/render_preview.py . docs/preview.png bind   # vista previa de los modelos
 ```

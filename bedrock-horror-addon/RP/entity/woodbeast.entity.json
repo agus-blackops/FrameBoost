@@ -13,15 +13,34 @@
         "default": "geometry.horror_woodbeast"
       },
       "animations": {
-        "walk": "animation.horror.walk",
-        "look_at": "animation.horror.look_at",
-        "tail": "animation.horror.tail"
+        "walk": "animation.horror.woodbeast.walk",
+        "idle": "animation.horror.woodbeast.idle",
+        "tail": "animation.horror.woodbeast.tail",
+        "hunt": "animation.horror.woodbeast.hunt",
+        "attack": "animation.horror.woodbeast.attack",
+        "look_at": "animation.horror.woodbeast.look_at"
       },
       "scripts": {
+        "pre_animation": [
+          "variable.dt = math.min(query.delta_time, 0.1);",
+          "variable.speed = math.lerp(variable.speed ?? 0, math.min(query.modified_move_speed * 1.4, 1), math.min(variable.dt * 8, 1));",
+          "variable.hunt = math.lerp(variable.hunt ?? 0, query.has_target, math.min(variable.dt * 2.5, 1));",
+          "variable.atk = variable.attack_time ?? 0;",
+          "variable.still = 0;"
+        ],
         "animate": [
-          "walk",
           "look_at",
-          "tail"
+          {
+            "walk": "variable.speed"
+          },
+          {
+            "idle": "1 - variable.speed"
+          },
+          "tail",
+          {
+            "hunt": "variable.hunt"
+          },
+          "attack"
         ]
       },
       "render_controllers": [
