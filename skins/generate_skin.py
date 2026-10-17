@@ -74,6 +74,7 @@ def voronoi(P, scale, seed):
     return f1, f2, cid
 
 
+FACET, CRACK = 0.23, 0.19
 RAMP = [(0.22, Y1), (0.50, O1), (0.80, O2), (1.05, O3), (1.35, DR1), (1.75, DR2), (2.2, DR3)]
 
 # ------------------------------------------------------------------ geometria
@@ -131,7 +132,7 @@ def surface(P, face, seed, heat_fn, tone=0):
     warp = np.stack([fbm(P, 0.11, seed + 5 + k, 2) - 0.5 for k in range(3)], -1) * 3.2
     Q = P + warp
     # --- obsidiana
-    f1, f2, cid = voronoi(Q, 0.23, seed)
+    f1, f2, cid = voronoi(Q, FACET, seed)
     e = f2 - f1
     n = fbm(P, 0.45, seed + 40, 2)
     idx = np.floor(1.0 + cid ** 1.4 * 3.4 + (n - 0.5) * 1.4 + tone).astype(int)
@@ -140,7 +141,7 @@ def surface(P, face, seed, heat_fn, tone=0):
     idx = np.clip(idx + SHADE[face], 0, len(OBS) - 1)
     rgb = np.array(OBS, dtype=np.float64)[idx]
     # --- lava
-    c1, c2, _ = voronoi(Q, 0.19, seed + 91)
+    c1, c2, _ = voronoi(Q, CRACK, seed + 91)
     ce = c2 - c1
     heat = heat_fn(P, seed)
     w = np.where(heat > 0.16, 0.05 + 0.26 * heat, 0.0)
