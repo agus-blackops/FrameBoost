@@ -413,6 +413,7 @@ final class Ui {
         int[] rep = {Items.HAND, Items.HUMAN, Items.CRATE, Items.DYNAMITE, Items.PISTOL, Items.FIRE, Items.SYR_HEAL};
         if (ci == Items.CAT_BUILD) { drawIcon(c, Items.HOUSE, cx, cy, s); return; }
         if (ci == Items.CAT_ANIMALS) { drawIcon(c, Items.DOG, cx, cy, s); return; }
+        if (ci == Items.CAT_MACHINES) { drawIcon(c, Items.SAW, cx, cy, s); return; }
         if (ci < rep.length) { drawIcon(c, rep[ci], cx, cy, s); return; }
         p.setStyle(Paint.Style.FILL);
         if (ci == Items.CAT_MODS) {            // puzzle-piece-ish gear
@@ -523,8 +524,8 @@ final class Ui {
                 line(c, cx + s * 0.18f, cy + s * 0.18f, cx + s * 0.62f, cy + s * 0.62f, w * 1.4f, 0xFFe9edf4);
                 line(c, cx - s * 0.3f, cy - s * 0.12f, cx + s * 0.06f, cy - s * 0.12f, w * 0.6f, 0xFF4cbf6b);
                 break;
-            case Items.SYR_HEAL: case Items.SYR_ADRENALINE: case Items.SYR_LIFE: case Items.SYR_ZOMBIE: case Items.SYR_ACID: case Items.SYR_SEDATIVE: {
-                int[] cols = {0xFF4cdc6b, 0xFFffd23f, 0xFF7fd1ff, 0xFF5aa02a, 0xFFb6ff3a, 0xFF9a8cff};
+            case Items.SYR_HEAL: case Items.SYR_ADRENALINE: case Items.SYR_LIFE: case Items.SYR_ZOMBIE: case Items.SYR_ACID: case Items.SYR_SEDATIVE: case Items.SYR_FREEZE: {
+                int[] cols = {0xFF4cdc6b, 0xFFffd23f, 0xFF7fd1ff, 0xFF5aa02a, 0xFFb6ff3a, 0xFF9a8cff, 0xFFdff4ff};
                 int liquid = cols[id - Items.SYR_HEAL];
                 line(c, cx - s * 0.55f, cy + s * 0.55f, cx + s * 0.35f, cy - s * 0.35f, s * 0.34f, 0xFFdfe4ea);
                 line(c, cx - s * 0.45f, cy + s * 0.45f, cx + s * 0.1f, cy - s * 0.1f, s * 0.22f, liquid);
@@ -804,6 +805,50 @@ final class Ui {
                 disc(c, cx + s * 0.62f * k, cy - s * 0.38f * k, Math.max(1f, s * 0.05f), 0xFF1b1b1b);
                 break;
             }
+            case Items.SAW: {
+                box(c, cx - s * 0.2f, cy + s * 0.1f, cx + s * 0.2f, cy + s * 0.75f, 0xFF3a4048, s * 0.05f);
+                for (int i = 0; i < 12; i++) { double a = i * Math.PI / 6; disc(c, cx + (float) Math.cos(a) * s * 0.52f, cy - s * 0.15f + (float) Math.sin(a) * s * 0.52f, s * 0.09f, 0xFF6f7782); }
+                disc(c, cx, cy - s * 0.15f, s * 0.5f, 0xFFc9ced6);
+                disc(c, cx, cy - s * 0.15f, s * 0.12f, 0xFF3a4048);
+                break;
+            }
+            case Items.SPIKES: {
+                for (int i = 0; i < 5; i++) {
+                    float x0 = cx - s * 0.75f + i * s * 0.3f;
+                    line(c, x0 + s * 0.15f, cy + s * 0.2f, x0 + s * 0.15f, cy - s * 0.45f, s * 0.1f, 0xFFb9c0ca);
+                }
+                box(c, cx - s * 0.8f, cy + s * 0.15f, cx + s * 0.8f, cy + s * 0.45f, 0xFF4a5059, s * 0.06f);
+                break;
+            }
+            case Items.FAN:
+                box(c, cx - s * 0.5f, cy + s * 0.45f, cx + s * 0.5f, cy + s * 0.65f, 0xFF2f353d, s * 0.05f);
+                box(c, cx - s * 0.35f, cy - s * 0.6f, cx + s * 0.15f, cy + s * 0.45f, 0xFF4f6d8a, s * 0.15f);
+                box(c, cx + s * 0.15f, cy - s * 0.7f, cx + s * 0.35f, cy + s * 0.35f, 0xFFd5dbe6, s * 0.08f);
+                for (int i = 0; i < 3; i++) line(c, cx + s * 0.5f, cy - s * 0.4f + i * s * 0.3f, cx + s * 0.85f, cy - s * 0.4f + i * s * 0.3f, Math.max(1f, s * 0.06f), 0x99ffffff);
+                break;
+            case Items.CRUSHER:
+                box(c, cx - s * 0.8f, cy - s * 0.8f, cx - s * 0.62f, cy + s * 0.75f, 0xFF3a4048, s * 0.04f);
+                box(c, cx + s * 0.62f, cy - s * 0.8f, cx + s * 0.8f, cy + s * 0.75f, 0xFF3a4048, s * 0.04f);
+                box(c, cx - s * 0.8f, cy - s * 0.85f, cx + s * 0.8f, cy - s * 0.65f, 0xFF3a4048, s * 0.04f);
+                box(c, cx - s * 0.08f, cy - s * 0.65f, cx + s * 0.08f, cy - s * 0.1f, 0xFF9aa3ad, 0f);
+                box(c, cx - s * 0.58f, cy - s * 0.12f, cx + s * 0.58f, cy + s * 0.12f, 0xFFd9a420, s * 0.04f);
+                break;
+            case Items.TESLA:
+                box(c, cx - s * 0.45f, cy + s * 0.55f, cx + s * 0.45f, cy + s * 0.75f, 0xFF2f353d, s * 0.05f);
+                box(c, cx - s * 0.15f, cy - s * 0.3f, cx + s * 0.15f, cy + s * 0.55f, 0xFFb87333, s * 0.04f);
+                disc(c, cx, cy - s * 0.5f, s * 0.28f, 0xFFc9ced6);
+                line(c, cx + s * 0.25f, cy - s * 0.6f, cx + s * 0.55f, cy - s * 0.85f, Math.max(1f, s * 0.06f), 0xFF9fd8ff);
+                line(c, cx + s * 0.55f, cy - s * 0.85f, cx + s * 0.75f, cy - s * 0.6f, Math.max(1f, s * 0.06f), 0xFF9fd8ff);
+                break;
+            case Items.BAT:
+                line(c, cx - s * 0.75f, cy + s * 0.6f, cx + s * 0.55f, cy - s * 0.55f, s * 0.18f, 0xFFb07a45);
+                line(c, cx - s * 0.1f, cy, cx + s * 0.6f, cy - s * 0.62f, s * 0.3f, 0xFFb07a45);
+                line(c, cx - s * 0.78f, cy + s * 0.63f, cx - s * 0.5f, cy + s * 0.38f, s * 0.2f, 0xFF1d1f24);
+                break;
+            case Items.HAMMER:
+                line(c, cx - s * 0.6f, cy + s * 0.65f, cx + s * 0.25f, cy - s * 0.25f, s * 0.14f, 0xFF6b4a2f);
+                line(c, cx - s * 0.05f, cy - s * 0.6f, cx + s * 0.6f, cy + s * 0.05f, s * 0.36f, 0xFF8d96a3);
+                break;
             case Items.POOP:
                 box(c, cx - s * 0.6f, cy + s * 0.05f, cx + s * 0.6f, cy + s * 0.45f, 0xFF6b4423, s * 0.2f);
                 box(c, cx - s * 0.42f, cy - s * 0.25f, cx + s * 0.42f, cy + s * 0.12f, 0xFF7a4f2a, s * 0.18f);

@@ -29,7 +29,11 @@ final class Person extends Ent {
     final boolean[] broken = new boolean[NPARTS];     // fractured: its joint is limp
     final boolean[] severed = new boolean[NJOINTS];
     final float[] bleed = new float[NPARTS];
-    final boolean[] gibbed = new boolean[NPARTS];     // blown to pieces: invisible, frozen sensor
+    final boolean[] gibbed = new boolean[NPARTS];
+    // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
+    float frozenT;
+    final boolean[] fzLimit = new boolean[NJOINTS];
+    final float[] fzLo = new float[NJOINTS], fzHi = new float[NJOINTS];     // blown to pieces: invisible, frozen sensor
 
     // wounds drawn on the skin (People Playground style), in the local frame of each part's shape
     static final int MAXW = 48, W_HOLE = 0, W_CUT = 1, W_BURN = 2, W_BRUISE = 3;

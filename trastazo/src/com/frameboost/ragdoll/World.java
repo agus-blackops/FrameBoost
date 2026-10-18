@@ -8,11 +8,19 @@ final class World implements Sim.Listener, Sim.Hook {
     static final int MAX_BODIES = 900;
 
     static final class Stats {
-        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops;
+        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered;
         float recentT;
     }
 
     static final class Rocket { float x, y, vx, vy, life; Ent owner; }
+
+    /** Electric arcs (Tesla coil) drawn for a moment: x0 y0 x1 y1 life. */
+    final float[][] arcs = new float[12][5];
+    private int arcNext;
+    void addArc(float x0, float y0, float x1, float y1, float life) {
+        float[] a = arcs[arcNext]; arcNext = (arcNext + 1) % arcs.length;
+        a[0] = x0; a[1] = y0; a[2] = x1; a[3] = y1; a[4] = life;
+    }
 
     final Sim sim = new Sim();
     final Fx fx = new Fx();
@@ -148,15 +156,18 @@ final class World implements Sim.Listener, Sim.Hook {
                         break;
                     }
                     case Items.POOP: ry = Math.min(y, fl - 9f); break;
+                    case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: ry = Math.min(y + 40f, fl); break;
                     default: ry = Math.min(y, fl - 14f); break;
                 }
                 Prop p = Prop.make(sim, item, x, ry, rnd);
                 if (p == null) return null;
                 if (item == Items.MOTOR) p.motorized = true;
                 if (p.animal()) p.turn(dir >= 0 ? 1 : -1);
+                if (p.fixedMachine()) p.homeDirV = dir >= 0 ? 1 : -1;
                 if (p.fuse >= 0f) p.fuse = item == Items.GRENADE ? 3f : 4f;
                 if (item == Items.KNIFE || item == Items.SWORD) { /* sharp bodies are registered by the factory */ }
                 p.register(sim);
+                if (p.fixedMachine()) for (RB b : p.bodies) b.setFrozen(true);
                 e = add(p);
             }
         }
@@ -191,6 +202,7 @@ final class World implements Sim.Listener, Sim.Hook {
         post(dt);
         fx.update(dt);
         for (int i = 0; i < 8; i++) if (trT[i] > 0) trT[i] -= dt;
+        for (float[] a : arcs) if (a[4] > 0f) a[4] -= dt;
         if (stats.recentT > 0) { stats.recentT -= dt; if (stats.recentT <= 0) stats.recentBooms = 0; }
         updateRockets(dt);
     }
@@ -216,7 +228,16 @@ final class World implements Sim.Listener, Sim.Hook {
         breakQ.clear();
         for (int i = 0; i < gibQ.size(); i++) { Person p = gibQ.get(i); int part = gibQP.get(i); if (!p.removed) gib(p, part, 0f, -1f); }
         gibQ.clear(); gibQP.clear();
+        for (int i = 0; i < impQ.size(); i++) Machines.impale(this, impQ.get(i), impQP.get(i), impQS.get(i), impQX.get(i), impQY.get(i));
+        impQ.clear(); impQP.clear(); impQS.clear(); impQX.clear(); impQY.clear();
+        for (int i = 0; i < shatterQ.size(); i++) Machines.shatter(this, shatterQ.get(i));
+        shatterQ.clear();
     }
+
+    private final ArrayList<Person> impQ = new ArrayList<>(), shatterQ = new ArrayList<>();
+    private final ArrayList<Integer> impQP = new ArrayList<>();
+    private final ArrayList<Prop> impQS = new ArrayList<>();
+    private final ArrayList<Float> impQX = new ArrayList<>(), impQY = new ArrayList<>();
 
     private final ArrayList<Prop> breakQ = new ArrayList<>();
     private final ArrayList<Person> gibQ = new ArrayList<>();
@@ -232,6 +253,10 @@ final class World implements Sim.Listener, Sim.Hook {
         int whole = 0;
         for (int k = 0; k < Person.NPARTS; k++) { if (p.gibbed[k]) { if (!p.rb[k].frozen) p.rb[k].setFrozen(true); } else whole++; }
         if (whole == 0) { remove(p); return; }     // nothing left of them
+        if (p.frozenT > 0f) {
+            if (p.burning) { p.burning = false; Machines.thaw(this, p); }
+            else { p.frozenT -= dt; if (p.frozenT <= 0f) Machines.thaw(this, p); }
+        }
         if (p.punchT > 0f) { p.punchT -= dt; if (p.punchT <= 0f) p.punch = false; }
         if (p.shotCd > 0f) p.shotCd -= dt;
         if (p.reloadT > 0f) { p.reloadT -= dt; if (p.reloadT <= 0f) p.ammo = 12; }
@@ -243,7 +268,7 @@ final class World implements Sim.Listener, Sim.Hook {
         // bleeding
         float lost = 0f;
         for (int i = 0; i < Person.NPARTS; i++) {
-            if (p.bleed[i] <= 0f) continue;
+            if (p.bleed[i] <= 0f || p.frozenT > 0f) continue;
             p.bleed[i] -= dt;
             RB b = p.rb[i];
             lost += 2.2f;
@@ -259,7 +284,7 @@ final class World implements Sim.Listener, Sim.Hook {
         if (p.adrenaline > 0f) p.adrenaline -= dt;
         if (p.acid > 0f) updateAcid(p, dt);
         // tone: conscious people tense up, hurt or sleeping ones go limp
-        boolean conscious = !p.dead && p.ko <= 0f && !p.severed[Person.NECK];
+        boolean conscious = !p.dead && p.ko <= 0f && !p.severed[Person.NECK] && p.frozenT <= 0f;
         float target = conscious && !p.held ? Math.min(1f, p.blood / 45f) : 0f;
         if (p.burning) target *= 0.5f;
         if (p.adrenaline > 0f) target = Math.max(target, conscious ? 1f : 0f);
@@ -425,6 +450,12 @@ final class World implements Sim.Listener, Sim.Hook {
             rumble += 0.12f;
             return;
         }
+        if (j.tag == Machines.IMPALE_TAG) {             // pulled off the spikes
+            fx.bloodA = 0xFFc0121b; fx.bloodB = 0xFF7d0a10;
+            fx.blood(j.anchorBX(), j.anchorBY(), 0f, -0.5f, 8);
+            if (sfx != null) sfx.splat();
+            return;
+        }
         if (j.user instanceof Person) {
             Person p = (Person) j.user;
             int idx = j.tag;
@@ -472,6 +503,8 @@ final class World implements Sim.Listener, Sim.Hook {
             float thr = part == Person.HEAD ? 520f : (part == Person.FOOT_F || part == Person.FOOT_B ? 1250f : (part == Person.SHIN_F || part == Person.SHIN_B ? 1000f : (part >= Person.THIGH_F ? 880f : 640f)));
             if (p.kind == Person.ROBOT) thr *= 1.6f;
             boolean sharp = other != null && other.body.user instanceof Prop && ((Prop) other.body.user).sharp;
+            if (p.frozenT > 0f && dv > 1150f) { shatterQ.add(p); return; }
+            if (sharp && dv > 220f && ((Prop) other.body.user).type == Items.SPIKES) { impQ.add(p); impQP.add(part); impQS.add((Prop) other.body.user); impQX.add(px); impQY.add(py); p.hitCd[part] = 0.3f; return; }
             float heavy = 1f;
             if (other != null) {
                 float om = other.body.invM > 0f ? other.body.m : 20000f;
@@ -581,7 +614,8 @@ final class World implements Sim.Listener, Sim.Hook {
         int outer = s0.color;
         for (int k = 0; k < n && canAdd(); k++) {
             float hw = Math.max(3.5f, size * (0.35f + rnd.nextFloat() * 0.3f)), hh = Math.max(3f, hw * (0.6f + rnd.nextFloat() * 0.5f));
-            int col = metal ? (k % 2 == 0 ? 0xFF6b737d : dark(outer, 0.2f)) : bone ? 0xFFe9e5d3
+            int col = p.frozenT > 0f ? Renderer.mix(k % 2 == 0 ? outer : 0xFF8e1111, 0xFFcfeeff, 0.6f)
+                    : metal ? (k % 2 == 0 ? 0xFF6b737d : dark(outer, 0.2f)) : bone ? 0xFFe9e5d3
                     : !fx.gore ? (k % 2 == 0 ? outer : dark(outer, 0.25f))
                     : (k % 3 == 0 ? outer : (p.kind == Person.ZOMBIE ? 0xFF4f7d2a : (k % 3 == 1 ? 0xFFa3202a : 0xFFc94a52)));
             Prop c = Prop.block(bx + fx.rr(size), by + fx.rr(size), hw, hh, col, metal ? 2f : 1f, false);
@@ -596,7 +630,8 @@ final class World implements Sim.Listener, Sim.Hook {
             add(c);
             keepChunk(c);
         }
-        if (!chunks) { fx.blood(bx, by, 0f, -0.4f, 8); if (sfx != null) sfx.splat(); }
+        if (p.frozenT > 0f) { fx.debris(bx, by, 6, 0xFFcfeeff, 260f); }
+        else if (!chunks) { fx.blood(bx, by, 0f, -0.4f, 8); if (sfx != null) sfx.splat(); }
         else if (metal) { fx.sparks(bx, by, 24, 0xFFffd25a); fx.smoke(bx, by, 10f, 0xFF3c3c3c); }
         else if (bone) fx.debris(bx, by, 12, 0xFFf0ead6, 320f);
         else { fx.blood(bx, by, 0f, -0.4f, 30); fx.blood(bx, by, dx, dy, 18); fx.debris(bx, by, 6, 0xFF8e1111, 300f); }
@@ -785,6 +820,7 @@ final class World implements Sim.Listener, Sim.Hook {
             if (q.fireCd <= 0f) { q.fireCd = 0.075f; fireGun(q); }
         }
         if (q.machine()) Mind.machineThink(this, q, dt);
+        if (q.fixedMachine()) Machines.update(this, q, dt);
         if (q.animal()) Fauna.think(this, q, dt);
         else if (q.type == Items.POOP) Fauna.stink(this, q, dt);
     }
@@ -1025,6 +1061,7 @@ final class World implements Sim.Listener, Sim.Hook {
             bloodStyle(p);
             fx.blood(hx, hy, dx, dy, 7);
             if (part < 0) return;
+            if (p.frozenT > 0f) { boolean core = part == Person.HEAD || part == Person.CHEST; gib(p, part, dx, dy); if (core) Machines.shatter(this, p); return; }
             wound(p, part, Person.W_HOLE, hx, hy, dx, dy, 2.2f + dmg * 0.03f);
             if (p.organic()) p.bleed[part] = Math.max(p.bleed[part], 6f);
             // heavy rounds burst heads
@@ -1108,6 +1145,7 @@ final class World implements Sim.Listener, Sim.Hook {
     // ------------------------------------------------------------------------------- syringes ----
 
     String inject(Person p, int kind) {
+        if (kind == Items.SYR_FREEZE) { Machines.freeze(this, p, 25f); fx.add(Fx.GLOW, p.rb[Person.CHEST].x, p.rb[Person.CHEST].y, 0, 0, 0.3f, 26f, 0xFFbfe8ff); if (sfx != null) sfx.pop(); return "¡Congelado! Un golpe fuerte y se rompe"; }
         if (p.kind == Person.ROBOT || p.kind == Person.SKELETON) return "No hace efecto: no tiene sangre";
         RB at = p.rb[Person.CHEST];
         int col;
@@ -1133,6 +1171,7 @@ final class World implements Sim.Listener, Sim.Hook {
                 col = 0xFF5aa02a; msg = "Infectado... en unos segundos";
                 break;
             case Items.SYR_ACID: p.acid = 9f; col = 0xFFb6ff3a; msg = "Ácido en las venas"; break;
+            case Items.SYR_FREEZE: Machines.freeze(this, p, 25f); col = 0xFFbfe8ff; msg = "¡Congelado! Un golpe fuerte y se rompe"; break;
             default:
                 if (p.dead) return "Está muerto";
                 p.ko = 25f; p.tone = 0f; p.adrenaline = 0f;

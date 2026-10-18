@@ -35,6 +35,7 @@ final class Prop extends Ent {
     int homeDirV = 1;
     boolean machine() { return type == Items.TURRET || type == Items.DRONE; }
     boolean animal() { return Items.isAnimal(type); }
+    boolean fixedMachine() { return Items.isMachine(type); }
 
     // animal sizes: body half width/height, head radius, head x/y, leg length, foot radius, density, colour, hp
     static final float[][] ANIMAL = {
@@ -193,6 +194,73 @@ final class Prop extends Ent {
                 Shape fb = Shape.circle(d[6]).at(-d[0] * 0.72f, d[1] + d[5] - d[6], 0).mat(0.5f, 0.06f, 0f).col(p.color); fb.user = p;
                 b.add(torso); b.add(head); b.add(ff); b.add(fb);
                 b.angDamp = 0.5f;
+                b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.SAW: {
+                // a stand and a toothed blade; both fixed in place (the blade spins kinematically)
+                p.param = 34f; p.sharp = true; p.color = 0xFF5d6875; p.hw = 34f; p.hh = 50f; p.on = true;
+                RB stand = new RB(x, y - 28f, 0);
+                Shape st = Shape.box(16f, 28f).mat(3f, 0.8f, 0.05f).col(0xFF3a4048); st.user = p; stand.add(st);
+                stand.user = p; p.bodies.add(stand);
+                b = new RB(x, y - 62f, 0);
+                Shape bl = Shape.circle(34f).mat(3f, 0.9f, 0.05f).col(0xFFc9ced6); bl.user = p; b.add(bl);
+                b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.SPIKES: {
+                p.sharp = true; p.color = 0xFF6f7782; p.hw = 70f; p.hh = 9f;
+                b = box(p, x, y - 9f, 70f, 9f, 3f, 0.9f, 0f);
+                break;
+            }
+            case Items.FAN: {
+                p.color = 0xFF4f6d8a; p.hw = 26f; p.hh = 34f; p.on = true;
+                b = new RB(x, y - 34f, 0);
+                Shape h = Shape.box(12f, 26f).at(0, -8f, 0).mat(2f, 0.6f, 0.05f).col(p.color); h.user = p;
+                Shape ft = Shape.box(26f, 6f).at(0, 28f, 0).mat(2f, 0.8f, 0.05f).col(0xFF2f353d); ft.user = p;
+                b.add(h); b.add(ft);
+                b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.CRUSHER: {
+                p.color = 0xFF5d6875; p.hw = 120f; p.hh = 156f; p.on = true;
+                RB beam = new RB(x, y - 312f, 0);
+                Shape bs = Shape.box(120f, 12f).mat(3f, 0.8f, 0.05f).col(0xFF3a4048); bs.user = p; beam.add(bs);
+                beam.user = p; p.bodies.add(beam);
+                for (int k = -1; k <= 1; k += 2) {
+                    RB col = new RB(x + k * 110f, y - 150f, 0);
+                    Shape cs = Shape.box(10f, 150f).mat(3f, 0.8f, 0.05f).col(0xFF3a4048); cs.user = p; col.add(cs);
+                    col.user = p; p.bodies.add(col);
+                }
+                b = new RB(x, y - 280f, 0);
+                Shape pl = Shape.box(92f, 16f).mat(4f, 0.8f, 0.02f).col(0xFFd9a420); pl.user = p; b.add(pl);
+                b.user = p; p.bodies.add(b);
+                p.goalY = y - 280f; p.homeX = y - 18f;          // top and bottom of the stroke
+                break;
+            }
+            case Items.TESLA: {
+                p.color = 0xFF7a5a3a; p.hw = 28f; p.hh = 78f; p.on = true;
+                b = new RB(x, y - 78f, 0);
+                Shape base = Shape.box(28f, 8f).at(0, 70f, 0).mat(3f, 0.8f, 0.05f).col(0xFF2f353d); base.user = p;
+                Shape colm = Shape.box(9f, 54f).at(0, 8f, 0).mat(3f, 0.6f, 0.05f).col(0xFFb87333); colm.user = p;
+                Shape ball = Shape.circle(17f).at(0, -60f, 0).mat(3f, 0.6f, 0.05f).col(0xFFc9ced6); ball.user = p;
+                b.add(base); b.add(colm); b.add(ball);
+                b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.BAT: {
+                p.color = 0xFFb07a45; p.hw = 42f; p.flammable = true;
+                b = new RB(x, y, 0);
+                Shape sh = Shape.capsule(36f, 5.5f).mat(1.1f, 0.7f, 0.1f).col(p.color); sh.user = p; b.add(sh);
+                b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.HAMMER: {
+                p.color = 0xFF8d96a3; p.hw = 30f;
+                b = new RB(x, y, 0);
+                Shape hd = Shape.capsule(22f, 3f).at(-6f, 0, 0).mat(0.9f, 0.7f, 0.05f).col(0xFF6b4a2f); hd.user = p;
+                Shape hh = Shape.box(7f, 13f).at(20f, 0, 0).mat(7f, 0.6f, 0.05f).col(p.color); hh.user = p;
+                b.add(hd); b.add(hh);
                 b.user = p; p.bodies.add(b);
                 break;
             }

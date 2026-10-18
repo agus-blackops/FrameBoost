@@ -1,4 +1,4 @@
-# Trastazo 3.7 — versión para PC
+# Trastazo 3.8 — máquinas, pinchos y nitrógeno líquido
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -8,6 +8,25 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 3.8
+
+Más cosas al estilo People Playground:
+
+* **Categoría Máquinas** (fijas en su sitio; *Activar* las enciende y apaga):
+  * **Sierra circular:** el disco gira y corta lo que toca: heridas, sangre, chispas y amputaciones; también
+    destroza cajas y tablas.
+  * **Pinchos:** quien cae encima con fuerza **se queda clavado** (sangra, forcejea). Un tirón fuerte con la
+    mano lo suelta.
+  * **Ventilador:** sopla hacia donde mira; las pelotas salen volando y a la gente la empuja y tumba.
+  * **Prensa hidráulica:** la placa baja de golpe y sube despacio; lo que queda debajo contra el suelo se
+    **aplasta** (personas, animales, sandías, cajas...). El acero y lo muy pesado la frenan.
+  * **Bobina Tesla:** lanza rayos a lo que se acerca: **electrocuta** (sacudidas, quemaduras, KO), detona
+    explosivos y avería máquinas.
+* **Nitrógeno líquido** (jeringa): la persona se **congela**, queda rígida y azulada; se descongela sola (o con
+  fuego). Un golpe fuerte, una caída o un balazo la **hace añicos** en trozos de hielo.
+* **Bate y martillo** (Armas) para golpear agarrándolos con la mano.
+* Logros nuevos *Brocheta* y *Cubito de hielo*.
 
 ## Novedades de la 3.7: versión PC
 

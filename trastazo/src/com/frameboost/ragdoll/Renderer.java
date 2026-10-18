@@ -195,6 +195,7 @@ final class Renderer {
         drawLinks(c, w);
         for (int i = 0; i < w.ents.size(); i++) { Ent e = w.ents.get(i); if (e instanceof Person) drawPerson(c, (Person) e, w); }
         drawPins(c, w);
+        drawArcs(c, w);
         w.fx.draw(c, p);
         // tracers and rockets
         p.setStyle(Paint.Style.STROKE);
@@ -568,6 +569,8 @@ final class Renderer {
             case Items.BLOCK: drawBlock(c, q, col); break;
             case Items.DOG: case Items.PIG: case Items.RAT: drawAnimal(c, q, col); break;
             case Items.POOP: drawPoop(c, q, col); break;
+            case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: drawMachine(c, q); break;
+            case Items.BAT: case Items.HAMMER: drawBlunt(c, q, col); break;
             case Items.TURRET: drawTurret(c, q); break;
             case Items.DRONE: drawDrone(c, q); break;
             case Items.ROPE_ITEM: {
@@ -664,6 +667,193 @@ final class Renderer {
         }
         c.restore();
     }
+
+    /** Saw, spikes, fan, crusher and Tesla coil. */
+    private void drawMachine(Draw2D c, Prop q) {
+        RB m = q.main();
+        p.setStyle(Paint.Style.FILL);
+        switch (q.type) {
+            case Items.SAW: {
+                RB st = q.bodies.get(0), bl = q.bodies.get(1);
+                local(c, st.x, st.y, st.a);
+                orect(c, -16f, -28f, 16f, 28f, 3f, 0xFF3a4048);
+                p.setColor(0xFFf2c200); rf.set(-16f, 14f, 16f, 22f); c.drawRect(rf, p);
+                p.setColor(0xFF222222); for (int i = 0; i < 4; i++) { poly[0] = -16f + i * 8f; poly[1] = 22f; poly[2] = -12f + i * 8f; poly[3] = 14f; poly[4] = -8f + i * 8f; poly[5] = 14f; poly[6] = -12f + i * 8f; poly[7] = 22f; c.drawPoly(poly, 4, p); }
+                p.setColor(q.on ? 0xFF6dff8a : 0xFFe0463c); c.drawCircle(0, 0, 3.5f, p);
+                c.restore();
+                float r = q.param;
+                local(c, bl.x, bl.y, bl.a);
+                // toothed disc
+                p.setColor(0xFF4a5059);
+                int teeth = 18;
+                for (int i = 0; i < teeth; i++) {
+                    float a0 = i * 6.2832f / teeth, a1 = a0 + 6.2832f / teeth * 0.55f;
+                    poly[0] = (float) Math.cos(a0) * (r - 3f); poly[1] = (float) Math.sin(a0) * (r - 3f);
+                    poly[2] = (float) Math.cos(a1) * (r + 4f); poly[3] = (float) Math.sin(a1) * (r + 4f);
+                    poly[4] = (float) Math.cos(a1) * (r - 3f); poly[5] = (float) Math.sin(a1) * (r - 3f);
+                    c.drawPoly(poly, 3, p);
+                }
+                p.setColor(0xFF6f7782); c.drawCircle(0, 0, r - 1f, p);
+                p.setColor(0xFFc9ced6); c.drawCircle(0, 0, r - 3f, p);
+                p.setColor(0xFFa9b0ba); c.drawCircle(0, 0, r * 0.62f, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.4f); p.setColor(0x66ffffff);
+                for (int i = 0; i < 3; i++) { float a = i * 2.094f; c.drawLine((float) Math.cos(a) * r * 0.25f, (float) Math.sin(a) * r * 0.25f, (float) Math.cos(a) * r * 0.85f, (float) Math.sin(a) * r * 0.85f, p); }
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFF3a4048); c.drawCircle(0, 0, r * 0.18f, p);
+                c.restore();
+                if (q.on) { p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(0x33ffffff); c.drawCircle(bl.x, bl.y, r + 1f, p); p.setStyle(Paint.Style.FILL); }
+                break;
+            }
+            case Items.SPIKES: {
+                Shape s = m.shapes.get(0);
+                local(c, m.x, m.y, m.a);
+                float hw = s.hl, hh = s.hh;
+                int n = Math.max(4, (int) (hw * 2f / 14f));
+                float sw = hw * 2f / n;
+                for (int i = 0; i < n; i++) {
+                    float x0 = -hw + i * sw;
+                    p.setColor(0xFF2f353d); poly[0] = x0 - 0.8f; poly[1] = -hh + 1f; poly[2] = x0 + sw * 0.5f; poly[3] = -hh - 23f; poly[4] = x0 + sw + 0.8f; poly[5] = -hh + 1f; c.drawPoly(poly, 3, p);
+                    p.setColor(0xFFb9c0ca); poly[0] = x0 + 1f; poly[1] = -hh; poly[2] = x0 + sw * 0.5f; poly[3] = -hh - 21f; poly[4] = x0 + sw - 1f; poly[5] = -hh; c.drawPoly(poly, 3, p);
+                    p.setColor(0xFFe9edf4); poly[0] = x0 + sw * 0.35f; poly[1] = -hh - 2f; poly[2] = x0 + sw * 0.5f; poly[3] = -hh - 19f; poly[4] = x0 + sw * 0.5f; poly[5] = -hh - 2f; c.drawPoly(poly, 3, p);
+                }
+                orect(c, -hw, -hh, hw, hh, 2f, 0xFF4a5059);
+                p.setColor(0xFF6f7782); rf.set(-hw + 2f, -hh + 2f, hw - 2f, -hh + 5f); c.drawRect(rf, p);
+                c.restore();
+                // anything stuck on them bleeds onto the steel
+                break;
+            }
+            case Items.FAN: {
+                int dir = q.homeDirV >= 0 ? 1 : -1;
+                local(c, m.x, m.y, m.a);
+                c.scale(dir, 1f);
+                orect(c, -26f, 22f, 26f, 34f, 3f, 0xFF2f353d);
+                orect(c, -5f, 8f, 5f, 24f, 2f, 0xFF3a4048);
+                orect(c, -14f, -34f, 10f, 18f, 6f, q.color);
+                // the cage and spinning blades seen from the side
+                float spin = q.legPhase;
+                p.setColor(0xFF1d2228); rf.set(8f, -38f, 20f, 22f); c.drawRoundRect(rf, 5f, 5f, p);
+                p.setColor(0xFFd5dbe6);
+                for (int i = 0; i < 3; i++) {
+                    float a = spin + i * 2.094f, len = (float) Math.sin(a) * 26f;
+                    rf.set(11f, -8f + Math.min(0f, len), 17f, -8f + Math.max(0f, len)); c.drawRoundRect(rf, 3f, 3f, p);
+                }
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.2f); p.setColor(0xFF8a929c);
+                for (int i = 0; i < 5; i++) { float y = -36f + i * 14f; c.drawLine(8f, y, 20f, y, p); }
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(q.on ? 0xFF6dff8a : 0xFFe0463c); c.drawCircle(-2f, -20f, 3f, p);
+                c.restore();
+                if (q.on && detail) {
+                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.6f);
+                    for (int i = 0; i < 4; i++) {
+                        float ph = (time * 2.2f + i * 0.25f) % 1f;
+                        float x0 = m.x + dir * (40f + ph * 380f), y0 = m.y - 8f + (i - 1.5f) * (16f + ph * 40f);
+                        p.setColor(alpha(0xFFffffff, 0.22f * (1f - ph)));
+                        c.drawLine(x0, y0, x0 + dir * 40f, y0, p);
+                    }
+                    p.setStyle(Paint.Style.FILL);
+                }
+                break;
+            }
+            case Items.CRUSHER: {
+                RB beam = q.bodies.get(0), plate = q.bodies.get(3);
+                for (int k = 1; k <= 2; k++) {
+                    RB col = q.bodies.get(k);
+                    local(c, col.x, col.y, col.a);
+                    orect(c, -10f, -150f, 10f, 150f, 2f, 0xFF3a4048);
+                    p.setColor(0xFF2a2f36); for (float y = -140f; y < 150f; y += 24f) c.drawCircle(0, y, 2.2f, p);
+                    c.restore();
+                }
+                // the hydraulic rod
+                p.setColor(0xFF9aa3ad); rf.set(beam.x - 9f, beam.y, beam.x + 9f, plate.y - 14f); c.drawRect(rf, p);
+                p.setColor(0x55ffffff); rf.set(beam.x - 6f, beam.y, beam.x - 3f, plate.y - 14f); c.drawRect(rf, p);
+                local(c, beam.x, beam.y, beam.a);
+                orect(c, -120f, -12f, 120f, 12f, 2f, 0xFF3a4048);
+                p.setColor(q.on ? 0xFF6dff8a : 0xFFe0463c); c.drawCircle(100f, 0, 3.5f, p);
+                c.restore();
+                local(c, plate.x, plate.y, plate.a);
+                orect(c, -92f, -16f, 92f, 16f, 2f, 0xFFd9a420);
+                p.setColor(0xFF222222);
+                for (int i = 0; i < 12; i++) { float x0 = -92f + i * 16f; poly[0] = x0; poly[1] = 16f; poly[2] = x0 + 8f; poly[3] = 6f; poly[4] = x0 + 16f; poly[5] = 6f; poly[6] = x0 + 8f; poly[7] = 16f; c.drawPoly(poly, 4, p); }
+                p.setColor(0x33ffffff); rf.set(-90f, -14f, 90f, -10f); c.drawRect(rf, p);
+                c.restore();
+                break;
+            }
+            default: {      // tesla coil
+                local(c, m.x, m.y, m.a);
+                orect(c, -28f, 62f, 28f, 78f, 3f, 0xFF2f353d);
+                orect(c, -9f, -46f, 9f, 62f, 2f, 0xFF7a5a3a);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(0xFFd08a3e);
+                for (float y = -40f; y < 58f; y += 5f) c.drawLine(-9f, y, 9f, y + 2f, p);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFF6f7782); rf.set(-24f, -50f, 24f, -42f); c.drawOval(rf, p);
+                p.setColor(0xFF4a5059); c.drawCircle(0, -60f, 18.5f, p);
+                p.setColor(0xFFc9ced6); c.drawCircle(0, -60f, 17f, p);
+                p.setColor(0x88ffffff); c.drawCircle(-6f, -66f, 5f, p);
+                c.restore();
+                if (q.on) c.light(m.x, m.y - 60f, 180f, 0xFF9fd8ff, 0.5f + 0.2f * (float) Math.sin(time * 30f));
+            }
+        }
+    }
+
+    /** Bat and hammer. */
+    private void drawBlunt(Draw2D c, Prop q, int col) {
+        RB m = q.main();
+        local(c, m.x, m.y, m.a);
+        p.setStyle(Paint.Style.FILL);
+        if (q.type == Items.BAT) {
+            // a tapered wooden bat: thin grip, thick barrel
+            p.setColor(dark(col, 0.6f));
+            poly[0] = -42f; poly[1] = -3.4f; poly[2] = 10f; poly[3] = -6.8f; poly[4] = 42f; poly[5] = -6.2f; poly[6] = 42f; poly[7] = 6.2f; poly[8] = 10f; poly[9] = 6.8f; poly[10] = -42f; poly[11] = 3.4f;
+            c.drawPoly(poly, 6, p);
+            p.setColor(col);
+            poly[0] = -41f; poly[1] = -2.3f; poly[2] = 10f; poly[3] = -5.6f; poly[4] = 40.8f; poly[5] = -5f; poly[6] = 40.8f; poly[7] = 5f; poly[8] = 10f; poly[9] = 5.6f; poly[10] = -41f; poly[11] = 2.3f;
+            c.drawPoly(poly, 6, p);
+            p.setColor(light(col, 0.25f)); rf.set(-30f, -3.6f, 38f, -1.6f); c.drawRect(rf, p);
+            p.setColor(0xFF1d1f24); rf.set(-42f, -3.6f, -24f, 3.6f); c.drawRoundRect(rf, 2f, 2f, p);
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(0.8f); p.setColor(0xFF3a3d44);
+            for (float x = -40f; x < -25f; x += 3f) c.drawLine(x, -3.4f, x + 1.5f, 3.4f, p);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(dark(col, 0.25f)); c.drawCircle(-43f, 0, 4.2f, p);
+        } else {
+            orect(c, -28f, -3f, 16f, 3f, 2.5f, 0xFF6b4a2f);
+            p.setColor(0xFF1d1f24); rf.set(-28f, -3.3f, -12f, 3.3f); c.drawRoundRect(rf, 2f, 2f, p);
+            orect(c, 13f, -13f, 27f, 13f, 1.5f, col);
+            p.setColor(light(col, 0.3f)); rf.set(14f, -12f, 17f, 12f); c.drawRect(rf, p);
+            p.setColor(dark(col, 0.3f)); rf.set(13f, -13f, 27f, -9f); c.drawRect(rf, p);
+            p.setColor(dark(col, 0.2f)); poly[0] = 13f; poly[1] = -13f; poly[2] = 6f; poly[3] = -18f; poly[4] = 10f; poly[5] = -10f; c.drawPoly(poly, 3, p);
+        }
+        c.restore();
+    }
+
+    /** Jagged electric arcs. */
+    private void drawArcs(Draw2D c, World w) {
+        p.setStyle(Paint.Style.STROKE);
+        c.emissive(true);
+        java.util.Random r = arcRnd;
+        for (float[] a : w.arcs) {
+            if (a[4] <= 0f) continue;
+            r.setSeed((long) (a[0] * 31 + a[2] * 17) + (long) (time * 30f));
+            int seg = 8;
+            float px = a[0], py = a[1], dx = a[2] - a[0], dy = a[3] - a[1], len = (float) Math.hypot(dx, dy) + 1f;
+            float nx = -dy / len, ny = dx / len;
+            for (int pass = 0; pass < 2; pass++) {
+                p.setStrokeWidth(pass == 0 ? 6f : 2f);
+                p.setColor(pass == 0 ? alpha(0xFF7fc8ff, 0.35f) : 0xFFf2fbff);
+                float lx = a[0], ly = a[1];
+                r.setSeed((long) (a[0] * 31 + a[2] * 17) + (long) (time * 30f));
+                for (int i = 1; i <= seg; i++) {
+                    float t = i / (float) seg, off = i == seg ? 0f : (r.nextFloat() - 0.5f) * len * 0.18f;
+                    float x = a[0] + dx * t + nx * off, y = a[1] + dy * t + ny * off;
+                    c.drawLine(lx, ly, x, y, p);
+                    lx = x; ly = y;
+                }
+            }
+            c.light(a[2], a[3], 120f, 0xFF9fd8ff, 0.7f);
+        }
+        c.emissive(false);
+        p.setStyle(Paint.Style.FILL);
+    }
+    private final java.util.Random arcRnd = new java.util.Random();
 
     /** A soft-serve swirl with stink. */
     private void drawPoop(Draw2D c, Prop q, int col) {
@@ -898,6 +1088,7 @@ final class Renderer {
     // ---------------------------------------------------------------------------------- people -----
 
     private int bodyColor(Person b, int col) {
+        if (b.frozenT > 0f) return tint(b, mix(col, 0xFFbfe6ff, 0.62f), b.flash);
         if (b.dead) col = mix(col, 0xFF9aa0a8, 0.22f);
         return tint(b, col, b.flash);
     }
