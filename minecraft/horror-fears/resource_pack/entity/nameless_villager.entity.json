@@ -1,0 +1,44 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:nameless_villager",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/nameless_villager"
+      },
+      "geometry": {
+        "default": "geometry.hl.nameless_villager"
+      },
+      "animations": {
+        "look": "animation.hl.villager.look",
+        "idle": "animation.hl.villager.idle",
+        "point": "animation.hl.villager.point",
+        "walk": "animation.hl.villager.walk"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          {
+            "idle": "!query.property('hl:point')"
+          },
+          {
+            "point": "query.property('hl:point')"
+          },
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#808280",
+        "overlay_color": "#ffffff"
+      }
+    }
+  }
+}

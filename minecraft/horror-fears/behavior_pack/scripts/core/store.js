@@ -59,21 +59,21 @@ export function jumpscaresOn() {
 
 // Everything that can be switched off, in the order they arrive.
 export const THREATS = [
-  "ambience", "scares", "phobias", "gamer", "steps", "dweller", "ancient",
-  "herobrine", "visit", "countdown", "fog", "grave", "hour",
+  "ambience", "scares", "phobias", "gamer", "steps", "dweller", "nameless", "ancient",
+  "herobrine", "visit", "countdown", "faceless", "fog", "grave", "hour",
   "null", "e303", "redNight",
 ];
 
 // The day (at normal intensity) each one arrives.
 export const ARRIVES = {
-  ambience: 0, scares: 0, phobias: 1, gamer: 1, steps: 1, dweller: 1, ancient: 1,
-  herobrine: 3, visit: 3, countdown: 3, fog: 4, grave: 4, hour: 5,
+  ambience: 0, scares: 0, phobias: 1, gamer: 1, steps: 1, dweller: 1, nameless: 2, ancient: 1,
+  herobrine: 3, visit: 3, countdown: 3, faceless: 4, fog: 4, grave: 4, hour: 5,
   null: 6, e303: 6, redNight: 8,
 };
 
 export const ACTS = [
-  { n: 1, day: 0, threats: ["ambience", "scares", "phobias", "gamer", "steps", "dweller", "ancient"] },
-  { n: 2, day: 3, threats: ["herobrine", "visit", "countdown", "fog", "grave", "hour"] },
+  { n: 1, day: 0, threats: ["ambience", "scares", "phobias", "gamer", "steps", "dweller", "nameless", "ancient"] },
+  { n: 2, day: 3, threats: ["herobrine", "visit", "countdown", "faceless", "fog", "grave", "hour"] },
   { n: 3, day: 6, threats: ["null", "e303", "redNight"] },
 ];
 

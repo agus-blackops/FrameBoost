@@ -289,6 +289,44 @@ ANIMATIONS = {
         "ribcage": rot(f"-{H} * 1.5"), "head": rot(f"-{H} * 1.5", 0, f"{H} * 2.0")}},
 
     # ------------------------------------------------------------------ #
+    # The Nameless Villager
+    # ------------------------------------------------------------------ #
+    "animation.hl.villager.look": {"loop": True, "bones": {
+        "head": rot("query.target_x_rotation * 0.4", f"query.target_y_rotation * 0.5")}},
+    # Standing, swaying very slightly, the head always a little too far over.
+    "animation.hl.villager.idle": {"loop": True, "bones": {
+        "body": {"scale": breathe(60.0, 0.015)},
+        "head": rot(0, 0, f"{wave(8.0, 5.0)} + {jolt(0.985, -20.0, 20.0)}"),
+        "rightHand": rot(wave(25.0, 4.0)), "leftHand": rot(wave(22.0, 4.0))}},
+    # It has seen you looking: the right arm comes up and points.
+    "animation.hl.villager.point": {"loop": True, "bones": {
+        "rightArm": rot(-88.0, 0, -6.0), "rightHand": rot(0), "head": rot(-8.0, 0, -22.0),
+        "body": rot(f"-6.0 + {wave(30.0, 1.5)}")}},
+    "animation.hl.villager.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(26, 24.0)), "leftLeg": rot(cos(26, -24.0)),
+        "rightArm": rot(cos(26, -10.0)), "leftArm": rot(cos(26, 10.0)),
+        "body": rot(0, sin(26.0, 4.0))}},
+
+    # ------------------------------------------------------------------ #
+    # The Faceless Enderman
+    # ------------------------------------------------------------------ #
+    "animation.hl.ender.look": {"loop": True, "bones": {
+        "head": rot("query.target_x_rotation * 0.6", "query.target_y_rotation * 0.7")}},
+    # Standing too still, then a twitch; the motes circling.
+    "animation.hl.ender.idle": {"loop": True, "bones": {
+        "body": {"scale": breathe(70.0, 0.012)},
+        "head": rot(0, 0, f"{wave(6.0, 7.0)} + {jolt(0.97, -25.0, 25.0)}"),
+        "rightHand": rot(f"{wave(35.0, 8.0)}"), "leftHand": rot(f"{wave(30.0, -8.0)}"),
+        "motes": {"rotation": [0, f"{T} * 40.0", 0], "position": [0, wave(50.0, 1.5), 0]}}},
+    # It is looking at you: the head turns all the way and the arms lift.
+    "animation.hl.ender.stare": {"loop": True, "bones": {
+        "head": rot(-12.0, 0, f"-18.0 + math.sin({T} * 900.0) * 2.0"),
+        "rightArm": rot(-18.0, 0, -14.0), "leftArm": rot(-18.0, 0, 14.0)}},
+    # Blinking into place: it squashes thin and tall and snaps back.
+    "animation.hl.ender.blink": {"loop": True, "bones": {
+        "root": {"scale": [f"1.0 - {EMERGE} * 0.85", f"1.0 + {EMERGE} * 0.5", f"1.0 - {EMERGE} * 0.85"]}}},
+
+    # ------------------------------------------------------------------ #
     # Entity 303
     # ------------------------------------------------------------------ #
     "animation.hl.e303.look": look(),

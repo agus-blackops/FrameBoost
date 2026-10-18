@@ -140,6 +140,8 @@ function tick(e, s, player) {
 define({
   kind: "dweller",
   type: "hl:cave_dweller",
+  voice: { id: "hl.growl", every: [7, 13], volume: 0.8, pitch: [0.9, 1.1] },
+  stride: { id: "hl.step", every: 1.1, volume: 0.7, pitch: [1.2, 1.5] },
   modes: ["stalk", "chase", "flee"],
   weights: (ctx) => (ctx.under ? [5, 6] : [0, 0]),
   minor: dwellerMinor,

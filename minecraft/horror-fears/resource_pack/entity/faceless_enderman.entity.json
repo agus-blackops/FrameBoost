@@ -1,0 +1,42 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:faceless_enderman",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/faceless_enderman"
+      },
+      "geometry": {
+        "default": "geometry.hl.faceless_enderman"
+      },
+      "animations": {
+        "look": "animation.hl.ender.look",
+        "idle": "animation.hl.ender.idle",
+        "stare": "animation.hl.ender.stare",
+        "blink": "animation.hl.ender.blink"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          {
+            "idle": "!query.property('hl:stare')"
+          },
+          {
+            "stare": "query.property('hl:stare')"
+          },
+          "blink"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#08080c",
+        "overlay_color": "#d8a0ff"
+      }
+    }
+  }
+}

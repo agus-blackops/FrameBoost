@@ -240,10 +240,27 @@ export function visibleSpot(player, minDist, maxDist, deg, spread) {
 // Horror Legends: Fears is loud. The big sounds (stings, screams, shrieks,
 // booms) are played twice at once, a hair apart in pitch, which is both
 // louder and harsher than a single copy. The journal has a switch for it.
-const LOUD = /^hl\.(stinger|scream|shriek|boom|screech|wail|shatter|static)$/;
+//
+// And it is 3D: every sound can come from a place, and in caves and tunnels
+// the loud ones and the footsteps come back off the walls a moment later.
+const LOUD = /^hl\.(stinger|scream|shriek|boom|screech|wail|shatter|static|laugh|growl|roar|howl)$/;
+const ECHOING = /^hl\.(stinger|scream|shriek|boom|screech|wail|laugh|growl|moan|roar|howl|step|knock|creak|warp)$/;
 
 export function loudOn() {
   return tryRun(() => world.getDynamicProperty("hl:on_loud")) !== false;
+}
+
+// The 3D extras: echoes in caves, creature voices and footsteps, sounds that
+// move around you.
+export function audio3dOn() {
+  return tryRun(() => world.getDynamicProperty("hl:on_3d")) !== false;
+}
+
+// Off the walls of a cave, twice, quieter each time.
+function echoes(player, id, location, pitch, volume) {
+  if (volume < 0.3 || !ECHOING.test(id) || !audio3dOn() || !isUnderground(player)) return;
+  later(6, () => tryRun(() => player.playSound(id, { location, pitch: pitch * 0.97, volume: volume * 0.45 })));
+  later(15, () => tryRun(() => player.playSound(id, { location, pitch: pitch * 0.93, volume: volume * 0.2 })));
 }
 
 export function soundAt(player, sound, location, pitch = 1, volume = 1) {
@@ -251,6 +268,7 @@ export function soundAt(player, sound, location, pitch = 1, volume = 1) {
   if (LOUD.test(sound) && volume >= 0.6 && loudOn()) {
     tryRun(() => player.playSound(sound, { location, pitch: pitch * 0.97, volume }));
   }
+  echoes(player, sound, location, pitch, volume);
 }
 
 export function sound(player, id, volume = 1, pitch = 1) {

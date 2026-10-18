@@ -4,7 +4,7 @@
 
 import { ActionFormData } from "@minecraft/server-ui";
 import { world } from "@minecraft/server";
-import { give, loudOn, sound, tr, tryRun } from "../core/util.js";
+import { audio3dOn, give, loudOn, sound, tr, tryRun } from "../core/util.js";
 import {
   ACTS, PAGES, THREATS, actDay, actIndex, counter, cursed, cycleIntensity, daysUntil, discovered, enabled, getFear,
   hauntDay, intensity, jumpscaresOn, pageRead, pagesRead, setWorldProp, toggle, worldProp,
@@ -158,6 +158,7 @@ function openSettings(player) {
   }
   form.button({ rawtext: [{ translate: "hl.j.jumpscares" }, { text: ": " }, { translate: jumpscaresOn() ? "hl.j.on" : "hl.j.off" }] });
   form.button({ rawtext: [{ translate: "hl.j.loud" }, { text: ": " }, { translate: loudOn() ? "hl.j.on" : "hl.j.off" }] });
+  form.button({ rawtext: [{ translate: "hl.j.audio3d" }, { text: ": " }, { translate: audio3dOn() ? "hl.j.on" : "hl.j.off" }] });
   form.button(tr("hl.j.back"));
   show(form, player, (i) => {
     if (i === 0) cycleIntensity();
@@ -170,6 +171,7 @@ function openSettings(player) {
       }
     } else if (i === THREATS.length + 1) setWorldProp("hl:on_jumpscares", !jumpscaresOn());
     else if (i === THREATS.length + 2) setWorldProp("hl:on_loud", !loudOn());
+    else if (i === THREATS.length + 3) setWorldProp("hl:on_3d", !audio3dOn());
     else return openJournal(player);
     openSettings(player);
   });

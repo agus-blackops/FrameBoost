@@ -215,6 +215,8 @@ export function onPlayerSpawn(player) {
 define({
   kind: "fog",
   type: "hl:fog_man",
+  voice: { id: "hl.breath", every: [6, 10], volume: 0.9, pitch: [0.55, 0.7] },
+  stride: { id: "hl.step", every: 1.6, volume: 0.9, pitch: [0.7, 0.85] },
   modes: ["watch", "chase"],
   weights: (ctx) => [!ctx.under && !fog.active ? 1 : 0, fog.active && !ctx.under ? 5 : 0],
   minor: fogMinor,

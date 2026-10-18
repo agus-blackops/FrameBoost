@@ -11,6 +11,7 @@ import {
 import { define, spawn, trackedFor, vanish } from "../core/creatures.js";
 import { addFear, discover, jumpscaresOn, unlocked } from "../core/store.js";
 import { blackout } from "../core/fx.js";
+import { circleSteps, creakNear, farOff, passBy, stepsTowards } from "../core/audio3d.js";
 import { nearWard } from "../items/ward.js";
 
 // Whose face it is depends on who has arrived.
@@ -120,15 +121,50 @@ export function nameCall(player) {
   return true;
 }
 
+// 3D: something circles you in the dark, footsteps come up out of nowhere,
+// a howl a long way off, a board creaking behind you, something fast going by.
+export function circling(player) {
+  addFear(player, 10);
+  return circleSteps(player);
+}
+
+export function approaching(player) {
+  addFear(player, 12);
+  return stepsTowards(player, { from: 18, to: 2.5, count: 11, gap: 8 });
+}
+
+export function howling(player) {
+  addFear(player, 8);
+  return farOff(player, "hl.howl", { volume: 1 });
+}
+
+export function creaking(player) {
+  addFear(player, 9);
+  return creakNear(player);
+}
+
+export function passing(player) {
+  addFear(player, 9);
+  return passBy(player, { id: "hl.warp", count: 7, gap: 3, side: 4, length: 20 });
+}
+
 export function scaresMinor(player, ctx = {}) {
   const event = pick([
+    ["circle", 2],
+    ["approach", 2],
+    ["howl", 2],
+    ["creak", ctx.indoors ? 3 : 1],
+    ["pass", 1],
     ["neck", 3],
     ["door", ctx.indoors ? 4 : 1],
     ["static", 2],
     ["blow", 2],
     ["name", 1],
   ]);
-  const done = { neck: breathOnNeck, door: doorSlam, static: staticBurst, blow: phantomBlow, name: nameCall }[event]?.(player);
+  const done = {
+    neck: breathOnNeck, door: doorSlam, static: staticBurst, blow: phantomBlow, name: nameCall,
+    circle: circling, approach: approaching, howl: howling, creak: creaking, pass: passing,
+  }[event]?.(player);
   if (done) discover("scares");
   return !!done;
 }

@@ -13,8 +13,8 @@ S = {
         "§4Horror Legends: §cFears§r",
     ),
     "pack.description": (
-        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, Herobrine, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Más sonidos fuertes, los Miedos y la Ciudad Antigua.',
-        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, Herobrine, the Man From The Fog, null, Entity 303 and the Hollow Miner. Plus loud sounds, the Fears and the Ancient City.',
+        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, el Aldeano Sin Nombre, Herobrine, el Endermán Sin Rostro, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Sonidos 3D y fuertes, y los Miedos.',
+        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, the Nameless Villager, Herobrine, the Faceless Enderman, the Man From The Fog, null, Entity 303 and the Hollow Miner. Loud 3D sound, and the Fears.',
     ),
     "entity.hl:herobrine.name": (
         "Herobrine",
@@ -145,8 +145,8 @@ S = {
         "§8[???]§r §7You're alone in this world. Aren't you?",
     ),
     "hl.act.1.text": (
-        'Primero, sonidos que no están: pasos, puertas, tu nombre.\n\nLuego llegan los visitantes. §fHerobrineGamer788§r entra a tu partida. Bajo tierra, el §fMorador§r te acecha. Y muy abajo, bajo la pizarra, hay una §3Ciudad Antigua§r donde nadie hace ruido.\n\nCada uno tiene sus miedos, y el juego los conoce.',
-        "First, sounds that aren't there: footsteps, doors, your name.\n\nThen the visitors come. §fHerobrineGamer788§r joins your game. Underground, the §fCave Dweller§r stalks you. And far below, under the deepslate, there is an §3Ancient City§r where nobody makes a sound.\n\nEveryone has their fears, and the game knows them.",
+        'Primero, sonidos que no están: pasos, puertas, tu nombre. Ahora vienen de un lugar: oirás de qué lado.\n\nLuego llegan los visitantes. §fHerobrineGamer788§r entra a tu partida. Bajo tierra, el §fMorador§r te acecha. En el campo, un §faldeano sin nombre§r te mira. Y muy abajo, bajo la pizarra, hay una §3Ciudad Antigua§r donde nadie hace ruido.\n\nCada uno tiene sus miedos, y el juego los conoce.',
+        "First, sounds that aren't there: footsteps, doors, your name. Now they come from somewhere: you will hear which side.\n\nThen the visitors come. §fHerobrineGamer788§r joins your game. Underground, the §fCave Dweller§r stalks you. In the field, a §fnameless villager§r watches you. And far below, under the deepslate, there is an §3Ancient City§r where nobody makes a sound.\n\nEveryone has their fears, and the game knows them.",
     ),
     "hl.act.2.name": (
         "El bosque",
@@ -157,8 +157,8 @@ S = {
         "§8[???]§r §7Don't look out of the window at night.",
     ),
     "hl.act.2.text": (
-        '§fHerobrine§r te observa con su cola de vértebras. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
-        '§fHerobrine§r watches you with his tail of vertebrae. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
+        '§fHerobrine§r te observa con su cola de vértebras. Un §fEnderman sin rostro§r parpadea a tu alrededor. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
+        '§fHerobrine§r watches you with his tail of vertebrae. A §ffaceless Enderman§r blinks around you. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
     ),
     "hl.act.3.name": (
         "El error",
@@ -391,6 +391,27 @@ S = {
         "§lThe Ancient City§r\n\nFar below, under the deepslate, there is a city where nobody makes a sound. When you walk in, the game tells you where you are. Inside, the city is awake: candles go out by themselves, shriekers scream with nothing near, your footsteps come back a moment late, the dark pulses like a heart, the portal frame hums and there are whispers. And stay a minute and someone watches you from the ruins.\n\n§eTip:§r don't run, don't make noise and don't stay.",
     ),
     "hl.arrive.ancient": ("§8[???]§r §7Bajo la pizarra hay una ciudad. Allí abajo, nadie hace ruido.", "§8[???]§r §7Under the deepslate there is a city. Down there, nobody makes a sound."),
+    # ------------------------------------------------------------ 1.2
+    "entity.hl:nameless_villager.name": ("Aldeano Sin Nombre", "Nameless Villager"),
+    "entity.hl:faceless_enderman.name": ("Endermán Sin Rostro", "Faceless Enderman"),
+    "item.spawn_egg.entity.hl:nameless_villager.name": ("Generar: Aldeano Sin Nombre", "Spawn Nameless Villager"),
+    "item.spawn_egg.entity.hl:faceless_enderman.name": ("Generar: Endermán Sin Rostro", "Spawn Faceless Enderman"),
+    "hl.threat.nameless": ("El Aldeano Sin Nombre", "The Nameless Villager"),
+    "hl.threat.faceless": ("El Endermán Sin Rostro", "The Faceless Enderman"),
+    "hl.lore.nameless": (
+        "§lEl Aldeano Sin Nombre§r\n§8(inspirado en las creepypastas de aldeanos de Minecraft)§r\n\nTodos los aldeanos tienen un oficio y un nombre. Este no. Está en el campo, al borde de lo que alcanzas a ver, con una túnica gris ceniza, los brazos colgando hasta las rodillas y la cabeza demasiado ladeada. Los ojos son dos agujeros blancos. Canturrea, bajo y lento, desde donde está. Si no lo miras, se acerca. Si lo miras, se queda quieto y, al rato, levanta un brazo y te señala. Si llega a tu espalda, te pone una mano en el hombro.\n\n§eConsejo:§r mantenlo a la vista, o acércate a él: desaparece. La linterna también lo espanta.",
+        "§lThe Nameless Villager§r\n§8(inspired by Minecraft villager creepypastas)§r\n\nEvery villager has a job and a name. This one has neither. It stands in the fields at the edge of what you can see, in an ash-grey robe, arms hanging to its knees, head tipped too far. The eyes are two white holes. It hums, low and slow, from where it stands. If you don't look, it comes closer. If you look, it stands still and after a while lifts an arm and points at you. If it gets behind you, it puts a hand on your shoulder.\n\n§eTip:§r keep it in sight, or walk up to it: it vanishes. The flashlight scares it off too.",
+    ),
+    "hl.lore.faceless": (
+        "§lEl Endermán Sin Rostro§r\n§8(inspirado en las creepypastas de Endermen)§r\n\nUn Enderman más alto que los del juego, sin cara: solo una línea violeta donde irían los ojos. No camina: parpadea. Oyes su sonido al desaparecer de un sitio y al aparecer en otro, en 3D, así que sabes hacia dónde se fue. Cada vez está más cerca. Si lo miras de frente, la línea se abre y viene a por ti.\n\n§eConsejo:§r escucha. Una luz lo manda lejos.",
+        "§lThe Faceless Enderman§r\n§8(inspired by Enderman creepypastas)§r\n\nAn Enderman taller than the ones in the game, with no face: only a violet line where the eyes would be. It doesn't walk: it blinks. You hear it vanish from one place and arrive at another, in 3D, so you know which way it went. Every time it is closer. Look straight at it and the line opens, and it comes for you.\n\n§eTip:§r listen. A light sends it away.",
+    ),
+    "hl.arrive.nameless": ("§8[???]§r §7Hay un aldeano en el campo. No tiene nombre. No dejes de mirarlo.", "§8[???]§r §7There's a villager in the field. It has no name. Don't stop looking at it."),
+    "hl.arrive.faceless": ("§8[???]§r §7Si oyes un Enderman y no ves ojos, no lo mires.", "§8[???]§r §7If you hear an Enderman and see no eyes, don't look at it."),
+    "hl.nameless.point": ("§7§oEl aldeano te señala.", "§7§oThe villager points at you."),
+    "hl.nameless.touch": ("§8una mano en tu hombro", "§8a hand on your shoulder"),
+    "hl.faceless.seen": ("§5§oLa línea violeta se abre.", "§5§oThe violet line opens."),
+    "hl.faceless.sub": ("§8te vi", "§8i saw you"),
     "hl.threat.phobias": ("Los Miedos", "The Fears"),
     "hl.lore.phobias": (
         "§lLos Miedos§r\n\nTodos le tienen miedo a algo, y el juego sabe a qué. Si te quedas a oscuras sin luz, en un saliente muy alto, en agua muy profunda o en un túnel por el que apenas cabes, un miedo se va llenando. Cuando se llena, ocurre algo hecho a su medida. Y es muy fuerte.\n\n§eConsejo:§r lleva luz, no mires abajo, sal del agua y no te metas en túneles estrechos. El Diario muestra cuánto se ha llenado cada miedo.",
@@ -404,6 +425,7 @@ S = {
     "hl.j.fears": ("Tus miedos", "Your fears"),
     "hl.j.fears_body": ("Cada barra se llena mientras estás expuesto a ese miedo. Al llenarse, ocurre.", "Each bar fills while you are exposed to that fear. When it is full, it happens."),
     "hl.j.loud": ("Sonidos fuertes", "Loud sounds"),
+    "hl.j.audio3d": ("Sonido 3D", "3D sound"),
     "hl.fear.dark_sub": ("§8no estás solo aquí", "§8you aren't alone in here"),
     "hl.fear.heights_bar": ("§7§oEl suelo está muy lejos. Y te llama.", "§7§oThe ground is very far. And it is calling you."),
     "hl.fear.heights_sub": ("§8salta", "§8jump"),

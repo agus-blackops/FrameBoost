@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [1, 1, 0]
+VERSION = [1, 2, 0]
 UUID = {
     "bp": "14adbfa2-16d0-4c96-9745-648cda8d414d",
     "bp_data": "ecb604c1-31d8-4405-8f2f-2c06b96ad2be",
@@ -176,6 +176,11 @@ def entities():
     out["herobrine"] = entity("hl:herobrine", base_components(
         ["hl_herobrine", "hl_haunt"], 0.6, 3.0, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:strike"))
     out["null"] = entity("hl:null", base_components(["hl_null", "hl_haunt"], 0.6, 2.5, 100, {**INVULNERABLE, **STILL}))
+    # 1.2: the Nameless Villager and the Faceless Enderman. The scripts move them.
+    out["nameless_villager"] = entity("hl:nameless_villager", base_components(
+        ["hl_nameless_villager", "hl_haunt"], 0.7, 2.0, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:point"))
+    out["faceless_enderman"] = entity("hl:faceless_enderman", base_components(
+        ["hl_faceless_enderman", "hl_haunt"], 0.6, 3.5, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:stare"))
     out["entity_303"] = entity("hl:entity_303", base_components(
         ["hl_entity_303", "hl_haunt"], 0.6, 2.2, 100, {**INVULNERABLE, **STILL, "minecraft:physics": {"has_gravity": False}}),
         properties=flag("hl:cast"))
@@ -317,6 +322,17 @@ CLIENTS = {
                      ["walk", "idle", "look", "twitch", {"lips_idle": f"!({mode_is('chase')})"},
                       {"lips_open": mode_is("chase")}, {"attack": ATTACK}, {"hurt": HURT}],
                      "default", ("#d6d6ce", "#48121c")),
+    "nameless_villager": ({"default": "nameless_villager"},
+                          {"look": "villager.look", "idle": "villager.idle", "point": "villager.point",
+                           "walk": "villager.walk"},
+                          ["look", {"idle": "!query.property('hl:point')"}, {"point": "query.property('hl:point')"},
+                           {"walk": MOVING}],
+                          "default", ("#808280", "#ffffff")),
+    "faceless_enderman": ({"default": "faceless_enderman"},
+                          {"look": "ender.look", "idle": "ender.idle", "stare": "ender.stare", "blink": "ender.blink"},
+                          ["look", {"idle": "!query.property('hl:stare')"}, {"stare": "query.property('hl:stare')"},
+                           "blink"],
+                          "default", ("#08080c", "#d8a0ff")),
     "null": ({"default": "null"}, {"look": "null.look", "glitch": "null.glitch"}, ["look", "glitch"],
              "null", ("#0a0a0c", "#f800f8")),
     "herobrine_boss": ({"default": "herobrine_boss", "phase2": "herobrine_boss_2"},

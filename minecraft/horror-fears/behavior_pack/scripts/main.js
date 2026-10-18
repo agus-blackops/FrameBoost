@@ -3,9 +3,10 @@
 // told in three acts:
 //
 //   Act I    Visitors     sounds that aren't there, footsteps, HerobrineGamer788,
-//                         the Cave Dweller, the Ancient City, the fears
-//   Act II   The woods    Herobrine, the Visit, the Countdown, the Man From The
-//                         Fog, your grave, the Dead Hour
+//                         the Cave Dweller, the Nameless Villager, the Ancient
+//                         City, the fears
+//   Act II   The woods    Herobrine, the Visit, the Countdown, the Faceless
+//                         Enderman, the Man From The Fog, your grave, the Dead Hour
 //   Act III  The error    null, Entity 303, the Red Night
 //   The end              seven torn pages, a ritual, and Herobrine's true form
 //
@@ -29,6 +30,8 @@ import "./creatures/ambience.js";
 import "./creatures/scares.js";
 import { onBreakBlock, onHit as gamerHit, onPlaceBlock, onPlayerDied as gamerDied, tickGamer } from "./creatures/gamer.js";
 import "./creatures/dweller.js";
+import "./creatures/nameless.js";
+import "./creatures/faceless.js";
 import "./creatures/herobrine.js";
 import { onPlayerSpawn as fogSpawn, tickFog } from "./creatures/fog.js";
 import { restoreCorruption } from "./creatures/null.js";

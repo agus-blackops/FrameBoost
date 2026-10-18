@@ -137,6 +137,7 @@ function tick(e, s, player) {
 define({
   kind: "e303",
   type: "hl:entity_303",
+  voice: { id: "hl.glitch", every: [8, 14], volume: 0.8, pitch: [0.5, 0.7] },
   weights: (ctx) => [2, ctx.under ? 0 : 2],
   minor: e303Minor,
   major: e303Major,

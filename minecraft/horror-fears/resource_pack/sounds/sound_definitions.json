@@ -252,6 +252,114 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "hl.laugh": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 72,
+      "sounds": [
+        {
+          "name": "sounds/hl/laugh",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.growl": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 56,
+      "sounds": [
+        {
+          "name": "sounds/hl/growl",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.moan": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hl/moan",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.step": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 40,
+      "sounds": [
+        {
+          "name": "sounds/hl/step",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.creak": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 32,
+      "sounds": [
+        {
+          "name": "sounds/hl/creak",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.glitch": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 48,
+      "sounds": [
+        {
+          "name": "sounds/hl/glitch",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.roar": {
+      "category": "hostile",
+      "min_distance": 3,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/hl/roar",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.howl": {
+      "category": "hostile",
+      "min_distance": 6,
+      "max_distance": 128,
+      "sounds": [
+        {
+          "name": "sounds/hl/howl",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.warp": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 56,
+      "sounds": [
+        {
+          "name": "sounds/hl/warp",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

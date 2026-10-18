@@ -6,7 +6,7 @@
 // player; ones left over from a closed session simply vanish.
 
 import { world } from "@minecraft/server";
-import { OVERWORLD, distance, faceTowards, rand, tryRun, valid } from "./util.js";
+import { OVERWORLD, audio3dOn, distance, faceTowards, rand, soundAt, tryRun, valid } from "./util.js";
 
 // kind -> {
 //   kind, type?          the entity, if it has one
@@ -17,6 +17,8 @@ import { OVERWORLD, distance, faceTowards, rand, tryRun, valid } from "./util.js
 //   tick(e, s, player)   every 4 ticks for each of its entities
 //   adopt(e)             the mode a spawn-egg creature starts in
 //   onHit / onHurt / onDie / shine (the flashlight) / off (switched off) / test (journal)
+//   voice {id, every: [min, max] seconds, volume, pitch}   the creature's own voice, from where it stands
+//   stride {id, every: blocks, volume, pitch}               its footsteps, from where it walks
 // }
 export const DEFS = {};
 const TYPE_KIND = {};
@@ -122,6 +124,34 @@ function adopt(entity, players) {
   return s;
 }
 
+// 3D: a creature speaks and walks from where it is. You hear which side it is
+// on and how far, and in a cave it echoes (see util.js).
+export function spatial(e, s, player, def) {
+  if (!audio3dOn()) return;
+  if (def.voice) {
+    s.voiceIn = (s.voiceIn ?? rand(def.voice.every[0], def.voice.every[1]) * 20) - 4;
+    if (s.voiceIn <= 0) {
+      s.voiceIn = rand(def.voice.every[0], def.voice.every[1]) * 20;
+      const [lo, hi] = def.voice.pitch ?? [0.95, 1.05];
+      soundAt(player, def.voice.id, e.location, rand(lo, hi), def.voice.volume ?? 1);
+    }
+  }
+  if (def.stride) {
+    const at = e.location;
+    if (s.lastStep) {
+      // Only real walking counts: a jump of a few blocks in one go is a teleport.
+      const moved = Math.hypot(at.x - s.lastStep.x, at.z - s.lastStep.z);
+      if (moved <= 2.5) s.walked = (s.walked ?? 0) + moved;
+      if ((s.walked ?? 0) >= def.stride.every) {
+        s.walked = 0;
+        const [lo, hi] = def.stride.pitch ?? [0.9, 1.1];
+        soundAt(player, def.stride.id ?? "hl.step", at, rand(lo, hi), def.stride.volume ?? 1);
+      }
+    }
+    s.lastStep = { x: at.x, z: at.z };
+  }
+}
+
 // Every 4 ticks.
 export function tickCreatures() {
   const dimension = world.getDimension(OVERWORLD);
@@ -147,6 +177,7 @@ export function tickCreatures() {
       s.age += 4;
       if (s.frozen) continue; // a face held still for a jumpscare
       tryRun(() => def.tick?.(e, s, player));
+      tryRun(() => spatial(e, s, player, def));
     }
   }
   for (const [id, s] of [...tracked.entries()]) if (!alive.has(id) && !DEFS[s.kind]?.ownTick) tracked.delete(id);

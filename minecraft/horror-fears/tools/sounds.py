@@ -551,6 +551,129 @@ def shatter():
     return loud(out, 2.5)
 
 
+# --------------------------------------------------------------------------- #
+# 1.2: voices and footsteps that come FROM the creature (all mono, so the game
+# places them in 3D: direction and distance)
+# --------------------------------------------------------------------------- #
+
+def laugh():
+    """Herobrine: a low, slowed-down laugh, a few ha's that don't belong to a mouth."""
+    length = 2.6
+    out = np.zeros(int(length * RATE))
+    at = 0.1
+    f0 = 95.0
+    for k in range(5):
+        dur = 0.22
+        n = int(dur * RATE)
+        f = f0 * (1.0 - 0.04 * k)
+        src = saw(f * (1 + 0.04 * sine(7, dur)), dur) + 0.3 * noise(dur)
+        v = resonator(src, 700, 4) + 0.7 * resonator(src, 1100, 6)
+        v *= np.sin(np.linspace(0, np.pi, n)) ** 0.8
+        place(out, v, at + k * 0.38)
+    return loud(out * env(len(out), 0.01, 0.8, 1.2), 3.0)
+
+
+def growl():
+    """The Cave Dweller: a wet, rattling growl that stays in the chest."""
+    length = 2.2
+    n = int(length * RATE)
+    t = t_axis(length)
+    f = 70 + 30 * np.sin(2 * np.pi * 0.9 * t) + 14 * sine(26, length)
+    src = saw(f, length) * 0.8 + noise(length) * 0.35
+    rattle = 0.55 + 0.45 * np.sign(sine(32, length))
+    v = (resonator(src, 220, 3) + 0.8 * resonator(src, 560, 5)) * rattle
+    return loud(v * env(n, 0.08, 0.7, 1.4), 3.2)
+
+
+def moan():
+    """The Nameless Villager's 'hrmm', stretched out and falling, too slow."""
+    length = 2.4
+    n = int(length * RATE)
+    tt = np.linspace(0, 1, n)
+    f = 190 * (1.0 - 0.45 * tt) * (1 + 0.012 * sine(5, length))
+    src = saw(f, length) + 0.15 * noise(length)
+    v = resonator(src, 420, 7) + 0.9 * resonator(src, 1100, 9) + 0.3 * resonator(src, 2200, 11)
+    gate = np.sin(np.pi * tt) ** 0.7
+    return loud(v * gate, 2.8)
+
+
+def step():
+    """One heavy footstep: a thud, the scuff of a foot, and a little stone."""
+    length = 0.55
+    n = int(length * RATE)
+    thud = sine(70 * (1 + 0.8 * decay(n, 0.03)), length) * decay(n, 0.09) * 2.2
+    scuff = one_pole(noise(length), 1800) * decay(n, 0.045) * 1.2
+    grit = resonator(noise(length), 3200, 6) * decay(n, 0.02) * 0.4
+    return loud(thud + scuff + grit, 3.0, 0.7)
+
+
+def creak():
+    """A door, a board, a rope: wood complaining under weight."""
+    length = 1.9
+    n = int(length * RATE)
+    t = t_axis(length)
+    f = 150 + 90 * np.sin(2 * np.pi * 0.7 * t) ** 2 + 25 * sine(11, length)
+    src = saw(f, length) * (0.5 + 0.5 * np.sign(sine(f / 6, length)))
+    v = resonator(src, 900, 12) + 0.6 * resonator(src, 1700, 14)
+    return loud(v * env(n, 0.1, 0.5, 1.2), 2.5, 0.7)
+
+
+def glitch():
+    """A sound that skips: slices of noise and tone repeated, cut and pitched wrong."""
+    length = 1.6
+    out = np.zeros(int(length * RATE))
+    at = 0.0
+    while at < length - 0.1:
+        dur = rng.choice([0.02, 0.03, 0.05, 0.08, 0.12])
+        n = int(dur * RATE)
+        f = rng.choice([220, 440, 880, 1760, 3520])
+        piece = sine(f, dur) if rng.random() < 0.6 else noise(dur) * 0.8
+        piece = np.sign(piece) * 0.7 if rng.random() < 0.4 else piece
+        reps = int(rng.integers(1, 4))
+        for r in range(reps):
+            if at + (r + 1) * dur >= length:
+                break
+            place(out, piece * rng.uniform(0.5, 1.0), at + r * dur)
+        at += dur * reps + rng.choice([0.0, 0.0, 0.03, 0.06])
+    return loud(out, 3.0, 0.45)
+
+
+def roar():
+    """The Hollow Miner: stone grinding into a voice, huge and slow."""
+    length = 3.2
+    n = int(length * RATE)
+    t = t_axis(length)
+    f = 55 + 35 * np.sin(np.pi * np.minimum(1, t / 2.2)) + 10 * sine(19, length)
+    src = saw(f, length) + 0.5 * noise(length)
+    v = resonator(src, 160, 3) + resonator(src, 420, 4) + 0.6 * resonator(src, 900, 6)
+    rumble = one_pole(noise(length), 140) * 2.0
+    return loud((v + rumble) * env(n, 0.15, 1.0, 1.3), 3.5)
+
+
+def howl():
+    """Wind with a voice in it: one long note that doesn't belong to a throat."""
+    length = 4.0
+    n = int(length * RATE)
+    t = t_axis(length)
+    f = 330 + 160 * np.sin(2 * np.pi * 0.35 * t) + 12 * sine(5, length)
+    src = saw(f, length) * 0.5 + noise(length) * 0.7
+    v = resonator(src, 700, 14) + resonator(src, 1450, 16) * 0.8
+    air = resonator(noise(length), 2200, 1.5) * 0.4
+    return loud((v + air) * env(n, 0.8, 1.6, 1.2), 2.5, 0.7)
+
+
+def warp():
+    """The Faceless Enderman moving: a rising warble that folds in on itself."""
+    length = 1.1
+    n = int(length * RATE)
+    t = t_axis(length)
+    up = 300 * (1 + 7 * (t / length) ** 2)
+    v = sine(up, length) * 0.7 + sine(up * 1.5 * (1 + 0.02 * sine(31, length)), length) * 0.5
+    v += resonator(noise(length), 3000, 4) * 0.3 * (t / length)
+    v *= np.sin(np.pi * np.minimum(1, t / length * 1.05)) ** 0.7
+    return loud(v, 2.2, 0.7)
+
+
 SOUNDS = {
     # name: (generator, category, min_distance, max_distance, volume)
     "heartbeat": (heartbeat, "hostile", 0.5, 8, 1.0),
@@ -574,6 +697,16 @@ SOUNDS = {
     "screech": (screech, "hostile", 2, 64, 1.0),
     "wail": (wail, "hostile", 2, 96, 1.0),
     "shatter": (shatter, "hostile", 1, 48, 1.0),
+    # 1.2: voices and footsteps placed in 3D
+    "laugh": (laugh, "hostile", 2, 72, 1.0),
+    "growl": (growl, "hostile", 2, 56, 1.0),
+    "moan": (moan, "hostile", 2, 64, 1.0),
+    "step": (step, "hostile", 1, 40, 1.0),
+    "creak": (creak, "hostile", 1, 32, 1.0),
+    "glitch": (glitch, "hostile", 1, 48, 1.0),
+    "roar": (roar, "hostile", 3, 96, 1.0),
+    "howl": (howl, "hostile", 6, 128, 1.0),
+    "warp": (warp, "hostile", 1, 56, 1.0),
 }
 
 

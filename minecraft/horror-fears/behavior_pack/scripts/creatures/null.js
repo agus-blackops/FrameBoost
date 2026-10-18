@@ -151,6 +151,7 @@ export function nullMajor(player) {
 define({
   kind: "null",
   type: "hl:null",
+  voice: { id: "hl.glitch", every: [5, 9], volume: 0.8, pitch: [0.9, 1.1] },
   weights: () => [2, 2],
   minor: nullMinor,
   major: nullMajor,

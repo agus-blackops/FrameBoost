@@ -272,6 +272,8 @@ export function onPlayerDied(player) {
 define({
   kind: "boss",
   type: "hl:herobrine_boss",
+  voice: { id: "hl.roar", every: [12, 20], volume: 1, pitch: [0.9, 1.0] },
+  stride: { id: "hl.step", every: 2.2, volume: 1, pitch: [0.45, 0.6] },
   tick,
   adopt: () => "fighting",
   shine: (e, s, player) => burnWithLight(e, player),

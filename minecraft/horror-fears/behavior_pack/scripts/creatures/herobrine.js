@@ -234,6 +234,7 @@ export function strikesBack(e, player) {
 define({
   kind: "herobrine",
   type: "hl:herobrine",
+  voice: { id: "hl.laugh", every: [25, 45], volume: 0.8, pitch: [0.8, 1.0] },
   weights: (ctx) => [3, ctx.under ? 0 : 3],
   minor: herobrineMinor,
   major: herobrineMajor,

@@ -4,7 +4,7 @@
 // nobody. Then, right at the end, breathing on your neck.
 
 import { system, world } from "@minecraft/server";
-import { actionBar, isUnderground, later, soundBehind, tr, tryRun } from "../core/util.js";
+import { actionBar, later, soundBehind, tr, tryRun } from "../core/util.js";
 import { define } from "../core/creatures.js";
 import { addFear, discover } from "../core/store.js";
 
@@ -21,8 +21,9 @@ export function startSteps(player) {
   return true;
 }
 
-function stepSound(player) {
-  return isUnderground(player) ? "step.stone" : "step.grass";
+// Their own footsteps (heavy ones, placed behind you in 3D).
+function stepSound() {
+  return "hl.step";
 }
 
 function tickOne(player, w, now) {
@@ -32,13 +33,13 @@ function tickOne(player, w, now) {
     w.moving = true;
     if (now >= w.next) {
       w.next = now + STEP_EVERY;
-      later(3, () => soundBehind(player, stepSound(player), w.dist, 0.95, 0.8));
+      later(3, () => soundBehind(player, stepSound(), w.dist, 0.95, 0.8));
     }
   } else if (w.moving) {
     // You stopped. They take one more.
     w.moving = false;
     w.dist = Math.max(1.2, w.dist - 0.8);
-    later(10, () => soundBehind(player, stepSound(player), w.dist, 0.85, 1));
+    later(10, () => soundBehind(player, stepSound(), w.dist, 0.85, 1));
     addFear(player, 4);
   }
   if (now - w.start >= LASTS) {
