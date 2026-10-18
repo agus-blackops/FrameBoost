@@ -569,6 +569,7 @@ final class Renderer {
             case Items.BLOCK: drawBlock(c, q, col); break;
             case Items.DOG: case Items.PIG: case Items.RAT: drawAnimal(c, q, col); break;
             case Items.POOP: drawPoop(c, q, col); break;
+            case Items.FRIDGE: drawFridge(c, q); break;
             case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: drawMachine(c, q); break;
             case Items.BAT: case Items.HAMMER: drawBlunt(c, q, col); break;
             case Items.TURRET: drawTurret(c, q); break;
@@ -884,11 +885,70 @@ final class Renderer {
         }
     }
 
+    /** A refrigerator: cabinet, handle, and a door that swings open to show shelves and a cold light. */
+    private void drawFridge(Draw2D c, Prop q) {
+        RB m = q.main();
+        float hw = q.hw, hh = q.hh, f = q.work;
+        int out = q.homeDirV >= 0 ? 1 : -1;
+        local(c, m.x, m.y, m.a);
+        c.scale(out, 1f);
+        p.setStyle(Paint.Style.FILL);
+        orect(c, -hw, -hh, hw, hh, 5f, 0xFFcfd6de);
+        if (f > 0.02f) {
+            p.setColor(0xFF9fd2ef); rf.set(-hw + 6f, -hh + 8f, hw - 6f, hh - 8f); c.drawRoundRect(rf, 3f, 3f, p);
+            p.setColor(0xFFe8f6ff); rf.set(-hw + 9f, -hh + 11f, hw - 9f, hh - 12f); c.drawRect(rf, p);
+            p.setColor(alpha(0xFF9fd2ef, 0.5f)); rf.set(-hw + 9f, -hh + 11f, hw - 9f, -hh + 40f); c.drawRect(rf, p);
+            p.setColor(0xFFb7c4cf);
+            for (int i = 1; i <= 3; i++) { float y = -hh + 11f + i * (2f * hh - 24f) / 4f; rf.set(-hw + 8f, y - 1.6f, hw - 8f, y + 1.6f); c.drawRect(rf, p); }
+            p.setColor(0xFFfff7c8); rf.set(-12f, -hh + 12f, 12f, -hh + 17f); c.drawRect(rf, p);
+            p.setColor(alpha(0xFFffffff, 0.6f));
+            for (int i = 0; i < 6; i++) c.drawCircle(-hw + 14f + i * 14f, -hh + 14f + (i % 3) * 3f, 2.2f, p);
+            if (q.meal == null) { p.setColor(0xFFd85a4a); rf.set(-26f, 12f, -10f, 28f); c.drawRoundRect(rf, 3f, 3f, p); p.setColor(0xFFe8c84a); rf.set(8f, -30f, 26f, -14f); c.drawRoundRect(rf, 3f, 3f, p); }
+        }
+        float dw = 2f * hw * (float) Math.cos(f * 1.3f);
+        float left = -hw - 16f * f * f;
+        orect(c, left, -hh, left + Math.max(10f, dw), hh, 4f, 0xFFe8edf2);
+        p.setColor(alpha(0xFFffffff, 0.35f)); rf.set(left + 3f, -hh + 4f, left + Math.max(7f, dw * 0.2f), hh - 4f); c.drawRect(rf, p);
+        if (f < 0.6f) {
+            p.setColor(0xFF8a929c); rf.set(left + dw - 15f, -hh * 0.45f, left + dw - 9f, hh * 0.1f); c.drawRoundRect(rf, 2f, 2f, p);
+            p.setColor(0xFFb7c4cf); rf.set(left + dw - 15f, -hh * 0.62f, left + dw - 9f, -hh * 0.5f); c.drawRect(rf, p);
+            p.setColor(alpha(0xFF000000, 0.16f)); rf.set(left, -hh * 0.35f, left + dw, -hh * 0.35f + 3f); c.drawRect(rf, p);
+        }
+        p.setColor(0xFF2f353d); rf.set(-hw + 4f, hh, -hw + 12f, hh + 4f); c.drawRect(rf, p); rf.set(hw - 12f, hh, hw - 4f, hh + 4f); c.drawRect(rf, p);
+        c.restore();
+        if (f > 0.3f && q.meal != null && detail) c.light(m.x, m.y - hh * 0.3f, 150f, 0xFFcfeeff, 0.5f);
+    }
+
     /** Building blocks by material, fragments with cracks, and flesh/metal chunks. */
     private void drawBlock(Draw2D c, Prop q, int col) {
         RB m = q.main();
         Shape s = m.shapes.get(0);
         float hw = s.hl, hh = s.hh;
+        if (q.gib && q.round) {
+            float r = s.r;
+            local(c, m.x, m.y, m.a);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(dark(col, 0.55f)); c.drawCircle(0, 0, r + 1.3f, p);
+            p.setColor(col); c.drawCircle(0, 0, r, p);
+            if (q.bloody) { p.setColor(alpha(q.color2, 0.55f)); c.drawCircle(r * 0.25f, r * 0.3f, r * 0.55f, p); }
+            p.setColor(alpha(0xFFffffff, 0.4f)); c.drawCircle(-r * 0.35f, -r * 0.38f, r * 0.26f, p);
+            c.restore();
+            return;
+        }
+        if (q.gib && q.bone) {
+            local(c, m.x, m.y, m.a);
+            p.setStyle(Paint.Style.FILL);
+            float k = hh + 1.2f;
+            p.setColor(dark(col, 0.45f));
+            rf.set(-hw - 1f, -hh - 1f, hw + 1f, hh + 1f); c.drawRoundRect(rf, hh, hh, p);
+            c.drawCircle(-hw, -hh * 0.6f, k, p); c.drawCircle(-hw, hh * 0.6f, k, p); c.drawCircle(hw, -hh * 0.6f, k, p); c.drawCircle(hw, hh * 0.6f, k, p);
+            p.setColor(col);
+            rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, hh, hh, p);
+            c.drawCircle(-hw, -hh * 0.6f, hh * 0.95f, p); c.drawCircle(-hw, hh * 0.6f, hh * 0.95f, p); c.drawCircle(hw, -hh * 0.6f, hh * 0.95f, p); c.drawCircle(hw, hh * 0.6f, hh * 0.95f, p);
+            p.setColor(alpha(0xFFffffff, 0.5f)); rf.set(-hw * 0.7f, -hh * 0.7f, hw * 0.5f, -hh * 0.2f); c.drawRect(rf, p);
+            c.restore();
+            return;
+        }
         if (q.gib) {
             local(c, m.x, m.y, m.a);
             p.setStyle(Paint.Style.FILL);
@@ -896,6 +956,11 @@ final class Renderer {
             rf.set(-hw - 1.4f, -hh - 1.4f, hw + 1.4f, hh + 1.4f); c.drawRoundRect(rf, hh, hh, p);
             p.setColor(col);
             rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, hh * 0.8f, hh * 0.8f, p);
+            if (q.color2 != 0) {                // the raw inside where it was torn off
+                p.setColor(q.color2);
+                rf.set(hw * 0.05f, -hh * 0.7f, hw * 0.95f, hh * 0.7f); c.drawRoundRect(rf, hh * 0.5f, hh * 0.5f, p);
+                p.setColor(alpha(0xFFffffff, 0.28f)); rf.set(hw * 0.2f, -hh * 0.45f, hw * 0.7f, -hh * 0.15f); c.drawRoundRect(rf, hh * 0.2f, hh * 0.2f, p);
+            }
             p.setColor(alpha(0xFFffffff, 0.22f));
             c.drawCircle(-hw * 0.35f, -hh * 0.35f, Math.min(hw, hh) * 0.35f, p);
             c.restore();
@@ -1191,6 +1256,7 @@ final class Renderer {
     }
 
     private void drawPerson(Draw2D c, Person b, World w) {
+        if (b.cell != null && b.cell.work < 0.5f) return;           // still behind the closed fridge door
         int skin = b.skin;
         // back limbs
         part(c, b, Person.THIGH_B, b.pants); part(c, b, Person.SHIN_B, b.pants); foot(c, b, Person.FOOT_B);

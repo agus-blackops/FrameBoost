@@ -8,7 +8,7 @@ final class World implements Sim.Listener, Sim.Hook {
     static final int MAX_BODIES = 900;
 
     static final class Stats {
-        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered;
+        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges;
         float recentT;
     }
 
@@ -156,6 +156,7 @@ final class World implements Sim.Listener, Sim.Hook {
                         break;
                     }
                     case Items.POOP: ry = Math.min(y, fl - 9f); break;
+                    case Items.FRIDGE: ry = Math.min(y, fl - 101f); break;
                     case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: ry = Math.min(y + 40f, fl); break;
                     default: ry = Math.min(y, fl - 14f); break;
                 }
@@ -163,12 +164,13 @@ final class World implements Sim.Listener, Sim.Hook {
                 if (p == null) return null;
                 if (item == Items.MOTOR) p.motorized = true;
                 if (p.animal()) p.turn(dir >= 0 ? 1 : -1);
-                if (p.fixedMachine()) p.homeDirV = dir >= 0 ? 1 : -1;
+                if (p.fixedMachine() || p.type == Items.FRIDGE) p.homeDirV = dir >= 0 ? 1 : -1;
                 if (p.fuse >= 0f) p.fuse = item == Items.GRENADE ? 3f : 4f;
                 if (item == Items.KNIFE || item == Items.SWORD) { /* sharp bodies are registered by the factory */ }
                 p.register(sim);
-                if (p.fixedMachine()) for (RB b : p.bodies) b.setFrozen(true);
+                if (p.fixedMachine() || p.type == Items.FRIDGE) for (RB b : p.bodies) b.setFrozen(true);
                 e = add(p);
+                if (p.type == Items.FRIDGE) stockFridge(p, x);
             }
         }
         if (e != null) fx.add(Fx.GLOW, e.cx(), e.cy(), 0, 0, 0.18f, Math.max(16f, e.radius() * 0.6f), 0xFFffffff);
@@ -253,6 +255,12 @@ final class World implements Sim.Listener, Sim.Hook {
         int whole = 0;
         for (int k = 0; k < Person.NPARTS; k++) { if (p.gibbed[k]) { if (!p.rb[k].frozen) p.rb[k].setFrozen(true); } else whole++; }
         if (whole == 0) { remove(p); return; }     // nothing left of them
+        if (p.jumpCd > 0f) p.jumpCd -= dt;
+        if (p.panicT > 0f) p.panicT -= dt;
+        if (p.cell != null) {
+            if (p.cell.removed) releaseInmate(p, 1);                  // the fridge is gone: out it comes
+            else { p.frozenT = Math.max(p.frozenT, 1e8f); p.ko = Math.max(p.ko, 1e8f); return; }
+        }
         if (p.frozenT > 0f) {
             if (p.burning) { p.burning = false; Machines.thaw(this, p); }
             else { p.frozenT -= dt; if (p.frozenT <= 0f) Machines.thaw(this, p); }
@@ -308,7 +316,7 @@ final class World implements Sim.Listener, Sim.Hook {
             p.thinkT = 0.25f + rnd.nextFloat() * 0.15f;
             p.walk = 0; p.run = false; p.aim = false; p.reach = false; p.armsUp = false; p.armsForward = false; p.kneel = false;
             p.walkIdleGuard = false;
-            if (p.able && p.tone > 0.6f) Mind.think(this, p);
+            if (p.able && p.tone > 0.6f) { Mind.think(this, p); Mind.avoid(this, p); }
             else { p.target = null; p.mood = p.dead ? "" : (p.ko > 0f ? "Inconsciente" : (p.legsBroken() ? "No puede andar" : "Aturdido")); }
             // keep inside the room
             if (p.walk < 0 && p.rb[Person.PELVIS].x < sim.wallL + 90f) p.walk = 0;
@@ -423,6 +431,7 @@ final class World implements Sim.Listener, Sim.Hook {
             if (!p.dead) p.blood -= 6f;
         } else fx.sparks(x, y, 14, 0xFFffd25a);
         if (sfx != null) sfx.crunch();
+        alarm(x, y, 450f, 3f);
         if (!p.dead) { p.ko = Math.max(p.ko, j == Person.NECK ? 99f : 1.2f); p.tone = 0f; }
         if (j == Person.NECK || j == Person.WAIST) kill(p);
         rumble += 0.3f;
@@ -536,6 +545,11 @@ final class World implements Sim.Listener, Sim.Hook {
             if (q.type == Items.BALLOON) { if (dv > 90f || sharp) pop(q); return; }
             if (q.type == Items.MELON) { if (dv > 480f || (sharp && dv > 100f)) smash(q); return; }
             if (q.type == Items.POOP) { if (dv > 700f && q.age > 0.5f) squish(q); return; }
+            if (q.gib && q.bloody && fx.gore && dv > 240f && q.splatT <= 0f) {
+                q.splatT = 0.25f;
+                for (int k = 0; k < 4; k++) fx.add(Fx.BLOOD, px, py, dx * 90f + fx.rr(140f), -fx.rf() * 220f, 1.5f, 2f + fx.rf() * 3f, q.color2);
+                if (sfx != null && dv > 420f) sfx.splat();
+            }
             if (q.animal()) {
                 if (sharp && dv > 150f) hurtAnimal(q, 10f + dv * 0.04f, px, py, dx, dy);
                 if (!sharp && dv > 750f) hurtAnimal(q, (dv - 750f) * 0.05f, px, py, dx, dy);
@@ -609,36 +623,155 @@ final class World implements Sim.Listener, Sim.Hook {
         bloodStyle(p);
         boolean metal = p.kind == Person.ROBOT, bone = p.kind == Person.SKELETON;
         Shape s0 = b.shapes.get(0);
-        int n = !chunks ? 0 : part == Person.CHEST || part == Person.PELVIS ? 6 : (part == Person.HEAD ? 5 : 3);
         float size = s0.type == Shape.CIRCLE ? s0.r : (s0.type == Shape.CAPSULE ? s0.r + s0.hl * 0.35f : (s0.hl + s0.hh) * 0.4f);
-        int outer = s0.color;
-        for (int k = 0; k < n && canAdd(); k++) {
-            float hw = Math.max(3.5f, size * (0.35f + rnd.nextFloat() * 0.3f)), hh = Math.max(3f, hw * (0.6f + rnd.nextFloat() * 0.5f));
-            int col = p.frozenT > 0f ? Renderer.mix(k % 2 == 0 ? outer : 0xFF8e1111, 0xFFcfeeff, 0.6f)
-                    : metal ? (k % 2 == 0 ? 0xFF6b737d : dark(outer, 0.2f)) : bone ? 0xFFe9e5d3
-                    : !fx.gore ? (k % 2 == 0 ? outer : dark(outer, 0.25f))
-                    : (k % 3 == 0 ? outer : (p.kind == Person.ZOMBIE ? 0xFF4f7d2a : (k % 3 == 1 ? 0xFFa3202a : 0xFFc94a52)));
-            Prop c = Prop.block(bx + fx.rr(size), by + fx.rr(size), hw, hh, col, metal ? 2f : 1f, false);
-            c.gib = true;
-            c.register(sim);
-            RB r = c.main();
-            r.setAngle(rnd.nextFloat() * 6.283f);
-            float sp = 260f + rnd.nextFloat() * 420f, ang = rnd.nextFloat() * 6.283f;
-            r.vx = vx * 0.5f + dx * 200f + (float) Math.cos(ang) * sp;
-            r.vy = vy * 0.5f + dy * 200f + (float) Math.sin(ang) * sp - 150f;
-            r.w = fx.rr(30f);
-            add(c);
-            keepChunk(c);
-        }
+        if (chunks) spawnGibs(p, part, bx, by, vx, vy, dx, dy, size, s0.color, metal, bone);
         if (p.frozenT > 0f) { fx.debris(bx, by, 6, 0xFFcfeeff, 260f); }
         else if (!chunks) { fx.blood(bx, by, 0f, -0.4f, 8); if (sfx != null) sfx.splat(); }
         else if (metal) { fx.sparks(bx, by, 24, 0xFFffd25a); fx.smoke(bx, by, 10f, 0xFF3c3c3c); }
         else if (bone) fx.debris(bx, by, 12, 0xFFf0ead6, 320f);
-        else { fx.blood(bx, by, 0f, -0.4f, 30); fx.blood(bx, by, dx, dy, 18); fx.debris(bx, by, 6, 0xFF8e1111, 300f); }
+        else {
+            // a mist of blood in every direction, a heavier spray along the blow, and a few droplets that hang
+            for (int k = 0; k < 8; k++) { float an = k * 0.785f + rnd.nextFloat() * 0.4f; fx.blood(bx, by, (float) Math.cos(an), (float) Math.sin(an) - 0.3f, 6); }
+            fx.blood(bx, by, dx, dy, 22);
+            fx.debris(bx, by, 6, p.kind == Person.ZOMBIE ? 0xFF4f7d2a : 0xFF8e1111, 300f);
+            for (int k = 0; k < 5; k++) fx.add(Fx.SMOKE, bx + fx.rr(14f), by + fx.rr(14f), fx.rr(60f), -30f - fx.rf() * 50f, 0.9f, 6f + fx.rf() * 6f, p.kind == Person.ZOMBIE ? 0x886aa63a : 0x88a3202a);
+        }
         if (sfx != null && chunks) { sfx.splat(); sfx.crunch(); }
+        if (chunks) alarm(bx, by, 700f, 5f);
         if (!p.dead && (part == Person.HEAD || part == Person.CHEST || part == Person.PELVIS)) kill(p);
         else if (!p.dead) { p.ko = Math.max(p.ko, 2f); p.tone = 0f; p.blood -= 15f; if (p.blood <= 0f) kill(p); }
         if (chunks) rumble += 0.35f;
+    }
+
+    // -------------------------------------------------------------------------------- fridge ---
+
+    /** The fridge door swings; once it is wide open the frozen person inside topples out. */
+    private void fridgeTick(Prop q, float dt) {
+        float target = q.on ? 1f : 0f;
+        if (q.work < target) q.work = Math.min(target, q.work + dt * 2.2f);
+        else if (q.work > target) q.work = Math.max(target, q.work - dt * 2.2f);
+        if (q.main().invM > 0f) q.main().setFrozen(true);           // fridges stay where they are
+        boolean cold = q.work > 0.15f && q.meal != null;
+        if (cold && rnd.nextFloat() < dt * 14f)
+            fx.add(Fx.SMOKE, q.cx() + fx.rr(q.hw * 0.8f), q.cy() + q.hh * 0.6f, q.homeDirV * (20f + fx.rf() * 30f), 10f + fx.rf() * 20f, 1.6f, 5f + fx.rf() * 4f, 0x99cfeeff);
+        if (q.on && q.work >= 0.99f && q.meal != null && !q.meal.removed) releaseInmate(q.meal, q.homeDirV);
+    }
+
+    void toggleFridge(Prop q) {
+        q.on = !q.on;
+        if (sfx != null) sfx.thud(0.35f);
+    }
+
+    /** Wakes the frozen person up from the fridge (or wherever it was held): the statue tips over, ice and all. */
+    void releaseInmate(Person in, int out) {
+        Prop fr = in.cell;
+        in.cell = null;
+        if (fr != null) fr.meal = null;
+        for (int k = 0; k < Person.NPARTS; k++) {
+            if (in.gibbed[k]) continue;
+            RB b = in.rb[k];
+            b.setFrozen(false);
+            for (Shape sh : b.shapes) sh.sensor = false;
+        }
+        in.frozenT = 40f;
+        in.ko = 40f;
+        in.tone = 0f;
+        for (int k = 0; k < Person.NPARTS; k++) {
+            if (in.gibbed[k]) continue;
+            RB b = in.rb[k];
+            float lift = k == Person.HEAD || k == Person.CHEST ? 1f : 0.45f;
+            b.vx = out * 210f * lift; b.vy = -30f;
+        }
+        RB h = in.rb[Person.HEAD];
+        h.applyImpulse(out * h.m * 90f, 0f, h.x, h.y);
+        stats.fridges++;
+        RB c = in.rb[Person.CHEST];
+        for (int i = 0; i < 16; i++) fx.add(Fx.SMOKE, c.x + fx.rr(40f), c.y + fx.rr(60f), out * (40f + fx.rf() * 80f), fx.rr(30f), 1.6f, 6f + fx.rf() * 5f, 0xAAdff4ff);
+        if (sfx != null) sfx.crunch();
+        rumble += 0.15f;
+    }
+
+    /** Puts a frozen person inside a new fridge. */
+    private void stockFridge(Prop fr, float x) {
+        Person in = newPerson(x, sim.floorY - 93f, 1f, fr.homeDirV, Person.HUMAN);
+        if (in == null) return;
+        Machines.freeze(this, in, 1e9f);
+        in.cell = fr; fr.meal = in;
+        for (RB b : in.rb) {
+            b.vx = b.vy = b.w = 0f;
+            b.setFrozen(true);
+            for (Shape sh : b.shapes) sh.sensor = true;
+        }
+        for (RB b : fr.bodies) for (Shape sh : b.shapes) sh.group = in.group;
+    }
+
+    /** People nearby panic: they run away from this spot for a while. */
+    void alarm(float x, float y, float r, float secs) {
+        for (int i = 0; i < ents.size(); i++) {
+            Ent e = ents.get(i);
+            if (!(e instanceof Person)) continue;
+            Person q = (Person) e;
+            if (q.kind != Person.HUMAN || q.dead || Math.abs(q.cx() - x) > r || Math.abs(q.cy() - y) > r) continue;
+            q.panicT = Math.max(q.panicT, secs);
+            q.alarmX = x;
+        }
+    }
+
+    /** One loose chunk (flesh, bone, organ or metal) thrown out of a gibbed part. */
+    private Prop chunk(float x, float y, float hw, float hh, int col, int col2, boolean round, boolean isBone, boolean bloody, float dens,
+                       float vx, float vy, float dx, float dy, float power) {
+        if (!canAdd()) return null;
+        Prop c = round ? Prop.gibBall(x, y, hw, col, dens) : Prop.block(x, y, hw, hh, col, dens, false);
+        c.gib = true; c.round = round; c.bone = isBone; c.bloody = bloody; c.color2 = col2;
+        c.register(sim);
+        RB r = c.main();
+        r.setAngle(rnd.nextFloat() * 6.283f);
+        float sp = (180f + rnd.nextFloat() * 420f) * power, ang = rnd.nextFloat() * 6.283f;
+        r.vx = vx * 0.5f + dx * 220f + (float) Math.cos(ang) * sp;
+        r.vy = vy * 0.5f + dy * 220f + (float) Math.sin(ang) * sp - 160f;
+        r.w = fx.rr(34f);
+        add(c);
+        keepChunk(c);
+        return c;
+    }
+
+    /** What a part is made of when it bursts: meat with a raw inside, bone shards, organs; or plates and gears for robots. */
+    private void spawnGibs(Person p, int part, float bx, float by, float vx, float vy, float dx, float dy, float size, int outer, boolean metal, boolean skeleton) {
+        boolean gore = fx.gore, zombie = p.kind == Person.ZOMBIE, ice = p.frozenT > 0f;
+        int raw = zombie ? 0xFF8a9b3a : 0xFFb0252f;
+        int bonec = 0xFFe9e5d3;
+        boolean limb = part != Person.CHEST && part != Person.PELVIS && part != Person.HEAD;
+        if (metal) {
+            for (int k = 0; k < 4; k++) chunk(bx + fx.rr(size), by + fx.rr(size), Math.max(3.5f, size * (0.3f + rnd.nextFloat() * 0.3f)), Math.max(2.5f, size * 0.2f),
+                    k % 2 == 0 ? 0xFF6b737d : dark(outer, 0.2f), 0, false, false, false, 2f, vx, vy, dx, dy, 1f);
+            for (int k = 0; k < 2; k++) chunk(bx + fx.rr(size), by + fx.rr(size), 4.5f, 4.5f, 0xFF8d96a3, 0, true, false, false, 2.4f, vx, vy, dx, dy, 1f);
+            return;
+        }
+        int nFlesh = skeleton ? 0 : (part == Person.CHEST ? 4 : (part == Person.PELVIS ? 3 : (part == Person.HEAD ? 2 : 3)));
+        for (int k = 0; k < nFlesh; k++) {
+            float hw = Math.max(3.5f, size * (0.3f + rnd.nextFloat() * 0.3f)), hh = Math.max(3f, hw * (0.55f + rnd.nextFloat() * 0.4f));
+            int col = ice ? Renderer.mix(k % 2 == 0 ? outer : raw, 0xFFcfeeff, 0.6f) : outer;
+            int inner = ice ? 0xFFe6f6ff : (gore ? raw : dark(outer, 0.3f));
+            chunk(bx + fx.rr(size), by + fx.rr(size), hw, hh, col, inner, false, false, gore && !ice, 1f, vx, vy, dx, dy, 1f);
+        }
+        if (!gore && !skeleton) return;
+        int nBone = skeleton ? 5 : (part == Person.CHEST ? 3 : (part == Person.HEAD ? 3 : (part == Person.PELVIS ? 2 : 2)));
+        for (int k = 0; k < nBone; k++) {
+            boolean skull = part == Person.HEAD && !skeleton;
+            float hw = skull ? 3.5f + rnd.nextFloat() * 3f : (limb ? 8f : 7f) + rnd.nextFloat() * 5f, hh = skull ? 3f + rnd.nextFloat() * 2f : 1.9f + rnd.nextFloat() * 0.6f;
+            int bc = ice ? 0xFFe6f6ff : (zombie ? 0xFFcfd2a8 : bonec);
+            chunk(bx + fx.rr(size), by + fx.rr(size), hw, hh, bc, 0, false, true, false, 0.8f, vx, vy, dx, dy, 1.1f);
+        }
+        if (skeleton || ice) return;
+        // organs and the brain
+        if (part == Person.CHEST) {
+            chunk(bx + fx.rr(8f), by + fx.rr(8f), 6.5f, 6.5f, zombie ? 0xFF5a7a2a : 0xFF8f1d2c, raw, true, false, true, 1.1f, vx, vy, dx, dy, 0.9f);
+            chunk(bx + fx.rr(8f), by + fx.rr(8f), 5.5f, 5.5f, zombie ? 0xFF6e8a3a : 0xFF7a3b5a, raw, true, false, true, 1.1f, vx, vy, dx, dy, 0.9f);
+        } else if (part == Person.HEAD) {
+            chunk(bx, by, 7f, 7f, zombie ? 0xFF8aa86a : 0xFFd98aa0, raw, true, false, true, 1f, vx, vy, dx, dy, 0.8f);
+        } else if (part == Person.PELVIS) {
+            chunk(bx + fx.rr(6f), by + fx.rr(6f), 5.5f, 5.5f, zombie ? 0xFF6e8a3a : 0xFFc2606a, raw, true, false, true, 1.1f, vx, vy, dx, dy, 0.9f);
+        }
     }
 
     // ------------------------------------------------------------------------------ animals ---
@@ -820,6 +953,12 @@ final class World implements Sim.Listener, Sim.Hook {
             if (q.fireCd <= 0f) { q.fireCd = 0.075f; fireGun(q); }
         }
         if (q.machine()) Mind.machineThink(this, q, dt);
+        if (q.gib && q.bloody && fx.gore) {
+            if (q.splatT > 0f) q.splatT -= dt;
+            if (q.lastSp > 160f && rnd.nextFloat() < dt * 22f)       // a trail of drops while it flies
+                fx.add(Fx.BLOOD, m.x, m.y, m.vx * 0.12f + fx.rr(30f), m.vy * 0.12f + fx.rr(30f), 1.4f, 2f + fx.rf() * 2.2f, q.color2);
+        }
+        if (q.type == Items.FRIDGE) fridgeTick(q, dt);
         if (q.fixedMachine()) Machines.update(this, q, dt);
         if (q.animal()) Fauna.think(this, q, dt);
         else if (q.type == Items.POOP) Fauna.stink(this, q, dt);
@@ -892,6 +1031,7 @@ final class World implements Sim.Listener, Sim.Hook {
         if (sfx != null) sfx.boom(Math.min(1f, R / 600f));
         sim.blast(x, y, R, power);
         shockWelds(x, y, R);
+        alarm(x, y, R * 2f + 300f, 6f);
         Ent[] list = snapshot();
         int n = ents.size();
         for (int i = n - 1; i >= 0; i--) {

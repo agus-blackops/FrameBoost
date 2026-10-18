@@ -191,6 +191,7 @@ public class InputTest {
         check("tapping a person uses the tool on it", g.inspected == ph);
         // long press opens the context menu whatever the tool
         g.tool = Items.CRATE;
+        ph.ko = 99f; ph.tone = 0f; Harness.run(g, 1.5f);          // lying still, so the press lands on it
         g.touch(Game.DOWN, 0, sx(g, ph.rb[Person.CHEST].x), sy(g, ph.rb[Person.CHEST].y));
         for (int i = 0; i < 50; i++) g.update(1f / 60);
         check("long press opens the context menu", g.ctxEnt == ph);

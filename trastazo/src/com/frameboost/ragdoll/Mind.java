@@ -137,8 +137,108 @@ final class Mind {
 
     private static void civilian(World w, Person p) {
         if (flee(w, p, true, true)) return;
+        if (p.panicT > 0f) {            // something horrible happened nearby: run away from it
+            p.walk = p.alarmX > px(p) ? -1 : 1; p.run = true; p.armsUp = true; p.target = null;
+            p.mood = "Pánico";
+            return;
+        }
         if (p.burning) { p.walk = w.rnd.nextBoolean() ? 1 : -1; p.run = true; p.armsUp = true; p.mood = "¡Se quema!"; return; }
+        // curiosity: some people go and open a fridge, others stand and stare at a body
+        if (p.group % 2 == 0) {
+            Prop fr = nearest(w, p, 320f, Items.FRIDGE, false);
+            if (fr != null) {
+                float dx = fr.cx() - px(p);
+                if (Math.abs(dx) < 70f) { w.toggleFridge(fr); p.mood = "Abre el refrigerador"; return; }
+                p.walk = dx > 0 ? 1 : -1; p.mood = "Curioseando";
+                return;
+            }
+        }
+        if (p.group % 3 == 0) {
+            Person body = null;
+            float bd = 420f;
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent e = w.ents.get(i);
+                if (!(e instanceof Person) || e == p) continue;
+                Person o = (Person) e;
+                if (!o.dead || o.removed || !o.organic()) continue;
+                float d = Math.abs(px(o) - px(p));
+                if (d < bd) { bd = d; body = o; }
+            }
+            if (body != null) {
+                float dx = px(body) - px(p);
+                if (Math.abs(dx) > 130f) p.walk = dx > 0 ? 1 : -1;
+                p.mood = Math.abs(dx) > 130f ? "Se acerca a mirar" : "Mira el cuerpo";
+                return;
+            }
+        }
         p.mood = "Tranquilo";
+    }
+
+    /** Nearest prop of a type (optionally only machines that are on / fridges that are shut). */
+    private static Prop nearest(World w, Person p, float range, int type, boolean open) {
+        Prop best = null;
+        float bd = range;
+        for (int i = 0; i < w.ents.size(); i++) {
+            Ent e = w.ents.get(i);
+            if (!(e instanceof Prop)) continue;
+            Prop q = (Prop) e;
+            if (q.type != type || q.removed || (type == Items.FRIDGE && q.on != open)) continue;
+            float d = Math.abs(q.cx() - px(p));
+            if (d < bd && Math.abs(q.cy() - py(p)) < 200f) { bd = d; best = q; }
+        }
+        return best;
+    }
+
+    /**
+     * Movement sense, applied after every decision: back off from running saws, crushers, Tesla coils and spikes,
+     * and hop over low obstacles (turn round at tall ones). Zombies do not care about hazards.
+     */
+    static void avoid(World w, Person p) {
+        if (p.walk == 0 || !p.able || !p.upright() || p.held) return;
+        RB pel = p.rb[Person.PELVIS], ch = p.rb[Person.CHEST];
+        int d = p.walk;
+        float s = p.scale;
+        if (p.kind != Person.ZOMBIE) {
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent e = w.ents.get(i);
+                if (!(e instanceof Prop)) continue;
+                Prop q = (Prop) e;
+                boolean hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on);
+                if (!hazard || q.removed || Math.abs(q.cy() - pel.y) > 300f) continue;
+                float reach = q.type == Items.TESLA ? 300f : (q.type == Items.SPIKES ? 110f : 170f);
+                float dx = (q.cx() - pel.x) * d;
+                float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : 34f);
+                if (dx > -half && dx - half < reach) { p.walk = -d; p.mood = "Evita el peligro"; return; }
+            }
+        }
+        if (p.jumpCd > 0f) return;
+        float len = 62f * s;
+        float lowY = pel.y + 38f * s, highY = ch.y - 40f * s;
+        float lowT = blockedAt(w, p, pel.x, lowY, d, len), highT = blockedAt(w, p, pel.x, highY, d, len + 20f);
+        if (lowT < 0f) return;
+        if (highT < 0f) {               // low enough to jump
+            for (RB b : p.rb) b.applyImpulse(d * b.m * 170f, -b.m * 700f, b.x, b.y);
+            p.jumpCd = 1.4f;
+            p.mood = "Salta el obstáculo";
+        } else if (p.kind != Person.ZOMBIE && p.target == null) {
+            p.walk = -d; p.mood = "Da la vuelta";
+        }
+    }
+
+    /** Distance to the first solid thing ahead at a height (ignores people, animals, machines and loose gibs), or -1. */
+    private static float blockedAt(World w, Person p, float x, float y, int dir, float len) {
+        ArrayList<Sim.Hit> hs = w.sim.ray(x, y, dir, 0f, len);
+        for (int i = 0; i < hs.size(); i++) {
+            Object u = hs.get(i).shape.body.user;
+            if (u == p || u instanceof Person) continue;
+            if (u instanceof Prop) {
+                Prop q = (Prop) u;
+                if (q.animal() || q.fixedMachine() || q.gib || q.type == Items.POOP || q.type == Items.BALLOON) continue;
+                if (q.type == Items.FRIDGE && "Curioseando".equals(p.mood)) continue;      // walking up to open it
+            }
+            return hs.get(i).t;
+        }
+        return -1f;
     }
 
     private static void zombie(World w, Person p) {

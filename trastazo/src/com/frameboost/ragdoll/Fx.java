@@ -31,6 +31,9 @@ final class Fx {
     int bloodA = 0xFFc0121b, bloodB = 0xFF7d0a10;
     boolean gore = true;
 
+    /** Live blood particles (used by tests). */
+    int activeBlood() { int n = 0; for (int i = 0; i < MAXP; i++) if (life[i] > 0f && type[i] == BLOOD) n++; return n; }
+
     float rf() { return rnd.nextFloat(); }
     float rr(float m) { return (rnd.nextFloat() - 0.5f) * 2f * m; }
 

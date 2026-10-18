@@ -32,6 +32,8 @@ final class Person extends Ent {
     final boolean[] gibbed = new boolean[NPARTS];
     // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
     float frozenT;
+    Prop cell;                      // the fridge this person is frozen inside, if any
+    float jumpCd, panicT, alarmX;   // AI: hop cooldown, fear (from gore and blasts) and where it came from
     final boolean[] fzLimit = new boolean[NJOINTS];
     final float[] fzLo = new float[NJOINTS], fzHi = new float[NJOINTS];     // blown to pieces: invisible, frozen sensor
 

@@ -805,6 +805,13 @@ final class Ui {
                 disc(c, cx + s * 0.62f * k, cy - s * 0.38f * k, Math.max(1f, s * 0.05f), 0xFF1b1b1b);
                 break;
             }
+            case Items.FRIDGE:
+                box(c, cx - s * 0.45f, cy - s * 0.85f, cx + s * 0.45f, cy + s * 0.8f, 0xFFcfd6de, s * 0.1f);
+                box(c, cx - s * 0.38f, cy - s * 0.78f, cx + s * 0.38f, cy + s * 0.15f, 0xFFe8edf2, s * 0.06f);
+                box(c, cx - s * 0.38f, cy + s * 0.2f, cx + s * 0.38f, cy + s * 0.74f, 0xFFe8edf2, s * 0.06f);
+                line(c, cx + s * 0.26f, cy - s * 0.55f, cx + s * 0.26f, cy - s * 0.2f, Math.max(1.5f, s * 0.08f), 0xFF8a929c);
+                line(c, cx + s * 0.26f, cy + s * 0.35f, cx + s * 0.26f, cy + s * 0.6f, Math.max(1.5f, s * 0.08f), 0xFF8a929c);
+                break;
             case Items.SAW: {
                 box(c, cx - s * 0.2f, cy + s * 0.1f, cx + s * 0.2f, cy + s * 0.75f, 0xFF3a4048, s * 0.05f);
                 for (int i = 0; i < 12; i++) { double a = i * Math.PI / 6; disc(c, cx + (float) Math.cos(a) * s * 0.52f, cy - s * 0.15f + (float) Math.sin(a) * s * 0.52f, s * 0.09f, 0xFF6f7782); }

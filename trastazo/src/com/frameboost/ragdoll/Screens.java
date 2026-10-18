@@ -261,7 +261,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.7 · " + (Game.desktop ? "versión PC" : "Android") + " · animales, mano siempre activa", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v3.9 · " + (Game.desktop ? "versión PC" : "Android") + " · refrigerador, mejores gibs e IA", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
         if (Game.desktop) text(c, "Ratón: arrastra y toca · clic derecho: mover cámara · rueda: zoom · Esc: menú · Espacio: pausa · 1-9: categorías · F11: pantalla completa", colX, sh - 32 * d, 10 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 

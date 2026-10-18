@@ -23,9 +23,9 @@ final class SceneIO {
         for (Ent e : list) {
             if (e instanceof Person) {
                 Person p = (Person) e;
-                o.println(String.format(Locale.US, "P %d %d %.3f %d %d %d %d %.2f %d %d %.2f %.2f %.2f %d %d",
+                o.println(String.format(Locale.US, "P %d %d %.3f %d %d %d %d %.2f %d %d %.2f %.2f %.2f %d %d %.1f",
                         p.item, p.dir, p.scale, p.skin, p.shirt, p.pants, p.hair, p.blood, p.dead ? 1 : 0, p.burning ? 1 : 0, p.burnT, p.charT,
-                        p.ko, p.bitten ? 1 : 0, p.kind));
+                        p.ko, p.bitten ? 1 : 0, p.kind, Math.min(p.frozenT, 99999f)));
                 StringBuilder sb = new StringBuilder("S");
                 for (int i = 0; i < Person.NJOINTS; i++) sb.append(p.severed[i] ? '1' : '0');
                 sb.append(' ');
@@ -34,8 +34,9 @@ final class SceneIO {
                 o.println(sb);
             } else {
                 Prop q = (Prop) e;
-                o.println(String.format(Locale.US, "Q %d %.2f %.2f %d %d %d %d %d %.2f %d %d %d %.2f %.2f %d %.2f %d", q.item, q.param, q.fuse, q.burning ? 1 : 0, q.motor, q.thrust ? 1 : 0,
-                        q.on ? 1 : 0, q.firing ? 1 : 0, q.burnT, q.dead ? 1 : 0, q.homeDirV, q.bodies.size(), q.hw, q.hh, q.color, q.dens, q.flammable ? 1 : 0));
+                o.println(String.format(Locale.US, "Q %d %.2f %.2f %d %d %d %d %d %.2f %d %d %d %.2f %.2f %d %.2f %d %d %d", q.item, q.item == Items.FRIDGE ? (float) list.indexOf(q.meal) : q.param, q.fuse, q.burning ? 1 : 0, q.motor, q.thrust ? 1 : 0,
+                        q.on ? 1 : 0, q.firing ? 1 : 0, q.burnT, q.dead ? 1 : 0, q.homeDirV, q.bodies.size(), q.hw, q.hh, q.color, q.dens, q.flammable ? 1 : 0,
+                        (q.gib ? 1 : 0) | (q.frag ? 2 : 0) | (q.bone ? 4 : 0) | (q.bloody ? 8 : 0) | (q.round ? 16 : 0), q.color2));
             }
             for (RB b : e.bodies) o.println(String.format(Locale.US, "B %.2f %.2f %.4f %d", b.x, b.y, b.a, b.frozen ? 1 : 0));
             o.println("X");
@@ -87,6 +88,7 @@ final class SceneIO {
                             p.blood = Float.parseFloat(t[8]); p.dead = t[9].equals("1");
                             p.burning = t[10].equals("1"); p.burnT = Float.parseFloat(t[11]); p.charT = Float.parseFloat(t[12]);
                             p.ko = Float.parseFloat(t[13]); p.bitten = t[14].equals("1");
+                            if (t.length > 16) p.frozenT = Float.parseFloat(t[16]);
                             w.recolor(p);
                         }
                         made.add(cur);
@@ -105,7 +107,9 @@ final class SceneIO {
                     case "Q": {
                         int item = Integer.parseInt(t[1]);
                         int n = Integer.parseInt(t[12]);
-                        Prop q = item == Items.BLOCK ? Prop.block(400f, -100f, Float.parseFloat(t[13]), Float.parseFloat(t[14]), Integer.parseInt(t[15]),
+                        int gf = t.length > 18 ? Integer.parseInt(t[18]) : 0;
+                        Prop q = item == Items.BLOCK && (gf & 16) != 0 ? Prop.gibBall(400f, -100f, Float.parseFloat(t[13]), Integer.parseInt(t[15]), Float.parseFloat(t[16]))
+                                : item == Items.BLOCK ? Prop.block(400f, -100f, Float.parseFloat(t[13]), Float.parseFloat(t[14]), Integer.parseInt(t[15]),
                                 Float.parseFloat(t[16]), t[17].equals("1")) : item == Items.ROPE_ITEM ? w.ropeShell(Math.max(2, (int) Float.parseFloat(t[2])), 0, 0, 16f * Math.max(2, (int) Float.parseFloat(t[2])), 0)
                                 : (item == Items.ANCHOR_ITEM ? Prop.anchor(w.sim, 0, 0) : (Prop) w.spawnRaw(item));
                         if (q != null && item == Items.BLOCK) { q.register(w.sim); w.ents.add(q); }
@@ -116,6 +120,9 @@ final class SceneIO {
                             q.thrust = t[6].equals("1"); q.on = t[7].equals("1"); q.firing = t[8].equals("1");
                             q.burnT = Float.parseFloat(t[9]); q.dead = t[10].equals("1");
                             q.homeDirV = Integer.parseInt(t[11]);
+                            if (item == Items.FRIDGE) { q.param = Float.parseFloat(t[2]); }
+                            if (t.length > 18) { q.gib = (gf & 1) != 0; q.frag = (gf & 2) != 0; q.bone = (gf & 4) != 0; q.bloody = (gf & 8) != 0; q.round = (gf & 16) != 0; q.color2 = Integer.parseInt(t[19]); }
+                            if (item == Items.FRIDGE) q.work = q.on ? 1f : 0f;
                             if (q.dead) w.damageMachine(q, 1e9f);
                         }
                         made.add(cur);
@@ -155,6 +162,27 @@ final class SceneIO {
                 }
             }
             in.close();
+            // frozen people keep their joints locked; fridges get their inmate back
+            for (Ent e : made) {
+                if (e instanceof Prop && ((Prop) e).type == Items.FRIDGE) {
+                    Prop fr = (Prop) e;
+                    Ent in2 = idx(made, "" + (int) fr.param);
+                    if (in2 instanceof Person && !fr.on) {
+                        Person ip = (Person) in2;
+                        fr.meal = ip; ip.cell = fr;
+                        for (RB b : fr.bodies) for (Shape sh : b.shapes) sh.group = ip.group;
+                    }
+                }
+            }
+            for (Ent e : made) {
+                if (!(e instanceof Person)) continue;
+                Person p = (Person) e;
+                if (p.frozenT <= 0f) continue;
+                float secs = p.frozenT;
+                p.frozenT = 0f;
+                Machines.freeze(w, p, secs);
+                if (p.cell != null) for (RB b : p.rb) { b.setFrozen(true); for (Shape sh : b.shapes) sh.sensor = true; }
+            }
             return true;
         } catch (Throwable e) {
             g.clearWorldForLoad();

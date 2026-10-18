@@ -1092,6 +1092,10 @@ final class Game {
                 if (q.thrust) world.stats.thrusts++;
                 ui.toast(q.thrust ? "Propulsor encendido" : "Propulsor apagado");
                 break;
+            case Items.FRIDGE:
+                world.toggleFridge(q);
+                ui.toast(q.on ? (q.meal != null ? "¡Hay alguien congelado dentro!" : "Refrigerador abierto") : "Refrigerador cerrado");
+                break;
             case Items.SAW: case Items.FAN: case Items.CRUSHER: case Items.TESLA:
                 q.on = !q.on;
                 ui.toast(Items.find(q.type).name + (q.on ? ": encendida" : ": apagada"));

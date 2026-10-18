@@ -1,4 +1,4 @@
-# Trastazo 3.8 — máquinas, pinchos y nitrógeno líquido
+# Trastazo 3.9 — refrigerador, mejores gibs e IA
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -8,6 +8,24 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 3.9
+
+* **Refrigerador** (Objetos): trae una persona **congelada dentro**. Con *Activar* la puerta se abre, sale
+  niebla fría y la estatua de hielo se cae hacia fuera; se descongela sola a los 40 s, o se hace añicos si la
+  golpeas fuerte. Se guarda y se carga con la partida. Algunos civiles curiosos lo abren por su cuenta.
+* **Gibs mejorados:** al reventar una parte salen trozos de carne con el interior en carne viva (verde en
+  zombis), **huesos** (costillas, astillas de cráneo, canillas), **órganos** (corazón, pulmón, cerebro) y
+  placas y engranajes en los robots; una niebla de sangre en todas direcciones; los trozos **dejan rastro de
+  gotas** al volar y salpican al chocar. Los gibs de hielo salen azulados.
+* **IA mejorada:**
+  * **Esquivan peligros:** se detienen y dan la vuelta ante sierras, prensas y bobinas Tesla encendidas y
+    ante los pinchos (los zombis no tienen miedo).
+  * **Saltan obstáculos bajos** (cajas, tablas...) cuando caminan o cazan; si son muy altos, dan la vuelta.
+  * **Pánico:** los civiles cercanos a una explosión, a un desmembramiento o a un cuerpo reventado huyen
+    durante unos segundos, lejos del lugar.
+  * **Curiosidad:** algunos se acercan a mirar un cadáver o a abrir un refrigerador.
+* Logro nuevo *Sorpresa congelada*.
 
 ## Novedades de la 3.8
 

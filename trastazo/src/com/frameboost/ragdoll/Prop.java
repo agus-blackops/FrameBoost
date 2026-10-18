@@ -15,6 +15,10 @@ final class Prop extends Ent {
     int ammo = 12;
     float hp = 100f, flash, age, trim;
     float dens = 1f;                // block density (constructions)
+    // gib chunks: what they are made of (for drawing and for the blood they leave)
+    boolean bone, bloody, round;
+    int color2;                     // colour of the raw inside of a flesh chunk / of its blood
+    float splatT;
     float lastSp;                   // speed at the end of the previous frame
     float wear;                     // damage taken by breakable things (crates, planks, blocks)
     boolean gib, frag;              // flesh chunk / fragment of something that broke
@@ -65,6 +69,14 @@ final class Prop extends Ent {
         Prop p = of(Items.BLOCK);
         p.color = color; p.hw = hw; p.hh = hh; p.dens = dens; p.flammable = flammable;
         box(p, x, y, hw, hh, dens, 0.7f, 0.05f);
+        return p;
+    }
+
+    /** A round lump (organs, brain): a gib shaped like a ball. */
+    static Prop gibBall(float x, float y, float r, int color, float dens) {
+        Prop p = of(Items.BLOCK);
+        p.color = color; p.hw = p.hh = r; p.dens = dens; p.flammable = false; p.gib = true; p.round = true;
+        circle(p, x, y, r, dens, 0.8f, 0.08f);
         return p;
     }
 
@@ -195,6 +207,11 @@ final class Prop extends Ent {
                 b.add(torso); b.add(head); b.add(ff); b.add(fb);
                 b.angDamp = 0.5f;
                 b.user = p; p.bodies.add(b);
+                break;
+            }
+            case Items.FRIDGE: {
+                p.color = 0xFFe8edf2; p.hw = 46f; p.hh = 100f; p.on = false;
+                b = box(p, x, y, 46f, 100f, 0.9f, 0.7f, 0.05f);
                 break;
             }
             case Items.SAW: {
