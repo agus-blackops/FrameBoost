@@ -384,7 +384,7 @@ export function topBlock(dimension, x, z, fromY) {
 // What the land looks like around the player: water, trees, snow. Samples a
 // ring of columns, so it costs a few dozen block reads.
 export function surroundings(player) {
-  const out = { water: 0, trees: 0, snow: 0, samples: 0 };
+  const out = { water: 0, trees: 0, snow: 0, samples: 0, jungle: 0, taiga: 0 };
   const { x, y, z } = player.location;
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2;
@@ -393,8 +393,11 @@ export function surroundings(player) {
     if (!b) continue;
     out.samples++;
     if (WATER.test(b.typeId)) out.water++;
-    else if (TREE.test(b.typeId)) out.trees++;
-    else if (SNOW.test(b.typeId)) out.snow++;
+    else if (TREE.test(b.typeId)) {
+      out.trees++;
+      if (/jungle_(leaves|log)/.test(b.typeId)) out.jungle++;
+      else if (/spruce_(leaves|log)/.test(b.typeId)) out.taiga++;
+    } else if (SNOW.test(b.typeId)) out.snow++;
   }
   const feet = block(player.dimension, x, y - 1, z);
   if (feet && SNOW.test(feet.typeId)) out.snow += 3;

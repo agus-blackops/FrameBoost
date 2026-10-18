@@ -328,6 +328,27 @@ ANIMATIONS = {
         "root": {"scale": [f"1.0 - {EMERGE} * 0.85", f"1.0 + {EMERGE} * 0.5", f"1.0 - {EMERGE} * 0.85"]}}},
 
     # ------------------------------------------------------------------ #
+    # The False Tree
+    # ------------------------------------------------------------------ #
+    "animation.hl.tree.look": {"loop": True, "bones": {
+        "head": rot("query.target_x_rotation * 0.3", "query.target_y_rotation * 0.4")}},
+    # Standing, creaking: the plate sways on its neck, the fingers curl.
+    "animation.hl.tree.idle": {"loop": True, "bones": {
+        "chest": {"scale": breathe(80.0, 0.01)},
+        "head": rot(wave(7.0, 3.0), wave(5.0, 5.0), f"{wave(9.0, 4.0)} + {jolt(0.985, -14.0, 14.0)}"),
+        "rightHand": rot(wave(30.0, 8.0)), "leftHand": rot(wave(26.0, -8.0)),
+        "rightForearm": rot(wave(14.0, 4.0)), "leftForearm": rot(wave(12.0, -4.0))}},
+    # Waving: the right arm lifted high, the hand waggling at the end of it.
+    "animation.hl.tree.wave": {"loop": True, "bones": {
+        "rightArm": rot(0, 0, -140.0), "rightForearm": rot(0, 0, f"-10.0 + math.sin({T} * 420.0) * 22.0"),
+        "rightHand": rot(0, 0, f"math.sin({T} * 420.0 + 60.0) * 20.0"),
+        "head": rot(-6.0, 0, f"-14.0 + math.sin({T} * 60.0) * 3.0")}},
+    "animation.hl.tree.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(22, 18.0)), "leftLeg": rot(cos(22, -18.0)),
+        "rightShin": rot(lift(22, -16.0, -1)), "leftShin": rot(lift(22, -16.0)),
+        "rightArm": rot(cos(22, -10.0)), "leftArm": rot(cos(22, 10.0))}},
+
+    # ------------------------------------------------------------------ #
     # Entity 303
     # ------------------------------------------------------------------ #
     "animation.hl.e303.look": look(),

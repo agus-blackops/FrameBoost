@@ -53,6 +53,25 @@
         }
       ]
     },
+    "controller.render.hl.false_tree": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": "query.property('hl:revealed')"
+        },
+        {
+          "trunk": "!query.property('hl:revealed')"
+        }
+      ]
+    },
     "controller.render.hl.boss": {
       "geometry": "Geometry.default",
       "materials": [

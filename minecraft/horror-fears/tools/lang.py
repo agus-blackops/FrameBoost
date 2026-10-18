@@ -13,8 +13,8 @@ S = {
         "§4Horror Legends: §cFears§r",
     ),
     "pack.description": (
-        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, el Aldeano Sin Nombre, Herobrine, el Endermán Sin Rostro, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Sonidos 3D y fuertes, y los Miedos.',
-        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, the Nameless Villager, Herobrine, the Faceless Enderman, the Man From The Fog, null, Entity 303 and the Hollow Miner. Loud 3D sound, and the Fears.',
+        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, el Aldeano Sin Nombre, Herobrine, el Endermán Sin Rostro, el Falso Árbol, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Sonidos 3D y fuertes, y los Miedos.',
+        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, the Nameless Villager, Herobrine, the Faceless Enderman, the False Tree, the Man From The Fog, null, Entity 303 and the Hollow Miner. Loud 3D sound, and the Fears.',
     ),
     "entity.hl:herobrine.name": (
         "Herobrine",
@@ -157,8 +157,8 @@ S = {
         "§8[???]§r §7Don't look out of the window at night.",
     ),
     "hl.act.2.text": (
-        '§fHerobrine§r te observa con su cola de vértebras. Un §fEnderman sin rostro§r parpadea a tu alrededor. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
-        '§fHerobrine§r watches you with his tail of vertebrae. A §ffaceless Enderman§r blinks around you. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
+        '§fHerobrine§r te observa con su cola de vértebras. Un §fEnderman sin rostro§r parpadea a tu alrededor. En la jungla y la taiga, un §ftronco§r te saluda. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
+        '§fHerobrine§r watches you with his tail of vertebrae. A §ffaceless Enderman§r blinks around you. In the jungle and the taiga, a §ftrunk§r waves at you. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
     ),
     "hl.act.3.name": (
         "El error",
@@ -412,6 +412,17 @@ S = {
     "hl.nameless.touch": ("§8una mano en tu hombro", "§8a hand on your shoulder"),
     "hl.faceless.seen": ("§5§oLa línea violeta se abre.", "§5§oThe violet line opens."),
     "hl.faceless.sub": ("§8te vi", "§8i saw you"),
+    # ------------------------------------------------------------ 1.4
+    "entity.hl:false_tree.name": ("El Falso Árbol", "The False Tree"),
+    "item.spawn_egg.entity.hl:false_tree.name": ("Generar: El Falso Árbol", "Spawn The False Tree"),
+    "hl.threat.falsetree": ("El Falso Árbol", "The False Tree"),
+    "hl.lore.falsetree": (
+        "§lEl Falso Árbol§r\n§8(al estilo de las criaturas de Doctor Nowhere)§r\n\nVive en la jungla y en la taiga, y parece otro tronco: alto, fino y oscuro, entre los demás árboles. Puedes pasar a su lado todo el día. Si lo miras bien, o te acercas demasiado, se endereza: casi cuatro bloques de extremidades negras y larguísimas con ramitas creciéndole, y una cara blanca y plana, como dibujada por un niño, con una corona de puntas. Levanta una mano y te saluda. Si apartas la vista, vuelve a ser un tronco, pero más cerca. Si se acerca demasiado, ya no saluda.\n\n§eConsejo:§r no le quites los ojos de encima y no te acerques a ningún tronco raro. La linterna lo espanta.",
+        "§lThe False Tree§r\n§8(in the style of Doctor Nowhere's creatures)§r\n\nIt lives in the jungle and the taiga, and it looks like another trunk: tall, thin and dark, among the other trees. You can walk past it all day. Look at it properly, or get too close, and it straightens up: nearly four blocks of long black limbs with twigs growing out of them, and a flat white face like a child's drawing with a crown of points. It raises a hand and waves. Look away and it is a trunk again, but closer. If it gets too close, it doesn't wave any more.\n\n§eTip:§r keep your eyes on it and stay away from any strange trunk. The flashlight scares it off.",
+    ),
+    "hl.arrive.falsetree": ("§8[???]§r §7En la jungla y en la taiga, no todos los troncos son árboles.", "§8[???]§r §7In the jungle and the taiga, not every trunk is a tree."),
+    "hl.falsetree.seen": ("§8§oEse tronco te saluda.", "§8§oThat trunk is waving at you."),
+    "hl.falsetree.sub": ("§8ya no saludo", "§8i'm not waving now"),
     "hl.threat.phobias": ("Los Miedos", "The Fears"),
     "hl.lore.phobias": (
         "§lLos Miedos§r\n\nTodos le tienen miedo a algo, y el juego sabe a qué. Si te quedas a oscuras sin luz, en un saliente muy alto, en agua muy profunda o en un túnel por el que apenas cabes, un miedo se va llenando. Cuando se llena, ocurre algo hecho a su medida. Y es muy fuerte.\n\n§eConsejo:§r lleva luz, no mires abajo, sal del agua y no te metas en túneles estrechos. El Diario muestra cuánto se ha llenado cada miedo.",

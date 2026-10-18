@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [1, 3, 0]
+VERSION = [1, 4, 0]
 UUID = {
     "bp": "14adbfa2-16d0-4c96-9745-648cda8d414d",
     "bp_data": "ecb604c1-31d8-4405-8f2f-2c06b96ad2be",
@@ -181,6 +181,10 @@ def entities():
         ["hl_nameless_villager", "hl_haunt"], 0.7, 2.0, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:point"))
     out["faceless_enderman"] = entity("hl:faceless_enderman", base_components(
         ["hl_faceless_enderman", "hl_haunt"], 0.6, 3.5, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:stare"))
+    # 1.4: the False Tree. Hidden among the trees until it is looked at.
+    out["false_tree"] = entity("hl:false_tree", base_components(
+        ["hl_false_tree", "hl_haunt"], 0.6, 3.9, 100, {**INVULNERABLE, **STILL}),
+        properties={**flag("hl:revealed"), **flag("hl:wave")})
     out["entity_303"] = entity("hl:entity_303", base_components(
         ["hl_entity_303", "hl_haunt"], 0.6, 2.2, 100, {**INVULNERABLE, **STILL, "minecraft:physics": {"has_gravity": False}}),
         properties=flag("hl:cast"))
@@ -333,6 +337,11 @@ CLIENTS = {
                           ["look", {"idle": "!query.property('hl:stare')"}, {"stare": "query.property('hl:stare')"},
                            "blink"],
                           "default", ("#08080c", "#d8a0ff")),
+    "false_tree": ({"default": "false_tree"},
+                   {"look": "tree.look", "idle": "tree.idle", "wave": "tree.wave", "walk": "tree.walk"},
+                   [{"look": "query.property('hl:revealed')"}, {"idle": "query.property('hl:revealed')"},
+                    {"wave": "query.property('hl:wave')"}, {"walk": MOVING}],
+                   "false_tree", ("#0a0c14", "#f4f4f8")),
     "null": ({"default": "null"}, {"look": "null.look", "glitch": "null.glitch"}, ["look", "glitch"],
              "null", ("#0a0a0c", "#f800f8")),
     "herobrine_boss": ({"default": "herobrine_boss", "phase2": "herobrine_boss_2"},
@@ -386,6 +395,9 @@ def clients():
         "controller.render.hl.fake_player": rc(
             textures=["query.property('hl:eyes') ? Texture.eyes : Texture.default"],
             part_visibility=[{"*": True}, {"tool": "query.property('hl:state') == 'swing'"}]),
+        # Hidden, only the trunk is drawn; revealed, everything but the trunk.
+        "controller.render.hl.false_tree": rc(part_visibility=[
+            {"*": "query.property('hl:revealed')"}, {"trunk": "!query.property('hl:revealed')"}]),
         "controller.render.hl.boss": rc(
             textures=["query.property('hl:phase') == 2 ? Texture.phase2 : Texture.default"]),
     }})

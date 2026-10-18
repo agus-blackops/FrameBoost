@@ -52,3 +52,43 @@ export function findBlocks(player, re, r = 10, max = 8) {
       }
   return out;
 }
+
+// A trunk of a given kind (a regex on the block id), `minD` to `maxD` blocks
+// from the player, and the spot of open ground right beside its base. Trees
+// are thin, so this looks at a few hundred columns of the ring and, in each,
+// a few heights around the player's own.
+export function trunkSpot(player, re, minD, maxD, tries = 500) {
+  const { x, y, z } = player.location;
+  const fy = Math.floor(y);
+  for (let i = 0; i < tries; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = minD + Math.random() * (maxD - minD);
+    const cx = Math.floor(x + Math.cos(a) * r);
+    const cz = Math.floor(z + Math.sin(a) * r);
+    let hit;
+    for (const dy of [1, 3, -1, 5]) {
+      const b = block(player.dimension, cx, fy + dy, cz);
+      if (b && re.test(b.typeId)) {
+        hit = b;
+        break;
+      }
+    }
+    if (!hit) continue;
+    // Down to the lowest log of this trunk.
+    let base = hit;
+    for (let k = 1; k <= 12; k++) {
+      const b = block(player.dimension, cx, hit.y - k, cz);
+      if (b && re.test(b.typeId)) base = b;
+      else break;
+    }
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const at = block(player.dimension, base.x + dx, base.y, base.z + dz);
+      const head = block(player.dimension, base.x + dx, base.y + 1, base.z + dz);
+      const floor = block(player.dimension, base.x + dx, base.y - 1, base.z + dz);
+      if (at?.isAir && head?.isAir && floor && !floor.isAir && !/water|lava|leaves/.test(floor.typeId)) {
+        return { x: base.x + dx + 0.5, y: base.y, z: base.z + dz + 0.5 };
+      }
+    }
+  }
+  return undefined;
+}

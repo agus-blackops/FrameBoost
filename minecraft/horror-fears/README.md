@@ -18,6 +18,7 @@ folclore ni monstruos de internet de fuera del juego.
 - **El Morador de las Cuevas** (Cave Dweller / From The Caves)
 - **El Aldeano Sin Nombre** y **el Endermán Sin Rostro** (nuevos en la 1.2,
   inspirados en las creepypastas de aldeanos y Endermen)
+- **El Falso Árbol** (nuevo en la 1.4, al estilo de Doctor Nowhere)
 
 Es un proyecto de fans: **no contiene código, arte ni sonido de esos mods**.
 Los modelos, las texturas y los sonidos se generan por código en `tools/`, y
@@ -30,6 +31,27 @@ todo el comportamiento está escrito desde cero para Bedrock.
 >
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
+
+## Novedades de la 1.4: el Falso Árbol
+
+Una criatura nueva, **El Falso Árbol**, al estilo de las criaturas de Doctor
+Nowhere (desde el día 3, en el Acto II). **Vive en la jungla y en la taiga y se
+esconde entre los árboles**:
+
+- Parece **otro tronco**: alto, fino y oscuro, de pie junto a un árbol de
+  jungla o de abeto. Puedes pasar a su lado todo el día.
+- Si **lo miras bien (dos segundos)** o **te acercas a menos de 7 bloques**, se
+  **endereza**: casi 4 bloques de extremidades negras larguísimas con **ramitas
+  creciéndole** de brazos y piernas, manos con dedos largos y una **cara blanca
+  y plana con una corona de puntas**, dos cruces por ojos y una sonrisa enorme
+  de dientes cuadrados. **Levanta una mano y te saluda.**
+- Si **apartas la vista**, vuelve a ser un tronco, **en otro árbol más cerca**.
+  Si le sostienes la mirada cinco segundos, se rinde y se esconde.
+- Si se acerca a **menos de 4,5 bloques**, o ya ha saltado tres veces y no lo
+  miras, **ya no saluda**: aparece a tu espalda, chillido, oscuridad y lentitud.
+- Una **linterna** o un golpe lo espantan. Un Farol Protector lo mantiene fuera.
+- Además, en la jungla y la taiga oyes **crujidos de ramas** donde no las hay.
+- Sus crujidos salen de donde está, en 3D.
 
 ## Novedades de la 1.3: los modelos de siempre, rehechos
 
@@ -138,8 +160,8 @@ Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.3.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 1.3.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.4.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.4.0. Los
 días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia
@@ -160,6 +182,7 @@ su propio aviso en el chat la noche en que aparece.
 | 3 | La Visita | De noche, en casa, **llaman a la puerta** con tu voz. Si abres no hay nadie... y luego **estás detrás de ti**. Si no abres, deja un cartel. |
 | 3 | La Cuenta Atrás | *«Cuando llegue a cero, date la vuelta»*. 10, 9, 8... y **una cara delante de la tuya**. |
 | 4 | El Endermán Sin Rostro | Sin cara, solo una línea violeta. **Parpadea** hasta ti, cada vez más cerca, y lo oyes en 3D. Si lo miras, se echa encima. |
+| 3 | El Falso Árbol | En la jungla y la taiga, un tronco que no es un árbol: si lo miras, se endereza y te saluda. Si apartas la vista, es un tronco otra vez, más cerca. |
 | 4 | El Hombre de la Niebla | Una niebla espesa y, dentro, un hombre en **chubasquero con capucha** y una sonrisa de oreja a oreja. Se acerca cuando apartas la vista; de noche llama a la puerta. |
 | 4 | Tu Tumba | Una campana a tu espalda. Una tumba con **tu nombre y la fecha de mañana**. Si te acercas, algo golpea **desde abajo** (y ahí está la Página VI). |
 | 5 | La Hora Muerta | Las **3:00**: animales y aldeanos **se paran y se giran a mirarte** mientras suena una campana tres veces. |
@@ -206,7 +229,7 @@ vez). Si mueres, huyes o sale el sol, se retira: podrás llamarlo otra noche.
 
 | Objeto | Receta | Uso |
 |---|---|---|
-| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 19 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
+| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 20 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
 | **Linterna** | `I G I / _ R _ / _ I _` (I = hierro, G = polvo de piedra luminosa, R = redstone) | Úsala para encenderla o apagarla. **Ilumina de verdad** lo que tienes delante mientras la llevas en la mano. Espanta al Morador, hace desaparecer a Herobrine, null y al Hombre de la Niebla cuando solo observa, y quema al jefe. A Entity 303 le da igual. |
 | **Pila** | Redstone + pepita de hierro + lingote de cobre (da 2) | Una pila dura 5 minutos. Si llevas una de repuesto, se cambia sola. |
 | **Farol Protector** | Farol rodeado de 4 fragmentos de amatista (`_ A _ / A F A / _ A _`) | Nada te acecha en su luz: el Morador y null se apartan, el Hombre de la Niebla no pisa su círculo ni rompe esa puerta, Herobrine no construye nada dentro, los miedos no se llenan y tu miedo baja. **Pero en la Noche Roja algo puede apagarlo.** |
@@ -214,7 +237,7 @@ vez). Si mueres, huyes o sale el sol, se retira: podrás llamarlo otra noche.
 | **Pico del Minero Hueco** | Recompensa del final | Pico muy rápido que hace mucho daño y no se rompe. |
 | **Bloque Corrupto** | — | La textura que falta. Lo crea null y vuelve solo a ser el bloque original. |
 
-Las 9 criaturas tienen **huevo de generación** en creativo (el jefe
+Las 10 criaturas tienen **huevo de generación** en creativo (el jefe
 también: con huevo pelea incluso de día).
 
 ## Ajustes (en el Diario)
@@ -224,7 +247,7 @@ también: con huevo pelea incluso de día).
 - **Sustos fuertes**: pantalla roja, temblor, oscuridad y pitido en los oídos.
 - **Sonidos fuertes**: los sonidos grandes suenan por duplicado.
 - **Sonido 3D**: voces y pasos desde las criaturas, sonidos que se mueven y eco en cuevas.
-- **Pruebas**: provoca al momento cualquiera de las 18 amenazas, te da los objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un día.
+- **Pruebas**: provoca al momento cualquiera de las 19 amenazas, te da los objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un día.
 
 ## Estructura
 

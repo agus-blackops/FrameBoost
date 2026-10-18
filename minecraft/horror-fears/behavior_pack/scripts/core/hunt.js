@@ -40,7 +40,7 @@ export function context(player) {
   const hit = cache.get(player.id);
   if (hit && now - hit.at < 20) return hit.ctx;
   const under = isUnderground(player);
-  const land = under ? { water: 0, trees: 0, snow: 0, samples: 0 } : surroundings(player);
+  const land = under ? { water: 0, trees: 0, snow: 0, samples: 0, jungle: 0, taiga: 0 } : surroundings(player);
   const ctx = {
     under,
     indoors: !under && isIndoors(player),
@@ -49,6 +49,8 @@ export function context(player) {
     swimming: inWater(player),
     trees: land.trees,
     snow: land.snow,
+    jungle: land.jungle >= 2,
+    taiga: land.taiga >= 2,
   };
   ctx.outside = !ctx.under && !ctx.indoors;
   ctx.forest = ctx.trees >= 3;

@@ -1,0 +1,46 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:false_tree",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/false_tree"
+      },
+      "geometry": {
+        "default": "geometry.hl.false_tree"
+      },
+      "animations": {
+        "look": "animation.hl.tree.look",
+        "idle": "animation.hl.tree.idle",
+        "wave": "animation.hl.tree.wave",
+        "walk": "animation.hl.tree.walk"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "look": "query.property('hl:revealed')"
+          },
+          {
+            "idle": "query.property('hl:revealed')"
+          },
+          {
+            "wave": "query.property('hl:wave')"
+          },
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.false_tree"
+      ],
+      "spawn_egg": {
+        "base_color": "#0a0c14",
+        "overlay_color": "#f4f4f8"
+      }
+    }
+  }
+}
