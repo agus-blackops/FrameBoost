@@ -1663,25 +1663,25 @@
     "animation.hl.tree.wave": {
       "loop": true,
       "bones": {
-        "rightArm": {
+        "leftArm": {
           "rotation": [
             0,
             0,
-            -140.0
+            -12.0
           ]
         },
-        "rightForearm": {
+        "leftForearm": {
           "rotation": [
             0,
             0,
-            "-10.0 + math.sin(query.life_time * 420.0) * 22.0"
+            "math.sin(query.life_time * 420.0) * 24.0"
           ]
         },
-        "rightHand": {
+        "leftHand": {
           "rotation": [
             0,
             0,
-            "math.sin(query.life_time * 420.0 + 60.0) * 20.0"
+            "math.sin(query.life_time * 420.0 + 60.0) * 22.0"
           ]
         },
         "head": {

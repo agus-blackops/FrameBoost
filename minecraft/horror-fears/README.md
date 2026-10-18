@@ -32,6 +32,17 @@ todo el comportamiento está escrito desde cero para Bedrock.
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
 
+## Novedades de la 1.4.1: el Falso Árbol, igual que la foto
+
+El modelo del Falso Árbol se ha **rehecho copiando la foto original**: la cabeza
+es una **placa blanca ancha con borde gris y una corona de puntas escalonada**,
+**dos cruces finas** por ojos y una **sonrisa curva de dientes cuadrados**; el
+torso son **tres bloques** apilados; el **brazo derecho cuelga hasta la rodilla**
+con dedos larguísimos y separados, y el **izquierdo está levantado saludando**,
+cubierto de **ramitas tipo helecho**, con tres dedos largos y un pulgar. Las
+ramitas también le **bajan por las dos piernas**. Al saludar, mueve ese brazo
+levantado (antes levantaba el otro).
+
 ## Novedades de la 1.4: el Falso Árbol
 
 Una criatura nueva, **El Falso Árbol**, al estilo de las criaturas de Doctor
@@ -160,8 +171,8 @@ Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.4.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 1.4.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.4.1**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.4.1. Los
 días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia

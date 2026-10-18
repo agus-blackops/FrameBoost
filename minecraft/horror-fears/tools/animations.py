@@ -338,10 +338,11 @@ ANIMATIONS = {
         "head": rot(wave(7.0, 3.0), wave(5.0, 5.0), f"{wave(9.0, 4.0)} + {jolt(0.985, -14.0, 14.0)}"),
         "rightHand": rot(wave(30.0, 8.0)), "leftHand": rot(wave(26.0, -8.0)),
         "rightForearm": rot(wave(14.0, 4.0)), "leftForearm": rot(wave(12.0, -4.0))}},
-    # Waving: the right arm lifted high, the hand waggling at the end of it.
+    # Waving: the arm it already holds up lifts higher, the twiggy hand
+    # waggling at the end of it, the way it does in the photo.
     "animation.hl.tree.wave": {"loop": True, "bones": {
-        "rightArm": rot(0, 0, -140.0), "rightForearm": rot(0, 0, f"-10.0 + math.sin({T} * 420.0) * 22.0"),
-        "rightHand": rot(0, 0, f"math.sin({T} * 420.0 + 60.0) * 20.0"),
+        "leftArm": rot(0, 0, -12.0), "leftForearm": rot(0, 0, f"math.sin({T} * 420.0) * 24.0"),
+        "leftHand": rot(0, 0, f"math.sin({T} * 420.0 + 60.0) * 22.0"),
         "head": rot(-6.0, 0, f"-14.0 + math.sin({T} * 60.0) * 3.0")}},
     "animation.hl.tree.walk": {"loop": True, "bones": {
         "rightLeg": rot(cos(22, 18.0)), "leftLeg": rot(cos(22, -18.0)),
