@@ -1,0 +1,38 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:entity_303",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/entity_303"
+      },
+      "geometry": {
+        "default": "geometry.hl.entity_303"
+      },
+      "animations": {
+        "look": "animation.hl.e303.look",
+        "float": "animation.hl.e303.float",
+        "cast": "animation.hl.e303.cast"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "float",
+          {
+            "cast": "query.property('hl:cast')"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#dcdad4",
+        "overlay_color": "#ff1818"
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "hl:ward_lantern"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      " A ",
+      "ALA",
+      " A "
+    ],
+    "key": {
+      "A": {
+        "item": "minecraft:amethyst_shard"
+      },
+      "L": {
+        "item": "minecraft:lantern"
+      }
+    },
+    "result": {
+      "item": "hl:ward_lantern",
+      "count": 1
+    }
+  }
+}

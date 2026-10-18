@@ -1,0 +1,193 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hl:mimic",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "hl:mode": {
+          "type": "enum",
+          "values": [
+            "asleep",
+            "awake"
+          ],
+          "default": "asleep",
+          "client_sync": true
+        },
+        "hl:awake": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "hl:vanish": {
+        "minecraft:instant_despawn": {}
+      },
+      "hl:asleep": {
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:navigation.walk": {},
+        "minecraft:knockback_resistance": {
+          "value": 1.0
+        },
+        "minecraft:interact": {
+          "interactions": [
+            {
+              "on_interact": {
+                "filters": {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "player"
+                },
+                "event": "hl:awake",
+                "target": "self"
+              }
+            }
+          ]
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_mimic",
+            "monster",
+            "mob"
+          ]
+        }
+      },
+      "hl:awake": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.34
+        },
+        "minecraft:attack": {
+          "damage": 7
+        },
+        "minecraft:follow_range": {
+          "value": 32,
+          "max": 32
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "within_radius": 32.0,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 128
+            }
+          ]
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 3,
+          "speed_multiplier": 1.3,
+          "track_target": true
+        },
+        "minecraft:collision_box": {
+          "width": 0.9,
+          "height": 1.5
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_mimic",
+            "monster",
+            "mob"
+          ]
+        }
+      }
+    },
+    "components": {
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 128,
+          "max_distance": 160
+        }
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:type_family": {
+        "family": [
+          "hl_mimic",
+          "monster",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.9,
+        "height": 0.9
+      },
+      "minecraft:health": {
+        "value": 40,
+        "max": 40
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:loot": {
+        "table": "loot_tables/hl/mimic.json"
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": true
+      }
+    },
+    "events": {
+      "hl:vanish": {
+        "add": {
+          "component_groups": [
+            "hl:vanish"
+          ]
+        }
+      },
+      "hl:asleep": {
+        "remove": {
+          "component_groups": [
+            "hl:awake"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:asleep"
+          ]
+        }
+      },
+      "hl:awake": {
+        "remove": {
+          "component_groups": [
+            "hl:asleep"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:awake"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:asleep"
+          ]
+        }
+      }
+    }
+  }
+}

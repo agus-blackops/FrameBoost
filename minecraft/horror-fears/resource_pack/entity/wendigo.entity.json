@@ -1,0 +1,54 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:wendigo",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/wendigo"
+      },
+      "geometry": {
+        "default": "geometry.hl.wendigo"
+      },
+      "animations": {
+        "look": "animation.hl.wendigo.look",
+        "idle": "animation.hl.wendigo.idle",
+        "walk": "animation.hl.wendigo.walk",
+        "charge": "animation.hl.wendigo.charge",
+        "attack": "animation.hl.wendigo.attack",
+        "walk_extra": "animation.hl.wendigo.walk_extra",
+        "hurt": "animation.hl.wendigo.hurt"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "idle",
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          },
+          {
+            "charge": "query.property('hl:mode') == 'charge'"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#b6bec4",
+        "overlay_color": "#2a2018"
+      }
+    }
+  }
+}

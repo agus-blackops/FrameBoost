@@ -1,0 +1,54 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:echo",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/echo"
+      },
+      "geometry": {
+        "default": "geometry.hl.echo"
+      },
+      "animations": {
+        "idle": "animation.hl.echo.idle",
+        "listen": "animation.hl.echo.listen",
+        "walk": "animation.hl.echo.walk",
+        "hunt": "animation.hl.echo.hunt",
+        "attack": "animation.hl.echo.attack",
+        "hurt": "animation.hl.echo.hurt",
+        "emerge": "animation.hl.echo.emerge"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "listen": "query.property('hl:mode') == 'listen'"
+          },
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          },
+          {
+            "hunt": "query.property('hl:mode') == 'hunt'"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
+          },
+          "emerge"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#0d1116",
+        "overlay_color": "#38f0f0"
+      }
+    }
+  }
+}

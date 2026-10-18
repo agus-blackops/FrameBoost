@@ -1,0 +1,8 @@
+[
+  {
+    "flipbook_texture": "textures/blocks/hl/corrupted_block",
+    "atlas_tile": "hl_corrupted",
+    "ticks_per_frame": 3,
+    "blend_frames": false
+  }
+]

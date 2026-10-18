@@ -1,0 +1,54 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:fog_man",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/fog_man"
+      },
+      "geometry": {
+        "default": "geometry.hl.fog_man"
+      },
+      "animations": {
+        "look": "animation.hl.fog_man.look",
+        "walk": "animation.hl.fog_man.walk",
+        "watch": "animation.hl.fog_man.watch",
+        "chase": "animation.hl.fog_man.chase",
+        "attack": "animation.hl.fog_man.attack",
+        "hurt": "animation.hl.fog_man.hurt",
+        "walk_extra": "animation.hl.fog_man.walk_extra"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "walk",
+          {
+            "watch": "query.property('hl:mode') == 'watch'"
+          },
+          {
+            "chase": "query.property('hl:mode') == 'chase'"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
+          },
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#b8b8b2",
+        "overlay_color": "#161b17"
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:skinwalker",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/skinwalker"
+      },
+      "geometry": {
+        "default": "geometry.hl.skinwalker"
+      },
+      "animations": {
+        "cow_walk": "animation.hl.skinwalker.cow_walk",
+        "cow_stare": "animation.hl.skinwalker.cow_stare",
+        "idle": "animation.hl.skinwalker.idle",
+        "walk": "animation.hl.skinwalker.walk",
+        "run": "animation.hl.skinwalker.run",
+        "look": "animation.hl.skinwalker.look",
+        "attack": "animation.hl.skinwalker.attack",
+        "walk_extra": "animation.hl.skinwalker.walk_extra",
+        "hurt": "animation.hl.skinwalker.hurt"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "cow_walk": "!query.property('hl:revealed')"
+          },
+          {
+            "cow_stare": "!query.property('hl:revealed')"
+          },
+          {
+            "idle": "query.property('hl:revealed')"
+          },
+          {
+            "walk": "query.property('hl:revealed')"
+          },
+          {
+            "look": "query.property('hl:revealed')"
+          },
+          {
+            "run": "query.property('hl:mode') == 'hunt'"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          },
+          {
+            "walk_extra": "query.modified_move_speed > 0.05"
+          },
+          {
+            "hurt": "query.hurt_time > 0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.skinwalker"
+      ],
+      "spawn_egg": {
+        "base_color": "#402818",
+        "overlay_color": "#c4c0b6"
+      }
+    }
+  }
+}

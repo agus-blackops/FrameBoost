@@ -1,0 +1,232 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hl:rake",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "hl:mode": {
+          "type": "enum",
+          "values": [
+            "crouch",
+            "hunt",
+            "flee"
+          ],
+          "default": "crouch",
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "hl:vanish": {
+        "minecraft:instant_despawn": {}
+      },
+      "hl:crouch": {
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:navigation.walk": {},
+        "minecraft:behavior.look_at_player": {
+          "priority": 1,
+          "look_distance": 64,
+          "probability": 1.0,
+          "angle_of_view_horizontal": 360
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_rake",
+            "monster",
+            "mob"
+          ]
+        }
+      },
+      "hl:hunt": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.42
+        },
+        "minecraft:attack": {
+          "damage": 6
+        },
+        "minecraft:follow_range": {
+          "value": 48,
+          "max": 48
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "within_radius": 48.0,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 128
+            }
+          ]
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 3,
+          "speed_multiplier": 1.4,
+          "track_target": true
+        },
+        "minecraft:behavior.leap_at_target": {
+          "priority": 2,
+          "yd": 0.45,
+          "must_be_on_ground": true
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_rake",
+            "monster",
+            "mob"
+          ]
+        }
+      },
+      "hl:flee": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.58
+        },
+        "minecraft:behavior.avoid_mob_type": {
+          "priority": 1,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 64,
+              "walk_speed_multiplier": 1.2,
+              "sprint_speed_multiplier": 1.5
+            }
+          ]
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_rake",
+            "monster",
+            "mob"
+          ]
+        }
+      }
+    },
+    "components": {
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 128,
+          "max_distance": 160
+        }
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:type_family": {
+        "family": [
+          "hl_rake",
+          "monster",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.8,
+        "height": 1.4
+      },
+      "minecraft:health": {
+        "value": 40,
+        "max": 40
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:loot": {
+        "table": "loot_tables/empty.json"
+      },
+      "minecraft:knockback_resistance": {
+        "value": 0.6
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:can_climb": {}
+    },
+    "events": {
+      "hl:vanish": {
+        "add": {
+          "component_groups": [
+            "hl:vanish"
+          ]
+        }
+      },
+      "hl:crouch": {
+        "remove": {
+          "component_groups": [
+            "hl:hunt",
+            "hl:flee"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:crouch"
+          ]
+        }
+      },
+      "hl:hunt": {
+        "remove": {
+          "component_groups": [
+            "hl:crouch",
+            "hl:flee"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:hunt"
+          ]
+        }
+      },
+      "hl:flee": {
+        "remove": {
+          "component_groups": [
+            "hl:crouch",
+            "hl:hunt"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:flee"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:crouch"
+          ]
+        }
+      }
+    }
+  }
+}

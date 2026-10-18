@@ -1,0 +1,230 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hl:echo",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "hl:mode": {
+          "type": "enum",
+          "values": [
+            "listen",
+            "wander",
+            "hunt"
+          ],
+          "default": "listen",
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "hl:vanish": {
+        "minecraft:instant_despawn": {}
+      },
+      "hl:listen": {
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:navigation.walk": {},
+        "minecraft:type_family": {
+          "family": [
+            "hl_echo",
+            "monster",
+            "mob"
+          ]
+        }
+      },
+      "hl:wander": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.16
+        },
+        "minecraft:behavior.random_stroll": {
+          "priority": 6,
+          "speed_multiplier": 1.0,
+          "xz_dist": 8
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_echo",
+            "monster",
+            "mob"
+          ]
+        }
+      },
+      "hl:hunt": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "avoid_damage_blocks": true
+        },
+        "minecraft:movement": {
+          "value": 0.36
+        },
+        "minecraft:attack": {
+          "damage": 14
+        },
+        "minecraft:follow_range": {
+          "value": 32,
+          "max": 32
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "within_radius": 32.0,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 128
+            }
+          ]
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 3,
+          "speed_multiplier": 1.25,
+          "track_target": true
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hl_echo",
+            "monster",
+            "mob"
+          ]
+        }
+      }
+    },
+    "components": {
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 128,
+          "max_distance": 160
+        }
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:type_family": {
+        "family": [
+          "hl_echo",
+          "monster",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.9,
+        "height": 2.9
+      },
+      "minecraft:health": {
+        "value": 160,
+        "max": 160
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:loot": {
+        "table": "loot_tables/hl/echo.json"
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "fall",
+            "deals_damage": false
+          },
+          {
+            "cause": "suffocation",
+            "deals_damage": false
+          },
+          {
+            "cause": "drowning",
+            "deals_damage": false
+          },
+          {
+            "cause": "lightning",
+            "deals_damage": false
+          }
+        ]
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
+      }
+    },
+    "events": {
+      "hl:vanish": {
+        "add": {
+          "component_groups": [
+            "hl:vanish"
+          ]
+        }
+      },
+      "hl:listen": {
+        "remove": {
+          "component_groups": [
+            "hl:wander",
+            "hl:hunt"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:listen"
+          ]
+        }
+      },
+      "hl:wander": {
+        "remove": {
+          "component_groups": [
+            "hl:listen",
+            "hl:hunt"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:wander"
+          ]
+        }
+      },
+      "hl:hunt": {
+        "remove": {
+          "component_groups": [
+            "hl:listen",
+            "hl:wander"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hl:hunt"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hl:listen"
+          ]
+        }
+      }
+    }
+  }
+}
