@@ -251,13 +251,14 @@ ANIMATIONS = {
     # ------------------------------------------------------------------ #
     # The Cave Dweller
     # ------------------------------------------------------------------ #
+    # Knuckle-walking: the arms swing, the legs kick, the whole spine rolls.
     "animation.hl.dweller.walk": {"loop": True, "bones": {
-        "armRight": rot(0, cos(40, 16.0), lift(40, -14.0)),
-        "armLeft": rot(0, cos(40, 16.0), lift(40, 14.0, -1)),
-        "thighRight": rot(0, cos(40, -16.0), lift(40, -12.0, -1)),
-        "thighLeft": rot(0, cos(40, -16.0), lift(40, 12.0)),
-        "ribcage": rot(0, sin(40.0, 4.0), sin(80.0, 2.0)),
-        "pelvis": rot(0, sin(40.0, -6.0))}},
+        "armRight": rot(cos(34, -38.0)), "armLeft": rot(cos(34, 38.0)),
+        "foreRight": rot(lift(34, -22.0)), "foreLeft": rot(lift(34, -22.0, -1)),
+        "thighRight": rot(cos(34, 34.0)), "thighLeft": rot(cos(34, -34.0)),
+        "shinRight": rot(lift(34, -30.0, -1)), "shinLeft": rot(lift(34, -30.0)),
+        "ribcage": rot(0, sin(34.0, 6.0), sin(68.0, 2.0)),
+        "pelvis": rot(0, sin(34.0, -8.0))}},
     "animation.hl.dweller.idle": {"loop": True, "bones": {
         "ribcage": {"scale": breathe(120.0, 0.04)},
         "handRight": rot(0, 0, jolt(0.95, -10.0, 10.0)),
@@ -365,7 +366,7 @@ ANIMATIONS = {
         "rightHand": rot(cos(28, 15.0)), "leftHand": rot(cos(28, -15.0))}},
     "animation.hl.dweller.walk_extra": {"loop": True, "bones": {
         "head": rot(sin(80.0, 6.0), sin(40.0, 12.0)), "neck": rot(0, sin(40.0, -8.0)),
-        "handRight": rot(0, 0, lift(40, 20.0)), "handLeft": rot(0, 0, f"-{lift(40, 20.0, -1)}")}},
+        "handRight": rot(lift(34, 24.0)), "handLeft": rot(lift(34, 24.0, -1))}},
     "animation.hl.boss.walk_extra": {"loop": True, "bones": {
         "tail1": rot(0, 0, sin(11.0, 6.0)), "tail2": rot(0, 0, sin(11.0, 8.0)), "sting": rot(cos(22, 15.0)),
         "pick": rot(cos(22, 10.0)), "fist": rot(cos(22, -10.0)), "jaw": rot(f"math.abs(math.sin({D} * 22.0)) * 8.0 * {S}")}},

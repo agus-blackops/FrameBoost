@@ -36,7 +36,7 @@ def model():
             C((-7, 30, -4), (14, 6, 8), "pelvis"), C((-7.5, 34, -4.5), (15, 2, 9), "belt")]),
         B("waist", "body", (0, 36, 0), rotation=(6, 0, 0), cubes=[
             C((-6, 36, -3.5), (12, 8, 7), "waist")]),
-        B("chest", "waist", (0, 44, 0), rotation=(12, 0, 0), cubes=[
+        B("chest", "waist", (0, 44, 0), rotation=(30, 0, 0), cubes=[
             C((-9, 44, -1), (18, 14, 7), "chest_back"),
             C((-9, 44, -5), (4, 14, 4), "chest_side"), C((5, 44, -5), (4, 14, 4), "chest_side"),
             C((-5, 54, -5), (10, 4, 4), "collar"),
@@ -47,25 +47,27 @@ def model():
             *[C((x, 59, z), (1.5, h, 1.5), "crystal", pivot=(x + 0.75, 59, z + 0.75), rotation=(rx, 0, rz))
               for x, z, h, rx, rz in ((-9.5, -2, 4, 10, 15), (-7.5, 1, 3, -15, -10), (6.5, -1, 4.5, 12, -18), (8.5, 2, 3, -10, 10))],
             C((-10, 55, -3), (2, 3, 2), "ore"), C((8, 56, 0), (2, 2, 2), "ore"), C((-6, 50, 5.5), (3, 3, 2), "ore")]),
-        B("neck", "chest", (0, 58, -2), rotation=(-10, 0, 0), cubes=[
+        B("neck", "chest", (0, 58, -2), rotation=(-34, 0, 0), cubes=[
             C((-2.5, 57, -4.5), (5, 3, 5), "neck")]),
         B("head", "neck", (0, 60, -2.5), cubes=[
             C((-4.5, 60, -7), (9, 8, 9), "head"),
             C((-6, 66, -8.5), (12, 1.5, 12), "brim"), C((-5, 67.5, -7), (10, 3, 9), "helmet"),
             C((-1, 70.5, -6), (2, 1, 7), "crest"),
+            *[C((side_x(sd, 3.5, 5), 67.5, -4 + k * 2.5), (1.5, 6 + k, 1.5), "crystal", pivot=(sd * 4, 68, -3.5 + k * 2.5), rotation=(0, 0, sd * (35 + 10 * k))) for sd in (-1, 1) for k in range(3)],
             C((-1.5, 67, -8.25), (3, 2.5, 1.5), "lamp")]),
         B("jaw", "head", (0, 61, 1), rotation=(25, 0, 0), cubes=[
             C((-4, 57.5, -6.5), (8, 3.5, 8), "jaw"),
             *[C((x, 60.5, -6.25), (1.5, 2, 1.5), "fang") for x in (-3.5, -1.5, 0.5, 2.5)]]),
         # The spine, arching over his head.
-        B("tail1", "chest", (0, 48, 5), rotation=(-20, 0, 0), cubes=[vertebra(y, 4.5) for y in range(46, 62, 3)] + [
+        B("tail1", "chest", (0, 48, 5), rotation=(-28, 0, 0), cubes=[vertebra(y, 4.5) for y in range(46, 62, 3)] + [
             C((-0.5, y, 8.5), (1, 1.5, 3), "spur") for y in (47, 53, 59)]),
-        B("tail2", "tail1", (0, 63, 6), rotation=(35, 0, 0), cubes=[vertebra(y, 4.5) for y in range(63, 72, 3)] + [
+        B("tail2", "tail1", (0, 63, 6), rotation=(14, 0, 0), cubes=[vertebra(y, 4.5) for y in range(63, 72, 3)] + [
             C((-0.5, 66, 8.5), (1, 1.5, 3), "spur")]),
-        B("tail3", "tail2", (0, 72, 6), rotation=(40, 0, 0), cubes=[vertebra(y, 4.5) for y in range(72, 81, 3)]),
-        B("sting", "tail3", (0, 81, 6), rotation=(55, 0, 0), cubes=[
+        B("tail3", "tail2", (0, 72, 6), rotation=(8, 0, 0), cubes=[vertebra(y, 4.5) for y in range(72, 81, 3)]),
+        B("sting", "tail3", (0, 81, 6), rotation=(4, 0, 0), cubes=[
             C((-2.5, 81, 4), (5, 3, 5), "vertebra_big"), C((-1.5, 84, 5), (3, 4, 3), "sting"),
-            C((-1, 88, 5.5), (2, 3, 2), "sting"), C((-0.5, 91, 6), (1, 2, 1), "sting_tip")]),
+            C((-1, 88, 5.5), (2, 3, 2), "sting"), C((-0.5, 91, 6), (1, 2, 1), "sting_tip"),
+            C((-1.5, 93, 4.5), (3, 4, 3), "lamp"), C((-2, 92.5, 4), (4, 0.75, 4), "band")]),
         # Right arm: fused round the pickaxe.
         B("rightArm", "chest", (-11, 55, 0), rotation=(-8, 0, 8), cubes=[
             C((-15, 40, -3), (6, 15, 6), "arm"), C((-15.5, 46, -3.5), (7, 3, 7), "band")]),

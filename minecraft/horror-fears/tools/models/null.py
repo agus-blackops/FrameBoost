@@ -17,40 +17,41 @@ PREVIEW = {}
 def model():
     px = lambda x, y, z: C((x, y, z), (1, 1, 1), "px")
     edge = lambda o, s, tag="hitbox": C(o, s, tag)
-    box = [edge((x, 0, z), (0.5, 41, 0.5)) for x in (-5, 4.5) for z in (-5, 4.5)]
-    for y, tag in ((0, "hitbox"), (40.5, "hitbox"), (33, "eyeline")):
+    box = [edge((x, 0, z), (0.5, 53, 0.5)) for x in (-5, 4.5) for z in (-5, 4.5)]
+    for y, tag in ((0, "hitbox"), (52.5, "hitbox"), (46, "eyeline")):
         box += [edge((-5, y, z), (10, 0.5, 0.5), tag) for z in (-5, 4.5)]
         box += [edge((x, y, -4.5), (0.5, 0.5, 9), tag) for x in (-5, 4.5)]
     return hd_model("geometry.hl.null", [
         B("root", None, (0, 0, 0)),
         B("hitbox", "root", (0, 0, 0), cubes=box),
-        B("rightLeg", "root", (-2, 16, 0), cubes=[
-            C((-3.5, 0, -1.5), (3, 5.5, 3), "slice_leg"), C((-3, 5.5, -1.5), (3, 5, 3), "slice_leg2"),
-            C((-3.75, 10.5, -1.5), (3, 5.5, 3), "slice_leg")]),
-        B("leftLeg", "root", (2, 16, 0), cubes=[
-            C((0.5, 0, -1.5), (3, 5.5, 3), "slice_leg"), C((0, 5.5, -1.5), (3, 5, 3), "slice_leg2"),
-            C((0.75, 10.5, -1.5), (3, 5.5, 3), "slice_leg")]),
-        B("torso", "root", (0, 16, 0), cubes=[
-            C((-4, 16, -2), (8, 3.5, 4), "slice_a"), C((-3, 19.5, -2), (8, 3.5, 4), "slice_b"),
-            C((-4.5, 23, -2), (8, 3.5, 4), "slice_c"), C((-4, 26.5, -2), (8, 3.5, 4), "slice_d")]),
-        B("head", "torso", (0, 30, 0), rotation=(0, 0, -6), cubes=[
-            C((-1, 30, -1), (2, 2, 2), "neck"),
-            C((-4, 32, -4), (8, 4, 8), "head_low"), C((-3, 36, -4), (8, 4, 8), "head_high"),
-            C((-0.25, 34.5, -16), (0.5, 0.5, 12), "look")]),
-        B("rightArm", "torso", (-5.5, 29, 0), rotation=(0, 0, 3), cubes=[
-            C((-7.5, 20, -1.5), (3, 9, 3), "slice_arm"), C((-8, 11, -1.5), (3, 9, 3), "slice_arm2"),
-            *[C((-8 + k, 2, -1), (1, 9, 1), "finger") for k in (0, 1, 2)]]),
-        B("leftArm", "torso", (5.5, 29, 0), rotation=(0, 0, -3), cubes=[
-            C((4.5, 22, -1.5), (3, 7, 3), "slice_arm")]),
+        B("rightLeg", "root", (-2, 22, 0), cubes=[
+            C((-3.5, 0, -1.5), (3, 7.5, 3), "slice_leg"), C((-3, 7.5, -1.5), (3, 7, 3), "slice_leg2"),
+            C((-4, 14.5, -1.5), (3, 7.5, 3), "slice_leg")]),
+        B("leftLeg", "root", (2, 22, 0), cubes=[
+            C((0.5, 0, -1.5), (3, 7.5, 3), "slice_leg"), C((0, 7.5, -1.5), (3, 7, 3), "slice_leg2"),
+            C((1, 14.5, -1.5), (3, 7.5, 3), "slice_leg")]),
+        B("torso", "root", (0, 22, 0), cubes=[
+            C((-4, 22, -2), (8, 3.5, 4), "slice_a"), C((-2.5, 25.5, -2), (8, 3.5, 4), "slice_b"),
+            C((-5, 29, -2), (8, 3.5, 4), "slice_c"), C((-3.5, 32.5, -2), (8, 3.5, 4), "slice_d"),
+            C((-5.5, 36, -2), (8, 3.5, 4), "slice_a")]),
+        # The head has come loose: it hangs a hand's width above the body.
+        B("head", "torso", (0, 47, 0), rotation=(0, 0, -9), cubes=[
+            C((-4, 44, -4), (8, 4, 8), "head_low"), C((-3, 48, -4), (8, 4, 8), "head_high"),
+            C((-0.25, 46.5, -16), (0.5, 0.5, 12), "look")]),
+        B("rightArm", "torso", (-7.5, 36, 0), rotation=(0, 0, 14), cubes=[
+            C((-10.5, 25, -1.5), (3, 9, 3), "slice_arm"), C((-11.5, 15, -1.5), (3, 9, 3), "slice_arm2"),
+            *[C((-11.5 + k, 5, -1), (1, 10, 1), "finger") for k in (0, 1, 2)]]),
+        B("leftArm", "torso", (7.5, 36, 0), rotation=(0, 0, -14), cubes=[
+            C((7.5, 29, -1.5), (3, 7, 3), "slice_arm")]),
         # Came loose at the elbow.
-        B("leftForearm", "leftArm", (6, 20, 0), cubes=[
-            C((5, 11, -1.5), (3, 8, 3), "missing"),
-            *[C((5 + k, 3, -1), (1, 8, 1), "finger") for k in (0, 1, 2)]]),
+        B("leftForearm", "leftArm", (9, 28, 0), cubes=[
+            C((9, 17, -1.5), (3, 8, 3), "missing"),
+            *[C((9 + k, 8, -1), (1, 8, 1), "finger") for k in (0, 1, 2)]]),
         B("halo", "head", (0, 36, 0), cubes=[
             px(-8, 38, -1), px(5, 41, 2), px(-3, 43, -3), px(6, 34, -2), px(-9, 33, 2), px(1, 42, 3),
             px(-6, 42, 3), px(7, 38, 1),
             C((2, 43, -1), (2, 2, 2), "missing_s"), C((-10, 36, -2), (2, 2, 2), "missing_s")]),
-    ], bounds=(2.5, 3.2, (0, 1.5, 0)))
+    ], bounds=(3.0, 4.2, (0, 1.9, 0)))
 
 
 def paint(seed, m, **_):

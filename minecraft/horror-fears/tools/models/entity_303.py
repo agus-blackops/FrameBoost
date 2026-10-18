@@ -19,15 +19,23 @@ def model():
             C((-4, 12, -2), (8, 12, 4), "robe"),
             C((-4.5, 3, -2.5), (9, 10, 5), "robe_low"),
             C((-4.25, 12, -2.25), (8.5, 2, 4.5), "sash")]),
-        B("tatters", "body", (0, 3, 0), cubes=[C((-4.5, 0, -2.5), (9, 3, 5), "tatters")]),
+        # The robe comes apart into ribbons, each a different length.
+        B("tatters", "body", (0, 3, 0), cubes=[
+            C((x, 0 - h, z), (1.5, 3 + h, 1.5), "tatters")
+            for x, z, h in ((-4.5, -2.5, 1), (-2.5, -2.75, 3), (-0.5, -2.75, 2), (1.5, -2.5, 4), (3, -2.25, 2),
+                            (-4.25, 0.5, 3), (-2, 1.5, 4), (0.25, 1.75, 2), (2.25, 1.25, 4), (3.5, 0, 3))]),
         B("head", "body", (0, 24, 0), cubes=[
             C((-4, 24, -4), (8, 8, 8), "head"),
-            C((-4, 24, -4), (8, 8, 8), "hood", 0.6)]),
+            C((-4, 24, -4), (8, 8, 8), "hood", 0.6),
+            # The hood runs up to a point and trails away behind him.
+            C((-3, 32, -3), (6, 4, 6), "hood_cone", 0.3), C((-2, 36, -2), (4, 4, 4), "hood_cone", 0.2),
+            C((-1, 40, -1), (2, 4, 2), "hood_cone"), C((-0.5, 44, 0.5), (1, 3, 3), "hood_cone"),
+            C((-0.5, 43, 3.5), (1, 2, 3), "hood_cone")]),
         B("rightArm", "body", (-5, 22, 0), rotation=(0, 0, 8), cubes=[
-            C((-8, 12, -2), (4, 12, 4), "sleeve"), C((-7.5, 10, -1.5), (3, 2.5, 3), "hand"),
+            C((-8, 12, -2), (4, 12, 4), "sleeve"), C((-9.5, 3, -2.5), (6, 9, 5), "sleeve", 0.2), C((-7.5, 10, -1.5), (3, 2.5, 3), "hand"),
             *[C((-7.25 + k, 5.5, -1), (0.5, 4.5, 0.5), "claw") for k in range(3)]]),
         B("leftArm", "body", (5, 22, 0), rotation=(0, 0, -8), cubes=[
-            C((4, 12, -2), (4, 12, 4), "sleeve"), C((4.5, 10, -1.5), (3, 2.5, 3), "hand"),
+            C((4, 12, -2), (4, 12, 4), "sleeve"), C((3.5, 3, -2.5), (6, 9, 5), "sleeve", 0.2), C((4.5, 10, -1.5), (3, 2.5, 3), "hand"),
             *[C((4.75 + k, 5.5, -1), (0.5, 4.5, 0.5), "claw") for k in range(3)]]),
         B("ring", "root", (0, 16, 0), cubes=[
             glyph(9, 15, -3), glyph(-10, 17, 2), glyph(3, 19, 8), glyph(-5, 14, -9), glyph(8, 18, 5),
@@ -72,6 +80,8 @@ def paint(seed, m, **_):
                     return sash.colors[1]
                 return t.paint(mask, 0.5, 0.3)
             return t.paint(mask, 0.3, 0.2)
+        if tag == "hood_cone":
+            return robe(t, 0.6)
         if tag == "hood":
             if f == "front" and 2 <= t.x <= t.fw - 3 and t.y >= 3:
                 return CLEAR

@@ -48,16 +48,21 @@ def model():
             *[C((-5, y, -3.5), (4, 1, 1), "rib", pivot=(-1, y + 0.5, -3), rotation=(0, -55, -10)) for y in (35, 37, 39)],
             C((-7, 40, -1), (1, 1, 5), "pick_handle", pivot=(-5, 41, 0), rotation=(30, 0, 25)),
             C((-7.5, 43, 1), (1, 6, 1), "pick_head", pivot=(-5, 41, 0), rotation=(30, 0, 25)),
-            blister(3.5, 41, -2), blister(4, 38.5, 0), blister(3.5, 42.5, 1, 0.5), blister(4.25, 36, -1.5, 0.5)]),
+            blister(3.5, 41, -2), blister(4, 38.5, 0), blister(3.5, 42.5, 1, 0.5), blister(4.25, 36, -1.5, 0.5),
+            # Bone coming out through the shoulders, like a second set of ribs.
+            *[C((side_x(sd, 3.5 + k * 0.5, 4.5 + k * 0.5), 42.5 + k * 1.2, -0.5 + k * 0.4), (1, 1, 1), "spur",
+                pivot=(sd * 4.5, 42.5, 0), rotation=(0, 0, sd * (40 + 12 * k))) for sd in (-1, 1) for k in range(3)],
+            *[C((side_x(sd, 4.5, 8.5 - k), 43 + k * 1.5, 0), (4 - k, 0.75, 0.75), "spur",
+                pivot=(sd * 5, 43, 0), rotation=(0, 0, sd * (30 + 15 * k))) for sd in (-1, 1) for k in range(2)]]),
         # The spine: out of the back, up and over the head like a scorpion's tail.
-        B("tail1", "body", (0, 26, 2.5), rotation=(-15, 0, 0), cubes=[vertebra(y, 1.75) for y in range(26, 48, 2)] + [
+        B("tail1", "body", (0, 26, 2.5), rotation=(-84, 0, 0), cubes=[vertebra(y, 1.75) for y in range(26, 48, 2)] + [
             C((-0.5, y + 0.25, 4.25), (1, 1, 2), "spur") for y in (28, 32, 36, 40, 44)]),
-        B("tail2", "tail1", (0, 48, 3), rotation=(20, 0, 0), cubes=[vertebra(y, 1.75) for y in range(48, 56, 2)] + [
+        B("tail2", "tail1", (0, 48, 3), rotation=(-14, 0, 0), cubes=[vertebra(y, 1.75) for y in range(48, 56, 2)] + [
             C((-0.5, 50.25, 4.25), (1, 1, 2), "spur")]),
-        B("tail3", "tail2", (0, 56, 3), rotation=(30, 0, 0), cubes=[vertebra(y, 1.75) for y in range(56, 64, 2)] + [
+        B("tail3", "tail2", (0, 56, 3), rotation=(-20, 0, 0), cubes=[vertebra(y, 1.75) for y in range(56, 64, 2)] + [
             C((-0.5, 58.25, 4.25), (1, 1, 2), "spur")]),
-        B("tail4", "tail3", (0, 64, 3), rotation=(45, 0, 0), cubes=[vertebra(y, 1.75) for y in range(64, 70, 2)]),
-        B("sting", "tail4", (0, 70, 3), rotation=(50, 0, 0), cubes=[
+        B("tail4", "tail3", (0, 64, 3), rotation=(-26, 0, 0), cubes=[vertebra(y, 1.75) for y in range(64, 70, 2)]),
+        B("sting", "tail4", (0, 70, 3), rotation=(-22, 0, 0), cubes=[
             C((-1.5, 70, 1.5), (3, 2.5, 3), "vertebra_big"), C((-0.75, 72.5, 2.25), (1.5, 3, 1.5), "sting"),
             C((-0.5, 75.5, 2.5), (1, 2, 1), "sting"), C((-0.25, 77.5, 2.75), (0.5, 1.5, 0.5), "sting_tip"),
             C((-0.5, 72, 3.5), (1, 1, 2), "spur")]),
@@ -68,6 +73,9 @@ def model():
             C((-4, 46, -4.5), (8, 8, 8), "head"), C((-4, 46, -4.5), (8, 8, 8), "hair", 0.4),
             C((1, 48.5, -5), (2.5, 3.5, 0.75), "skull"),
             *[C((x, 45, -4.25), (1, 1.5, 1), "fang") for x in (-3.5, -2, -0.5, 1, 2.5)],
+            # A crown of bone, grown through the scalp.
+            *[C((-3.5 + 1.75 * k, 54, -3 + 1.2 * (k % 2)), (1, 2 + (k % 3), 1), "spur", pivot=(-3 + 1.75 * k, 54, -2.5),
+                rotation=(-10 * (k % 2), 0, (k - 2) * 8)) for k in range(5)],
             blister(3.5, 51, -3), blister(4, 48, -1), blister(3.5, 52, 1, 0.5), blister(1.5, 54, -2, 0.5)]),
         # Unhinged: the jaw hangs open to the collarbone, strings of flesh
         # still joining it to the cheeks.

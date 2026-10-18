@@ -1,7 +1,7 @@
 """The Man From The Fog.
 
-Over three blocks of starved, grey body in a soaked black raincoat that hangs
-open to the ribs. The hood is up; inside it the face is long and pale, two
+Over three blocks of starved, grey body in a soaked yellow slicker that hangs
+open to the ribs and down to his ankles, and a sou'wester pulled low. Under the brim the face is long and pale, two
 pinprick white eyes and a grin that runs from ear to ear, packed with thin
 teeth. When he opens it the whole lower face drops away. His arms are far too
 long: the sleeves end at his elbows and the forearms and fingers carry on down
@@ -33,11 +33,11 @@ def model():
             C((-4.5, 41, -2.5), (9, 2.5, 5), "shoulders")]),
         # The raincoat: a back panel and two open front panels, all hanging
         # from the shoulders so they can swing on their own.
-        B("coatBack", "chest", (0, 43, 2.5), rotation=(-14, 0, 0), cubes=[C((-4.5, 14, 2.25), (9, 29, 1), "coat_back")]),
-        B("coatRight", "chest", (-4, 43, -2.5), rotation=(-14, 0, 0), cubes=[C((-4.75, 15, -2.75), (2.5, 28, 0.75), "coat_front")]),
-        B("coatLeft", "chest", (4, 43, -2.5), rotation=(-14, 0, 0), cubes=[C((2.25, 15, -2.75), (2.5, 28, 0.75), "coat_front")]),
-        B("coatSideR", "chest", (-4.5, 43, 0), rotation=(-14, 0, 0), cubes=[C((-5, 15, -2.5), (0.75, 28, 5), "coat_side")]),
-        B("coatSideL", "chest", (4.5, 43, 0), rotation=(-14, 0, 0), cubes=[C((4.25, 15, -2.5), (0.75, 28, 5), "coat_side")]),
+        B("coatBack", "chest", (0, 43, 2.5), rotation=(-8, 0, 0), cubes=[C((-5, 4, 2.25), (10, 39, 1.25), "coat_back")]),
+        B("coatRight", "chest", (-4, 43, -2.5), rotation=(-8, 0, 0), cubes=[C((-5.25, 5, -3), (3, 38, 0.75), "coat_front")]),
+        B("coatLeft", "chest", (4, 43, -2.5), rotation=(-8, 0, 0), cubes=[C((2.25, 5, -3), (3, 38, 0.75), "coat_front")]),
+        B("coatSideR", "chest", (-4.5, 43, 0), rotation=(-8, 0, 0), cubes=[C((-5.5, 5, -2.75), (0.75, 38, 5.5), "coat_side")]),
+        B("coatSideL", "chest", (4.5, 43, 0), rotation=(-8, 0, 0), cubes=[C((4.75, 5, -2.75), (0.75, 38, 5.5), "coat_side")]),
         B("neck", "chest", (0, 43, 0), rotation=(8, 0, 0), cubes=[
             C((-1.25, 43, -1.5), (2.5, 2.5, 2.5), "neck"),
             C((-4, 42.5, -2), (8, 2.5, 4.5), "collar", 0.3)]),
@@ -46,32 +46,33 @@ def model():
             C((-3, 45.5, -2.75), (6, 3.5, 5), "maw")]),
         B("jaw", "head", (0, 49, 3), cubes=[
             C((-3.5, 45, -3.5), (7, 4, 7), "jaw")]),
+        # A sou'wester: a flat wide brim, a low crown, and a tail down the back
+        # of the neck, in the yellow of every slicker that ever drowned.
         B("hood", "head", (0, 55, 0), cubes=[
-            C((-4.5, 55, -4.5), (9, 1.5, 9), "hood_top"),
-            C((-4.5, 43.5, 3.5), (9, 11.5, 1), "hood_back"),
-            C((-4.5, 44, -4.5), (1, 11, 8), "hood_side"), C((3.5, 44, -4.5), (1, 11, 8), "hood_side"),
-            C((-3.5, 54, -4.75), (7, 1, 1), "hood_brim"),
-            C((-2, 54, 4.5), (4, 2, 2), "hood_tip"), C((-1, 53, 6.5), (2, 2, 1.5), "hood_tip2")]),
+            C((-3.75, 55, -3.75), (7.5, 3, 7.5), "hood_top"),
+            C((-7.5, 54, -7.5), (15, 1, 15), "hood_brim"),
+            C((-4, 41, 3.5), (8, 14, 1.5), "hood_back"),
+            C((-0.5, 54.5, -8.5), (1, 0.5, 1), "hood_tip")]),
     ]
     for side, name in ((-1, "right"), (1, "left")):
         sx = lambda a, b: side_x(side, a, b)
         bones += [
             B(f"{name}Arm", "chest", (4.75 * side, 42, 0), rotation=(0, 0, 4 * -side), cubes=[
-                C((sx(4, 6), 30, -1), (2, 13, 2), "arm"),
-                C((sx(3.75, 6.25), 31, -1.25), (2.5, 12, 2.5), "sleeve", 0.3)]),
-            B(f"{name}Forearm", f"{name}Arm", (5 * side, 30.5, 0), rotation=(-10, 0, 0), cubes=[
-                C((sx(4.25, 5.75), 18, -0.75), (1.5, 13, 1.5), "forearm"),
-                C((sx(4, 6), 28.5, -1), (2, 2, 2), "elbow")]),
-            B(f"{name}Hand", f"{name}Forearm", (5 * side, 18, 0), cubes=[
-                C((sx(4, 6), 15.5, -1.25), (2, 2.5, 2.5), "palm"),
-                *[C((sx(4.25 + k * 0.5, 4.75 + k * 0.5), 9.5 - (k % 2), -1 + (k % 2) * 0.5), (0.5, 6.5 + (k % 2), 0.5),
-                    "finger", pivot=(side * 5, 15.5, 0), rotation=(-10 + k * 5, 0, 0)) for k in range(4)]]),
+                C((sx(4, 6), 26, -1), (2, 17, 2), "arm"),
+                C((sx(3.75, 6.25), 27, -1.25), (2.5, 16, 2.5), "sleeve", 0.3)]),
+            B(f"{name}Forearm", f"{name}Arm", (5 * side, 26.5, 0), rotation=(-10, 0, 0), cubes=[
+                C((sx(4.25, 5.75), 12, -0.75), (1.5, 14, 1.5), "forearm"),
+                C((sx(4, 6), 24.5, -1), (2, 2, 2), "elbow")]),
+            B(f"{name}Hand", f"{name}Forearm", (5 * side, 12, 0), cubes=[
+                C((sx(4, 6), 9.5, -1.25), (2, 2.5, 2.5), "palm"),
+                *[C((sx(4.25 + k * 0.5, 4.75 + k * 0.5), 3 - (k % 2), -1 + (k % 2) * 0.5), (0.5, 7.5 + (k % 2), 0.5),
+                    "finger", pivot=(side * 5, 9.5, 0), rotation=(-10 + k * 5, 0, 0)) for k in range(4)]]),
         ]
     return hd_model("geometry.hl.fog_man", bones, bounds=(2.5, 4.0, (0, 1.8, 0)))
 
 
 def paint(seed, m, **_):
-    coat = Ramp(colors=["#060807", "#0d110e", "#161b17", "#212822", "#2e3630", "#46524a"])
+    coat = Ramp(colors=["#3a2e08", "#5e4a0c", "#8c7016", "#b8962a", "#dcb83e", "#f0d468"])
     skin = Ramp(colors=["#34363a", "#4c4f52", "#66696a", "#808382", "#9c9e9a", "#b8b8b2"])
     mud = Ramp(colors=["#1a140e", "#2a2016", "#3c2e20", "#4e3e2c"])
     gum = Ramp(colors=["#0c0204", "#1a0508", "#2c0a0e", "#40121a"])

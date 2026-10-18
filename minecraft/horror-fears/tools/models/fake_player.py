@@ -16,7 +16,11 @@ def model():
     return hd_model("geometry.hl.fake_player", [
         B("root", None, (0, 0, 0)),
         B("body", "root", (0, 24, 0), cubes=[
-            C((-4, 12, -2), (8, 12, 4), "body"), C((-4, 12, -2), (8, 12, 4), "body+", 0.25)]),
+            C((-4, 12, -2), (8, 12, 4), "body"), C((-4, 12, -2), (8, 12, 4), "body+", 0.25),
+            # The hood, down: a bunched ring of cloth on his shoulders.
+            C((-4.75, 22.5, -2.5), (9.5, 2.5, 6.5), "hood"), C((-4.5, 21, 1.75), (9, 3.5, 2.5), "hood_back"),
+            C((-1.75, 18, -2.75), (0.5, 4, 0.5), "string"), C((1.25, 18, -2.75), (0.5, 4, 0.5), "string"),
+            C((-3, 12.5, -2.6), (6, 3.5, 0.6), "pocket")]),
         B("head", "body", (0, 24, 0), cubes=[
             C((-4, 24, -4), (8, 8, 8), "head"), C((-4, 24, -4), (8, 8, 8), "head+", 0.5),
             # The headset.
@@ -42,8 +46,8 @@ def model():
 def paint(seed, m, white_eyes=False, **_):
     skin = Ramp(colors=["#6a4230", "#8e5e46", "#b07a5a", "#c69070", "#d8a888", "#e8c0a0"])
     hair = Ramp(colors=["#1a0f08", "#2a1a0e", "#3c2614", "#50331c", "#664224"])
-    shirt = Ramp(colors=["#08404e", "#0c5c6a", "#107884", "#18949c", "#30b0b0", "#62c8c2"])
-    pants = Ramp(colors=["#181448", "#221e66", "#2e2882", "#3a3496", "#4e4aac", "#6864c0"])
+    shirt = Ramp(colors=["#2a0608", "#4a0c10", "#6e141a", "#92202a", "#b43642", "#d25a62"])  # a maroon hoodie
+    pants = Ramp(colors=["#0e0e12", "#16161c", "#202028", "#2c2c36", "#3a3a46", "#4c4c5a"])  # black joggers
     shoe = Ramp(colors=["#222228", "#34343c", "#4a4a54", "#62626c", "#7a7a84"])
     plastic = Ramp(colors=["#0a0a0c", "#141418", "#202026", "#2e2e36", "#40404a"])
     led = glow("#ff2020", 60)
@@ -111,13 +115,11 @@ def paint(seed, m, white_eyes=False, **_):
                 return pants.colors[2]
             if t.y >= t.fh - 2 and f != "top":
                 return (0x5C, 0x40, 0x26) if not (f == "front" and t.x in (7, 8)) else (0xB8, 0xB0, 0x90)  # belt
-            if f == "front" and t.y < 4 and abs(t.x - 7.5) < 4 - t.y:
-                return t.paint(skin, 0.6, 0.1)  # open collar
+            if f == "front" and t.y < 3 and abs(t.x - 7.5) < 3 - t.y:
+                return t.paint(skin, 0.6, 0.1)  # the neckline
             v = 0.62
-            if f == "front" and t.x in (7, 8) and t.y >= 4:
-                v -= 0.15  # placket
-                if t.x == 8 and t.y % 4 == 1:
-                    return (0xE6, 0xE6, 0xE0)  # buttons
+            if f == "front" and t.y >= t.fh - 8 and (t.y == t.fh - 8 or t.x in (2, t.fw - 3)):
+                v -= 0.12  # the kangaroo pocket seam
             if f in ("front", "back") and t.x in (4, 11) and 10 < t.y < 20:
                 v -= 0.08  # folds
             if white_eyes and f == "front" and 5 <= t.y <= 14 and t.n(2.5) > 0.66:
@@ -156,6 +158,14 @@ def paint(seed, m, white_eyes=False, **_):
             return t.paint(pants, v, 0.22, 2.0)
         if tag == "leg+":
             return pants.colors[1] if t.side and t.y == t.fh - 5 else CLEAR
+        if tag in ("hood", "hood_back"):
+            if f in ("top", "bottom") and tag == "hood" and t.fh <= 6:
+                return t.paint(shirt, 0.3, 0.2)
+            return t.paint(shirt, 0.5 - 0.08 * (t.y % 3 == 0), 0.3, 2.0)
+        if tag == "string":
+            return (0xE8, 0xE4, 0xD8) if t.y < t.fh - 1 else (0xB0, 0xAC, 0xA0)
+        if tag == "pocket":
+            return t.paint(shirt, 0.3, 0.15)
         if tag == "tool_handle":
             return t.paint(WOOD, 0.55, 0.2)
         if tag in ("tool_head", "tool_tip"):

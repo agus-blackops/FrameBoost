@@ -31,6 +31,30 @@ todo el comportamiento está escrito desde cero para Bedrock.
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
 
+## Novedades de la 1.3: los modelos de siempre, rehechos
+
+Los **siete modelos originales** tienen una silueta nueva (con sus texturas
+repintadas y sus animaciones ajustadas):
+
+- **Herobrine**: ya no lleva la columna arqueada sobre la cabeza. Ahora la
+  **arrastra detrás de él como una cola de huesos**, con astillas de hueso
+  saliéndole de los hombros y una corona de hueso en la cabeza.
+- **El Minero Hueco** (jefe): más encorvado, con la columna levantada como un
+  **mástil sobre la espalda y una lámpara de minero colgando de la punta**, y
+  cristales como cuernos en el casco.
+- **El Morador de las Cuevas**: ya no es una araña. Ahora es una criatura
+  **encorvada que anda apoyada en los nudillos**, como algo que antes
+  caminaba de pie, con el cuello largo y espinas en la columna. Anda con
+  animaciones nuevas.
+- **El Hombre de la Niebla**: de capucha negra a **impermeable amarillo hasta
+  los tobillos y sombrero de agua**, con los brazos hasta el suelo.
+- **null**: la **cabeza se ha soltado** y flota sobre el cuerpo, los brazos
+  flotan lejos de los hombros y las piernas son más largas.
+- **HerobrineGamer788**: lleva una **sudadera granate con capucha**, cordones
+  y bolsillo, y pantalón de chándal negro, más los cascos de siempre.
+- **Entity 303**: la capucha acaba en **punta**, la túnica se deshace en tiras
+  y las mangas se ensanchan.
+
 ## Novedades de la 1.2: sonido 3D y modelos nuevos
 
 **Sonido 3D.** Minecraft coloca en el espacio todo sonido que tiene una
@@ -114,8 +138,8 @@ Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.2.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 1.2.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.3.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.3.0. Los
 días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia

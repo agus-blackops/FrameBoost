@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [1, 2, 0]
+VERSION = [1, 3, 0]
 UUID = {
     "bp": "14adbfa2-16d0-4c96-9745-648cda8d414d",
     "bp_data": "ecb604c1-31d8-4405-8f2f-2c06b96ad2be",
@@ -188,7 +188,7 @@ def entities():
     # --- the ones that hunt --------------------------------------------- #
     body = {"minecraft:knockback_resistance": {"value": 0.6}, "minecraft:behavior.float": {"priority": 0},
             "minecraft:pushable": {"is_pushable": False, "is_pushable_by_piston": True}}
-    out["cave_dweller"] = moded("hl:cave_dweller", ["hl_cave_dweller", "monster", "mob"], (0.8, 0.9), 70, {
+    out["cave_dweller"] = moded("hl:cave_dweller", ["hl_cave_dweller", "monster", "mob"], (0.9, 1.6), 70, {
         **body, "minecraft:can_climb": {},
         "minecraft:ambient_sound_interval": {"value": 5.0, "range": 8.0, "event_name": "ambient"}}, {
         "stalk": {**walk(), "minecraft:movement": {"value": 0.18}, **look_at_player(1, 64)},

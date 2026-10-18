@@ -15,55 +15,57 @@ LIPS = ("lipTop", "lipBottom", "lipRight", "lipLeft")
 
 
 def model():
+    """v3: it crawls like something that used to walk upright. A long, narrow
+    ribcage hunched forward, a bald skull on a neck too long for it, arms
+    that reach the floor and knuckle along it, legs folded under it with the
+    heel up like a dog's."""
     bones = [
         B("root", None, (0, 0, 0)),
-        B("ribcage", "root", (0, 9, 0), rotation=(-6, 0, 0), cubes=[
-            C((-3.5, 7, -7), (7, 5, 8.5), "ribcage"),
-            *[C((-3.75, 7.5, z), (7.5, 4, 0.5), "rib_out") for z in (-6, -4.5, -3, -1.5)],
-            *[C((-0.75, 12, z), (1.5, 1, 1.5), "vertebra") for z in (-6.5, -4.5, -2.5, -0.5)],
-            *[C((-0.25, 13, z + 0.5), (0.5, 1.5, 0.5), "spike") for z in (-6.5, -4.5, -2.5, -0.5)]]),
-        B("pelvis", "ribcage", (0, 9.5, 1.5), rotation=(10, 0, 0), cubes=[
-            C((-3, 7.5, 1.5), (6, 4, 5), "pelvis"),
-            *[C((-0.5, 11.5, z), (1, 1, 1.5), "vertebra_s") for z in (2, 4)],
-            C((-0.75, 8.5, 6.5), (1.5, 1.5, 3), "tail"), C((-0.5, 8.25, 9.5), (1, 1, 2.5), "tail_tip")]),
-        B("neck", "ribcage", (0, 10, -7), rotation=(-10, 0, 0), cubes=[
-            C((-1.5, 8.5, -11), (3, 3, 4.5), "neck")]),
-        B("head", "neck", (0, 10, -11), rotation=(14, 0, 0), cubes=[
-            C((-3, 7, -17), (6, 6, 6.5), "head"),
-            C((-2.5, 12.5, -16), (5, 1, 5), "crest"),
-            C((-2.5, 8, -11), (5, 5.5, 2), "cranium"),
-            C((-2.5, 7.5, -17.25), (5, 5, 0.25), "mouth"),
-            *[C((x, 7 - h, z), (0.25, h, 0.25), "slime") for x, z, h in ((-2, -19.5, 4), (-0.5, -20, 6), (1.25, -19, 3), (2.25, -18.5, 5))]]),
-        # The four lips, closed into a snout.
-        B("lipTop", "head", (0, 13, -17), cubes=[C((-3, 11.5, -20.5), (6, 1.5, 3.5), "lip_top")]),
-        B("lipBottom", "head", (0, 7, -17), cubes=[C((-3, 7, -20.5), (6, 1.5, 3.5), "lip_bottom")]),
-        B("lipRight", "head", (-3, 10, -17), cubes=[C((-3, 8.5, -20.5), (1.5, 3, 3.5), "lip_right")]),
-        B("lipLeft", "head", (3, 10, -17), cubes=[C((1.5, 8.5, -20.5), (1.5, 3, 3.5), "lip_left")]),
+        B("pelvis", "root", (0, 14, 3), rotation=(-10, 0, 0), cubes=[
+            C((-3, 11, 1), (6, 5, 5), "pelvis"),
+            C((-0.75, 12, 6), (1.5, 1.5, 4), "tail"), C((-0.5, 12, 10), (1, 1, 5), "tail_tip"),
+            *[C((-0.5, 16, 1.5 + 1.5 * k), (1, 1, 1.5), "vertebra_s") for k in range(3)]]),
+        B("ribcage", "pelvis", (0, 16, 1), rotation=(-38, 0, 0), cubes=[
+            C((-3, 16, -1), (6, 9, 5.5), "ribcage"),
+            *[C((-3.25, 17 + 2 * k, -1.25), (6.5, 0.5, 6), "rib_out") for k in range(4)],
+            *[C((-0.75, 25, -0.5 + 1.5 * k), (1.5, 1.5, 1.5), "vertebra") for k in range(3)],
+            *[C((-0.25, 26, -0.25 + 1.5 * k), (0.5, 1.5, 0.5), "spike") for k in range(3)]]),
+        B("neck", "ribcage", (0, 24, 0), rotation=(50, 0, 0), cubes=[
+            C((-1.5, 23, -1.5), (3, 7, 3), "neck")]),
+        B("head", "neck", (0, 30, -0.5), rotation=(-10, 0, 0), cubes=[
+            C((-3, 28, -5), (6, 7.5, 8), "head"),
+            C((-2.5, 34.5, -4), (5, 1.5, 6), "crest"),
+            C((-2.5, 28.5, -2), (5, 6, 3.5), "cranium"),
+            C((-2.5, 28.5, -5.25), (5, 5, 0.25), "mouth"),
+            *[C((x, 28 - h, -6.5 + z), (0.25, h, 0.25), "slime") for x, z, h in ((-2, 0, 4), (-0.5, -0.5, 6), (1.25, 0.25, 3), (2.25, -0.25, 5))]]),
+        B("lipTop", "head", (0, 34, -5), cubes=[C((-3, 32.5, -8.5), (6, 1.5, 3.5), "lip_top")]),
+        B("lipBottom", "head", (0, 28, -5), cubes=[C((-3, 28, -8.5), (6, 1.5, 3.5), "lip_bottom")]),
+        B("lipRight", "head", (-3, 31, -5), cubes=[C((-3, 29.5, -8.5), (1.5, 3, 3.5), "lip_right")]),
+        B("lipLeft", "head", (3, 31, -5), cubes=[C((1.5, 29.5, -8.5), (1.5, 3, 3.5), "lip_left")]),
     ]
     for side, s in ((-1, "Right"), (1, "Left")):
         sx = lambda a, b: side_x(side, a, b)
         bones += [
-            # Front limbs: the upper arm rises from the shoulder to an elbow
-            # above the back, the forearm comes down to a long hand.
-            B(f"arm{s}", "ribcage", (3 * side, 10, -5.5), rotation=(-10, 0, 40 * side), cubes=[
-                C((sx(2, 4), 10, -6.5), (2, 10, 2), "upper")]),
-            B(f"fore{s}", f"arm{s}", (3 * side, 20, -5.5), rotation=(10, 0, 62 * -side), cubes=[
-                C((sx(2.25, 3.75), 3, -6.25), (1.5, 17, 1.5), "fore"),
-                C((sx(2, 4), 18.5, -6.5), (2, 2, 2), "joint")]),
-            B(f"hand{s}", f"fore{s}", (3 * side, 3, -5.5), rotation=(0, 0, 22 * side), cubes=[
-                C((sx(1.75, 4.25), 1.5, -7), (2.5, 1.5, 3), "palm"),
-                *[C((sx(1.75 + k * 0.75, 2.25 + k * 0.75), 1.5, -12.5), (0.5, 0.5, 5.5), "claw") for k in range(4)]]),
-            # Hind legs: the same, folded like a grasshopper's.
-            B(f"thigh{s}", "pelvis", (2.5 * side, 9, 4), rotation=(20, 0, 35 * side), cubes=[
-                C((sx(1.5, 3.5), 9, 3), (2, 9, 2), "upper")]),
-            B(f"shin{s}", f"thigh{s}", (2.5 * side, 18, 4), rotation=(-22, 0, 58 * -side), cubes=[
-                C((sx(1.75, 3.25), 3, 3.25), (1.5, 15, 1.5), "fore"),
-                C((sx(1.5, 3.5), 16.5, 3), (2, 2, 2), "joint")]),
-            B(f"foot{s}", f"shin{s}", (2.5 * side, 3, 4), rotation=(-8, 0, 23 * side), cubes=[
-                C((sx(1.5, 3.5), 1.5, 1.5), (2, 1.5, 3.5), "palm"),
-                *[C((sx(1.5 + k * 0.75, 2 + k * 0.75), 1.5, -1), (0.5, 0.5, 2.5), "claw_s") for k in range(3)]]),
+            # Arms from the shoulders straight down to the floor, a little forward.
+            B(f"arm{s}", "ribcage", (4 * side, 23, 0.5), rotation=(34, 0, 4 * -side), cubes=[
+                C((sx(3, 5), 11, -0.5), (2, 12, 2), "upper")]),
+            B(f"fore{s}", f"arm{s}", (4 * side, 11.5, 0.5), rotation=(-8, 0, 0), cubes=[
+                C((sx(3.25, 4.75), 3.5, -0.25), (1.5, 8, 1.5), "fore"),
+                C((sx(3, 5), 10, -0.5), (2, 2, 2), "joint")]),
+            B(f"hand{s}", f"fore{s}", (4 * side, 3.5, 0.5), rotation=(20, 0, 0), cubes=[
+                C((sx(2.75, 5.25), 2.5, -2), (2.5, 1.5, 3.5), "palm"),
+                *[C((sx(2.75 + k * 0.75, 3.25 + k * 0.75), 2.5, -7), (0.5, 0.5, 5), "claw") for k in range(4)]]),
+            # Legs folded: thigh forward, shin back and down, long heel.
+            B(f"thigh{s}", "pelvis", (2.5 * side, 14, 4), rotation=(-55, 0, 6 * side), cubes=[
+                C((sx(1, 3.5), 5.5, 3), (2.5, 9, 2.5), "upper")]),
+            B(f"shin{s}", f"thigh{s}", (2.5 * side, 6, 4), rotation=(80, 0, 0), cubes=[
+                C((sx(1.25, 3.25), -3, 3.25), (2, 9, 2), "fore"),
+                C((sx(1, 3.5), 5, 3), (2.5, 2.5, 2.5), "joint")]),
+            B(f"foot{s}", f"shin{s}", (2.5 * side, -3, 4), rotation=(-35, 0, 0), cubes=[
+                C((sx(1, 3.5), -4, 1), (2.5, 1.5, 4.5), "palm"),
+                *[C((sx(1 + k * 0.75, 1.5 + k * 0.75), -4, -1.5), (0.5, 0.5, 3), "claw_s") for k in range(3)]]),
         ]
-    return hd_model("geometry.hl.cave_dweller", bones, bounds=(2.5, 2.0, (0, 0.8, 0)))
+    return hd_model("geometry.hl.cave_dweller", bones, bounds=(2.5, 2.4, (0, 1.0, 0)))
 
 
 def paint(seed, m, **_):
