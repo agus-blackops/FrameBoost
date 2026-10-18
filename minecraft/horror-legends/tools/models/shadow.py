@@ -39,7 +39,7 @@ def model():
                 C((sx(4, 6), 17, -1), (2, 13, 2), "arm")]),
             B(f"{name}Forearm", f"{name}Arm", (5 * side, 17, 0), rotation=(-6, 0, 0), cubes=[
                 C((sx(4.25, 5.75), 7, -0.75), (1.5, 10, 1.5), "forearm"),
-                *[C((sx(4 + k * 0.5, 4.5 + k * 0.5), 1.5 - (k % 2), -0.5 + (k % 2) * 0.5), (0.5, 5.5 + (k % 2), 0.5),
+                *[C((sx(4 + k * 0.5, 4.5 + k * 0.5), 0.5 - (k % 2), -0.5 + (k % 2) * 0.5), (0.5, 8 + (k % 2), 0.5),
                     "finger") for k in range(4)]]),
         ]
     return hd_model("geometry.hl.shadow", bones, bounds=(2.0, 3.2, (0, 1.4, 0)))
@@ -47,7 +47,8 @@ def model():
 
 def paint(seed, m, **_):
     black = Ramp(colors=["#000000", "#030304", "#060608", "#0a0a0d", "#101014"])
-    red = glow("#b01010", 90)
+    red = glow("#ff1a1a", 95)
+    grin = glow("#d8d0c0", 60)
 
     def smoke(t, keep):
         """Solid at the top, breaking into holes towards the bottom."""
@@ -60,6 +61,11 @@ def paint(seed, m, **_):
         if tag == "head":
             if f == "front" and t.y in (5, 6) and t.x in (3, 8):
                 return red if t.y == 5 else (0x40, 0x04, 0x04)
+            # A thin smile, much too wide, that you only see in the dark.
+            if f == "front" and t.y == 10 and 1 <= t.x <= 10:
+                return grin if t.x % 2 else BLACK
+            if f == "front" and t.y == 9 and t.x in (1, 10):
+                return grin
             return t.paint(black, 0.3, 0.2)
         if tag in ("brim", "crown", "neck", "shoulders", "arm", "forearm", "finger", "coat"):
             if tag == "brim" and f == "top" and t.n(3) > 0.7:

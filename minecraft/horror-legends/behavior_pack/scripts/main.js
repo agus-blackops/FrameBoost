@@ -2,10 +2,12 @@
 // against the player, in the spirit of the classic Java horror mods,
 // creepypastas and internet legends, told in three acts:
 //
-//   Act I    Visitors     sounds that aren't there, HerobrineGamer788, the
-//                         Cave Dweller, the Mimic, the Weeping Statue
-//   Act II   The woods    Herobrine, the Goatman, the Man From The Fog, the
-//                         Skinwalker, the Shadow, the Drowned One, the Visit
+//   Act I    Visitors     sounds that aren't there, footsteps, HerobrineGamer788,
+//                         the Cave Dweller, the Echo (in the Ancient City), the
+//                         Mimic, the Weeping Statue, the eyes in the dark
+//   Act II   The woods    Herobrine, the Goatman, the Visit, the Countdown, the
+//                         Man From The Fog, the Skinwalker, the Rake, your
+//                         grave, the Shadow, the Drowned One, the Dead Hour
 //   Act III  The error    null, Entity 303, Siren Head, the Wendigo, the
 //                         Red Night
 //   The end              seven torn pages, a ritual, and Herobrine's true form
@@ -13,7 +15,9 @@
 // core/       helpers, saved state, the creature registry, jumpscares
 // director.js fear and pacing: when things happen, and what, and where
 // creatures/  one module per horror (each registers itself)
-// events/     the Red Night, the Visit
+// events/     the Red Night, the Ancient City, and the things that happen:
+//             the Visit, footsteps, the countdown, the eyes, your grave,
+//             the Dead Hour
 // items/      flashlight, Ward Lantern, pages
 // ui/         the Survivor's Journal
 
@@ -40,9 +44,17 @@ import { restoreCorruption } from "./creatures/null.js";
 import "./creatures/e303.js";
 import "./creatures/siren.js";
 import "./creatures/wendigo.js";
+import { tickRakeBed } from "./creatures/rake.js";
+import { makeNoise } from "./creatures/echo.js";
 import { onDeath as bossDeath, onPlayerDied as bossDied } from "./creatures/boss.js";
 import { onPlayerSpawn as redSpawn, tickBlood } from "./events/rednight.js";
 import { onPlayerDied as visitDied, tickVisits } from "./events/visit.js";
+import { tickAncient } from "./events/ancient.js";
+import { tickSteps } from "./events/steps.js";
+import "./events/countdown.js";
+import "./events/eyes.js";
+import { tickGraves } from "./events/grave.js";
+import { tickHours } from "./events/hour.js";
 import { FLASHLIGHT, cleanupLights, onPlayerLeave, tickBeams, tickFlashlights, toggleFlashlight } from "./items/flashlight.js";
 import { onBreak as wardBreak, onPlace as wardPlace } from "./items/ward.js";
 import { PAGE_OF, readPage } from "./items/pages.js";
@@ -72,6 +84,15 @@ const gamer = () => tryRun(tickGamer);
 const director = () => tryRun(tickDirector);
 const beams = () => tryRun(tickBeams);
 const visit = () => tryRun(tickVisits);
+const happenings = () => {
+  tryRun(tickSteps);
+  tryRun(tickGraves);
+  tryRun(tickHours);
+};
+const deep = () => {
+  tryRun(tickAncient);
+  tryRun(tickRakeBed);
+};
 
 system.runInterval(heart, 2);
 system.runInterval(lights, 3);
@@ -79,6 +100,8 @@ system.runInterval(creatures, 4);
 system.runInterval(presence, 6);
 system.runInterval(gamer, 10);
 system.runInterval(visit, 10);
+system.runInterval(happenings, 5);
+system.runInterval(deep, 20);
 system.runInterval(director, 20);
 system.runInterval(beams, 20);
 system.runInterval(worldTick, 100);
@@ -100,11 +123,13 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
 });
 
 world.afterEvents.playerPlaceBlock.subscribe(({ player, block }) => {
+  tryRun(() => makeNoise(player, 12));
   tryRun(() => wardPlace(block));
   tryRun(() => onPlaceBlock(player, block));
 });
 
 world.afterEvents.playerBreakBlock.subscribe(({ player, block, brokenBlockPermutation }) => {
+  tryRun(() => makeNoise(player, 15));
   tryRun(() => wardBreak(block));
   tryRun(() => onBreakBlock(player, brokenBlockPermutation));
 });

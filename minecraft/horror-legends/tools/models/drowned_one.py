@@ -48,7 +48,7 @@ def model():
             B(f"{name}Forearm", f"{name}Arm", (5.25 * side, 12.5, 0), rotation=(-20, 0, 0), cubes=[
                 C((sx(4.25, 6.25), 3, -1), (2, 10, 2), "forearm"),
                 C((sx(4, 6.5), 1, -1.25), (2.5, 2.5, 2.5), "hand"),
-                *[C((sx(4.25 + k * 0.75, 4.75 + k * 0.75), -3, -0.75), (0.5, 4.5, 0.5), "finger") for k in range(3)]]),
+                *[C((sx(4.25 + k * 0.75, 4.75 + k * 0.75), -5.5, -0.75), (0.5, 7, 0.5), "finger") for k in range(3)]]),
             B(f"{name}Kelp", f"{name}Forearm", (5.25 * side, 8, 0), cubes=[
                 C((sx(4.75, 5.75), -2, 1), (1, 10, 0.5), "kelp")]),
         ]
@@ -61,13 +61,16 @@ def paint(seed, m, **_):
     gown = Ramp(colors=["#4a5046", "#6a7062", "#8a8e7e", "#a8aa98", "#c2c2ae"])
     algae = Ramp(colors=["#10200e", "#1c3418", "#2a4a22", "#3c602c"])
     kelp = Ramp(colors=["#14220a", "#22380e", "#325014", "#44681c"])
-    eye = glow("#d8f0f0", 40)
+    eye = glow("#d8f0f0", 75)
+    bruise = Ramp(colors=["#120a14", "#22142a", "#34203e", "#463052"])
 
     def swollen(t, base=0.5):
         if t.ridge(3.0, 0.05) > 0.55:
             return t.paint(skin, base - 0.2, 0.1)  # wrinkles
         if t.n2(2.5) > 0.78:
             return t.paint(algae, 0.4, 0.2)  # slime
+        if t.noise(t.sx + 300, t.sy + 50, 2.0, 2) > 0.74:
+            return t.paint(bruise, 0.5, 0.3)  # rotting
         return t.paint(skin, base, 0.3, 2.5)
 
     def wet_hair(t, base=0.45):
@@ -101,6 +104,15 @@ def paint(seed, m, **_):
                     if t.x == 4 and t.y in (7, 8):
                         return eye
                     return CLEAR if f == "front" else t.paint(skin, 0.2, 0.1)
+                if f == "front" and t.x == 10 and t.y == 8:
+                    return eye  # the other one, half behind the hair
+                # And under the hair, a mouth stretched far too wide.
+                if f == "front" and 2 <= t.x <= 9 and 11 <= t.y <= 15 and t.n(1.0) > 0.12:
+                    if t.y in (11, 15):
+                        return t.paint(skin, 0.3, 0.1)
+                    if t.y in (12, 14):
+                        return t.paint(TEETH, 0.55, 0.1) if (t.x + t.y // 2) % 2 == 0 else BLACK
+                    return BLACK
                 if t.y >= t.fh - 4 and t.n(1.2) > 0.4:
                     return CLEAR  # ragged ends
                 return wet_hair(t, 0.45)

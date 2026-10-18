@@ -40,7 +40,8 @@ DIST = ROOT / "dist" / "HorrorLegends.mcaddon"
 DIST_ZIP = ROOT / "dist" / "HorrorLegends_WhatsApp.zip"
 
 CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "siren_head",
-             "goatman", "weeping_statue", "mimic", "shadow", "skinwalker", "wendigo", "entity_303", "drowned_one"]
+             "goatman", "weeping_statue", "mimic", "shadow", "skinwalker", "wendigo", "entity_303", "drowned_one",
+             "rake", "echo", "eyes"]
 MODULES = {name: importlib.import_module(f"models.{name}") for name in CREATURES}
 MODELS = {name: mod.model() for name, mod in MODULES.items()}
 SEEDS = {name: 10 * (i + 1) for i, name in enumerate(CREATURES)}

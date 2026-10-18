@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:eyes",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/eyes"
+      },
+      "geometry": {
+        "default": "geometry.hl.eyes"
+      },
+      "animations": {
+        "blink": "animation.hl.eyes.blink"
+      },
+      "scripts": {
+        "animate": [
+          "blink"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#000000",
+        "overlay_color": "#fff6e8"
+      }
+    }
+  }
+}

@@ -39,13 +39,13 @@ def model():
             C((-0.25, 34.5, -16), (0.5, 0.5, 12), "look")]),
         B("rightArm", "torso", (-5.5, 29, 0), rotation=(0, 0, 3), cubes=[
             C((-7.5, 20, -1.5), (3, 9, 3), "slice_arm"), C((-8, 11, -1.5), (3, 9, 3), "slice_arm2"),
-            *[C((-8 + k, 5, -1), (1, 6, 1), "finger") for k in (0, 1, 2)]]),
+            *[C((-8 + k, 2, -1), (1, 9, 1), "finger") for k in (0, 1, 2)]]),
         B("leftArm", "torso", (5.5, 29, 0), rotation=(0, 0, -3), cubes=[
             C((4.5, 22, -1.5), (3, 7, 3), "slice_arm")]),
         # Came loose at the elbow.
         B("leftForearm", "leftArm", (6, 20, 0), cubes=[
             C((5, 11, -1.5), (3, 8, 3), "missing"),
-            *[C((5 + k, 6, -1), (1, 5, 1), "finger") for k in (0, 1, 2)]]),
+            *[C((5 + k, 3, -1), (1, 8, 1), "finger") for k in (0, 1, 2)]]),
         B("halo", "head", (0, 36, 0), cubes=[
             px(-8, 38, -1), px(5, 41, 2), px(-3, 43, -3), px(6, 34, -2), px(-9, 33, 2), px(1, 42, 3),
             px(-6, 42, 3), px(7, 38, 1),
@@ -111,6 +111,13 @@ def paint(seed, m, **_):
                     return EYE
                 if t.y == 3 and t.x in (3, 4, 11, 12):
                     return (0x60, 0x60, 0x70)
+                # A mouth that renders wrong: too wide, white teeth on black,
+                # one side slipped down a pixel.
+                lo = 1 if t.x >= 9 else 0
+                if 2 <= t.x <= 14 and 5 + lo <= t.y <= 7 + lo:
+                    if t.y in (5 + lo, 7 + lo):
+                        return (0xF4, 0xF4, 0xF4) if t.x % 2 == 0 else BLACK
+                    return (0xB0, 0x00, 0x10) if t.x in (6, 7) else BLACK
             return fringe(t) or black(t, 0.3)
         if tag == "head_high":
             return fringe(t) or black(t, 0.3)

@@ -20,7 +20,8 @@ def model():
         B("ribcage", "root", (0, 9, 0), rotation=(-6, 0, 0), cubes=[
             C((-3.5, 7, -7), (7, 5, 8.5), "ribcage"),
             *[C((-3.75, 7.5, z), (7.5, 4, 0.5), "rib_out") for z in (-6, -4.5, -3, -1.5)],
-            *[C((-0.75, 12, z), (1.5, 1, 1.5), "vertebra") for z in (-6.5, -4.5, -2.5, -0.5)]]),
+            *[C((-0.75, 12, z), (1.5, 1, 1.5), "vertebra") for z in (-6.5, -4.5, -2.5, -0.5)],
+            *[C((-0.25, 13, z + 0.5), (0.5, 1.5, 0.5), "spike") for z in (-6.5, -4.5, -2.5, -0.5)]]),
         B("pelvis", "ribcage", (0, 9.5, 1.5), rotation=(10, 0, 0), cubes=[
             C((-3, 7.5, 1.5), (6, 4, 5), "pelvis"),
             *[C((-0.5, 11.5, z), (1, 1, 1.5), "vertebra_s") for z in (2, 4)],
@@ -31,7 +32,8 @@ def model():
             C((-3, 7, -17), (6, 6, 6.5), "head"),
             C((-2.5, 12.5, -16), (5, 1, 5), "crest"),
             C((-2.5, 8, -11), (5, 5.5, 2), "cranium"),
-            C((-2.5, 7.5, -17.25), (5, 5, 0.25), "mouth")]),
+            C((-2.5, 7.5, -17.25), (5, 5, 0.25), "mouth"),
+            *[C((x, 7 - h, z), (0.25, h, 0.25), "slime") for x, z, h in ((-2, -19.5, 4), (-0.5, -20, 6), (1.25, -19, 3), (2.25, -18.5, 5))]]),
         # The four lips, closed into a snout.
         B("lipTop", "head", (0, 13, -17), cubes=[C((-3, 11.5, -20.5), (6, 1.5, 3.5), "lip_top")]),
         B("lipBottom", "head", (0, 7, -17), cubes=[C((-3, 7, -20.5), (6, 1.5, 3.5), "lip_bottom")]),
@@ -50,7 +52,7 @@ def model():
                 C((sx(2, 4), 18.5, -6.5), (2, 2, 2), "joint")]),
             B(f"hand{s}", f"fore{s}", (3 * side, 3, -5.5), rotation=(0, 0, 22 * side), cubes=[
                 C((sx(1.75, 4.25), 1.5, -7), (2.5, 1.5, 3), "palm"),
-                *[C((sx(1.75 + k * 0.75, 2.25 + k * 0.75), 1.5, -11), (0.5, 0.5, 4), "claw") for k in range(4)]]),
+                *[C((sx(1.75 + k * 0.75, 2.25 + k * 0.75), 1.5, -12.5), (0.5, 0.5, 5.5), "claw") for k in range(4)]]),
             # Hind legs: the same, folded like a grasshopper's.
             B(f"thigh{s}", "pelvis", (2.5 * side, 9, 4), rotation=(20, 0, 35 * side), cubes=[
                 C((sx(1.5, 3.5), 9, 3), (2, 9, 2), "upper")]),
@@ -146,6 +148,12 @@ def paint(seed, m, **_):
             return pale(t, 0.5 if tag == "upper" else 0.45)
         if tag == "palm":
             return t.paint(mud, 0.45, 0.4)
+        if tag == "slime":
+            return (0xC8, 0xC4, 0xB0, 150) if t.n(2) > 0.3 else CLEAR
+        if tag == "spike":
+            return t.paint(BONE, 0.7 - 0.3 * t.v, 0.15)
+        if tag in ("claw", "claw_s") and t.n(2) > 0.55:
+            return t.paint(BLOOD, 0.35, 0.2)
         if tag in ("claw", "claw_s"):
             return BLACK if t.x == t.fw - 1 or t.v > 0.8 else t.paint(mud, 0.25, 0.2)
         return None

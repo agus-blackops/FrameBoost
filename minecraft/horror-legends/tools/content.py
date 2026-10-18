@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [8, 1, 0]
+VERSION = [8, 2, 0]
 UUID = {
     "bp": "95cc20cd-1272-4a55-8a97-f2b1dfd18e3f",
     "bp_data": "71d0f013-b17b-4635-843d-5f11ba161bba",
@@ -239,6 +239,24 @@ def entities():
         "lurk": {**amphibious, "minecraft:movement": {"value": 0.0}},
         "grab": {**amphibious, "minecraft:movement": {"value": 0.25}, **hunt(48, 5, 1.2)}})
 
+    # 8.2.0: the Rake, the Echo, and the eyes in the dark.
+    out["rake"] = moded("hl:rake", ["hl_rake", "monster", "mob"], (0.8, 1.4), 40, {
+        **body, "minecraft:can_climb": {}}, {
+        "crouch": {"minecraft:movement": {"value": 0.0}, "minecraft:navigation.walk": {}, **look_at_player(1, 64)},
+        "hunt": {**walk(), "minecraft:movement": {"value": 0.42}, **hunt(48, 6, 1.4),
+                 "minecraft:behavior.leap_at_target": {"priority": 2, "yd": 0.45, "must_be_on_ground": True}},
+        "flee": {**walk(), "minecraft:movement": {"value": 0.58}, **avoid(64)}})
+    # Blind: it never looks at you, it only turns towards what it hears.
+    out["echo"] = moded("hl:echo", ["hl_echo", "monster", "mob"], (0.9, 2.9), 160, {
+        **HEAVY, **NO_FALL, "minecraft:loot": {"table": "loot_tables/hl/echo.json"},
+        "minecraft:behavior.float": {"priority": 0}}, {
+        "listen": {"minecraft:movement": {"value": 0.0}, "minecraft:navigation.walk": {}},
+        "wander": {**walk(), "minecraft:movement": {"value": 0.16},
+                   "minecraft:behavior.random_stroll": {"priority": 6, "speed_multiplier": 1.0, "xz_dist": 8}},
+        "hunt": {**walk(), "minecraft:movement": {"value": 0.36}, **hunt(32, 14, 1.25)}})
+    out["eyes"] = entity("hl:eyes", base_components(["hl_eyes", "hl_haunt"], 0.3, 0.4, 100, {
+        **INVULNERABLE, **STILL, "minecraft:physics": {"has_gravity": False, "has_collision": False}}))
+
     # The Mimic: a chest until you open it (or hit it, or come too close).
     out["mimic"] = moded("hl:mimic", ["hl_mimic", "monster", "mob"], (0.9, 0.9), 40, {
         "minecraft:loot": {"table": "loot_tables/hl/mimic.json"},
@@ -322,6 +340,11 @@ def entities():
 
     for name, data in out.items():
         write(BP / "entities" / f"{name}.json", data)
+    write(BP / "loot_tables" / "hl" / "echo.json", {"pools": [
+        {"rolls": 1, "entries": [{"type": "item", "name": "minecraft:echo_shard", "weight": 1, "functions": [
+            {"function": "set_count", "count": {"min": 1, "max": 3}}]}]},
+        {"rolls": 1, "entries": [{"type": "item", "name": "minecraft:sculk", "weight": 1, "functions": [
+            {"function": "set_count", "count": {"min": 2, "max": 6}}]}]}]})
     write(BP / "loot_tables" / "hl" / "mimic.json", {"pools": [
         {"rolls": {"min": 2, "max": 4}, "entries": [
             {"type": "item", "name": "minecraft:iron_ingot", "weight": 30, "functions": [
@@ -421,6 +444,17 @@ CLIENTS = {
                 "default", ("#b6bec4", "#2a2018")),
     "entity_303": ({"default": "entity_303"}, {"look": "e303.look", "float": "e303.float", "cast": "e303.cast"},
                    ["look", "float", {"cast": "query.property('hl:cast')"}], "default", ("#dcdad4", "#ff1818")),
+    "rake": ({"default": "rake"},
+             {"look": "rake.look", "idle": "rake.idle", "run": "rake.run", "attack": "rake.attack", "hurt": "rake.hurt"},
+             ["look", {"idle": f"!({MOVING})"}, {"run": MOVING}, {"attack": ATTACK}, {"hurt": HURT}],
+             "default", ("#d0cac0", "#1a1410")),
+    "echo": ({"default": "echo"},
+             {"idle": "echo.idle", "listen": "echo.listen", "walk": "echo.walk", "hunt": "echo.hunt",
+              "attack": "echo.attack", "hurt": "echo.hurt", "emerge": "echo.emerge"},
+             ["idle", {"listen": mode_is("listen")}, {"walk": MOVING}, {"hunt": mode_is("hunt")},
+              {"attack": ATTACK}, {"hurt": HURT}, "emerge"],
+             "default", ("#0d1116", "#38f0f0")),
+    "eyes": ({"default": "eyes"}, {"blink": "eyes.blink"}, ["blink"], "default", ("#000000", "#fff6e8")),
     "drowned_one": ({"default": "drowned_one"},
                     {"idle": "drowned.idle", "walk": "drowned.walk", "swim": "drowned.swim",
                      "attack": "drowned.attack"},
@@ -506,6 +540,10 @@ def clients():
             "ambient": "mob.cow.say", "hurt": "mob.cow.hurt", "death": "mob.zombie.death"}},
         "hl:drowned_one": {"volume": 1.0, "pitch": [0.7, 0.8], "events": {
             "hurt": "mob.drowned.hurt", "death": "mob.drowned.death"}},
+        "hl:rake": {"volume": 1.0, "pitch": [1.3, 1.5], "events": {
+            "hurt": "mob.fox.hurt", "death": "mob.fox.death"}},
+        "hl:echo": {"volume": 1.0, "pitch": [0.8, 0.9], "events": {
+            "hurt": "mob.warden.hurt", "death": "mob.warden.death"}},
         "hl:mimic": {"volume": 1.0, "pitch": [0.8, 1.0], "events": {
             "hurt": "random.chestclosed", "death": "random.break"}},
     }}})

@@ -20,13 +20,15 @@ def model():
             *[C((x, 0, z), (1.5, 10, 1.5), "corner", 0.05) for x in (-7.25, 5.75) for z in (-7.25, 5.75)],
             *[C((x, 9, 6.75), (2, 2, 0.5), "hinge") for x in (-4, 2)],
             C((-6, 1, -6), (12, 8.75, 12), "flesh"),
-            *[C((x, 9.5, -6.5), (1, 1.5, 0.5), "tooth") for x in (-5.5, -3.5, -1.5, 0.5, 2.5, 4.5)],
+            *[C((x, 9.5, -6.5), (1, 2.5 if i % 2 else 1.5, 0.5), "tooth") for i, x in enumerate((-5.5, -3.5, -1.5, 0.5, 2.5, 4.5))],
+            *[C((x, 9.5, -4.5), (0.5, 1, 0.5), "tooth") for x in (-4.5, -2, 1, 3.5)],
+            *[C((x, 9.75, z), (1, 0.25, 1), "eye") for x, z in ((-4, -1), (2.5, 1.5), (-1, 3), (4, -2.5), (-5, 3.5))],
             *[C((x, 9.5, 6), (1, 1.5, 0.5), "tooth") for x in (-4.5, -0.5, 3.5)],
             *[C((x, 9.5, z), (0.5, 1.5, 1), "tooth_side") for x in (-6.5, 6) for z in (-3, 1)]]),
         B("lid", "body", (0, 10, 7), cubes=[
             C((-7, 10, -7), (14, 4, 14), "lid"),
             C((-1, 7, -8), (2, 4, 1), "latch"),
-            *[C((x, 9, -6.5), (1, 1.5, 0.5), "tooth") for x in (-4.5, -2.5, -0.5, 1.5, 3.5, 5)],
+            *[C((x, 8 if i % 2 == 0 else 9, -6.5), (1, 2.5 if i % 2 == 0 else 1.5, 0.5), "tooth") for i, x in enumerate((-4.5, -2.5, -0.5, 1.5, 3.5, 5))],
             *[C((x, 9, z), (0.5, 1.5, 1), "tooth_side") for x in (-6.5, 6) for z in (-5, -1, 3)]]),
         B("tongue", "body", (0, 9, 0), cubes=[C((-1.5, 8.5, -8), (3, 1, 8), "tongue")]),
         B("tongueTip", "tongue", (0, 9, -8), rotation=(30, 0, 0), cubes=[C((-1, 8.5, -13), (2, 1, 5), "tongue_tip")]),
@@ -51,7 +53,7 @@ def paint(seed, m, **_):
     frame = Ramp(colors=["#24180a", "#34220e", "#463014"])
     flesh = Ramp(colors=["#2a0608", "#44100e", "#661a18", "#862a24", "#a83e34"])
     chitin = Ramp(colors=["#060506", "#100c0e", "#1c1618", "#2a2224", "#3a3032"])
-    yellow = glow("#f0d020", 50)
+    yellow = glow("#ffe020", 85)
 
     def planks(t, base=0.55):
         # Horizontal boards with dark seams, the frame darker at the edges,
@@ -91,6 +93,11 @@ def paint(seed, m, **_):
             if f == "top":
                 return t.paint(flesh, 0.35 + t.n(2.0) * 0.3, 0.2)
             return t.paint(flesh, 0.3, 0.4, 2.0)
+        if tag == "eye":
+            # More eyes in the meat, all looking up at you.
+            if f == "top":
+                return BLACK if t.x == t.fw // 2 and t.y == t.fh // 2 else yellow
+            return t.paint(flesh, 0.15, 0.1)
         if tag in ("tooth", "tooth_side"):
             return t.paint(TEETH, 0.75 - 0.35 * t.v, 0.12)
         if tag in ("tongue", "tongue_tip"):

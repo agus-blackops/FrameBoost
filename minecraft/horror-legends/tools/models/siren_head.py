@@ -28,11 +28,13 @@ def model():
         B("body", "root", (0, 44, 0), cubes=[C((-3.5, 44, -2), (7, 4, 4), "pelvis")]),
         B("waist", "body", (0, 48, 0), rotation=(4, 0, 0), cubes=[
             C((-1, 48, -1), (2, 8, 2), "spine"),
-            C((-2.5, 48, -1.5), (5, 8, 3), "belly")]),
+            C((-2.5, 48, -1.5), (5, 8, 3), "belly"),
+            *[C((x, 49, -1.75), (0.5, 6, 0.25), "gut") for x in (-1.5, 0.25, 1.25)]]),
         B("chest", "waist", (0, 56, 0), rotation=(6, 0, 0), cubes=[
             C((-4, 56, -2.25), (8, 12, 4.5), "chest"),
             *[C((-4.25, y, -2.5), (8.5, 0.5, 0.25), "rib_out") for y in (58, 60, 62, 64)],
-            C((-5, 65, -2.5), (10, 3, 5), "shoulders")]),
+            C((-5, 65, -2.5), (10, 3, 5), "shoulders"),
+            *[C((-0.75, y, 2.25), (1.5, 1.25, 1.25), "vert") for y in (57, 59.5, 62, 64.5)]]),
         B("pole", "chest", (0, 68, 0), rotation=(-6, 0, 0), cubes=[
             C((-1, 68, -1), (2, 16, 2), "pole"),
             C((-1.5, 70, -1.5), (3, 1.5, 3), "sinew"), C((-1.5, 76, -1.5), (3, 1.5, 3), "sinew")]),
@@ -41,7 +43,8 @@ def model():
             *[C((x, 82.5, -4), (6, 5, 6), "speaker") for x in (-9, 3)],
             *[C((x, 82, -5), (7, 6, 1), "horn") for x in (-9.5, 2.5)],
             *[C((x + 0.75, y, -5.25), (5.5, 0.25, 0.25), "grille") for x in (-9.5, 2.5) for y in (83.5, 85, 86.5)],
-            C((-1.5, 86, -1.5), (3, 3, 3), "bracket")]),
+            C((-1.5, 86, -1.5), (3, 3, 3), "bracket"),
+            *[C((x, 82.5 - h, z), (0.5, h, 0.5), "strip") for x, z, h in ((-8, -2, 7), (-5, -1, 4), (-3.5, -3, 9), (4, -2, 5), (6.5, -1.5, 8), (8, -3, 3.5))]]),
     ]
     for side, name in ((-1, "right"), (1, "left")):
         sx = lambda a, b: side_x(side, a, b)
@@ -53,7 +56,7 @@ def model():
                 C((sx(4, 6.5), 43.5, -1.25), (2.5, 2.5, 2.5), "knee")]),
             B(f"{name}Hand", f"{name}Forearm", (5.25 * side, 25, 0), cubes=[
                 C((sx(4, 6.5), 22, -1.5), (2.5, 3, 3), "palm"),
-                *[C((sx(4 + k * 0.75, 4.5 + k * 0.75), 13 - (k % 2), -1 + (k % 2) * 0.5), (0.5, 9 + (k % 2), 0.5),
+                *[C((sx(4 + k * 0.75, 4.5 + k * 0.75), 10 - (k % 2), -1 + (k % 2) * 0.5), (0.5, 12 + (k % 2), 0.5),
                     "finger", pivot=(side * 5.25, 22, 0), rotation=(-8 + k * 4, 0, 0)) for k in range(4)]]),
         ]
     return hd_model("geometry.hl.siren_head", bones, bounds=(4.0, 6.5, (0, 3.0, 0)))
@@ -81,9 +84,19 @@ def paint(seed, m, **_):
             if f in ("front", "back") and t.y >= 2 and t.y % 3 == 1:
                 return t.paint(hide, 0.15, 0.1)
             return leather(t, 0.45)
+        if tag == "strip":
+            if t.v > 0.85 and t.n(2) > 0.5:
+                return CLEAR
+            return t.paint(sinew, 0.5 - 0.3 * t.v, 0.3) if t.n(1.5) > 0.3 else t.paint(metal, 0.2, 0.1)
+        if tag == "vert":
+            return t.paint(BONE, 0.55, 0.25)
+        if tag == "gut":
+            return t.paint(GUT, 0.45, 0.35)
         if tag == "rib_out":
             return t.paint(BONE, 0.45, 0.25) if f != "back" else CLEAR
         if tag == "belly":
+            if f == "front" and 1 <= t.x <= 8 and 2 <= t.y <= 13:
+                return t.paint(BLOOD, 0.2 + 0.3 * t.n(2), 0.2)  # torn open
             return leather(t, 0.3)
         if tag == "spine":
             return t.paint(BONE, 0.4, 0.3)

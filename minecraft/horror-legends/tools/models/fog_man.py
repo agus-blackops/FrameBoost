@@ -75,7 +75,7 @@ def paint(seed, m, **_):
     skin = Ramp(colors=["#34363a", "#4c4f52", "#66696a", "#808382", "#9c9e9a", "#b8b8b2"])
     mud = Ramp(colors=["#1a140e", "#2a2016", "#3c2e20", "#4e3e2c"])
     gum = Ramp(colors=["#0c0204", "#1a0508", "#2c0a0e", "#40121a"])
-    pin = glow("#f4f4ff", 30)
+    pin = glow("#f4f4ff", 80)
 
     def wet(t, base=0.45):
         # Rain streaks run down the coat: thin light lines and dark runs.
@@ -92,25 +92,25 @@ def paint(seed, m, **_):
     face = [
         "dddddddddddddd",
         "dddddddddddddd",
-        "ssssssssssssss",
-        "SSSSSSSSSSSSSS",
-        "SsooosSSsooosS",
-        "SoooPoSSoPooos",
-        "SsooosSSsooosS",
-        "SSSSSSnnSSSSSS",
-        "gSSSSSNNSSSSSg",
-        "TgSSSSSSSSSSgT",
-        "TTgggggggggggT",
-        "TTTTTTTTTTTTTT",
+        "sooooSSSSoooos",
+        "oooooSSSSooooo",
+        "ooPooSSSSooPoo",
+        "oooooSSSSooooo",
+        "gsoooSnnSooosg",
+        "TgsSSSNNSSSsgT",
+        "TTgSSSSSSSSgTT",
+        "TTggggggggggTT",
+        "TBTBTBTBTBTBTB",
+        "TBTBTBTBTBTBTB",
     ]
     jaw = [
-        "TTTTTTTTTTTTTT",
-        "gTgTgTgTgTgTgT",
-        "ggggggggggggTT",
-        "sSSSSSSSSSSgTs",
-        "SSSSSSSSSSSSgS",
-        "SSSSSSSSSSSSSS",
-        "sSSSSSSSSSSSSs",
+        "TBTBTBTBTBTBTB",
+        "TBTBTBTBTBTBTB",
+        "gggggggggggggg",
+        "rSSSSSSSSSSSSr",
+        "SrSSSSSSSSSSrS",
+        "SSSSSrSSSSSSSS",
+        "sSSSSrSSSSSSSs",
         "ssssssssssssss",
     ]
 
@@ -129,7 +129,7 @@ def paint(seed, m, **_):
                     return pin
                 if ch == "n":
                     return t.paint(skin, 0.3, 0.1)
-                if ch == "N":
+                if ch in "NB":
                     return BLACK
                 if ch == "T":
                     return t.paint(TEETH, 0.65, 0.2)
@@ -147,6 +147,10 @@ def paint(seed, m, **_):
                 ch = jaw[t.y][t.x]
                 if ch == "T":
                     return t.paint(TEETH, 0.6, 0.2)
+                if ch == "B":
+                    return BLACK
+                if ch == "r":
+                    return t.paint(BLOOD, 0.45, 0.2)
                 if ch == "g":
                     return t.paint(gum, 0.5, 0.3)
                 if ch == "s":

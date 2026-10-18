@@ -39,7 +39,8 @@ def model():
         B("hips", "root", (0, 24, 0), cubes=[C((-3, 23, -2), (6, 4, 4), "hips")]),
         B("torso", "hips", (0, 27, 0), rotation=(30, 0, 0), cubes=[
             C((-3, 27, -2), (6, 12, 4), "torso"),
-            *[C((-3.25, y, -2.25), (6.5, 0.5, 4.5), "rib_out") for y in (31, 33, 35)],
+            *[C((-3.25, y, -2.25), (6.5, 0.5, 4.5), "rib_out") for y in (29, 31, 33, 35)],
+            C((2.75, 30, -3.5), (0.5, 0.5, 2), "rib_broken", rotation=(0, 0, -25), pivot=(3, 30, -2)),
             C((-4.5, 36, -3), (9, 4, 6), "shoulders"),
             C((-5, 33, -3.25), (10, 7.5, 6.5), "mane", 0.3),
             *[C((-0.5, y, 2), (1, 1, 1), "spine") for y in (29, 31, 33, 35)]]),
@@ -48,9 +49,12 @@ def model():
         B("skull", "neck", (0, 43, -1), rotation=(-12, 0, 0), cubes=[
             C((-2.5, 43, -4), (5, 5.5, 5.5), "skull"),
             C((-1.5, 43.5, -10), (3, 3, 6), "snout"),
+            *[C((x, 42.25, -9.75), (0.5, 1.25, 0.5), "fang") for x in (-1.5, 1)],
             *antler(-1), *antler(1)]),
         B("jaw", "skull", (0, 44, -2), rotation=(18, 0, 0), cubes=[
-            C((-1.25, 42, -9.5), (2.5, 1.5, 6.5), "jaw")]),
+            C((-1.25, 42, -9.5), (2.5, 1.5, 6.5), "jaw"),
+            *[C((x, 43.5, -9.25), (0.5, 1, 0.5), "fang") for x in (-1.25, 0.75)],
+            *[C((x, 39 - k, z), (0.5, 3 + k, 0.5), "drool") for k, (x, z) in enumerate(((-1, -8.5), (0.25, -6.5), (0.75, -4.5)))]]),
     ]
     for side, name in ((-1, "right"), (1, "left")):
         sx = lambda a, b: side_x(side, a, b)
@@ -60,7 +64,7 @@ def model():
             B(f"{name}Forearm", f"{name}Arm", (4.5 * side, 24, 0), rotation=(-12, 0, 0), cubes=[
                 C((sx(3.75, 5.25), 11, -0.75), (1.5, 13, 1.5), "forearm"),
                 C((sx(3.5, 5.5), 9, -1.25), (2, 2.5, 2.5), "hand"),
-                *[C((sx(3.5 + k * 0.75, 4 + k * 0.75), 3 - (k % 2), -0.75 + (k % 2) * 0.5), (0.5, 6.5 + (k % 2), 0.5),
+                *[C((sx(3.5 + k * 0.75, 4 + k * 0.75), 1.5 - (k % 2), -0.75 + (k % 2) * 0.5), (0.5, 8 + (k % 2), 0.5),
                     "claw") for k in range(3)]]),
         ]
     return hd_model("geometry.hl.wendigo", bones, bounds=(3.0, 4.0, (0, 1.8, 0)))
@@ -94,6 +98,14 @@ def paint(seed, m, **_):
             if f == "front" and t.y >= t.fh - 5 and t.n(2) > 0.55:
                 return t.paint(BLOOD, 0.45, 0.3)  # what it last ate, down its chest
             return gaunt(t, 0.45)
+        if tag == "rib_broken":
+            return t.paint(BONE, 0.7, 0.15) if t.v < 0.6 else t.paint(BLOOD, 0.5, 0.2)
+        if tag == "fang":
+            return t.paint(TEETH, 0.75 - 0.3 * t.v, 0.1)
+        if tag == "drool":
+            if f in ("top", "bottom"):
+                return t.paint(BLOOD, 0.3, 0.2)
+            return t.paint(BLOOD, 0.55 - 0.3 * t.v, 0.25) if t.n(2) > 0.25 else CLEAR
         if tag == "rib_out":
             return t.paint(skin, 0.8, 0.15) if f in ("front", "right", "left") else CLEAR
         if tag in ("mane", "fur"):
@@ -117,9 +129,13 @@ def paint(seed, m, **_):
             return t.paint(frost, 0.7 - 0.5 * t.v, 0.1)
         if tag == "skull":
             if f == "front":
-                for ex in (1, 7):
-                    if ex <= t.x <= ex + 1 and 3 <= t.y <= 5:
-                        return cold if t.y == 4 else BLACK
+                for ex in (1, 6):
+                    if ex <= t.x <= ex + 2 and 2 <= t.y <= 6:
+                        if ex < t.x < ex + 2 and 3 <= t.y <= 5:
+                            return cold if t.y != 3 else glow("#7ab8ff", 70)
+                        return BLACK
+                if 7 <= t.y <= 10 and t.x in (3, 4, 5, 6) and t.n(2) > 0.35:
+                    return t.paint(BLOOD, 0.4, 0.2)  # tears of what it ate
             return t.paint(BONE, 0.62 - 0.12 * t.v, 0.25)
         if tag == "snout":
             if f == "front":

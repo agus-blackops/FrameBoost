@@ -63,7 +63,7 @@ def walker_bones():
                 C((sx(3.5, 5.5), 25, -1), (2, 14, 2), "sw_arm")]),
             B(f"{name}Forearm", f"{name}Arm", (4.5 * side, 25, 0), rotation=(-10, 0, 0), cubes=[
                 C((sx(3.75, 5.25), 12, -0.75), (1.5, 13, 1.5), "sw_fore"),
-                *[C((sx(3.5 + k * 0.5, 4 + k * 0.5), 6.5, -0.5 + (k % 2) * 0.5), (0.5, 5.5, 0.5), "sw_claw")
+                *[C((sx(3.5 + k * 0.5, 4 + k * 0.5), 4, -0.5 + (k % 2) * 0.5), (0.5, 8, 0.5), "sw_claw")
                   for k in range(4)]]),
         ]
     return bones
@@ -79,7 +79,7 @@ def paint(seed, m, **_):
     white = Ramp(colors=["#8a8680", "#a8a49c", "#c4c0b6", "#dcd8ce", "#eeebe2"])
     leather = Ramp(colors=["#2a221c", "#3e3228", "#544436", "#6c5a48", "#84705a", "#9c8870"])
     nose = Ramp(colors=["#5a3a38", "#7a5250", "#9a6c68"])
-    pin = glow("#f8f8f0", 40)
+    pin = glow("#f8f8f0", 85)
 
     def cowhide(t, base=0.5):
         if t.noise(t.sx, t.sy, 7.0, 2) > 0.55:
@@ -107,6 +107,8 @@ def paint(seed, m, **_):
                     return (0xF2, 0xF0, 0xEA) if not (t.y == 6 and t.x in (3, 12)) else (0x10, 0x0C, 0x0A)
                 if t.y == 4 and t.x in (2, 3, 12, 13):
                     return t.paint(brown, 0.1, 0.1)
+                if t.y == 7 and t.x in (2, 13):
+                    return BLOOD.colors[3]  # red at the corner of each eye
                 if t.y >= 12:
                     return (0x1A, 0x10, 0x0C) if t.y == 13 and 4 <= t.x <= 11 else cowhide(t, 0.45)
             return cowhide(t, 0.5)
@@ -135,6 +137,8 @@ def paint(seed, m, **_):
                 for ex in (2, 9):
                     if ex <= t.x <= ex + 2 and 3 <= t.y <= 6:
                         return pin if (t.x == ex + 1 and t.y == 4) else BLACK
+                    if t.x == ex + 1 and 7 <= t.y <= 9 + (ex % 3):
+                        return t.paint(BLOOD, 0.4, 0.2)  # it bleeds into the bone
             if tag == "skull_snout" and f == "front" and t.y in (1, 2) and t.x in (1, 4):
                 return BLACK  # nostrils
             return t.paint(BONE, 0.6 - 0.1 * t.v, 0.25)

@@ -2712,6 +2712,426 @@
         }
       }
     },
+    "animation.hl.rake.look": {
+      "loop": true,
+      "bones": {
+        "neck": {
+          "rotation": [
+            "query.target_x_rotation * 0.3",
+            "query.target_y_rotation * 0.3",
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            "query.target_x_rotation * 0.5",
+            "query.target_y_rotation * 0.5",
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.rake.idle": {
+      "loop": true,
+      "bones": {
+        "torso": {
+          "scale": [
+            1.0,
+            "1.0 + math.sin(query.life_time * 90.0) * 0.03",
+            1.0
+          ]
+        },
+        "head": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 9.0) * 18.0 + (math.random(0.0, 1.0) > 0.97 ? math.random(-30.0, 30.0) : 0.0)"
+          ]
+        },
+        "rightHand": {
+          "rotation": [
+            "math.max(0.0, math.sin(query.life_time * 420.0)) * 8.0",
+            0,
+            0
+          ]
+        },
+        "leftHand": {
+          "rotation": [
+            "math.max(0.0, math.sin(query.life_time * 420.0 + 90.0)) * 8.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.rake.run": {
+      "loop": true,
+      "bones": {
+        "hips": {
+          "rotation": [
+            "15.0 + math.sin(query.modified_distance_moved * 30.0) * 6.0 * query.modified_move_speed",
+            0,
+            0
+          ],
+          "position": [
+            0,
+            2.0,
+            0
+          ]
+        },
+        "torso": {
+          "rotation": [
+            50.0,
+            0,
+            0
+          ]
+        },
+        "neck": {
+          "rotation": [
+            -70.0,
+            0,
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            -10.0,
+            0,
+            0
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            "-75.0 + math.cos(query.modified_distance_moved * 30) * 45.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "-75.0 + math.cos(query.modified_distance_moved * 30 + 60.0) * 45.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightForearm": {
+          "rotation": [
+            "30.0 + math.max(0.0, math.sin(query.modified_distance_moved * 30)) * 30.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftForearm": {
+          "rotation": [
+            "30.0 + math.max(0.0, -math.sin(query.modified_distance_moved * 30)) * 30.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightThigh": {
+          "rotation": [
+            "10.0 - math.cos(query.modified_distance_moved * 30 + 120.0) * 45.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftThigh": {
+          "rotation": [
+            "10.0 - math.cos(query.modified_distance_moved * 30 + 180.0) * 45.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.rake.attack": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180.0) * 110.0",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "-math.sin(math.clamp(variable.attack_time * 1.4, 0.0, 1.0) * 180.0) * 90.0",
+            0,
+            0
+          ]
+        },
+        "torso": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180.0) * 20.0",
+            0,
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            "math.sin(variable.attack_time * 180.0) * -20.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.rake.hurt": {
+      "loop": true,
+      "bones": {
+        "torso": {
+          "rotation": [
+            "-query.hurt_time * 2.0",
+            0,
+            "query.hurt_time * 1.2"
+          ]
+        },
+        "head": {
+          "rotation": [
+            "-query.hurt_time * 2.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.idle": {
+      "loop": true,
+      "bones": {
+        "heart": {
+          "scale": [
+            "1.0 + math.max(0.0, math.sin(query.life_time * 300.0)) * 0.25",
+            "1.0 + math.max(0.0, math.sin(query.life_time * 300.0)) * 0.25",
+            "1.0 + math.max(0.0, math.sin(query.life_time * 300.0)) * 0.25"
+          ]
+        },
+        "torso": {
+          "scale": [
+            1.0,
+            "1.0 + math.sin(query.life_time * 50.0) * 0.02",
+            1.0
+          ]
+        },
+        "jaw": {
+          "rotation": [
+            "10.0 + math.sin(query.life_time * 40.0) * 6.0",
+            0,
+            0
+          ]
+        },
+        "rightHand": {
+          "rotation": [
+            "math.sin(query.life_time * 30.0) * 6.0",
+            0,
+            0
+          ]
+        },
+        "leftHand": {
+          "rotation": [
+            "math.sin(query.life_time * 27.0) * 6.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.listen": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            -8.0,
+            "math.sin(query.life_time * 25.0) * 35.0",
+            "math.sin(query.life_time * 18.0) * 20.0 - 14.0"
+          ]
+        },
+        "neck": {
+          "rotation": [
+            10.0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.walk": {
+      "loop": true,
+      "bones": {
+        "rightLeg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 22) * 26.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftLeg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 22) * -26.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightShin": {
+          "rotation": [
+            "math.max(0.0, -math.sin(query.modified_distance_moved * 22)) * 20.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftShin": {
+          "rotation": [
+            "math.max(0.0, math.sin(query.modified_distance_moved * 22)) * 20.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 22) * -14.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 22) * 14.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "torso": {
+          "rotation": [
+            0,
+            "math.sin(query.modified_distance_moved * 22.0) * 5.0 * query.modified_move_speed",
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.modified_distance_moved * 11.0) * 10.0 * query.modified_move_speed"
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.hunt": {
+      "loop": true,
+      "bones": {
+        "torso": {
+          "rotation": [
+            20.0,
+            0,
+            0
+          ]
+        },
+        "neck": {
+          "rotation": [
+            -15.0,
+            0,
+            0
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            "-55.0 + math.cos(query.modified_distance_moved * 30) * 20.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "-55.0 - math.cos(query.modified_distance_moved * 30) * 20.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "jaw": {
+          "rotation": [
+            "40.0 + math.sin(query.life_time * 1500.0) * 5.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.attack": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180.0) * 130.0",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180.0) * 130.0",
+            0,
+            0
+          ]
+        },
+        "torso": {
+          "rotation": [
+            "math.sin(variable.attack_time * 180.0) * 18.0",
+            0,
+            0
+          ]
+        },
+        "jaw": {
+          "rotation": [
+            "math.sin(variable.attack_time * 180.0) * 50.0",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.hurt": {
+      "loop": true,
+      "bones": {
+        "torso": {
+          "rotation": [
+            "-query.hurt_time * 1.2",
+            0,
+            "query.hurt_time * 0.72"
+          ]
+        },
+        "head": {
+          "rotation": [
+            "-query.hurt_time * 1.2",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.echo.emerge": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "position": [
+            0,
+            "-math.max(0.0, 1.0 - query.life_time * 1.6) * math.max(0.0, 1.0 - query.life_time * 1.6) * 40",
+            0
+          ]
+        }
+      }
+    },
+    "animation.hl.eyes.blink": {
+      "loop": true,
+      "bones": {
+        "eyes": {
+          "scale": [
+            1.0,
+            "math.mod(query.life_time, 3.1) < 0.18 ? 0.1 : 1.0",
+            1.0
+          ]
+        }
+      }
+    },
     "animation.hl.dweller.emerge": {
       "loop": true,
       "bones": {

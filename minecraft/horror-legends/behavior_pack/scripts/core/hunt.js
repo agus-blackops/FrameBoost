@@ -8,6 +8,7 @@ import {
 } from "./util.js";
 import { WARD_RADIUS, nearWard } from "../items/ward.js";
 import { flags } from "./store.js";
+import { inAncientCity } from "./places.js";
 
 export function outsideWards(dimension, at, margin = 2) {
   return !nearWard(dimension, at, WARD_RADIUS + margin);
@@ -51,6 +52,7 @@ export function context(player) {
   };
   ctx.outside = !ctx.under && !ctx.indoors;
   ctx.forest = ctx.trees >= 3;
+  ctx.ancient = under && inAncientCity(player);
   cache.set(player.id, { at: now, ctx });
   return ctx;
 }

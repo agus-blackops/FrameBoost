@@ -25,7 +25,7 @@ DESIGN = 2  # texels per in-game pixel the painters are written for
 SUB = K // DESIGN
 CLEAR = (0, 0, 0, 0)
 BLACK = (0x08, 0x07, 0x09)
-EYE = glow("#ffffff", 40)
+EYE = glow("#ffffff", 70)
 
 __all__ = ["K", "CLEAR", "BLACK", "EYE", "B", "C", "hd_model", "side_x", "Texel", "paint_model", "rows", "glow",
            "Ramp", "math", "arc", "BONE", "BLOOD", "GUT", "MUSCLE", "BURN", "BLISTER", "TEETH", "IRON", "WOOD", "HAIR",

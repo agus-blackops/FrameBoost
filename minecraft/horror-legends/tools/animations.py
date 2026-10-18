@@ -510,6 +510,64 @@ ANIMATIONS = {
         "rightArm": rot(f"-{swing(60.0)}"), "leftArm": rot(f"-{swing(50.0)}"), "body": rot(swing(12.0))}},
 
     # ------------------------------------------------------------------ #
+    # The Rake
+    # ------------------------------------------------------------------ #
+    "animation.hl.rake.look": {"loop": True, "bones": {
+        "neck": rot("query.target_x_rotation * 0.3", "query.target_y_rotation * 0.3"),
+        "head": rot("query.target_x_rotation * 0.5", "query.target_y_rotation * 0.5")}},
+    # Crouched, watching: the head tilting too far, the claws tapping.
+    "animation.hl.rake.idle": {"loop": True, "bones": {
+        "torso": {"scale": breathe(90.0, 0.03)},
+        "head": rot(0, 0, f"{wave(9.0, 18.0)} + {jolt(0.97, -30.0, 30.0)}"),
+        "rightHand": rot(f"math.max(0.0, math.sin({T} * 420.0)) * 8.0"),
+        "leftHand": rot(f"math.max(0.0, math.sin({T} * 420.0 + 90.0)) * 8.0")}},
+    # Running on all fours: the body flat, the arms reaching out in front as
+    # forelegs, the hind legs kicking back, the head held level.
+    "animation.hl.rake.run": {"loop": True, "bones": {
+        "hips": {"rotation": [f"15.0 + {sin(30.0, 6.0)}", 0, 0], "position": [0, 2.0, 0]},
+        "torso": rot(50.0), "neck": rot(-70.0), "head": rot(-10.0),
+        "rightArm": rot(f"-75.0 + {cos(30, 45.0)}"), "leftArm": rot(f"-75.0 + {cos(30, 45.0, ' + 60.0')}"),
+        "rightForearm": rot(f"30.0 + {lift(30, 30.0)}"), "leftForearm": rot(f"30.0 + {lift(30, 30.0, -1)}"),
+        "rightThigh": rot(f"10.0 - {cos(30, 45.0, ' + 120.0')}"), "leftThigh": rot(f"10.0 - {cos(30, 45.0, ' + 180.0')}")}},
+    "animation.hl.rake.attack": {"loop": True, "bones": {
+        "rightArm": rot(f"-{swing(110.0)}"), "leftArm": rot(f"-math.sin(math.clamp({A} * 1.4, 0.0, 1.0) * 180.0) * 90.0"),
+        "torso": rot(f"-{swing(20.0)}"), "head": rot(swing(-20.0))}},
+    "animation.hl.rake.hurt": {"loop": True, "bones": flinch(["torso", "head"], 2.0)},
+
+    # ------------------------------------------------------------------ #
+    # The Echo
+    # ------------------------------------------------------------------ #
+    # The heart beats, the tendrils sway, the head turns towards sounds.
+    "animation.hl.echo.idle": {"loop": True, "bones": {
+        "heart": {"scale": [f"1.0 + math.max(0.0, math.sin({T} * 300.0)) * 0.25"] * 3},
+        "torso": {"scale": breathe(50.0, 0.02)},
+        "jaw": rot(f"10.0 + math.sin({T} * 40.0) * 6.0"),
+        "rightHand": rot(wave(30.0, 6.0)), "leftHand": rot(wave(27.0, 6.0))}},
+    # Listening: frozen, the head cocked one way then the other.
+    "animation.hl.echo.listen": {"loop": True, "bones": {
+        "head": rot(-8.0, f"math.sin({T} * 25.0) * 35.0", f"math.sin({T} * 18.0) * 20.0 - 14.0"),
+        "neck": rot(10.0)}},
+    "animation.hl.echo.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(22, 26.0)), "leftLeg": rot(cos(22, -26.0)),
+        "rightShin": rot(lift(22, 20.0, -1)), "leftShin": rot(lift(22, 20.0)),
+        "rightArm": rot(cos(22, -14.0)), "leftArm": rot(cos(22, 14.0)),
+        "torso": rot(0, sin(22.0, 5.0)), "head": rot(0, 0, sin(11.0, 10.0))}},
+    # Hunting: bent forward, arms out, the jaw hanging open and shaking.
+    "animation.hl.echo.hunt": {"loop": True, "bones": {
+        "torso": rot(20.0), "neck": rot(-15.0),
+        "rightArm": rot(f"-55.0 + {cos(30, 20.0)}"), "leftArm": rot(f"-55.0 - {cos(30, 20.0)}"),
+        "jaw": rot(f"40.0 + math.sin({T} * 1500.0) * 5.0")}},
+    "animation.hl.echo.attack": {"loop": True, "bones": {
+        "rightArm": rot(f"-{swing(130.0)}"), "leftArm": rot(f"-{swing(130.0)}"),
+        "torso": rot(swing(18.0)), "jaw": rot(swing(50.0))}},
+    "animation.hl.echo.hurt": {"loop": True, "bones": flinch(["torso", "head"], 1.2)},
+    "animation.hl.echo.emerge": {"loop": True, "bones": emerge(40)},
+
+    # The eyes in the dark blink now and then.
+    "animation.hl.eyes.blink": {"loop": True, "bones": {
+        "eyes": {"scale": [1.0, f"math.mod({T}, 3.1) < 0.18 ? 0.1 : 1.0", 1.0]}}},
+
+    # ------------------------------------------------------------------ #
     # Remastered: appearing, recoiling, and more life in every step
     # ------------------------------------------------------------------ #
     "animation.hl.dweller.emerge": {"loop": True, "bones": emerge(12, tilt=-40.0)},
