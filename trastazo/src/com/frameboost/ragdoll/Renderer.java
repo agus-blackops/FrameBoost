@@ -562,6 +562,7 @@ final class Renderer {
             }
             case Items.GUN_PISTOL: case Items.GUN_RIFLE: case Items.GUN_MG: {
                 local(c, m.x, m.y, m.a);
+                if (Math.cos(m.a) < 0) c.scale(1f, -1f);        // pointing left: keep the grip underneath, never upside down
                 drawGun(c, (int) q.param, q.hw, q.firing, q.dead ? 0 : 1);
                 c.restore();
                 break;

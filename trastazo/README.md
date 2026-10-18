@@ -1,4 +1,4 @@
-# Trastazo 3.9 — refrigerador, mejores gibs e IA
+# Trastazo 4.0 beta — pulido
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -8,6 +8,20 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 4.0 beta (pulido)
+
+* **Más robusto:** un fallo dentro de la simulación ya no cierra el juego (se registra, y si se repite se
+  limpia el escenario); **informe de errores** en un archivo de texto (`trastazo-informe.txt`) con versión,
+  dispositivo y pila de llamadas, y un aviso en la pantalla de inicio si el juego se cerró la última vez;
+  **guardado seguro** (se escribe a un archivo temporal antes de sustituir la partida).
+* **Interfaz:** los botones de arriba a la derecha se reducen en pantallas estrechas en vez de quedar tapados
+  por el catálogo (el cuadro con el nombre de la herramienta cede el sitio); etiqueta *BETA* en el inicio.
+* **PC:** el juego se pausa solo al perder el foco de la ventana.
+* **Armas:** las armas sueltas ya no se dibujan boca abajo al apuntar a la izquierda.
+* Pruebas de estrés con acciones al azar sobre todos los objetos (sin valores NaN ni excepciones) y de la
+  disposición de la interfaz en 7 tamaños de pantalla.
+* **`BETA.md`:** guía para probadores (qué mirar, dónde está el informe de errores, qué no está probado).
 
 ## Novedades de la 3.9
 

@@ -146,7 +146,12 @@ final class Game {
 
     void saveScene() {
         if (saveFile == null || challenge >= 0 || screens.screen == Screens.TITLE) return;
-        try { SceneIO.save(this, saveFile); } catch (Throwable ignored) { }
+        // written to a temporary file first, so a crash in the middle never leaves a broken save
+        try {
+            File tmp = new File(saveFile.getPath() + ".tmp");
+            SceneIO.save(this, tmp);
+            if (!tmp.renameTo(saveFile)) { saveFile.delete(); tmp.renameTo(saveFile); }
+        } catch (Throwable t) { Report.recovered("guardar la partida", t); }
     }
 
     void saveSettings() { if (host != null) host.saveSettings(settings); applySettings(); }
@@ -383,7 +388,14 @@ final class Game {
         // the mouse joints tell the world who is being held
         world.grabCount = 0;
         for (Ptr pt : ptrs) if (pt.down && pt.grab != null && world.grabCount < world.grabbed.length) world.grabbed[world.grabCount++] = pt.grab.b;
-        world.update(sim);
+        try {
+            world.update(sim);
+            errStreak = 0;
+        } catch (Throwable t) {
+            // a bug in the simulation must not close the game: log it, and if it keeps happening start over
+            Report.recovered("simulación", t);
+            if (++errStreak >= 20) { errStreak = 0; clearWorld(); ui.toast("Error interno: se ha limpiado el escenario"); }
+        }
         clock += dtReal;
         if (follow != null) {
             if (follow.removed || follow.bodies.isEmpty()) follow = null;
@@ -410,6 +422,7 @@ final class Game {
     // ------------------------------------------------------------------------------ draw ----
 
     private CanvasDraw canvasDraw;
+    private int errStreak;
 
     /** Software path (Canvas engine): world + interface on one canvas. */
     void draw(Canvas c) {

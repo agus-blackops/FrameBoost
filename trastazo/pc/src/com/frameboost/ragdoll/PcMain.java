@@ -85,6 +85,7 @@ public final class PcMain implements Game.Host {
     private PcMain() {
         Game.desktop = true;
         dir = dataDir();
+        Report.install(dir, System.getProperty("os.name") + " · Java " + System.getProperty("java.version"));
         File cache = new File(dir, "cache");
         cache.mkdirs();
         sfx = new Sfx(cache);
@@ -116,6 +117,7 @@ public final class PcMain implements Game.Host {
         frame.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent e) { quit(); }
             @Override public void windowIconified(WindowEvent e) { music.setPaused(true); }
+            @Override public void windowDeactivated(WindowEvent e) { synchronized (game) { if (game.screens.screen == Screens.NONE) game.paused = true; } }
             @Override public void windowDeiconified(WindowEvent e) { music.setPaused(false); }
         });
         view.addComponentListener(new ComponentAdapter() {

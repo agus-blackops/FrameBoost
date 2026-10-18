@@ -44,15 +44,28 @@ final class Ui {
         cardW = 84 * d; cardH = 74 * d; gap = 7 * d;
         railW = 70 * d; panelW = 2 * cardW + 3 * gap; headH = 34 * d;
         p.setTextSize(12 * d);
+        placeButtons();
+    }
+
+    /**
+     * The top-right buttons share the free space right of the rail and the open catalog: on narrow screens
+     * they get smaller instead of hiding behind the panel (called every frame, as the catalog opens and closes).
+     */
+    void placeButtons() {
+        int n = 0;
+        for (int i = 0; i < BTN_COUNT; i++) if (!btnHidden[i]) n++;
+        if (n == 0) return;
+        float gap = 6 * d, avail = sw - leftW() - 16 * d;
+        float w = Math.max(24 * d, Math.min(topH, (avail - gap * (n - 1)) / n));
         float x = sw - 8 * d;
         int[] order = {BTN_MENU, BTN_PAUSE, BTN_SLOW, BTN_GRAV, BTN_UNDO, BTN_CLEAR, BTN_SOUND};
         for (int oi = order.length - 1; oi >= 0; oi--) {
             int i = order[oi];
             if (btnHidden[i]) continue;
-            btnW[i] = topH;       // square icon buttons
+            btnW[i] = w;
             x -= btnW[i];
             btnX[i] = x;
-            x -= 6 * d;
+            x -= gap;
         }
         infoW = Math.max(120 * d, Math.min(300 * d, buttonsLeft() - railW - 20 * d));
     }
@@ -75,6 +88,8 @@ final class Ui {
     }
 
     void toast(String s) { toast = s; toastT = 2.2f; }
+
+    float btnLeft(int i) { return btnHidden[i] ? Float.MAX_VALUE : btnX[i]; }
 
     /** Left edge of the right-hand button group (the info box must stop before it). */
     private float buttonsLeft() {
@@ -123,6 +138,7 @@ final class Ui {
 
     void update(float dt) {
         if (toastT > 0) toastT -= dt;
+        placeButtons();
     }
 
     // ------------------------------------------------------------------------------ drawing -----
@@ -131,22 +147,27 @@ final class Ui {
         // top-left info
         p.setStyle(Paint.Style.FILL);
         p.setColor(0x99141820);
-        float ix = infoX(), iw = Math.max(90 * d, Math.min(infoW, buttonsLeft() - ix - 12 * d));
-        r.set(ix, 4 * d, ix + iw, 4 * d + topH + 14 * d);
-        c.drawRoundRect(r, 8 * d, 8 * d, p);
-        p.setColor(0xFF2fd0b5);
-        p.setTextSize(14 * d);
-        p.setTextAlign(Paint.Align.LEFT);
-        p.setFakeBoldText(true);
-        drawFitted(c, hudName, ix + 8 * d, 22 * d, iw - 16 * d);
-        p.setFakeBoldText(false);
-        p.setColor(0xFFd5dbe6);
-        p.setTextSize(10 * d);
-        drawFitted(c, hudHint, ix + 8 * d, 38 * d, iw - 16 * d);
-        p.setColor(0x88ffffff);
-        p.setTextSize(9 * d);
-        if (showFps) c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), ix + 8 * d, 52 * d, p);
-        else c.drawText(bodies + " objetos", ix + 8 * d, 52 * d, p);
+        float ix = infoX(), iw = Math.min(infoW, buttonsLeft() - ix - 12 * d);
+        boolean info = iw >= 100 * d;                // on small screens it makes way for the catalog
+        if (info) {
+            r.set(ix, 4 * d, ix + iw, 4 * d + topH + 14 * d);
+            c.drawRoundRect(r, 8 * d, 8 * d, p);
+        }
+        if (info) {
+            p.setColor(0xFF2fd0b5);
+            p.setTextSize(14 * d);
+            p.setTextAlign(Paint.Align.LEFT);
+            p.setFakeBoldText(true);
+            drawFitted(c, hudName, ix + 8 * d, 22 * d, iw - 16 * d);
+            p.setFakeBoldText(false);
+            p.setColor(0xFFd5dbe6);
+            p.setTextSize(10 * d);
+            drawFitted(c, hudHint, ix + 8 * d, 38 * d, iw - 16 * d);
+            p.setColor(0x88ffffff);
+            p.setTextSize(9 * d);
+            if (showFps) c.drawText(String.format("%d FPS · %d objetos", (int) fps, bodies), ix + 8 * d, 52 * d, p);
+            else c.drawText(bodies + " objetos", ix + 8 * d, 52 * d, p);
+        }
 
         // top-right buttons
         for (int i = 0; i < BTN_COUNT; i++) {

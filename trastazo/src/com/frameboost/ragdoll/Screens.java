@@ -25,7 +25,7 @@ final class Screens {
         "Abre la categoría \"Gente\" en la barra de la izquierda.",
         "Elige \"Humano\" y toca el escenario para colocarlo. Se mantendrá en pie... hasta que algo lo tumbe.",
         "Arrastra a alguien con el dedo: la mano siempre está activa, elijas lo que elijas. Con dos dedos, zoom.",
-        "Prueba zombis, explosivos y el Taller de mods. ¡A experimentar!",
+        "Prueba Máquinas, Animales y Explosivos, abre un refrigerador y mira el Taller de mods. ¡A experimentar!",
     };
 
     // ------------------------------------------------------------------------------- input ----
@@ -252,6 +252,16 @@ final class Screens {
             c.drawRect(i * sw * 0.05f, 0, (i + 1) * sw * 0.05f, sh, p);
         }
         float colX = 40 * d, colW = Math.min(sw * 0.42f, 360 * d);
+        {   // a small BETA badge at the top right of the logo
+            String tag = "BETA " + Report.VERSION;
+            float bw = 74 * d, bh = 22 * d, bx = colX + colW - bw, by = sh * 0.2f - 62 * d;
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xFFf2b134);
+            r.set(bx, by, bx + bw, by + bh);
+            c.drawRoundRect(r, 8 * d, 8 * d, p);
+            text(c, tag, bx + bw / 2, by + bh * 0.72f, 12 * d, 0xFF1b2029, Paint.Align.CENTER, true);
+        }
+        if (Report.lastCrash != null) text(c, "La última vez el juego se cerró por un error. Informe: " + Report.lastCrash, colX, sh - 52 * d, 10 * d, 0xFFf2b134, Paint.Align.LEFT, false);
         logo(c, colX + colW / 2, sh * 0.2f, Math.min(64 * d, colW / 5.2f));
         text(c, "laboratorio de muñecos y caos", colX + colW / 2, sh * 0.2f + 30 * d, 14 * d, 0xFFb9c2d0, Paint.Align.CENTER, false);
         float y = sh * 0.33f, bh = Math.min(54 * d, sh * 0.12f), gap = Math.min(12 * d, sh * 0.025f);
@@ -261,7 +271,7 @@ final class Screens {
         float half = (colW - gap) / 2;
         button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v3.9 · " + (Game.desktop ? "versión PC" : "Android") + " · refrigerador, mejores gibs e IA", colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        text(c, "Física, arte y música originales · v" + Report.VERSION + " beta · " + (Game.desktop ? "versión PC" : "Android"), colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
         if (Game.desktop) text(c, "Ratón: arrastra y toca · clic derecho: mover cámara · rueda: zoom · Esc: menú · Espacio: pausa · 1-9: categorías · F11: pantalla completa", colX, sh - 32 * d, 10 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 

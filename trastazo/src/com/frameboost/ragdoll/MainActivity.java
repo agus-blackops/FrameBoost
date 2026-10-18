@@ -28,6 +28,7 @@ public class MainActivity extends Activity implements Game.Host, GLGameView.List
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
+        Report.install(getFilesDir(), "Android " + android.os.Build.VERSION.SDK_INT + " " + android.os.Build.MODEL);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         sfx = new Sfx(getCacheDir());
         game = new Game(sfx, new File(getFilesDir(), "mods"));
