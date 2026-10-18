@@ -6,6 +6,7 @@ import { BlockPermutation, system, world } from "@minecraft/server";
 import { actionBar, block, distance, groundSpot, later, soundAt, tr, tryRun } from "../core/util.js";
 import { define } from "../core/creatures.js";
 import { addFear, discover } from "../core/store.js";
+import { dropPage } from "../items/pages.js";
 import { nearWard } from "../items/ward.js";
 
 const LASTS = 20 * 180;
@@ -75,8 +76,10 @@ function tickOne(player, g, now) {
     later(40, () => soundAt(player, "hl.whisper", under, 0.6, 1));
     later(45, () => actionBar(player, tr("hl.grave.below")));
     discover("grave");
+    // Torn Page VI is down there with whoever is knocking.
+    later(100, () => dropPage(6, { x: g.at.x, y: g.at.y + 0.5, z: g.at.z }, player));
     addFear(player, 30);
-    later(80, () => graves.delete(player.id));
+    later(120, () => graves.delete(player.id));
   }
 }
 

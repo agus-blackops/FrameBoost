@@ -2,18 +2,20 @@
 
 > *Este mundo no está tan vacío como parece.*
 
-**Fears** es el remake más duro de **Horror Legends**: la misma historia de
-terror en **tres actos** que, poco a poco, pone tu mundo en tu
-contra, pero empieza en dificultad **Alta**, con **sonidos mucho más fuertes**
-y un sistema nuevo de **miedos**, con **17 leyendas** del terror de Minecraft y de internet. Tiene un
-final. Está inspirada en los mods de terror más conocidos de Java y en las
-leyendas de la comunidad:
+**Fears** es el remake más duro de **Horror Legends**: una historia de terror
+en **tres actos** que, poco a poco, pone tu mundo en tu contra. Empieza en
+dificultad **Alta**, con **sonidos mucho más fuertes** y un sistema de
+**miedos**. Tiene un final.
 
-- **The Man From The Fog**, **Cave Dweller / From The Caves**, **The Broken
-  Script** (null), **Herobrine** y **Entity 303**
-- **Siren Head**, el **Skinwalker**, el **Wendigo**, el **Hombre Cabra**, el
-  **Hombre del Sombrero**, los **Ángeles Llorosos / SCP-173**, el **Mimic** y
-  **The Rake**
+**Desde la 1.1 solo quedan las leyendas y creepypastas de Minecraft**: ni
+folclore ni monstruos de internet de fuera del juego.
+
+- **Herobrine** y su forma verdadera, **el Minero Hueco** (el jefe)
+- **HerobrineGamer788**, el jugador que entra a tu partida
+- **Entity 303**
+- **null** (The Broken Script)
+- **The Man From The Fog**
+- **El Morador de las Cuevas** (Cave Dweller / From The Caves)
 
 Es un proyecto de fans: **no contiene código, arte ni sonido de esos mods**.
 Los modelos, las texturas y los sonidos se generan por código en `tools/`, y
@@ -27,36 +29,37 @@ todo el comportamiento está escrito desde cero para Bedrock.
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
 
-## Qué cambia en Fears
+## Novedades de la 1.1
 
-- **Sonidos fuertes.** Todos los sustos, gritos, chillidos y sirenas se han
-  vuelto a sintetizar saturados y normalizados a máximo volumen, y suenan
-  **dos veces a la vez** (un pelo desafinados, más fuertes y más ásperos).
-  Hay **4 sonidos nuevos**: *explosión grave*, *chillido metálico*, *grito
-  largo* y *cristales rotos*. Cada susto lleva ahora una explosión grave y un
+- **Eliminadas** las criaturas que no son de Minecraft: Siren Head, el
+  Skinwalker, el Wendigo, el Hombre Cabra, la Sombra (Hombre del Sombrero), la
+  Estatua que Llora, el Mimic, el Ahogado, The Rake, el Eco y los Ojos.
+- La **Ciudad Antigua** sigue (velas que se apagan, chilladores, pasos que
+  vuelven, portal que zumba, susurros) y ahora, si te quedas un minuto,
+  **Herobrine te observa desde las ruinas**.
+- La **Página VI** ya no es de Siren Head: está **en tu tumba** (mira «Tu
+  Tumba»).
+- Los sustos de cara usan solo a Herobrine, null, el Hombre de la Niebla y el
+  Morador. El apagón de luces del jefe sigue (ahora sin la Sombra).
+
+## Qué hay de especial en Fears
+
+- **Sonidos fuertes.** Todos los sustos, gritos y chillidos se han vuelto a
+  sintetizar saturados y normalizados a máximo volumen, y suenan **dos veces a
+  la vez**. Hay **4 sonidos nuevos**: explosión grave, chillido metálico,
+  grito largo y cristales rotos. Cada susto lleva una explosión grave y un
   grito encima del golpe de siempre.
-- **Los Miedos** (amenaza nueva, desde el día 1): el juego sabe a qué le
-  tienes miedo. Mientras estés expuesto, una barra se va llenando; cuando se
-  llena, pasa algo hecho a medida:
-  - **La oscuridad** (de noche o bajo tierra, sin linterna ni antorchas a menos
-    de 3 bloques): pantalla en negro, explosión, chillido a tu espalda,
-    *«no estás solo aquí»*.
-  - **Las alturas** (en un saliente con 14 o más bloques de caída): temblor,
-    mareo, un lamento y *«el suelo está muy lejos. Y te llama»*… *«salta»*.
-  - **El agua profunda** (nadando con 8 o más bloques debajo): algo enorme
-    pasa por debajo, explosión, chillido y lentitud.
-  - **Los espacios cerrados** (un túnel por el que apenas cabes): las paredes
-    **golpean desde el otro lado**, y luego se cierran: chillido, oscuridad,
-    *«no hay salida»*.
-  Cada miedo se llena antes si ya estás asustado y se vacía si te pones a
-  salvo; tras un susto baja a 40 y no se repiten dos seguidos. El Diario tiene
-  una página nueva, **Tus miedos**, con las cuatro barras.
-- **Empieza en dificultad Alta**: las criaturas llegan el doble de rápido y
-  hay más sustos. Se cambia en el Diario → Ajustes.
-- **Sustos de cara más sonoros**: la cara en un parpadeo, la estática (con
-  cristales rotos) y todos los sustos del director.
-- Todo lo demás es Horror Legends 8.2.0 (17 criaturas, 3 actos, la Ciudad
-  Antigua, 6 eventos...).
+- **Los Miedos** (desde el día 1): una barra por miedo que se llena mientras
+  estás expuesto. Al llenarse, pasa algo hecho a medida:
+  - **La oscuridad** (de noche o bajo tierra, sin linterna ni antorchas a
+    menos de 3 bloques): pantalla en negro, explosión, chillido a tu espalda.
+  - **Las alturas** (14 o más bloques de caída): temblor, mareo y un lamento.
+  - **El agua profunda** (8 o más bloques debajo): algo enorme pasa por
+    debajo.
+  - **Los espacios cerrados**: las paredes golpean desde el otro lado y se
+    cierran.
+  El Diario tiene la página **Tus miedos** con las barras.
+- **Empieza en dificultad Alta**: todo llega el doble de rápido.
 
 ## Instalación
 
@@ -64,73 +67,39 @@ todo el comportamiento está escrito desde cero para Bedrock.
 - **Por WhatsApp:** envía [`dist/HorrorFears_WhatsApp.zip`](dist/HorrorFears_WhatsApp.zip).
   Quien lo reciba lo descomprime y abre el `.mcaddon` de dentro con Minecraft.
 
-Después, al crear o editar un mundo, activa **Horror Legends** en *Packs de
-comportamiento* (el de recursos se añade solo). Requiere **Minecraft Bedrock
-1.21.0 o superior**. No necesita experimentos.
+Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
+de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
+Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.0.0**, *Fears*). Si
-en los ajustes del mundo sigue apareciendo una versión antigua, quítala y
-activa la 1.0.0. Los
-días que llevas en el mundo se conservan; las páginas que ya habías leído
-siguen leídas (ahora hacen falta siete).
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.1.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.1.0. Los
+días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia
 
-Cada acto se anuncia con un título al caer la noche, y cada criatura nueva
-llega con su propio aviso en el chat la noche en que aparece.
+Cada acto se anuncia con un título al caer la noche, y cada novedad llega con
+su propio aviso en el chat la noche en que aparece.
 
 | Día | | Qué pasa |
 |---|---|---|
-| 0 | **Acto I: Visitantes** | Sonidos que no están: pasos, puertas, cofres, uñas en la pared, golpes, tu nombre. |
-| 1 | Sustos | Una cara delante de la tuya en un parpadeo, un aliento en la nuca, puertas que se cierran solas, estática, tu nombre. |
+| 0 | **Acto I: Visitantes** | Sonidos que no están: pasos, puertas, uñas en la pared, golpes, tu nombre. Sustos: una cara delante de la tuya en un parpadeo, un aliento en la nuca, puertas que se cierran solas, estática. |
+| 1 | Los Miedos | La oscuridad, las alturas, el agua profunda y los espacios cerrados (ver arriba). |
 | 1 | HerobrineGamer788 | Un jugador con cascos de luz roja entra a tu partida. Juega, te regala cosas, **te copia**, se queda quieto cuando lo miras... y deja de fingir. |
 | 1 | Pasos | Alguien camina detrás de ti, paso a paso. Cuando te paras, **da un paso más**. |
 | 1 | El Morador de las Cuevas | Bajo tierra: sin ojos, a cuatro patas, con un **hocico de cuatro labios que se abre como una flor** sobre anillos de dientes. Huye si lo pillas mirando. Odia la luz. |
-| 1 | **El Eco** (Ciudad Antigua) | En la **Ciudad Antigua**: ciego, atravesado de sculk, con el pecho abierto y un corazón cian. **Caza por el oído**: si corres o rompes bloques, viene; agáchate y quédate quieto y te pierde. Imita tus sonidos. Suelta fragmentos de eco. |
-| 2 | El Mimic | Un **cofre que no estaba**. Ábrelo, pégale o acércate y la tapa es una boca con dientes y le salen seis patas. Se le puede matar y suelta hierro, oro, esmeraldas o un diamante. |
-| 2 | La Estatua que Llora | Una estatua con la cara entre las manos. **No se mueve si la miras**; si apartas la vista, o **parpadeas** (la pantalla se va a negro un instante), está más cerca, con las manos más bajas. Si te alcanza sin que la mires, te toca. |
-| 2 | Los Ojos | En una cueva oscura se abren **pares de ojos** a tu alrededor. Si miras uno, se cierra; con luz se cierran todos... y el último par se abre **detrás de ti**. |
+| 1 | La Ciudad Antigua | Muy abajo, bajo la pizarra: las velas se apagan solas, los chilladores gritan, tus pasos vuelven tarde, el marco del portal zumba, susurros... y **Herobrine te mira desde las ruinas**. |
 | 3 | **Acto II: El bosque** · Herobrine | Con la **columna fuera del cuerpo arqueada sobre la cabeza como la cola de un escorpión**. Te observa y desaparece si lo miras; pirámides de arena, árboles sin hojas, túneles, carteles, antorchas rojas. Si le pegas, la cola te alcanza. |
-| 3 | El Hombre Cabra | En el bosque de noche: **gritos de cabra** entre los árboles. Se acerca cuando no miras; cuando lo pillas, grita y huye... o carga. La luz lo espanta. |
-| 3 | La Visita | De noche, en casa, **llaman a la puerta**. En el chat, con tu nombre: *«Ábreme. Soy yo. Hace frío fuera.»* Si abres no hay nadie... y un momento después **estás detrás de ti**. Si no abres, llama más fuerte, prueba el picaporte y, al callarse, deja un cartel en tu puerta. |
-| 3 | La Cuenta Atrás | En el chat: *«Cuando llegue a cero, date la vuelta»*. 10, 9, 8... y al llegar a cero, **una cara delante de la tuya**. O nada... y un minuto después, un grito. |
+| 3 | La Visita | De noche, en casa, **llaman a la puerta** con tu voz. Si abres no hay nadie... y luego **estás detrás de ti**. Si no abres, deja un cartel. |
+| 3 | La Cuenta Atrás | *«Cuando llegue a cero, date la vuelta»*. 10, 9, 8... y **una cara delante de la tuya**. |
 | 4 | El Hombre de la Niebla | Una niebla espesa y, dentro, un hombre en **chubasquero con capucha** y una sonrisa de oreja a oreja. Se acerca cuando apartas la vista; de noche llama a la puerta. |
-| 4 | El Skinwalker | **Una vaca que siempre te mira**, con ojos y dientes de persona. Oyes tu nombre en el campo. Si te acercas, se levanta: cráneo de vaca por cara y su piel a la espalda. |
-| 4 | **The Rake** | Pálido, sin pelo, **agachado en el campo** con las rodillas junto a las orejas. Si lo miras no se mueve; si lo miras demasiado, chilla y huye **a cuatro patas**. Si apartas la vista, está más cerca, y si llega sin que lo veas, te araña. Algunas noches está **a los pies de tu cama** al despertar. |
-| 4 | Tu Tumba | Una campana a tu espalda. Un montículo de tierra, una rosa negra y una lápida con **tu nombre y la fecha de mañana**. Si te acercas, algo golpea **desde abajo**. |
-| 5 | La Sombra | **El Hombre del Sombrero** entra en tu casa: apaga las luces una a una, te sigue, mira por la ventana, está a los pies de tu cama al despertar. Música de cajita, tu propia muerte en el chat. |
-| 5 | El Ahogado | Cerca del agua, gorgoteos. De noche te mira desde la orilla. Si nadas, **te agarra desde abajo y tira de ti**. Pégale para que te suelte. |
-| 5 | La Hora Muerta | Las **3:00**. Todos los animales y aldeanos cercanos **se paran y se giran a mirarte** mientras una campana suena tres veces. |
+| 4 | Tu Tumba | Una campana a tu espalda. Una tumba con **tu nombre y la fecha de mañana**. Si te acercas, algo golpea **desde abajo** (y ahí está la Página VI). |
+| 5 | La Hora Muerta | Las **3:00**: animales y aldeanos **se paran y se giran a mirarte** mientras suena una campana tres veces. |
 | 6 | **Acto III: El error** · null | Roto en franjas negras desalineadas, con la caja de F3+B. Corrompe bloques, escribe en el chat, finge que el juego se cuelga, acaba **detrás de ti**. |
 | 6 | Entity 303 | Entra a tu partida, te cambia los objetos de mano, te "expulsa". En persona flota con la capucha blanca y **juega con tu mundo**: te hace volar, te teletransporta, caen rayos... y te **banea**. |
-| 7 | Siren Head | Una **sirena** muy lejos. Luego, entre los árboles y más alto que ellos, algo inmóvil con dos altavoces por cabeza. **No lo mires**: si lo miras demasiado, viene. **Escóndete** (bajo techo, en una cueva) hasta que te pierda. |
-| 7 | El Wendigo | En la nieve y el bosque: un silbido, ramas que crujen. **Caza por el oído**: si corres, te oye y carga; **agáchate** y quédate quieto. Sus garras te dejan muerto de hambre. |
 | 8 | La Noche Roja | Cada cuatro días, una noche de niebla roja: todo viene el doble de veces y tus faroles pueden apagarse. |
 | — | **El final** | Junta las **siete páginas arrancadas**, haz **el ritual** y enfréntate a **Herobrine en su forma verdadera**. |
 
-### El director del miedo
-
-Ya no pasan cosas al azar. Tienes un **nivel de miedo** (lo ves en el Diario)
-que sube de noche, bajo tierra, con niebla, con poca vida, en la Noche Roja y
-cuando algo está cerca; un Farol Protector lo baja. El director reparte el
-terror como en una película:
-
-1. **Calma:** algún ruido suelto.
-2. **Tensión:** sustos pequeños cada poco (sonidos, carteles, siluetas a lo lejos).
-3. **Clímax:** un encuentro de verdad, **elegido según dónde estás**: en las
-   cuevas (el Morador, el Mimic), en el bosque de noche (el Hombre Cabra, el
-   Wendigo, Siren Head), en la nieve (el Wendigo), junto al agua (el Ahogado),
-   en el campo (el Skinwalker), en casa (la Sombra, el Mimic) o en cualquier
-   parte (Herobrine, la Estatua, null, Entity 303).
-4. **Respiro:** unos minutos para recuperarte... y vuelta a empezar.
-
-De noche todo va más rápido. Tu **corazón late** cuando algo está cerca, y más
-deprisa cuando te persigue.
-
 ### Las siete páginas
-
-Un superviviente anterior dejó un diario. Siete criaturas guardan una de sus
-páginas y la sueltan cuando **sobrevives** a ellas:
 
 | Página | Cómo se consigue |
 |---|---|
@@ -139,7 +108,7 @@ páginas y la sueltan cuando **sobrevives** a ellas:
 | III. Ojos blancos | Mira fijamente a Herobrine hasta que desaparezca, tres veces. |
 | IV. La niebla | Sobrevive a una niebla en la que lo hayas visto: al disiparse, cae a tus pies. |
 | V. El error | Mira a null a los ojos dos veces, o sobrevive a su susto. |
-| VI. La sirena | Escóndete de Siren Head hasta que te pierda. |
+| VI. La tumba | Acércate a **tu tumba** de noche y aguanta los golpes de debajo. |
 | VII. El nombre | Aguanta el "espectáculo" de Entity 303 hasta que te banee. |
 
 **Usa** una página para leerla: se guarda en el Diario.
@@ -168,162 +137,24 @@ vez). Si mueres, huyes o sale el sol, se retira: podrás llamarlo otra noche.
 
 | Objeto | Receta | Uso |
 |---|---|---|
-| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 27 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
-| **Linterna** | `I G I / _ R _ / _ I _` (I = hierro, G = polvo de piedra luminosa, R = redstone) | Úsala para encenderla o apagarla. **Ilumina de verdad** lo que tienes delante mientras la llevas en la mano. Espanta al Morador y al Hombre Cabra, hace desaparecer a Herobrine, null, la Sombra y al Hombre de la Niebla cuando solo observa, frena al Skinwalker y al Wendigo, y quema al jefe. A la Estatua, a Siren Head y a Entity 303 les da igual. |
+| **Diario del Superviviente** | Libro + carbón vegetal (también te lo dan al entrar) | Día, acto, tu **miedo** y tus páginas. Actos, **Bestiario** de 17 entradas (lo que no has visto sale como ???), Páginas, **El Ritual**, Ajustes y **Pruebas**. |
+| **Linterna** | `I G I / _ R _ / _ I _` (I = hierro, G = polvo de piedra luminosa, R = redstone) | Úsala para encenderla o apagarla. **Ilumina de verdad** lo que tienes delante mientras la llevas en la mano. Espanta al Morador, hace desaparecer a Herobrine, null y al Hombre de la Niebla cuando solo observa, y quema al jefe. A Entity 303 le da igual. |
 | **Pila** | Redstone + pepita de hierro + lingote de cobre (da 2) | Una pila dura 5 minutos. Si llevas una de repuesto, se cambia sola. |
-| **Farol Protector** | Farol rodeado de 4 fragmentos de amatista (`_ A _ / A F A / _ A _`) | Nada te acecha en su luz: la Sombra no puede entrar, la Estatua no se acerca, el Morador, null, el Hombre Cabra y el Wendigo se apartan, el Hombre de la Niebla no pisa su círculo ni rompe esa puerta, Siren Head te pierde y Herobrine no construye nada dentro. Tu miedo baja. **Pero en la Noche Roja algo puede apagarlo.** |
+| **Farol Protector** | Farol rodeado de 4 fragmentos de amatista (`_ A _ / A F A / _ A _`) | Nada te acecha en su luz: el Morador y null se apartan, el Hombre de la Niebla no pisa su círculo ni rompe esa puerta, Herobrine no construye nada dentro, los miedos no se llenan y tu miedo baja. **Pero en la Noche Roja algo puede apagarlo.** |
 | **Páginas arrancadas I–VII** | Las dejan las criaturas | Úsalas para leerlas. |
 | **Pico del Minero Hueco** | Recompensa del final | Pico muy rápido que hace mucho daño y no se rompe. |
 | **Bloque Corrupto** | — | La textura que falta. Lo crea null y vuelve solo a ser el bloque original. |
 
-Las 17 criaturas (y los Ojos) tienen **huevo de generación** en creativo (el jefe
+Las 7 criaturas tienen **huevo de generación** en creativo (el jefe
 también: con huevo pelea incluso de día).
 
 ## Ajustes (en el Diario)
 
-- **Intensidad**: *Baja* (el doble de días, menos sustos), *Normal*, *Alta* o
-  *Pesadilla* (todo desde el día 0 y muy seguido).
+- **Intensidad**: *Baja*, *Normal*, *Alta* (por defecto en Fears) o *Pesadilla*.
 - **Activar o desactivar** cada amenaza. Cada una dice en cuántos días llega.
 - **Sustos fuertes**: pantalla roja, temblor, oscuridad y pitido en los oídos.
-  Si los quitas, queda un susto más suave.
-- **Pruebas**: provoca al momento cualquiera de las 26 amenazas, te da los
-  objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un
-  día.
-
-## Más terror (8.2.0)
-
-- **Remodelos más terroríficos** de 12 criaturas:
-  - **Wendigo**: colmillos, **babas de sangre** colgando de la mandíbula,
-    una costilla rota atravesando la piel, cuencas que arden y garras más
-    largas.
-  - **La Estatua que Llora**: **llora sangre**, los ojos son brasas rojas en
-    cuencas negras, la boca abierta con colmillos irregulares y dedos de
-    piedra afilados como garras.
-  - **Siren Head**: **tiras de carne y cable** colgando de los altavoces, la
-    barriga abierta con las tripas a la vista, vértebras saliendo de la
-    espalda y dedos más largos.
-  - **El Hombre Cabra**: ojos dorados que brillan, colmillos, sangre en el
-    hocico, un collar de huesos y dientes, cuernos más grandes y uñas negras.
-  - **El Ahogado**: bajo el pelo, **una boca demasiado ancha** llena de
-    dientes y un segundo ojo, piel podrida y dedos más largos.
-  - **El Hombre de la Niebla**: cuencas enormes, **una sonrisa de dientes
-    finos** de oreja a oreja y sangre en la barbilla.
-  - **La Sombra**: ojos rojos más vivos, **una sonrisa blanca demasiado
-    ancha** bajo el sombrero y dedos como ramas.
-  - **El Mimic**: más colmillos y **ojos amarillos en la carne** del fondo.
-  - **El Morador**: babas colgando del hocico, **púas en la columna** y garras
-    más largas manchadas de sangre.
-  - **Entity 303**: llora sangre, sonrisa cosida en rojo brillante, la túnica
-    manchada y **garras negras**.
-  - **null**: una **boca que se dibuja mal**, desplazada un píxel, y dedos más
-    largos.
-  - **El Skinwalker**: el cráneo sangra por las cuencas, la vaca tiene los
-    ojos rojos en el lagrimal y garras más largas.
-  - Además, los ojos blancos de todas las criaturas brillan más en la oscuridad.
-- **2 criaturas nuevas**: **The Rake** y **El Eco** (ver la tabla).
-- **La Ciudad Antigua, rehecha**: al entrar, su nombre en pantalla y un zumbido
-  grave. Mientras estás dentro, la ciudad está despierta: **las velas se apagan
-  solas** una a una, los **chilladores gritan** sin nada cerca, **tus pasos
-  vuelven** un momento tarde, la oscuridad late como un corazón, **el marco del
-  portal zumba** y la ciudad susurra. Y si te quedas un minuto, **El Eco** te
-  encuentra.
-- **5 eventos nuevos**: **Pasos**, **Los Ojos**, **La Cuenta Atrás**, **Tu
-  Tumba** y **La Hora Muerta** (ver la tabla).
-- Todo lo nuevo tiene su entrada en el Bestiario, su interruptor en Ajustes y
-  su botón en Pruebas.
-
-## Linterna nueva y La Visita (8.1.0)
-
-- **Linterna rehecha en 3D**: cuerpo de metal arañado, empuñadura de goma con
-  anillos, cinta gris con **una huella de sangre**, cabeza ancha con esquinas
-  de bisel, **reflector que brilla** dentro del cristal, interruptor con
-  guarda, **piloto verde** encendido, clip, culata moleteada y una correa de
-  cuero colgando.
-- **Evento nuevo: La Visita** (Acto II, desde el día 3, solo de noche y
-  dentro de casa con una puerta cerca):
-  - tres golpes en la puerta y una voz en el chat **con tu nombre**:
-    *«Ábreme. Soy yo. Hace frío fuera.»*;
-  - **si abres** (o te acercas a la puerta): no hay nadie, solo el viento. Un
-    momento después, *«Gracias por dejarme entrar.»*, y **tú mismo** estás
-    justo detrás, con los ojos brillando. Si te das la vuelta, susto; si no,
-    se va;
-  - **si no abres**: llama más fuerte cada vez (*«¿Por qué no me abres?»*,
-    *«Sé que estás ahí. Te oigo respirar.»*), prueba el picaporte
-    (*«ÁBREME»*) y, al minuto, silencio... y fuera, delante de tu puerta, un
-    **cartel**: *TE VI POR LA VENTANA*.
-  - Tiene su entrada en el Bestiario, su interruptor en Ajustes y su botón
-    en Pruebas.
-
-## Remastered (8.0.0)
-
-- **Texturas al doble de resolución.** Cada criatura se pinta ahora a 4
-  píxeles de textura por píxel de modelo (una cabeza tiene una cara de 32x32,
-  antes 16x16): degradados más suaves, grano fino en piel, tela y piedra, y
-  un **bisel de luz** en el borde de arriba de cada pieza. Los diseños son los
-  mismos, con el doble de detalle.
-- **Modelos más detallados**: costillas que sobresalen (Siren Head, el
-  Morador, el Wendigo), rejillas en los altavoces de Siren Head, herrajes y
-  bisagras de hierro en el Mimic, mechones mojados sueltos en el Ahogado,
-  dientes en el Hombre Cabra y **cristales de mineral** creciendo de los
-  hombros del Minero Hueco (brillan en su fase de furia).
-- **Animaciones nuevas** (96 en total, antes 74): el Morador y el Minero Hueco
-  **salen del suelo** al aparecer y el Ahogado **sale del agua**; la Sombra y
-  null **se materializan**; al andar, las cabezas cabecean, las colas, el pelo
-  y los altavoces se balancean y las mandíbulas se mueven; casi todas las
-  criaturas **retroceden al recibir un golpe**.
-- **Sustos nuevos** (nueva amenaza "Sustos", desde el día 1):
-  - una **cara justo delante de la tuya** lo que dura un parpadeo (la de
-    Herobrine, null, la Sombra, el Hombre de la Niebla, la Estatua o el
-    Morador, según quién haya llegado);
-  - un **aliento en la nuca** y algo que te roza y te empuja;
-  - una **puerta que se abre o se cierra de golpe** sola;
-  - la pantalla **rota en estática**;
-  - un **golpe que duele y no deja marca**;
-  - **tu nombre** escrito delante de tus ojos.
-- Nombre nuevo, **Horror Legends: Remastered**, e icono nuevo.
-
-## Objetos en 3D (7.1.0)
-
-Los objetos tienen **modelo 3D cuando los llevas en la mano** (en primera y en
-tercera persona), en vez del dibujo plano de siempre:
-
-- **Linterna**: ver 8.1.0 (modelo nuevo). Apunta hacia donde miras.
-- **Pila**: con el polo de cobre y el rayo amarillo.
-- **Diario**: tapa de cuero con costuras, **una mano de sangre**, el canto de
-  las hojas, el cierre y la cinta roja.
-- **Páginas I–VII**: una hoja de papel con su propio dibujo, mirando hacia ti.
-- **Pico del Minero Hueco**: de piedra negra con **grietas de lava que brillan**.
-
-En el inventario se siguen viendo los iconos. El Farol Protector ya era un
-bloque con modelo propio.
-
-## Modelos, texturas y sonidos (7.0.0)
-
-Los **15 modelos están hechos desde cero** en esta versión, con texturas
-nuevas pintadas con rampas de color por material y tramado, al doble de
-detalle que un modelo normal, y **animaciones propias** para cada uno (74 en
-total: andar, acechar, cargar, gritar, abrir la boca, flotar, nadar...).
-
-- **Herobrine**: tres bloques, la columna fuera como **cola de escorpión** con
-  aguijón, estómago abierto y cosido, costillas abiertas, media cara quemada,
-  mandíbula colgando, un pico clavado en el hombro, un brazo despellejado y
-  otro carbonizado.
-- **HerobrineGamer788**: Steve con **cascos gamer** y una luz roja; con los
-  ojos blancos cuando se revela.
-- **El Hombre de la Niebla**: chubasquero negro empapado, capucha, sonrisa de
-  oreja a oreja, brazos hasta las rodillas.
-- **El Morador**: sin ojos, a cuatro patas de araña, hocico de cuatro labios
-  que se abre como una flor.
-- **null**: negro, roto en franjas desalineadas con aberración roja y azul,
-  antebrazo suelto con la textura que falta, caja de F3+B.
-- **El Minero Hueco**: pizarra y lava, casco con lámpara, pico, puño de piedra
-  y cola de vértebras; segunda textura para la fase de furia.
-- **9 criaturas nuevas**: Siren Head, el Hombre Cabra, la Estatua que Llora
-  (tres poses), el Mimic (cofre con patas), la Sombra (sombrero y humo), el
-  Skinwalker (forma de vaca y forma verdadera), el Wendigo, Entity 303 y el
-  Ahogado.
-- **Sonidos nuevos** creados por código: sirena, voz por altavoz, piedra que
-  se arrastra, gorgoteo, chillido, silbido, ruido de hackeo y mordisco.
+- **Sonidos fuertes**: los sonidos grandes suenan por duplicado.
+- **Pruebas**: provoca al momento cualquiera de las 16 amenazas, te da los objetos (linterna, pilas, farol y páginas), empieza el ritual o avanza un día.
 
 ## Estructura
 
@@ -334,8 +165,8 @@ behavior_pack/scripts/
   core/              utilidades, estado guardado, registro de criaturas, sustos,
                      reconocer la Ciudad Antigua
   creatures/         un archivo por criatura (cada una se registra sola)
-  events/            la Noche Roja, la Ciudad Antigua, la Visita, Pasos, Los
-                     Ojos, La Cuenta Atrás, Tu Tumba, La Hora Muerta
+  events/            la Noche Roja, la Ciudad Antigua, la Visita, Pasos,
+                     La Cuenta Atrás, Tu Tumba, La Hora Muerta, Los Miedos
   items/             linterna, Farol Protector, páginas
   ui/                el Diario
 tools/

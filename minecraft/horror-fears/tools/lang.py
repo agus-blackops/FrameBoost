@@ -13,8 +13,8 @@ S = {
         "§4Horror Legends: §cFears§r",
     ),
     "pack.description": (
-        "Terror en tres actos con 17 leyendas: HerobrineGamer788, el Morador, el Eco de la Ciudad Antigua, el Mimic, la Estatua que Llora, Herobrine, el Hombre Cabra, el Hombre de la Niebla, el Skinwalker, The Rake, la Sombra, el Ahogado, null, Entity 303, Siren Head, el Wendigo y el Minero Hueco.",
-        "Horror in three acts with 17 legends: HerobrineGamer788, the Cave Dweller, the Echo of the Ancient City, the Mimic, the Weeping Statue, Herobrine, the Goatman, the Man From The Fog, the Skinwalker, the Rake, the Shadow, the Drowned One, null, Entity 303, Siren Head, the Wendigo and the Hollow Miner.",
+        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, Herobrine, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Más sonidos fuertes, los Miedos y la Ciudad Antigua.',
+        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, Herobrine, the Man From The Fog, null, Entity 303 and the Hollow Miner. Plus loud sounds, the Fears and the Ancient City.',
     ),
     "entity.hl:herobrine.name": (
         "Herobrine",
@@ -40,41 +40,9 @@ S = {
         "HerobrineGamer788",
         "HerobrineGamer788",
     ),
-    "entity.hl:siren_head.name": (
-        "Siren Head",
-        "Siren Head",
-    ),
-    "entity.hl:goatman.name": (
-        "El Hombre Cabra",
-        "The Goatman",
-    ),
-    "entity.hl:weeping_statue.name": (
-        "La Estatua que Llora",
-        "The Weeping Statue",
-    ),
-    "entity.hl:mimic.name": (
-        "El Mimic",
-        "The Mimic",
-    ),
-    "entity.hl:shadow.name": (
-        "La Sombra",
-        "The Shadow",
-    ),
-    "entity.hl:skinwalker.name": (
-        "El Skinwalker",
-        "The Skinwalker",
-    ),
-    "entity.hl:wendigo.name": (
-        "El Wendigo",
-        "The Wendigo",
-    ),
     "entity.hl:entity_303.name": (
         "Entity 303",
         "Entity 303",
-    ),
-    "entity.hl:drowned_one.name": (
-        "El Ahogado",
-        "The Drowned One",
     ),
     "item.spawn_egg.entity.hl:herobrine.name": (
         "Generar: Herobrine",
@@ -100,41 +68,9 @@ S = {
         "Generar: HerobrineGamer788",
         "Spawn HerobrineGamer788",
     ),
-    "item.spawn_egg.entity.hl:siren_head.name": (
-        "Generar: Siren Head",
-        "Spawn Siren Head",
-    ),
-    "item.spawn_egg.entity.hl:goatman.name": (
-        "Generar: El Hombre Cabra",
-        "Spawn The Goatman",
-    ),
-    "item.spawn_egg.entity.hl:weeping_statue.name": (
-        "Generar: La Estatua que Llora",
-        "Spawn The Weeping Statue",
-    ),
-    "item.spawn_egg.entity.hl:mimic.name": (
-        "Generar: El Mimic",
-        "Spawn The Mimic",
-    ),
-    "item.spawn_egg.entity.hl:shadow.name": (
-        "Generar: La Sombra",
-        "Spawn The Shadow",
-    ),
-    "item.spawn_egg.entity.hl:skinwalker.name": (
-        "Generar: El Skinwalker",
-        "Spawn The Skinwalker",
-    ),
-    "item.spawn_egg.entity.hl:wendigo.name": (
-        "Generar: El Wendigo",
-        "Spawn The Wendigo",
-    ),
     "item.spawn_egg.entity.hl:entity_303.name": (
         "Generar: Entity 303",
         "Spawn Entity 303",
-    ),
-    "item.spawn_egg.entity.hl:drowned_one.name": (
-        "Generar: El Ahogado",
-        "Spawn The Drowned One",
     ),
     "item.hl:journal.name": (
         "Diario del Superviviente",
@@ -209,32 +145,32 @@ S = {
         "§8[???]§r §7You're alone in this world. Aren't you?",
     ),
     "hl.act.1.text": (
-        "Primero, sonidos que no están: pasos, puertas, tu nombre.\n\nLuego llegan los visitantes. §fHerobrineGamer788§r entra a tu partida. Bajo tierra, el §fMorador§r te acecha. Aparecen §fcofres§r donde no los había. Y en algún sitio hay una §festatua§r con la cara entre las manos que no estaba ahí ayer.\n\nMuy abajo, bajo la pizarra, hay una §3Ciudad Antigua§r. Algo vive allí. Escucha.",
-        "First, sounds that aren't there: footsteps, doors, your name.\n\nThen the visitors come. §fHerobrineGamer788§r joins your game. Underground, the §fCave Dweller§r stalks you. §fChests§r turn up where there were none. And somewhere there's a §fstatue§r with its face in its hands that wasn't there yesterday.\n\nFar down, under the deepslate, there is an §3Ancient City§r. Something lives there. It listens.",
+        'Primero, sonidos que no están: pasos, puertas, tu nombre.\n\nLuego llegan los visitantes. §fHerobrineGamer788§r entra a tu partida. Bajo tierra, el §fMorador§r te acecha. Y muy abajo, bajo la pizarra, hay una §3Ciudad Antigua§r donde nadie hace ruido.\n\nCada uno tiene sus miedos, y el juego los conoce.',
+        "First, sounds that aren't there: footsteps, doors, your name.\n\nThen the visitors come. §fHerobrineGamer788§r joins your game. Underground, the §fCave Dweller§r stalks you. And far below, under the deepslate, there is an §3Ancient City§r where nobody makes a sound.\n\nEveryone has their fears, and the game knows them.",
     ),
     "hl.act.2.name": (
         "El bosque",
         "The Woods",
     ),
     "hl.act.2.intro": (
-        "§8[???]§r §7No salgas al bosque de noche.",
-        "§8[???]§r §7Don't go into the woods at night.",
+        '§8[???]§r §7No mires por la ventana de noche.',
+        "§8[???]§r §7Don't look out of the window at night.",
     ),
     "hl.act.2.text": (
-        "§fHerobrine§r te observa con su cola de vértebras. Algo grita como una cabra entre los árboles. Llega la §fniebla§r. Una vaca te mira con ojos de persona. Un §fhombre con sombrero§r entra en tu casa. Algo pálido se agacha en el campo y te mira. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y en el agua, algo te agarra del tobillo.",
-        "§fHerobrine§r watches you with his tail of vertebrae. Something screams like a goat between the trees. The §ffog§r rolls in. A cow looks at you with human eyes. A §fman in a hat§r gets into your house. Something pale crouches in a field and watches you. Someone knocks on your door with your voice. You find §fyour own grave§r. And in the water, something takes you by the ankle.",
+        '§fHerobrine§r te observa con su cola de vértebras. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
+        '§fHerobrine§r watches you with his tail of vertebrae. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
     ),
     "hl.act.3.name": (
         "El error",
         "The Error",
     ),
     "hl.act.3.intro": (
-        "§8[???]§r §7Algo se ha roto en el código. Y algo muy alto se acerca.",
-        "§8[???]§r §7Something has broken in the code. And something very tall is coming.",
+        '§8[???]§r §7Algo se ha roto en el código.',
+        '§8[???]§r §7Something has broken in the code.',
     ),
     "hl.act.3.text": (
-        "§fnull§r corrompe el mundo. §fEntity 303§r entra a tu partida y juega con ella. Una sirena suena a lo lejos y algo más alto que los árboles la lleva en lugar de cabeza. En la nieve, algo te escucha respirar.\n\nCada cuatro días, la §4Noche Roja§r.\n\nSi has encontrado las siete páginas, ya sabes cómo acabar con esto.",
-        "§fnull§r corrupts the world. §fEntity 303§r joins your game and plays with it. A siren wails far away, and something taller than the trees carries it instead of a head. In the snow, something listens to you breathe.\n\nEvery four days, the §4Red Night§r.\n\nIf you have found all seven pages, you know how to end this.",
+        '§fnull§r corrompe el mundo. §fEntity 303§r entra a tu partida y juega con ella.\n\nCada cuatro días, la §4Noche Roja§r.\n\nSi has encontrado las siete páginas, ya sabes cómo acabar con esto.',
+        '§fnull§r corrupts the world. §fEntity 303§r joins your game and plays with it.\n\nEvery four days, the §4Red Night§r.\n\nIf you have found all seven pages, you know how to end this.',
     ),
     "hl.arrive.ambience": (
         "§8§o...",
@@ -248,37 +184,13 @@ S = {
         "§8[???]§r §7Algo respira en las cuevas.",
         "§8[???]§r §7Something breathes in the caves.",
     ),
-    "hl.arrive.mimic": (
-        "§8[???]§r §7No abras cofres que no hayas puesto tú.",
-        "§8[???]§r §7Don't open chests you didn't place.",
-    ),
-    "hl.arrive.statue": (
-        "§8[???]§r §7No parpadees.",
-        "§8[???]§r §7Don't blink.",
-    ),
     "hl.arrive.herobrine": (
         "§8[???]§r §7Él te ha visto.",
         "§8[???]§r §7He has seen you.",
     ),
-    "hl.arrive.goatman": (
-        "§8[???]§r §7Esta noche se oyen cabras en el bosque. No hay cabras en el bosque.",
-        "§8[???]§r §7There are goats in the woods tonight. There are no goats in the woods.",
-    ),
     "hl.arrive.fog": (
         "§8[???]§r §7Habrá niebla. No la mires.",
         "§8[???]§r §7There will be fog. Don't look into it.",
-    ),
-    "hl.arrive.skinwalker": (
-        "§8[???]§r §7Cuenta las vacas. Ayer había una menos.",
-        "§8[???]§r §7Count the cows. Yesterday there was one fewer.",
-    ),
-    "hl.arrive.shadow": (
-        "§8[???]§r §7Ya no estás solo en tu casa.",
-        "§8[???]§r §7You're no longer alone in your house.",
-    ),
-    "hl.arrive.drowned": (
-        "§8[???]§r §7No te bañes de noche.",
-        "§8[???]§r §7Don't swim at night.",
     ),
     "hl.arrive.null": (
         "§8[???]§r §7null",
@@ -287,14 +199,6 @@ S = {
     "hl.arrive.e303": (
         "§8[???]§r §7Alguien tiene permisos de administrador en tu mundo. No eres tú.",
         "§8[???]§r §7Someone has operator permissions in your world. It isn't you.",
-    ),
-    "hl.arrive.siren": (
-        "§8[???]§r §7Si oyes una sirena, no la busques.",
-        "§8[???]§r §7If you hear a siren, don't go looking for it.",
-    ),
-    "hl.arrive.wendigo": (
-        "§8[???]§r §7Hace frío. Algo tiene hambre. No corras.",
-        "§8[???]§r §7It's cold. Something is hungry. Don't run.",
     ),
     "hl.arrive.redNight": (
         "§8[???]§r §7La luna se está volviendo roja.",
@@ -355,37 +259,13 @@ S = {
         "El Morador de las Cuevas",
         "The Cave Dweller",
     ),
-    "hl.threat.mimic": (
-        "El Mimic",
-        "The Mimic",
-    ),
-    "hl.threat.statue": (
-        "La Estatua que Llora",
-        "The Weeping Statue",
-    ),
     "hl.threat.herobrine": (
         "Herobrine",
         "Herobrine",
     ),
-    "hl.threat.goatman": (
-        "El Hombre Cabra",
-        "The Goatman",
-    ),
     "hl.threat.fog": (
         "El Hombre de la Niebla",
         "The Man From The Fog",
-    ),
-    "hl.threat.skinwalker": (
-        "El Skinwalker",
-        "The Skinwalker",
-    ),
-    "hl.threat.shadow": (
-        "La Sombra",
-        "The Shadow",
-    ),
-    "hl.threat.drowned": (
-        "El Ahogado",
-        "The Drowned One",
     ),
     "hl.threat.null": (
         "null",
@@ -394,14 +274,6 @@ S = {
     "hl.threat.e303": (
         "Entity 303",
         "Entity 303",
-    ),
-    "hl.threat.siren": (
-        "Siren Head",
-        "Siren Head",
-    ),
-    "hl.threat.wendigo": (
-        "El Wendigo",
-        "The Wendigo",
     ),
     "hl.threat.redNight": (
         "La Noche Roja",
@@ -423,37 +295,13 @@ S = {
         "§lEl Morador de las Cuevas§r\n§8(inspirado en Cave Dweller / From The Caves)§r\n\nUn cuerpo pálido y sin ojos sobre cuatro patas larguísimas, con las rodillas por encima del lomo. Su hocico de cuatro labios se abre como una flor sobre anillos de dientes. Huye si lo pillas mirando; si esperas demasiado, viene a por ti.\n\n§eConsejo:§r la linterna lo espanta. Sobrevive a él y dejará algo.",
         "§lThe Cave Dweller§r\n§8(inspired by Cave Dweller / From The Caves)§r\n\nA pale, eyeless body on four very long limbs, knees above its back. Its four-lipped snout opens like a flower over rings of teeth. It flees if you catch it looking; wait too long and it comes for you.\n\n§eTip:§r the flashlight drives it off. Live through it and it leaves something behind.",
     ),
-    "hl.lore.mimic": (
-        "§lEl Mimic§r\n§8(el cofre que muerde)§r\n\nUn cofre igual que los tuyos, donde antes no había nada. Si lo abres, la tapa es una boca llena de dientes y le salen seis patas.\n\n§eConsejo:§r se le puede matar, y suelta lo que se tragó: hierro, oro, esmeraldas... a veces un diamante.",
-        "§lThe Mimic§r\n§8(the chest that bites)§r\n\nA chest just like yours, where there was nothing before. Open it and the lid is a mouth full of teeth, and six legs unfold.\n\n§eTip:§r it can be killed, and drops what it swallowed: iron, gold, emeralds... sometimes a diamond.",
-    ),
-    "hl.lore.statue": (
-        "§lLa Estatua que Llora§r\n§8(inspirada en los Ángeles Llorosos y SCP-173)§r\n\nUna figura de piedra con la cara entre las manos. No se mueve mientras alguien la mira. Cada vez que apartas la vista, o parpadeas, está más cerca, con las manos más bajas y la boca más abierta.\n\n§eConsejo:§r no le quites los ojos de encima hasta que se canse. Un Farol Protector la detiene.",
-        "§lThe Weeping Statue§r\n§8(inspired by the Weeping Angels and SCP-173)§r\n\nA stone figure with its face in its hands. It doesn't move while anyone is looking. Every time you look away, or blink, it's closer, its hands lower, its mouth wider.\n\n§eTip:§r keep your eyes on it until it gives up. A Ward Lantern stops it.",
-    ),
     "hl.lore.herobrine": (
         "§lHerobrine§r\n§8(la leyenda de siempre)§r\n\nTres bloques de alto, el estómago abierto y cosido, las costillas abiertas como dedos, media cara quemada hasta el hueso, la mandíbula colgando hasta el pecho. Su columna sale de la espalda y se arquea sobre su cabeza como la cola de un escorpión. Te observa desde lejos y desaparece si lo miras.\n\n§eConsejo:§r míralo fijamente tres veces. No le pegues.",
         "§lHerobrine§r\n§8(the old legend)§r\n\nThree blocks tall, his stomach open and stitched, his ribs splayed like fingers, half his face burned to the bone, his jaw hanging to his chest. His spine comes out of his back and arches over his head like a scorpion's tail. He watches from afar and vanishes if you look.\n\n§eTip:§r stare him down three times. Don't hit him.",
     ),
-    "hl.lore.goatman": (
-        "§lEl Hombre Cabra§r\n§8(la leyenda de los bosques)§r\n\nPatas de cabra, cuernos de carnero, ojos amarillos, brazos demasiado humanos. Grita como una cabra entre los árboles de noche. Se acerca cuando no miras; cuando lo pillas, grita y huye... o viene a por ti.\n\n§eConsejo:§r la luz y los golpes lo espantan.",
-        "§lThe Goatman§r\n§8(the legend of the woods)§r\n\nGoat legs, ram's horns, yellow eyes, arms too human. He screams like a goat between the trees at night. He comes closer when you don't look; when you catch him he screams and runs... or comes for you.\n\n§eTip:§r light and a beating send him running.",
-    ),
     "hl.lore.fog": (
         "§lEl Hombre de la Niebla§r\n§8(inspirado en The Man From The Fog)§r\n\nMás de tres bloques de cuerpo gris y famélico en un chubasquero negro empapado. Dentro de la capucha, dos puntos blancos y una sonrisa de oreja a oreja. Se acerca cuando no miras. De noche llama a tu puerta.\n\n§eConsejo:§r sobrevive a una niebla en la que lo hayas visto.",
         "§lThe Man From The Fog§r\n§8(inspired by The Man From The Fog)§r\n\nOver three blocks of grey, starved body in a soaked black raincoat. Inside the hood, two white points and a grin from ear to ear. He comes closer when you don't look. At night he knocks on your door.\n\n§eTip:§r live through a fog in which you saw him.",
-    ),
-    "hl.lore.skinwalker": (
-        "§lEl Skinwalker§r\n§8(la leyenda del desierto)§r\n\nUna vaca que siempre te está mirando, con ojos de persona y dientes de persona. Oyes tu nombre en el campo, a alguien herido donde no hay nadie. Si te acercas se levanta: algo flaco con el cráneo de la vaca por cara y su piel a la espalda.\n\n§eConsejo:§r no te acerques a vacas que te miran. Herido, huye.",
-        "§lThe Skinwalker§r\n§8(the desert legend)§r\n\nA cow that is always looking at you, with a person's eyes and a person's teeth. You hear your name in the field, someone hurt where nobody is. Get close and it stands up: a starved thing with the cow's skull for a face and its hide on its back.\n\n§eTip:§r don't go near cows that stare. Hurt, it flees.",
-    ),
-    "hl.lore.shadow": (
-        "§lLa Sombra§r\n§8(el Hombre del Sombrero)§r\n\nUna figura negra y plana con sombrero de ala ancha y un abrigo que se deshace en humo. Apaga las luces de tu casa, te sigue, mira por la ventana, y está a los pies de tu cama cuando te despiertas.\n\n§eConsejo:§r la linterna o mirarla fijamente la hacen desaparecer. Un Farol Protector la mantiene fuera.",
-        "§lThe Shadow§r\n§8(the Hat Man)§r\n\nA flat black figure in a wide-brimmed hat and a coat that frays into smoke. It puts out the lights in your house, follows you, looks in through the window, and stands at the foot of your bed when you wake.\n\n§eTip:§r the flashlight, or staring at it, makes it vanish. A Ward Lantern keeps it out.",
-    ),
-    "hl.lore.drowned": (
-        "§lEl Ahogado§r\n§8(lo que no salió del agua)§r\n\nHinchado, con un camisón roto y verde y el pelo negro tapándole la cara, salvo un ojo. Gorgotea bajo la superficie. De noche te mira desde la orilla; si nadas, te agarra desde abajo y tira de ti.\n\n§eConsejo:§r pégale para que te suelte, o sal del agua.",
-        "§lThe Drowned One§r\n§8(what never came out of the water)§r\n\nSwollen, in a torn green nightdress, black hair over its face but for one eye. It gurgles under the surface. At night it watches from the shallows; if you swim, it grabs you from below and pulls.\n\n§eTip:§r hit it to make it let go, or get out of the water.",
     ),
     "hl.lore.null": (
         "§lnull§r\n§8(inspirado en The Broken Script)§r\n\nUn jugador que el juego no consigue dibujar: negro, roto en franjas que no encajan, con un borde rojo y otro azul, dos ojos blancos y la caja de F3+B alrededor. Escribe en el chat, corrompe bloques, finge que el juego se cuelga.\n\n§eConsejo:§r míralo a los ojos. Dos veces.",
@@ -462,14 +310,6 @@ S = {
     "hl.lore.e303": (
         "§lEntity 303§r\n§8(el hacker que nunca se fue)§r\n\nCapucha blanca, ojos rojos, una máscara con una sonrisa cosida. Entra a tu partida, escribe en el chat, te cambia los objetos de mano, te echa (o lo finge). En persona flota, levanta las manos y tu mundo es suyo: vuelas, te teletransporta, caen rayos. Luego te banea.\n\n§eConsejo:§r aguanta su espectáculo. Al final deja algo.",
         "§lEntity 303§r\n§8(the hacker who never left)§r\n\nWhite hood, red eyes, a mask with a stitched grin. He joins your game, writes in the chat, swaps what you're holding, kicks you (or pretends to). In person he floats, raises his hands and your world is his: you fly, you're teleported, lightning falls. Then he bans you.\n\n§eTip:§r sit through his show. In the end he leaves something.",
-    ),
-    "hl.lore.siren": (
-        "§lSiren Head§r\n§8(inspirado en la criatura de Trevor Henderson)§r\n\nCasi seis bloques de piel seca sobre huesos, y donde debería estar la cabeza, un poste con dos altavoces oxidados. Primero oyes la sirena, muy lejos. Luego voces por el altavoz. Si lo miras demasiado, viene a zancadas.\n\n§eConsejo:§r escóndete donde no te vea (bajo techo, tras una colina) hasta que te pierda.",
-        "§lSiren Head§r\n§8(inspired by Trevor Henderson's creature)§r\n\nNearly six blocks of dried skin over bones, and where the head should be, a pole with two rusted loudspeakers. First you hear the siren, far away. Then voices through the speakers. Watch it too long and it comes, in huge strides.\n\n§eTip:§r hide where it can't see you (under a roof, behind a hill) until it loses you.",
-    ),
-    "hl.lore.wendigo": (
-        "§lEl Wendigo§r\n§8(el hambre que aprendió a andar)§r\n\nPiel azulada sobre las costillas, dedos negros de congelación, un cráneo de ciervo con una cornamenta enorme. Silba entre los árboles. Caza por el oído: si corres, te oye; si te agachas y no te mueves, te pierde. Sus garras te dejan muerto de hambre.\n\n§eConsejo:§r en la nieve, agáchate.",
-        "§lThe Wendigo§r\n§8(hunger that learned to walk)§r\n\nBlue-white skin over its ribs, fingers black with frostbite, a deer's skull with huge antlers. It whistles between the trees. It hunts by sound: run and it hears you; crouch and keep still and it loses you. Its claws leave you starving.\n\n§eTip:§r in the snow, crouch.",
     ),
     "hl.lore.redNight": (
         "§lLa Noche Roja§r\n\nCada cuatro días, una noche de niebla roja en la que todo viene el doble de veces y tus faroles pueden apagarse. Termina al amanecer.",
@@ -521,12 +361,12 @@ S = {
         "§oBlocks break into magenta and black. The world comes apart where he walks.\n\nThere's another one. He says he's an admin. He bans me every night and every morning I'm still here.",
     ),
     "hl.page.6.title": (
-        "VI. La sirena",
-        "VI. The Siren",
+        'VI. La tumba',
+        'VI. The Grave',
     ),
     "hl.page.6.text": (
-        "§oLa sirena suena de noche, siempre a lo lejos. Una vez la vi: más alta que los pinos, quieta, con dos altavoces donde debería tener la cabeza.\n\nLa miré demasiado. Me escondí en una cueva y esperé a que dejara de oírse.\n\nPor el altavoz decía mi nombre.",
-        "§oThe siren wails at night, always far away. I saw it once: taller than the pines, perfectly still, two loudspeakers where its head should be.\n\nI looked at it too long. I hid in a cave and waited until I couldn't hear it any more.\n\nThrough the speakers it was saying my name.",
+        '§oDe noche sonó una campana a mi espalda. Fui a mirar: tierra removida, una lápida, una rosa negra. Y en la piedra, mi nombre.\n\nMe acerqué. Algo golpeaba desde abajo, despacio, como quien llama a una puerta.\n\nCreo que quería salir. O que quería que yo entrara.',
+        '§oA bell rang behind me at night. I went to look: freshly dug earth, a headstone, a black rose. And on the stone, my name.\n\nI went closer. Something was knocking from underneath, slowly, like someone at a door.\n\nI think it wanted out. Or it wanted me in.',
     ),
     "hl.page.7.title": (
         "VII. El nombre",
@@ -545,6 +385,12 @@ S = {
     "hl.scare.neck": ("§7§oAlgo te ha rozado la nuca.", "§7§oSomething brushed the back of your neck."),
     "hl.scare.name_sub": ("§8te estoy mirando", "§8i'm watching you"),
     # ------------------------------------------------------------ Fears
+    "hl.threat.ancient": ("La Ciudad Antigua", "The Ancient City"),
+    "hl.lore.ancient": (
+        "§lLa Ciudad Antigua§r\n\nMuy abajo, bajo la pizarra, hay una ciudad donde nadie hace ruido. Al entrar, el juego te dice dónde estás. Dentro, la ciudad está despierta: las velas se apagan solas, los chilladores gritan sin nada cerca, tus pasos vuelven un momento tarde, la oscuridad late como un corazón, el marco del portal zumba y hay susurros. Y si te quedas un minuto, alguien te observa desde las ruinas.\n\n§eConsejo:§r no corras, no hagas ruido y no te quedes.",
+        "§lThe Ancient City§r\n\nFar below, under the deepslate, there is a city where nobody makes a sound. When you walk in, the game tells you where you are. Inside, the city is awake: candles go out by themselves, shriekers scream with nothing near, your footsteps come back a moment late, the dark pulses like a heart, the portal frame hums and there are whispers. And stay a minute and someone watches you from the ruins.\n\n§eTip:§r don't run, don't make noise and don't stay.",
+    ),
+    "hl.arrive.ancient": ("§8[???]§r §7Bajo la pizarra hay una ciudad. Allí abajo, nadie hace ruido.", "§8[???]§r §7Under the deepslate there is a city. Down there, nobody makes a sound."),
     "hl.threat.phobias": ("Los Miedos", "The Fears"),
     "hl.lore.phobias": (
         "§lLos Miedos§r\n\nTodos le tienen miedo a algo, y el juego sabe a qué. Si te quedas a oscuras sin luz, en un saliente muy alto, en agua muy profunda o en un túnel por el que apenas cabes, un miedo se va llenando. Cuando se llena, ocurre algo hecho a su medida. Y es muy fuerte.\n\n§eConsejo:§r lleva luz, no mires abajo, sal del agua y no te metas en túneles estrechos. El Diario muestra cuánto se ha llenado cada miedo.",
@@ -566,34 +412,13 @@ S = {
     "hl.fear.closed_bar": ("§7§oLas paredes golpean. Desde el otro lado.", "§7§oThe walls knock. From the other side."),
     "hl.fear.closed_sub": ("§8no hay salida", "§8there is no way out"),
     # ------------------------------------------------------------ 8.2.0
-    "entity.hl:rake.name": ("The Rake", "The Rake"),
-    "entity.hl:echo.name": ("El Eco", "The Echo"),
-    "entity.hl:eyes.name": ("Ojos", "Eyes"),
-    "item.spawn_egg.entity.hl:rake.name": ("Generar: The Rake", "Spawn The Rake"),
-    "item.spawn_egg.entity.hl:echo.name": ("Generar: El Eco", "Spawn The Echo"),
-    "item.spawn_egg.entity.hl:eyes.name": ("Generar: Ojos en la oscuridad", "Spawn Eyes in the Dark"),
-    "hl.threat.rake": ("The Rake", "The Rake"),
-    "hl.threat.echo": ("El Eco y la Ciudad Antigua", "The Echo and the Ancient City"),
     "hl.threat.steps": ("Pasos", "Footsteps"),
-    "hl.threat.eyes": ("Los Ojos", "The Eyes"),
     "hl.threat.countdown": ("La Cuenta Atrás", "The Countdown"),
     "hl.threat.grave": ("Tu Tumba", "Your Grave"),
     "hl.threat.hour": ("La Hora Muerta", "The Dead Hour"),
-    "hl.lore.rake": (
-        "§lThe Rake§r\n§8(inspirado en la creepypasta de The Rake)§r\n\nAlgo pálido, sin pelo, del tamaño de un hombre, que nunca está de pie como uno. Se agacha en el campo con las rodillas junto a las orejas y los brazos colgando hasta el suelo, y te mira con dos ojos negros enormes. Mientras lo miras no se mueve; si lo miras demasiado, chilla y huye a cuatro patas. Si apartas la vista, está más cerca. Algunas noches, al despertar, está a los pies de tu cama.\n\n§eConsejo:§r no le quites el ojo de encima, pero no te acerques. La linterna lo espanta.",
-        "§lThe Rake§r\n§8(inspired by The Rake creepypasta)§r\n\nSomething pale and hairless, the size of a man, that never stands like one. It crouches in fields with its knees by its ears and its arms hanging to the ground, watching you with two huge black eyes. While you look it doesn't move; look too long and it shrieks and runs off on all fours. Look away and it is closer. Some nights, when you wake up, it is at the foot of your bed.\n\n§eTip:§r keep your eyes on it, but don't go near. The flashlight drives it off.",
-    ),
-    "hl.lore.echo": (
-        "§lEl Eco§r\n\nLo que vive en la Ciudad Antigua. Casi tres bloques de algo que fue una persona, atravesado de sculk, con el pecho abierto y un corazón que late en cian. No tiene ojos: oye. Tus pasos, los bloques que rompes, las puertas. Si haces demasiado ruido viene a por ti, y golpea más fuerte que nada allí abajo. Imita lo que ha oído para que te acerques.\n\n§eConsejo:§r agáchate y quédate quieto: te pierde. Nunca sale de la ciudad.",
-        "§lThe Echo§r\n\nWhat lives in the Ancient City. Nearly three blocks of something that was a person once, grown through with sculk, its chest open and a heart beating cyan inside. It has no eyes: it hears. Your footsteps, the blocks you break, the doors. Make too much noise and it comes for you, and it hits harder than anything down there. It copies what it has heard, to bring you closer.\n\n§eTip:§r crouch and keep still: it loses you. It never leaves the city.",
-    ),
     "hl.lore.steps": (
         "§lPasos§r\n\nAlguien camina detrás de ti, paso a paso. Cuando andas, anda; cuando te paras, se para. Pero cada vez que te paras da un paso más, un poco más cerca. Si te das la vuelta no hay nadie.",
         "§lFootsteps§r\n\nSomeone walks behind you, step for step. When you walk, they walk; when you stop, they stop. But every time you stop they take one more step, a little closer. Turn round and there is nobody.",
-    ),
-    "hl.lore.eyes": (
-        "§lLos Ojos§r\n\nEn lo oscuro de una cueva se abren ojos a tu alrededor, bajos, entre las rocas. Parpadean. Te miran. Si miras fijamente un par, se cierra; con luz se cierran todos. Cuando se cierra el último, se abre otro par justo detrás de ti.",
-        "§lThe Eyes§r\n\nIn the dark of a cave, eyes open all around you, low down between the rocks. They blink. They watch. Stare at a pair and it closes; shine a light and they all close. When the last pair closes, one more opens, right behind you.",
     ),
     "hl.lore.countdown": (
         "§lLa Cuenta Atrás§r\n\nUn mensaje de nadie: «Cuando llegue a cero, date la vuelta». Luego los números, uno por segundo. Al llegar a cero la pantalla se va a negro, y cuando vuelve hay una cara delante de la tuya. O, a veces, nada... y un minuto después, un grito.",
@@ -607,17 +432,10 @@ S = {
         "§lLa Hora Muerta§r\n\nLas tres de la mañana. Todos los animales y aldeanos a tu alrededor se paran donde están y se giran a mirarte, todos a la vez, mientras una campana que nadie tiene suena tres veces. Luego siguen a lo suyo como si nada. Y lejos, alguien grita.",
         "§lThe Dead Hour§r\n\nThree in the morning. Every animal and villager around you stops where it is and turns to look at you, all at once, while a bell nobody owns tolls three times. Then they carry on as if nothing happened. And far away, someone screams.",
     ),
-    "hl.arrive.rake": ("§8[???]§r §7Si ves algo agachado en el campo, no te acerques. No dejes de mirarlo.", "§8[???]§r §7If you see something crouching in a field, don't go near. Don't stop looking at it."),
-    "hl.arrive.echo": ("§8[???]§r §7Bajo la pizarra hay una ciudad. Algo sigue viviendo allí. Escucha.", "§8[???]§r §7Under the deepslate there is a city. Something still lives there. It listens."),
     "hl.arrive.steps": ("§8[???]§r §7Cuando te paras, ¿se paran contigo?", "§8[???]§r §7When you stop, do they stop with you?"),
-    "hl.arrive.eyes": ("§8[???]§r §7No todo lo que brilla en una cueva es mineral.", "§8[???]§r §7Not everything that shines in a cave is ore."),
     "hl.arrive.countdown": ("§8[???]§r §710, 9, 8...", "§8[???]§r §710, 9, 8..."),
     "hl.arrive.grave": ("§8[???]§r §7Alguien está cavando. Tiene tu tamaño.", "§8[???]§r §7Someone is digging. It's your size."),
     "hl.arrive.hour": ("§8[???]§r §7A las tres, todo te mira.", "§8[???]§r §7At three o'clock, everything looks at you."),
-    "hl.rake.bed": ("§7§oHay algo a los pies de tu cama.", "§7§oThere is something at the foot of your bed."),
-    "hl.echo.near": ("§3§oAlgo escucha. No hagas ruido.", "§3§oSomething is listening. Don't make a sound."),
-    "hl.echo.heard": ("§3§lTe ha oído.", "§3§lIt heard you."),
-    "hl.echo.lost": ("§3§oTe ha perdido. No te muevas.", "§3§oIt lost you. Don't move."),
     "hl.ancient.title": ("§3La Ciudad Antigua", "§3The Ancient City"),
     "hl.ancient.sub": ("§8Aquí abajo, nadie hace ruido.", "§8Down here, nobody makes a sound."),
     "hl.ancient.candles": ("§7§oLas velas se apagan solas.", "§7§oThe candles go out by themselves."),
@@ -662,10 +480,6 @@ S = {
         "§4Las siete páginas.§r §7El diario tiembla en tus manos. Ábrelo: ahora sabes cómo llamarlo.",
         "§4All seven pages.§r §7The journal trembles in your hands. Open it: now you know how to call him.",
     ),
-    "hl.mimic.wake": (
-        "§6¡No era un cofre!",
-        "§6That wasn't a chest!",
-    ),
     "hl.goat.charge": (
         "§4§lViene a por ti.",
         "§4§lIt's coming for you.",
@@ -677,22 +491,6 @@ S = {
     "hl.sw.reveal": (
         "§4§lEso no es una vaca.",
         "§4§lThat isn't a cow.",
-    ),
-    "hl.drowned.grab": (
-        "§3§lAlgo te agarra desde abajo. ¡Pégale!",
-        "§3§lSomething has you from below. Hit it!",
-    ),
-    "hl.siren.hunt": (
-        "§4§l¡ESCÓNDETE!",
-        "§4§lHIDE!",
-    ),
-    "hl.siren.lost": (
-        "§7La sirena se aleja. Te ha perdido.",
-        "§7The siren moves away. It lost you.",
-    ),
-    "hl.wendigo.charge": (
-        "§b§lTe ha oído.",
-        "§b§lIt heard you.",
     ),
     "hl.e303.come": (
         "Hola, %s. Vamos a jugar.",

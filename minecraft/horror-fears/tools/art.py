@@ -158,14 +158,14 @@ DRAWINGS = {
         "...ii.i.i.i...",
         "..tt.tt.tt....",
     ],
-    6: [  # two loudspeakers on a pole, taller than the trees
-        "..bbb....bbb..",
-        "..bkbiiiibkb..",
-        "..bbb.i..bbb..",
-        "......i.......",
-        "..e...i....e..",
-        ".eee..i...eee.",
-        "..e..i.i...e..",
+    6: [  # a headstone, a black rose, a mound
+        "....gggggg....",
+        "...gggggggg...",
+        "...gg.ii.gg...",
+        "...gg.ii.gg...",
+        "...ggiiiigg...",
+        "....g.ii.g....",
+        ".bbbbbbbbbbbb.",
         "..tt.tt.tt.tt.",
     ],
     7: [  # a white hood, red eyes, red code
@@ -323,7 +323,7 @@ def pack_icon(render_view, seed):
         for y in range(0, 110):
             for x in range(tx, tx + w):
                 cv.blend(x, y, (0x0C, 0x0A, 0x0A), 0.85)
-    cv.paste(render_view("siren_head", (30, 100), 20, -4), 2, 6)
+    cv.paste(render_view("entity_303", (22, 56), 20, -4), 4, 40)
     cv.paste(render_view("herobrine", (18, 28), 15, -4), 20, 60)
     cv.paste(render_view("null", (24, 38), -30, -4), 100, 52)
     cv.paste(render_view("fog_man", (30, 58), -20, -6, {"body": (4, 0, 0)}), 88, 36)

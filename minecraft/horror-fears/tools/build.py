@@ -39,9 +39,7 @@ RP = ROOT / "resource_pack"
 DIST = ROOT / "dist" / "HorrorFears.mcaddon"
 DIST_ZIP = ROOT / "dist" / "HorrorFears_WhatsApp.zip"
 
-CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "siren_head",
-             "goatman", "weeping_statue", "mimic", "shadow", "skinwalker", "wendigo", "entity_303", "drowned_one",
-             "rake", "echo", "eyes"]
+CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "entity_303"]
 MODULES = {name: importlib.import_module(f"models.{name}") for name in CREATURES}
 MODELS = {name: mod.model() for name, mod in MODULES.items()}
 SEEDS = {name: 10 * (i + 1) for i, name in enumerate(CREATURES)}
@@ -149,17 +147,7 @@ PREVIEW_POSES = {
     "fog_man": [("watch", FOG_WATCH_POSE), ("chase", animated(["fog_man.chase", "fog_man.walk"], dist=2.0, speed=0.8))],
     "cave_dweller": [("stalk", {}), ("hunt", animated(["dweller.lips_open", "dweller.attack"], attack=0.5))],
     "fake_player": [("", {}), ("mining", animated(["player.swing"], t=0.05))],
-    "siren_head": [("", {}), ("hunt", animated(["siren.hunt", "siren.walk"], dist=3.0, speed=0.7))],
-    "goatman": [("", {}), ("scream", animated(["goatman.scream"]))],
-    "weeping_statue": [("", {}), ("pose 1", animated(["statue.pose1"])), ("pose 2", animated(["statue.pose2"]))],
-    "mimic": [("chest", {b: {"scale": (0, 0, 0)} for b in ("tongue", "legFrontRight", "legFrontLeft", "legMidRight",
-                                                             "legMidLeft", "legBackRight", "legBackLeft")}),
-              ("awake", animated(["mimic.awake"], t=0.2))],
-    "shadow": [("", {})],
-    "skinwalker": [("cow", {"walker": {"scale": (0, 0, 0)}}), ("revealed", {"cow": {"scale": (0, 0, 0)}})],
-    "wendigo": [("", {}), ("charge", animated(["wendigo.charge", "wendigo.walk"], dist=2.0, speed=0.7))],
     "entity_303": [("", animated(["e303.float"])), ("cast", animated(["e303.float", "e303.cast"]))],
-    "drowned_one": [("", animated(["drowned.idle"]))],
 }
 
 

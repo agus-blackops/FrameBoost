@@ -59,24 +59,22 @@ export function jumpscaresOn() {
 
 // Everything that can be switched off, in the order they arrive.
 export const THREATS = [
-  "ambience", "scares", "phobias", "gamer", "steps", "dweller", "echo", "mimic", "statue", "eyes",
-  "herobrine", "goatman", "visit", "countdown", "fog", "skinwalker", "rake", "grave", "shadow", "drowned", "hour",
-  "null", "e303", "siren", "wendigo", "redNight",
+  "ambience", "scares", "phobias", "gamer", "steps", "dweller", "ancient",
+  "herobrine", "visit", "countdown", "fog", "grave", "hour",
+  "null", "e303", "redNight",
 ];
 
 // The day (at normal intensity) each one arrives.
 export const ARRIVES = {
-  ambience: 0, scares: 0, phobias: 1, gamer: 1, steps: 1, dweller: 1, echo: 1, mimic: 2, statue: 2, eyes: 2,
-  herobrine: 3, goatman: 3, visit: 3, countdown: 3, fog: 4, skinwalker: 4, rake: 4, grave: 4,
-  shadow: 5, drowned: 5, hour: 5,
-  null: 6, e303: 6, siren: 7, wendigo: 7, redNight: 8,
+  ambience: 0, scares: 0, phobias: 1, gamer: 1, steps: 1, dweller: 1, ancient: 1,
+  herobrine: 3, visit: 3, countdown: 3, fog: 4, grave: 4, hour: 5,
+  null: 6, e303: 6, redNight: 8,
 };
 
 export const ACTS = [
-  { n: 1, day: 0, threats: ["ambience", "scares", "phobias", "gamer", "steps", "dweller", "echo", "mimic", "statue", "eyes"] },
-  { n: 2, day: 3, threats: [
-    "herobrine", "goatman", "visit", "countdown", "fog", "skinwalker", "rake", "grave", "shadow", "drowned", "hour"] },
-  { n: 3, day: 6, threats: ["null", "e303", "siren", "wendigo", "redNight"] },
+  { n: 1, day: 0, threats: ["ambience", "scares", "phobias", "gamer", "steps", "dweller", "ancient"] },
+  { n: 2, day: 3, threats: ["herobrine", "visit", "countdown", "fog", "grave", "hour"] },
+  { n: 3, day: 6, threats: ["null", "e303", "redNight"] },
 ];
 
 export function hauntDay() {
@@ -150,7 +148,7 @@ export function discover(kind) {
 
 // Seven torn pages, each kept by one of them.
 export const PAGES = [1, 2, 3, 4, 5, 6, 7];
-export const PAGE_KEEPER = { 1: "gamer", 2: "dweller", 3: "herobrine", 4: "fog", 5: "null", 6: "siren", 7: "e303" };
+export const PAGE_KEEPER = { 1: "gamer", 2: "dweller", 3: "herobrine", 4: "fog", 5: "null", 6: "grave", 7: "e303" };
 
 export function pageRead(n) {
   return worldProp(`hl:page_${n}`, false);

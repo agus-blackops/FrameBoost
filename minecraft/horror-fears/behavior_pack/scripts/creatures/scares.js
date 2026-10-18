@@ -14,7 +14,7 @@ import { blackout } from "../core/fx.js";
 import { nearWard } from "../items/ward.js";
 
 // Whose face it is depends on who has arrived.
-const FACES = [["herobrine", 4], ["null", 2], ["shadow", 3], ["fog", 2], ["statue", 2], ["dweller", 1]];
+const FACES = [["herobrine", 5], ["null", 3], ["fog", 3], ["dweller", 2]];
 
 function fade(player, rgb, inT, hold, out) {
   tryRun(() =>

@@ -240,7 +240,7 @@ export function visibleSpot(player, minDist, maxDist, deg, spread) {
 // Horror Legends: Fears is loud. The big sounds (stings, screams, shrieks,
 // booms) are played twice at once, a hair apart in pitch, which is both
 // louder and harsher than a single copy. The journal has a switch for it.
-const LOUD = /^hl\.(stinger|scream|shriek|siren|voice|boom|screech|wail|shatter|static|chomp)$/;
+const LOUD = /^hl\.(stinger|scream|shriek|boom|screech|wail|shatter|static)$/;
 
 export function loudOn() {
   return tryRun(() => world.getDynamicProperty("hl:on_loud")) !== false;

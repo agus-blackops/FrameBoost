@@ -2,8 +2,8 @@
 // are. While you are inside, the city is awake: candles go out one by one
 // around you, shriekers scream with nothing near them, your own footsteps
 // come back to you a moment late, the dark pulses, the portal frame hums,
-// and you hear the city's dead whisper. And the Echo lives there: stay long
-// enough and it finds you, director or not.
+// and you hear the city's dead whisper. And Herobrine stands in the ruins:
+// stay long enough and you see him, director or not.
 
 import { BlockPermutation, system } from "@minecraft/server";
 import {
@@ -11,14 +11,14 @@ import {
 } from "../core/util.js";
 import { active, addFear, bump, setWorldProp, worldProp } from "../core/store.js";
 import { findBlocks, inAncientCity } from "../core/places.js";
-import { trackedFor } from "../core/creatures.js";
-import { spawnEcho } from "../creatures/echo.js";
+import { define } from "../core/creatures.js";
+import { sighting } from "../creatures/herobrine.js";
 
 const AMBIENCE_EVERY = [300, 600]; // ticks between the city's moments
-const ECHO_AFTER = 20 * 60; // a minute inside and the Echo comes
+const WATCHED_AFTER = 20 * 60; // a minute inside and Herobrine stands in the ruins, watching
 const WHISPERS = 6;
 
-export const visits = new Map(); // playerId -> { since, next, echo }
+export const visits = new Map(); // playerId -> { since, next, seen }
 
 function title(player) {
   tryRun(() =>
@@ -104,7 +104,7 @@ export function cityMoment(player) {
 
 // Every second.
 export function tickAncient() {
-  if (!active("echo")) return;
+  if (!active("ancient")) return;
   const now = system.currentTick;
   for (const player of overworldPlayers()) {
     const inside = inAncientCity(player);
@@ -114,7 +114,7 @@ export function tickAncient() {
       continue;
     }
     if (!v) {
-      v = { since: now, next: now + 200, last: now, echo: false };
+      v = { since: now, next: now + 200, last: now, seen: false };
       visits.set(player.id, v);
       title(player);
       if (!worldProp("hl:ancient_found", false)) setWorldProp("hl:ancient_found", true);
@@ -126,10 +126,19 @@ export function tickAncient() {
       v.next = now + randInt(...AMBIENCE_EVERY);
       tryRun(() => cityMoment(player));
     }
-    if (!v.echo && now - v.since >= ECHO_AFTER && !trackedFor(player, "echo")) {
-      v.echo = !!tryRun(() => spawnEcho(player));
-      if (!v.echo) v.since = now - ECHO_AFTER + 200; // try again in a bit
+    if (!v.seen && now - v.since >= WATCHED_AFTER) {
+      // Someone is standing in the ruins, watching, at the end of the street.
+      v.seen = !!tryRun(() => active("herobrine") && sighting(player));
+      if (!v.seen) v.since = now - WATCHED_AFTER + 200; // try again in a bit
     }
   }
 }
 
+
+define({
+  kind: "ancient",
+  weights: () => [0, 0],
+  // Test: whatever the city does, wherever you are.
+  test: (player) => cityMoment(player),
+  off: () => visits.clear(),
+});

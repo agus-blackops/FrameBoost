@@ -21,7 +21,7 @@ import {
 } from "../core/store.js";
 import { blackout, scare } from "../core/fx.js";
 import { spawnDweller } from "./dweller.js";
-import { lightsOut } from "./shadow.js";
+import { lightsOut } from "../events/lights.js";
 
 export const REWARD = "hl:hollow_pickaxe";
 let fight = null; // { playerId, entity, phase, next, music, starting }
