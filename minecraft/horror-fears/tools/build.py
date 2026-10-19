@@ -38,6 +38,10 @@ BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 DIST = ROOT / "dist" / "HorrorFears.mcaddon"
 DIST_ZIP = ROOT / "dist" / "HorrorFears_WhatsApp.zip"
+# One .mcpack per pack: the most reliable thing to import on phones (open
+# both, behaviour first).
+DIST_PACKS = {"HorrorFears_BP": ROOT / "dist" / "HorrorFears_BP.mcpack",
+              "HorrorFears_RP": ROOT / "dist" / "HorrorFears_RP.mcpack"}
 
 CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "entity_303",
              "nameless_villager", "faceless_enderman", "false_tree", "soup_man", "soup_mascot",
@@ -241,14 +245,25 @@ def validate():
 
 def package():
     DIST.parent.mkdir(parents=True, exist_ok=True)
+    packs = ((BP, "HorrorFears_BP"), (RP, "HorrorFears_RP"))
     with zipfile.ZipFile(DIST, "w", zipfile.ZIP_DEFLATED) as z:
-        for src, name in ((BP, "HorrorFears_BP"), (RP, "HorrorFears_RP")):
+        for src, name in packs:
             for path in sorted(src.rglob("*")):
                 if path.is_file():
                     z.write(path, f"{name}/{path.relative_to(src).as_posix()}")
+    # An .mcpack has the pack's files at its root (manifest.json at the top).
+    for src, name in packs:
+        with zipfile.ZipFile(DIST_PACKS[name], "w", zipfile.ZIP_DEFLATED) as z:
+            for path in sorted(src.rglob("*")):
+                if path.is_file():
+                    z.write(path, path.relative_to(src).as_posix())
+    # WhatsApp won't send .mcaddon/.mcpack files, so they travel in a .zip:
+    # extract it, then open the .mcaddon (or the two .mcpacks).
     with zipfile.ZipFile(DIST_ZIP, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(DIST, DIST.name)
-    for f in (DIST, DIST_ZIP):
+        for f in DIST_PACKS.values():
+            z.write(f, f.name)
+    for f in (DIST, *DIST_PACKS.values(), DIST_ZIP):
         print(f"wrote {f.relative_to(ROOT)} ({f.stat().st_size} bytes)")
 
 

@@ -15,7 +15,6 @@
       "animations": {
         "look": "animation.hl.stalker.look",
         "idle": "animation.hl.stalker.idle",
-        "walk": "animation.hl.stalker.walk",
         "crawl": "animation.hl.stalker.crawl",
         "attack": "animation.hl.stalker.attack"
       },

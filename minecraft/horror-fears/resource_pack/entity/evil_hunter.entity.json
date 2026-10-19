@@ -17,8 +17,7 @@
         "idle": "animation.hl.hunter.idle",
         "walk": "animation.hl.hunter.walk",
         "hunt": "animation.hl.hunter.hunt",
-        "attack": "animation.hl.hunter.attack",
-        "hurt": "animation.hl.hunter.attack"
+        "attack": "animation.hl.hunter.attack"
       },
       "scripts": {
         "animate": [

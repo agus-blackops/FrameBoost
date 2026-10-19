@@ -239,12 +239,29 @@ textura y animaciones propios:
 ## Instalación
 
 - **Directo:** abre [`dist/HorrorFears.mcaddon`](dist/HorrorFears.mcaddon) con Minecraft.
+- **Si el `.mcaddon` no se importa** (pasa en algunos móviles): abre los dos
+  `.mcpack`, primero [`dist/HorrorFears_BP.mcpack`](dist/HorrorFears_BP.mcpack)
+  (comportamiento) y luego [`dist/HorrorFears_RP.mcpack`](dist/HorrorFears_RP.mcpack)
+  (recursos). Hacen falta los dos.
 - **Por WhatsApp:** envía [`dist/HorrorFears_WhatsApp.zip`](dist/HorrorFears_WhatsApp.zip).
-  Quien lo reciba lo descomprime y abre el `.mcaddon` de dentro con Minecraft.
+  Quien lo reciba **lo descomprime primero** (no lo renombres ni lo abras tal
+  cual: Minecraft no lee un `.zip`) y abre el `.mcaddon` de dentro, o los dos
+  `.mcpack`.
 
 Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
+
+**Si Minecraft no lo detecta:**
+- Mira la versión de Minecraft (abajo a la derecha en el menú): con una
+  anterior a la **1.21.0** el pack no aparece o sale como no compatible.
+- El pack está en *Packs de comportamiento*, en la sección **Disponibles**:
+  pulsa **Activar**. Mira también en *Ajustes → Almacenamiento*: si aparece
+  ahí, se importó bien.
+- Si al importar sale *"Error al importar"*, el archivo llegó dañado o sin
+  descomprimir: vuelve a descargarlo y usa los `.mcpack`.
+- Fears y Horror Legends usan los mismos nombres de criaturas: activa **solo
+  uno** de los dos en cada mundo.
 
 **Actualizar:** abre el `.mcaddon` nuevo (versión **1.6.1**). Si en los ajustes
 del mundo sigue apareciendo una versión antigua, quítala y activa la 1.6.1. Los
@@ -365,7 +382,7 @@ tools/
   sounds.py          crea los sonidos (necesita numpy y soundfile; ya van generados)
   geometry.py        modelos en Python, comprobación de UV y renderizador 3D
   pixels.py          lienzo PNG
-dist/                HorrorFears.mcaddon y HorrorFears_WhatsApp.zip
+dist/                HorrorFears.mcaddon, los dos .mcpack y HorrorFears_WhatsApp.zip
 ```
 
 Para regenerar los paquetes: `python3 tools/build.py` (solo Python 3 estándar).
