@@ -12,7 +12,7 @@ sus poderes y su propio botín, incluida una **Esencia** que puedes beber para c
    Resource Pack se activa con él.
 4. Necesitas Minecraft Bedrock **1.21.40 o superior**.
 
-Para probarlos enseguida: `/summon pecados:envidium`, o usa los huevos de generación del inventario
+Para probarlos enseguida: `/summon pecados:envidium` (el jefe es `pecados:rey_pecados`), o usa los huevos de generación del inventario
 creativo (Generar Envidium, Generar Lujurius…).
 
 ## Las criaturas
@@ -42,6 +42,39 @@ Cada pecado puede soltar su Esencia (más probable con Botín). Bébela para obt
 | Gula | Saturación y Salud extra II (60 s) |
 | Envidia | Invisibilidad y Visión nocturna (60 s) |
 | Pereza | Caída lenta y Salto II (60 s) |
+
+## El jefe: Rey de los Pecados
+
+Los siete pecados hechos uno. 400 de vida, barra de jefe, oscurece el cielo, inmune al fuego y
+al empuje. Su golpe da Wither.
+
+**Cómo invocarlo:** fabrica la **Corona de los Pecados** en una mesa de crafteo y úsala (clic
+derecho o mantener pulsado). Tras tres rayos, el Rey aparece delante de ti.
+
+```
+[Soberbia] [Avaricia] [Lujuria]
+[  Ira   ] [Bloque de oro] [ Gula ]
+[Envidia ] [Diamante] [Pereza ]
+```
+
+**Combate:** cada pocos segundos lanza el poder de un pecado al azar (aparece en pantalla):
+
+| Poder | Efecto |
+|---|---|
+| Soberbia | Lanza por los aires a todos los jugadores cercanos |
+| Avaricia | Roba el objeto de la mano de un jugador (lo suelta al morir) |
+| Lujuria | Atrae con fuerza a todos hacia él |
+| Ira | Explosiones (sin romper bloques) y fuego sobre cada jugador |
+| Gula | Hambre III a todos y se cura |
+| Envidia | Debilidad a todos y se teletransporta a la espalda de alguien |
+| Pereza | Lentitud III y fatiga minera |
+
+**Fases:** al bajar del 66 % de vida invoca a 2 pecados para ayudarle; al bajar del 33 % invoca 3
+más, gana Fuerza y Velocidad y lanza sus poderes más a menudo.
+
+**Recompensa:** la **Espada de los Siete Pecados** (11 de daño, encantable, y cada golpe aplica un
+pecado al azar: fuego, Wither, lentitud, debilidad, robo de vida…), una estrella del Nether,
+diamantes, una manzana de oro encantada, un tótem de la inmortalidad y una esencia de cada pecado.
 
 ## Estructura
 

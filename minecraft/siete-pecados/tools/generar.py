@@ -553,6 +553,117 @@ def item_esencia(pecado):
     }
 
 
+# --------------------------------------------------------------------------
+# El jefe: Rey de los Pecados
+# --------------------------------------------------------------------------
+
+REY = "rey_pecados"
+
+
+def modelo_rey():
+    oro = (240, 195, 45)
+    c = {"cuerpo": (35, 15, 45), "piel": (60, 20, 50), "piernas": (25, 10, 30), "brazos": (35, 15, 45),
+         "cara": varias(franja((20, 5, 20), 2, 2),
+                        ojos((255, 30, 30), fila=3, tam=2, sep=1, pupila=(255, 230, 120)),
+                        boca((10, 0, 10), 7, 6, 2, dientes=(240, 235, 210))),
+         "deco_cuerpo": varias(*[franja(p["esencia_color"][0], 2 + 2 * i) for i, p in enumerate(PECADOS.values())])}
+    h = bipedo(18, 6, (16, 20, 8), (10, 10, 10), (6, 20, 6), c)
+    cima = 18 + 20 + 10
+    hueso = (225, 215, 195)
+    joyas = [p["esencia_color"][0] for p in PECADOS.values()]
+    h["head"][1].extend([
+        cubo([-6, cima - 1, -6], [12, 2, 12], oro),
+        # siete puntas de la corona, cada una con la gema de su pecado
+        *[cubo([-6 + round(i * 11 / 6), cima + 1, -6], [1, 3, 1], joyas[i])
+          for i in range(7)],
+        cubo([-6, cima + 1, 5], [12, 2, 1], oro),
+        cubo([-8, cima - 4, -1], [2, 2, 2], hueso), cubo([-9, cima - 3, -1], [2, 6, 2], hueso),
+        cubo([6, cima - 4, -1], [2, 2, 2], hueso), cubo([7, cima - 3, -1], [2, 6, 2], hueso),
+    ])
+    h["body"][1].extend([
+        cubo([-9, 12, 4], [18, 26, 1], (120, 10, 30), franja(oro, 0, 2)),
+        cubo([-11, 36, -5], [6, 3, 10], oro), cubo([5, 36, -5], [6, 3, 10], oro),
+    ])
+    h["rightArm"][1].append(cubo([-13, 0, -1], [2, 22, 2], (150, 60, 210), franja((255, 40, 40), 0, 3)))
+    return h, 3.4, 1.3
+
+
+REY_DATOS = dict(
+    pecado="rey", nombre="Rey de los Pecados", escala=1.0, vida=400, dano=10, velocidad=0.27,
+    efecto=("wither", 4), xp=500, egg=("#230F2D", "#F0C32D"),
+    extra={
+        "minecraft:fire_immune": True,
+        "minecraft:knockback_resistance": {"value": 1.0},
+        "minecraft:boss": {"hud_range": 64, "name": "Rey de los Pecados", "should_darken_sky": True},
+        "minecraft:inventory": {"container_type": "inventory", "inventory_size": 27},
+        "minecraft:follow_range": {"value": 48, "max": 48},
+        "minecraft:persistent": {},
+    },
+)
+
+
+def botin_rey():
+    fijo = [(f"{NS}:espada_pecados", 1, 1), ("minecraft:nether_star", 1, 1), ("minecraft:diamond", 3, 6),
+            ("minecraft:enchanted_golden_apple", 1, 1), ("minecraft:totem_of_undying", 1, 1)]
+    fijo += [(f"{NS}:esencia_{p['pecado']}", 1, 2) for p in PECADOS.values()]
+    return {"pools": [{"rolls": 1, "entries": [{
+        "type": "item", "name": item, "weight": 1,
+        "functions": [{"function": "set_count", "count": {"min": mn, "max": mx}}]}]} for item, mn, mx in fijo]}
+
+
+def item_simple(ident, extra):
+    comps = {
+        "minecraft:icon": {"textures": {"default": ident.replace(":", "_")}},
+        "minecraft:display_name": {"value": f"item.{ident}.name"},
+        "minecraft:glint": True,
+    }
+    comps.update(extra)
+    return {"format_version": "1.21.40", "minecraft:item": {
+        "description": {"identifier": ident, "menu_category": {"category": "equipment"}}, "components": comps}}
+
+
+def receta_corona():
+    letras = {"S": "soberbia", "A": "avaricia", "L": "lujuria", "I": "ira",
+              "U": "gula", "E": "envidia", "P": "pereza"}
+    clave = {k: {"item": f"{NS}:esencia_{v}"} for k, v in letras.items()}
+    clave["G"] = {"item": "minecraft:gold_block"}
+    clave["D"] = {"item": "minecraft:diamond"}
+    return {"format_version": "1.20.10", "minecraft:recipe_shaped": {
+        "description": {"identifier": f"{NS}:corona_pecados"},
+        "tags": ["crafting_table"],
+        "pattern": ["SAL", "IGU", "EDP"],
+        "key": clave,
+        "result": {"item": f"{NS}:corona_pecados", "count": 1},
+    }}
+
+
+def textura_corona():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    oro, sombra = (245, 200, 45, 255), (170, 120, 20, 255)
+    d.rectangle([2, 9, 13, 13], fill=oro, outline=sombra)
+    for i, x in enumerate((2, 4, 6, 8, 10, 12, 13)):
+        d.line([x, 4 + (i % 2) * 2, x, 9], fill=oro)
+    for i, p in enumerate(PECADOS.values()):
+        img.putpixel((2 + i * 2 - (1 if i == 6 else 0), 11), p["esencia_color"][0] + (255,))
+    return img
+
+
+def textura_espada():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    colores = [p["esencia_color"][0] for p in PECADOS.values()]
+    for i in range(10):
+        x, y = 5 + i, 10 - i
+        img.putpixel((x, y), colores[i % 7] + (255,))
+        img.putpixel((x - 1, y), (40, 15, 50, 255))
+        img.putpixel((x, y + 1), (90, 40, 110, 255))
+    for x, y in ((2, 11), (3, 12), (4, 13), (5, 12), (6, 13), (3, 10)):
+        img.putpixel((x, y), (240, 195, 45, 255))
+    for x, y in ((1, 14), (2, 13)):
+        img.putpixel((x, y), (90, 50, 20, 255))
+    return img
+
+
 def idioma(lengua):
     es = lengua.startswith("es")
     lineas = [f"## Los 7 Pecados Capitales ({lengua})"]
@@ -567,6 +678,11 @@ def idioma(lengua):
         lineas.append(f"item.spawn_egg.entity.{NS}:{clave}.name={'Generar' if es else 'Spawn'} {p['nombre']}")
     for pecado, txt in pecado_txt.items():
         lineas.append(f"item.{NS}:esencia_{pecado}.name={'Esencia de' if es else 'Essence of'} {txt}")
+    rey = "Rey de los Pecados" if es else "King of Sins"
+    lineas += [f"entity.{NS}:{REY}.name={rey}",
+               f"item.spawn_egg.entity.{NS}:{REY}.name={'Generar' if es else 'Spawn'} {rey}",
+               f"item.{NS}:corona_pecados.name=" + ("Corona de los Pecados" if es else "Crown of Sins"),
+               f"item.{NS}:espada_pecados.name=" + ("Espada de los Siete Pecados" if es else "Sword of the Seven Sins")]
     lineas += ["pack.name=Los 7 Pecados Capitales",
                "pack.description=" + ("7 criaturas, una por cada pecado capital." if es
                                        else "7 creatures, one for each deadly sin.")]
@@ -625,6 +741,30 @@ def main():
         (RP / "textures" / "items").mkdir(parents=True, exist_ok=True)
         textura_esencia(*p["esencia_color"]).save(RP / "textures" / "items" / f"esencia_{pecado}.png")
         texturas_items[f"{NS}_esencia_{pecado}"] = {"textures": f"textures/items/esencia_{pecado}"}
+
+    huesos, alto, ancho = modelo_rey()
+    geo, img = generar_modelo(REY, huesos, rng)
+    escribir(RP / "models" / "entity" / f"{REY}.geo.json", geo)
+    img.save(RP / "textures" / "entity" / NS / f"{REY}.png")
+    escribir(RP / "entity" / f"{REY}.entity.json", entidad_rp(REY, REY_DATOS))
+    jefe = entidad_bp(REY, REY_DATOS, alto, ancho)
+    del jefe["minecraft:entity"]["components"]["minecraft:despawn"]
+    escribir(BP / "entities" / f"{REY}.json", jefe)
+    escribir(BP / "loot_tables" / "entities" / f"{REY}.json", botin_rey())
+    escribir(BP / "recipes" / "corona_pecados.json", receta_corona())
+    escribir(BP / "items" / "corona_pecados.json", item_simple(f"{NS}:corona_pecados", {
+        "minecraft:max_stack_size": 1,
+    }))
+    escribir(BP / "items" / "espada_pecados.json", item_simple(f"{NS}:espada_pecados", {
+        "minecraft:max_stack_size": 1,
+        "minecraft:hand_equipped": True,
+        "minecraft:damage": 11,
+        "minecraft:enchantable": {"slot": "sword", "value": 22},
+        "minecraft:can_destroy_in_creative": False,
+    }))
+    for nombre, tex in (("corona_pecados", textura_corona()), ("espada_pecados", textura_espada())):
+        tex.save(RP / "textures" / "items" / f"{nombre}.png")
+        texturas_items[f"{NS}_{nombre}"] = {"textures": f"textures/items/{nombre}"}
 
     escribir(RP / "textures" / "item_texture.json",
              {"resource_pack_name": NS, "texture_name": "atlas.items", "texture_data": texturas_items})

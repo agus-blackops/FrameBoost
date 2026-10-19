@@ -22,6 +22,12 @@
     },
     "pecados_esencia_pereza": {
       "textures": "textures/items/esencia_pereza"
+    },
+    "pecados_corona_pecados": {
+      "textures": "textures/items/corona_pecados"
+    },
+    "pecados_espada_pecados": {
+      "textures": "textures/items/espada_pecados"
     }
   }
 }

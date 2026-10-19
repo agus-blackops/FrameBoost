@@ -1,0 +1,49 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "pecados:corona_pecados"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "SAL",
+      "IGU",
+      "EDP"
+    ],
+    "key": {
+      "S": {
+        "item": "pecados:esencia_soberbia"
+      },
+      "A": {
+        "item": "pecados:esencia_avaricia"
+      },
+      "L": {
+        "item": "pecados:esencia_lujuria"
+      },
+      "I": {
+        "item": "pecados:esencia_ira"
+      },
+      "U": {
+        "item": "pecados:esencia_gula"
+      },
+      "E": {
+        "item": "pecados:esencia_envidia"
+      },
+      "P": {
+        "item": "pecados:esencia_pereza"
+      },
+      "G": {
+        "item": "minecraft:gold_block"
+      },
+      "D": {
+        "item": "minecraft:diamond"
+      }
+    },
+    "result": {
+      "item": "pecados:corona_pecados",
+      "count": 1
+    }
+  }
+}
