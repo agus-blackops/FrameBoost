@@ -36,6 +36,29 @@ todo el comportamiento está escrito desde cero para Bedrock.
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
 
+## Novedades de la 1.6.1: remodelos más fieles
+
+Los tres modelos de la 1.6 se han rehecho buscando cómo son en sus mods y
+wikis (no se pudieron abrir las imágenes, así que siguen las descripciones):
+
+- **Evil Hunter**: ahora lleva una **chaqueta de franela roja** de cuadros,
+  gastada y con agujeros quemados, sobre camisa y pantalón oscuros; la
+  **cabeza calcinada** casi negra con la cara perdida en la sombra y **dos
+  puntos rojos**; las piernas acaban en **humo**; y un **aura roja** de
+  chispas y esporas le rodea. Su mandíbula se mueve.
+- **El Stalker**: **cabeza ovalada** beige, **cuencas en forma de huevo** con
+  una **pupila blanca diminuta** arriba en cada una, **nariz**, sonrisa enorme
+  de **dientes humanos** negra por dentro, costillas sueltas, columna como
+  cintura, rodillas curvas y dedos larguísimos. A cuatro patas, **la boca se
+  le abre larguísima**.
+- **Jenny Dweller**: ahora es la **fusión de Jenny y el Cave Dweller** (como el
+  mod de Zuky234). La chica es la misma, pero al revelarse cambia **el cuerpo
+  entero**: más alta, encorvada, piel gris-blanca de cueva, sudadera y
+  vaqueros hechos jirones, cuello larguísimo, su pelo sobre una cara pálida
+  con **ojos negros huecos**, boca que se abre en **dos mitades** y brazos
+  hasta las rodillas con garras negras. **También aparece en cuevas** y te
+  lleva más adentro.
+
 ## Novedades de la 1.6: Evil Hunter, el Stalker y Jenny Dweller
 
 Tres criaturas nuevas del Acto II, con modelos, animaciones y sonidos nuevos:
@@ -223,8 +246,8 @@ Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.6.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 1.6.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.6.1**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.6.1. Los
 días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia

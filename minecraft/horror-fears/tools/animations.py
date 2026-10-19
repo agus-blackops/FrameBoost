@@ -419,36 +419,46 @@ ANIMATIONS = {
         "hips": rot(72.0), "neck": rot(-40.0), "head": rot(-36.0),
         "rightLeg": rot(f"-20.0 + {cos(30, 26.0)}"), "leftLeg": rot(f"-20.0 + {cos(30, -26.0)}"),
         "rightArm": rot(f"-62.0 + {cos(30, -26.0)}"), "leftArm": rot(f"-62.0 + {cos(30, 26.0)}"),
-        "rightForearm": rot(-20.0), "leftForearm": rot(-20.0)}},
+        "rightForearm": rot(-20.0), "leftForearm": rot(-20.0),
+        # The mouth comes open, unnaturally long, black inside.
+        "jaw": {"position": [0, f"-3.0 + math.sin({T} * 700.0) * 0.6", 0], "rotation": [-10.0, 0, 0]}}},
     "animation.hl.stalker.attack": {"loop": True, "bones": {
         "rightArm": rot(f"-{swing(110.0)}"), "leftArm": rot(f"-{swing(80.0)}"), "head": rot(swing(-20.0))}},
 
     # ------------------------------------------------------------------ #
     # 1.6: Jenny Dweller
     # ------------------------------------------------------------------ #
-    "animation.hl.jenny.look": look("neck", 0.9),
+    "animation.hl.jenny.look": {"loop": True, "bones": {
+        "gHead": rot("query.target_x_rotation * 0.9", "query.target_y_rotation * 0.9"),
+        "dNeck": rot(0, "query.target_y_rotation * 0.6"),
+        "dHead": rot("query.target_x_rotation * 0.5", "query.target_y_rotation * 0.4")}},
     "animation.hl.jenny.idle": {"loop": True, "bones": {
-        "body": rot(0, 0, wave(40.0, 2.0)), "ponytail": rot(wave(60.0, 6.0), 0, wave(45.0, 5.0)),
-        "rightArm": rot(0, 0, wave(36.0, 3.0)), "leftArm": rot(0, 0, wave(36.0, -3.0))}},
+        "gBody": rot(0, 0, wave(40.0, 2.0)), "gPonytail": rot(wave(60.0, 6.0), 0, wave(45.0, 5.0)),
+        "gRightArm": rot(0, 0, wave(36.0, 3.0)), "gLeftArm": rot(0, 0, wave(36.0, -3.0))}},
     # Hi! Over here!
     "animation.hl.jenny.wave": {"loop": True, "bones": {
-        "rightArm": rot(-10.0, 0, f"150.0 + math.sin({T} * 500.0) * 18.0"),
-        "neck": rot(0, 0, f"-10.0 + {wave(80.0, 3.0)}")}},
+        "gRightArm": rot(-10.0, 0, f"150.0 + math.sin({T} * 500.0) * 18.0"),
+        "gHead": rot(0, 0, f"-10.0 + {wave(80.0, 3.0)}")}},
     # Come with me: the other hand reaching out, beckoning.
     "animation.hl.jenny.beckon": {"loop": True, "bones": {
-        "leftArm": rot(f"-70.0 + math.max(0.0, math.sin({T} * 260.0)) * 25.0", 0, 0)}},
+        "gLeftArm": rot(f"-70.0 + math.max(0.0, math.sin({T} * 260.0)) * 25.0", 0, 0)}},
     "animation.hl.jenny.walk": {"loop": True, "bones": {
-        "rightLeg": rot(cos(38, 30.0)), "leftLeg": rot(cos(38, -30.0)),
-        "rightArm": rot(cos(38, -26.0)), "leftArm": rot(cos(38, 26.0)),
-        "rightClaw": rot(cos(38, -30.0)), "leftClaw": rot(cos(38, 30.0))}},
-    # What she really is: the face open, the jaws snapping.
+        "gRightLeg": rot(cos(38, 30.0)), "gLeftLeg": rot(cos(38, -30.0)),
+        "gRightArm": rot(cos(38, -26.0)), "gLeftArm": rot(cos(38, 26.0)),
+        "dRightLeg": rot(cos(26, 28.0)), "dLeftLeg": rot(cos(26, -28.0)),
+        "dRightShin": rot(lift(26, 26.0)), "dLeftShin": rot(lift(26, 26.0, -1)),
+        "dRightArm": rot(cos(26, -24.0)), "dLeftArm": rot(cos(26, 24.0))}},
+    # What she really is: the face splits, the halves snapping, the head
+    # twitching, the long arms half raised.
     "animation.hl.jenny.reveal": {"loop": True, "bones": {
-        "rightJaw": rot(0, f"-{wave(700.0, 14.0, 10.0)}", 0), "leftJaw": rot(0, wave(700.0, 14.0, 10.0), 0),
-        "monsterHead": rot(f"{jolt(0.95, -20.0, 20.0)}", 0, f"{jolt(0.95, -30.0, 30.0)}"),
-        "rightClaw": rot(-30.0), "leftClaw": rot(-30.0)}},
+        "dRightJaw": rot(0, f"-{wave(700.0, 10.0, 18.0)}", 0), "dLeftJaw": rot(0, wave(700.0, 10.0, 18.0), 0),
+        "dHead": rot(f"{jolt(0.95, -20.0, 20.0)}", 0, f"{jolt(0.95, -30.0, 30.0)}"),
+        "dPonytail": rot(wave(90.0, 10.0)),
+        "dChest": {"scale": breathe(260.0, 0.03)},
+        "dRightArm": rot(-24.0), "dLeftArm": rot(-24.0)}},
     "animation.hl.jenny.attack": {"loop": True, "bones": {
-        "rightClaw": rot(f"-{swing(100.0)}"), "leftClaw": rot(f"-{swing(70.0)}"),
-        "rightJaw": rot(0, f"-{swing(30.0)}", 0), "leftJaw": rot(0, swing(30.0), 0)}},
+        "dRightArm": rot(f"-{swing(100.0)}"), "dLeftArm": rot(f"-{swing(70.0)}"),
+        "dRightJaw": rot(0, f"-{swing(30.0)}", 0), "dLeftJaw": rot(0, swing(30.0), 0)}},
 
     # ------------------------------------------------------------------ #
     # Entity 303

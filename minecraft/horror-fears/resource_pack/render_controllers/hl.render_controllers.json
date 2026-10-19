@@ -87,34 +87,76 @@
           "*": true
         },
         {
-          "humanHead": "!query.property('hl:revealed')"
+          "girl": "!query.property('hl:revealed')"
         },
         {
-          "ponytail": "!query.property('hl:revealed')"
+          "gRightLeg": "!query.property('hl:revealed')"
         },
         {
-          "rightArm": "!query.property('hl:revealed')"
+          "gLeftLeg": "!query.property('hl:revealed')"
         },
         {
-          "leftArm": "!query.property('hl:revealed')"
+          "gBody": "!query.property('hl:revealed')"
         },
         {
-          "monsterHead": "query.property('hl:revealed')"
+          "gHead": "!query.property('hl:revealed')"
         },
         {
-          "monsterTail": "query.property('hl:revealed')"
+          "gPonytail": "!query.property('hl:revealed')"
         },
         {
-          "rightJaw": "query.property('hl:revealed')"
+          "gRightArm": "!query.property('hl:revealed')"
         },
         {
-          "leftJaw": "query.property('hl:revealed')"
+          "gLeftArm": "!query.property('hl:revealed')"
         },
         {
-          "rightClaw": "query.property('hl:revealed')"
+          "dweller": "query.property('hl:revealed')"
         },
         {
-          "leftClaw": "query.property('hl:revealed')"
+          "dRightLeg": "query.property('hl:revealed')"
+        },
+        {
+          "dRightShin": "query.property('hl:revealed')"
+        },
+        {
+          "dLeftLeg": "query.property('hl:revealed')"
+        },
+        {
+          "dLeftShin": "query.property('hl:revealed')"
+        },
+        {
+          "dHips": "query.property('hl:revealed')"
+        },
+        {
+          "dChest": "query.property('hl:revealed')"
+        },
+        {
+          "dNeck": "query.property('hl:revealed')"
+        },
+        {
+          "dHead": "query.property('hl:revealed')"
+        },
+        {
+          "dRightJaw": "query.property('hl:revealed')"
+        },
+        {
+          "dLeftJaw": "query.property('hl:revealed')"
+        },
+        {
+          "dPonytail": "query.property('hl:revealed')"
+        },
+        {
+          "dRightArm": "query.property('hl:revealed')"
+        },
+        {
+          "dRightForearm": "query.property('hl:revealed')"
+        },
+        {
+          "dLeftArm": "query.property('hl:revealed')"
+        },
+        {
+          "dLeftForearm": "query.property('hl:revealed')"
         }
       ]
     },

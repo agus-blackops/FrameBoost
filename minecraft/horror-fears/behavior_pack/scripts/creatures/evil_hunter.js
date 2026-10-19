@@ -92,6 +92,15 @@ export function raiseCross(player) {
   return true;
 }
 
+// The red aura round him: embers and red spores, rising.
+function aura(e) {
+  const at = e.location;
+  for (let i = 0; i < 3; i++) {
+    const p = { x: at.x + rand(-0.7, 0.7), y: at.y + rand(0.3, 2.6), z: at.z + rand(-0.7, 0.7) };
+    tryRun(() => e.dimension.spawnParticle(i ? "minecraft:crimson_spore_particle" : "minecraft:basic_flame_particle", p));
+  }
+}
+
 function tick(e, s, player) {
   const d = distance(player.location, e.location);
   if (d > 96 || (!s.adopted && s.age > HUNT_FOR + STARE_FOR + 200)) {
@@ -99,6 +108,7 @@ function tick(e, s, player) {
     return;
   }
   s.clock = (s.clock ?? 0) + 4;
+  aura(e);
   if (nearWard(player.dimension, player.location, 6)) {
     // It won't come into the light of a Ward Lantern: it burns out at the edge.
     if (s.phase === "hunt") burnOut(e, s, player);

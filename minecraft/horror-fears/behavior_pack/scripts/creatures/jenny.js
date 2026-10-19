@@ -9,7 +9,8 @@
 
 import { ItemStack } from "@minecraft/server";
 import {
-  actionBar, distance, faceTowards, groundAt, later, rand, soundAt, soundBehind, title, tr, tryRun, visibleSpot,
+  actionBar, caveSpot, distance, faceTowards, groundAt, isUnderground, later, rand, soundAt, soundBehind, title, tr,
+  tryRun, visibleSpot,
 } from "../core/util.js";
 import { define, setMode, spawn, trackedFor, vanish } from "../core/creatures.js";
 import { addFear, discover } from "../core/store.js";
@@ -36,9 +37,13 @@ function hearts(e) {
 
 export function meetJenny(player, anywhere = false) {
   if (trackedFor(player, "jenny") || nearWard(player.dimension, player.location)) return false;
-  const at = visibleSpot(player, 14, 20, rand(-40, 40), 15) ?? (anywhere ? visibleSpot(player, 8, 14, 0, 90) : undefined);
+  // Like the Dweller she has become, she also waits down in the caves.
+  const cave = isUnderground(player);
+  const at = cave
+    ? caveSpot(player, 10, 16, rand(-40, 40), 25) ?? (anywhere ? caveSpot(player, 6, 12, 0, 120) : undefined)
+    : visibleSpot(player, 14, 20, rand(-40, 40), 15) ?? (anywhere ? visibleSpot(player, 8, 14, 0, 90) : undefined);
   if (!at || !outsideWards(player.dimension, at)) return false;
-  const e = spawn("jenny", at, player, "lure", { major: true, phase: "lure", hops: 0, ignored: 0, clock: 0 });
+  const e = spawn("jenny", at, player, "lure", { major: true, phase: "lure", hops: 0, ignored: 0, clock: 0, cave });
   if (!e) return false;
   tryRun(() => e.setProperty("hl:wave", true));
   soundAt(player, "hl.giggle", e.location, 1.0, 1);
@@ -56,24 +61,25 @@ export function jennyMinor(player) {
   return true;
 }
 
-// She runs on ahead, further from home: "this way!"
+// She runs on ahead, further from home (or deeper into the cave): "this way!"
+function ahead(e, s, player) {
+  if (s.cave) return caveSpot(player, 10, 16, rand(-30, 30), 20);
+  const a = Math.atan2(e.location.z - player.location.z, e.location.x - player.location.x) + rand(-0.5, 0.5);
+  const r = rand(10, 14);
+  const x = e.location.x + Math.cos(a) * r;
+  const z = e.location.z + Math.sin(a) * r;
+  const y = groundAt(player.dimension, x, z, e.location.y);
+  return y === undefined ? undefined : { x: Math.floor(x) + 0.5, y, z: Math.floor(z) + 0.5 };
+}
+
 function runAhead(e, s, player) {
   s.hops++;
-  const dx = e.location.x - player.location.x;
-  const dz = e.location.z - player.location.z;
-  const len = Math.hypot(dx, dz) || 1;
+  // A present for you, left where she stood.
+  if (s.hops === 2) tryRun(() => player.dimension.spawnItem(new ItemStack("minecraft:poppy", 1), e.location));
   for (let attempt = 0; attempt < 6; attempt++) {
-    const a = Math.atan2(dz, dx) + rand(-0.5, 0.5);
-    const r = rand(10, 14);
-    const x = e.location.x + Math.cos(a) * r;
-    const z = e.location.z + Math.sin(a) * r;
-    const y = groundAt(player.dimension, x, z, e.location.y);
-    if (y === undefined || !outsideWards(player.dimension, { x, y, z })) continue;
-    if (s.hops === 2) {
-      // A present for you, left where she stood.
-      tryRun(() => player.dimension.spawnItem(new ItemStack("minecraft:poppy", 1), e.location));
-    }
-    if (!tryRun(() => (e.teleport({ x: Math.floor(x) + 0.5, y, z: Math.floor(z) + 0.5 }), true))) continue;
+    const at = ahead(e, s, player);
+    if (!at || !outsideWards(player.dimension, at)) continue;
+    if (!tryRun(() => (e.teleport(at), true))) continue;
     faceTowards(e, player.location);
     tryRun(() => e.setProperty("hl:wave", s.hops === 1));
     soundAt(player, "hl.giggle", e.location, rand(1.0, 1.1), 1);
@@ -151,7 +157,7 @@ define({
   type: "hl:jenny_dweller",
   modes: ["lure", "hunt"],
   stride: { id: "hl.step", every: 1.2, volume: 0.7, pitch: [1.1, 1.3] },
-  weights: (ctx) => (ctx.under ? [0, 0] : ctx.outside ? [2, 2] : [1, 0]),
+  weights: (ctx) => (ctx.under ? [1, 2] : ctx.outside ? [2, 2] : [1, 0]),
   minor: jennyMinor,
   major: (player) => meetJenny(player),
   tick,

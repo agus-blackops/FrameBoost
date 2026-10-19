@@ -7,12 +7,13 @@ import json
 from pathlib import Path
 
 from lang import LANG
+from models import jenny_dweller as jenny_model
 
 ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [1, 6, 0]
+VERSION = [1, 6, 1]
 UUID = {
     "bp": "14adbfa2-16d0-4c96-9745-648cda8d414d",
     "bp_data": "ecb604c1-31d8-4405-8f2f-2c06b96ad2be",
@@ -451,12 +452,11 @@ def clients():
         # Hidden, only the trunk is drawn; revealed, everything but the trunk.
         "controller.render.hl.false_tree": rc(part_visibility=[
             {"*": "query.property('hl:revealed')"}, {"trunk": "!query.property('hl:revealed')"}]),
-        # The girl, or what is underneath her.
+        # The girl, or what was wearing her.
         "controller.render.hl.jenny": rc(part_visibility=[
             {"*": True},
-            *[{b: "!query.property('hl:revealed')"} for b in ("humanHead", "ponytail", "rightArm", "leftArm")],
-            *[{b: "query.property('hl:revealed')"} for b in (
-                "monsterHead", "monsterTail", "rightJaw", "leftJaw", "rightClaw", "leftClaw")]]),
+            *[{b: "!query.property('hl:revealed')"} for b in jenny_model.GIRL],
+            *[{b: "query.property('hl:revealed')"} for b in jenny_model.DWELLER]]),
         "controller.render.hl.boss": rc(
             textures=["query.property('hl:phase') == 2 ? Texture.phase2 : Texture.default"]),
     }})

@@ -2197,6 +2197,18 @@
             0,
             0
           ]
+        },
+        "jaw": {
+          "position": [
+            0,
+            "-3.0 + math.sin(query.life_time * 700.0) * 0.6",
+            0
+          ],
+          "rotation": [
+            -10.0,
+            0,
+            0
+          ]
         }
       }
     },
@@ -2229,10 +2241,24 @@
     "animation.hl.jenny.look": {
       "loop": true,
       "bones": {
-        "neck": {
+        "gHead": {
           "rotation": [
             "query.target_x_rotation * 0.9",
             "query.target_y_rotation * 0.9",
+            0
+          ]
+        },
+        "dNeck": {
+          "rotation": [
+            0,
+            "query.target_y_rotation * 0.6",
+            0
+          ]
+        },
+        "dHead": {
+          "rotation": [
+            "query.target_x_rotation * 0.5",
+            "query.target_y_rotation * 0.4",
             0
           ]
         }
@@ -2241,28 +2267,28 @@
     "animation.hl.jenny.idle": {
       "loop": true,
       "bones": {
-        "body": {
+        "gBody": {
           "rotation": [
             0,
             0,
             "math.sin(query.life_time * 40.0) * 2.0"
           ]
         },
-        "ponytail": {
+        "gPonytail": {
           "rotation": [
             "math.sin(query.life_time * 60.0) * 6.0",
             0,
             "math.sin(query.life_time * 45.0) * 5.0"
           ]
         },
-        "rightArm": {
+        "gRightArm": {
           "rotation": [
             0,
             0,
             "math.sin(query.life_time * 36.0) * 3.0"
           ]
         },
-        "leftArm": {
+        "gLeftArm": {
           "rotation": [
             0,
             0,
@@ -2274,14 +2300,14 @@
     "animation.hl.jenny.wave": {
       "loop": true,
       "bones": {
-        "rightArm": {
+        "gRightArm": {
           "rotation": [
             -10.0,
             0,
             "150.0 + math.sin(query.life_time * 500.0) * 18.0"
           ]
         },
-        "neck": {
+        "gHead": {
           "rotation": [
             0,
             0,
@@ -2293,7 +2319,7 @@
     "animation.hl.jenny.beckon": {
       "loop": true,
       "bones": {
-        "leftArm": {
+        "gLeftArm": {
           "rotation": [
             "-70.0 + math.max(0.0, math.sin(query.life_time * 260.0)) * 25.0",
             0,
@@ -2305,44 +2331,72 @@
     "animation.hl.jenny.walk": {
       "loop": true,
       "bones": {
-        "rightLeg": {
+        "gRightLeg": {
           "rotation": [
             "math.cos(query.modified_distance_moved * 38) * 30.0 * query.modified_move_speed",
             0,
             0
           ]
         },
-        "leftLeg": {
+        "gLeftLeg": {
           "rotation": [
             "math.cos(query.modified_distance_moved * 38) * -30.0 * query.modified_move_speed",
             0,
             0
           ]
         },
-        "rightArm": {
+        "gRightArm": {
           "rotation": [
             "math.cos(query.modified_distance_moved * 38) * -26.0 * query.modified_move_speed",
             0,
             0
           ]
         },
-        "leftArm": {
+        "gLeftArm": {
           "rotation": [
             "math.cos(query.modified_distance_moved * 38) * 26.0 * query.modified_move_speed",
             0,
             0
           ]
         },
-        "rightClaw": {
+        "dRightLeg": {
           "rotation": [
-            "math.cos(query.modified_distance_moved * 38) * -30.0 * query.modified_move_speed",
+            "math.cos(query.modified_distance_moved * 26) * 28.0 * query.modified_move_speed",
             0,
             0
           ]
         },
-        "leftClaw": {
+        "dLeftLeg": {
           "rotation": [
-            "math.cos(query.modified_distance_moved * 38) * 30.0 * query.modified_move_speed",
+            "math.cos(query.modified_distance_moved * 26) * -28.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "dRightShin": {
+          "rotation": [
+            "math.max(0.0, math.sin(query.modified_distance_moved * 26)) * 26.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "dLeftShin": {
+          "rotation": [
+            "math.max(0.0, -math.sin(query.modified_distance_moved * 26)) * 26.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "dRightArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 26) * -24.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "dLeftArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 26) * 24.0 * query.modified_move_speed",
             0,
             0
           ]
@@ -2352,37 +2406,51 @@
     "animation.hl.jenny.reveal": {
       "loop": true,
       "bones": {
-        "rightJaw": {
+        "dRightJaw": {
           "rotation": [
             0,
-            "-10.0 + math.sin(query.life_time * 700.0) * 14.0",
+            "-18.0 + math.sin(query.life_time * 700.0) * 10.0",
             0
           ]
         },
-        "leftJaw": {
+        "dLeftJaw": {
           "rotation": [
             0,
-            "10.0 + math.sin(query.life_time * 700.0) * 14.0",
+            "18.0 + math.sin(query.life_time * 700.0) * 10.0",
             0
           ]
         },
-        "monsterHead": {
+        "dHead": {
           "rotation": [
             "(math.random(0.0, 1.0) > 0.95 ? math.random(-20.0, 20.0) : 0.0)",
             0,
             "(math.random(0.0, 1.0) > 0.95 ? math.random(-30.0, 30.0) : 0.0)"
           ]
         },
-        "rightClaw": {
+        "dPonytail": {
           "rotation": [
-            -30.0,
+            "math.sin(query.life_time * 90.0) * 10.0",
             0,
             0
           ]
         },
-        "leftClaw": {
+        "dChest": {
+          "scale": [
+            1.0,
+            "1.0 + math.sin(query.life_time * 260.0) * 0.03",
+            1.0
+          ]
+        },
+        "dRightArm": {
           "rotation": [
-            -30.0,
+            -24.0,
+            0,
+            0
+          ]
+        },
+        "dLeftArm": {
+          "rotation": [
+            -24.0,
             0,
             0
           ]
@@ -2392,28 +2460,28 @@
     "animation.hl.jenny.attack": {
       "loop": true,
       "bones": {
-        "rightClaw": {
+        "dRightArm": {
           "rotation": [
             "-math.sin(variable.attack_time * 180.0) * 100.0",
             0,
             0
           ]
         },
-        "leftClaw": {
+        "dLeftArm": {
           "rotation": [
             "-math.sin(variable.attack_time * 180.0) * 70.0",
             0,
             0
           ]
         },
-        "rightJaw": {
+        "dRightJaw": {
           "rotation": [
             0,
             "-math.sin(variable.attack_time * 180.0) * 30.0",
             0
           ]
         },
-        "leftJaw": {
+        "dLeftJaw": {
           "rotation": [
             0,
             "math.sin(variable.attack_time * 180.0) * 30.0",
