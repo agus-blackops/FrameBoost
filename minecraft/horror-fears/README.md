@@ -19,6 +19,7 @@ folclore ni monstruos de internet de fuera del juego.
 - **El Aldeano Sin Nombre** y **el Endermán Sin Rostro** (nuevos en la 1.2,
   inspirados en las creepypastas de aldeanos y Endermen)
 - **El Falso Árbol** (nuevo en la 1.4, al estilo de Doctor Nowhere)
+- **Soup.AVI** (nuevo en la 1.5, la cinta de *Blank Room Soup*)
 
 Es un proyecto de fans: **no contiene código, arte ni sonido de esos mods**.
 Los modelos, las texturas y los sonidos se generan por código en `tools/`, y
@@ -31,6 +32,28 @@ todo el comportamiento está escrito desde cero para Bedrock.
 >
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
+
+## Novedades de la 1.5: Soup.AVI
+
+Llega **Soup.AVI** (desde el día 4, en el Acto II), basado en la cinta viral
+*Blank Room Soup* (*«Freaky Soup Guy»*). Pasa **en tu casa** (bajo techo) o
+**fuera de noche**:
+
+- Hay un **hombre sentado en un taburete blanco comiendo sopa**, con la **cara
+  censurada** (un bloque de cuadros grises y rosas) y los hombros temblando:
+  **está llorando**. Lo oyes **sorber y sollozar** en 3D, desde donde está.
+- Detrás de él, alguien con una **enorme cabeza de botarga** (ojos negros
+  planos y una sonrisa pintada) le **frota la espalda** en círculos.
+- Sale el título **SOUP.AVI** y un **contador de cinta** (`▶ PLAY 00:00:07`).
+- Si **miras demasiado (6 s)** o **te acercas**, paran y **las dos cabezas
+  se giran hacia ti**. Se va la luz y **hay otro, detrás de ti**, que te sigue.
+- **Date la vuelta y míralo** (susto fuerte) y la cinta se acaba. Si no lo
+  haces en 5 segundos, **te frota la espalda a ti**: náuseas, lentitud y
+  *«ya está, ya está...»*.
+- Golpearlos, o **alumbrar la cinta con la linterna** antes de que se giren,
+  la detiene. La Linterna de Guarda lo impide.
+- Dos sonidos nuevos: **sorber** y **sollozo**. Se puede desactivar en el
+  Diario como las demás amenazas.
 
 ## Novedades de la 1.4.1: el Falso Árbol, igual que la foto
 
@@ -171,8 +194,8 @@ Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.4.1**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 1.4.1. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.5.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.5.0. Los
 días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia
@@ -194,6 +217,7 @@ su propio aviso en el chat la noche en que aparece.
 | 3 | La Cuenta Atrás | *«Cuando llegue a cero, date la vuelta»*. 10, 9, 8... y **una cara delante de la tuya**. |
 | 4 | El Endermán Sin Rostro | Sin cara, solo una línea violeta. **Parpadea** hasta ti, cada vez más cerca, y lo oyes en 3D. Si lo miras, se echa encima. |
 | 3 | El Falso Árbol | En la jungla y la taiga, un tronco que no es un árbol: si lo miras, se endereza y te saluda. Si apartas la vista, es un tronco otra vez, más cerca. |
+| 4 | Soup.AVI | En casa o fuera de noche, un hombre **sin cara come sopa y llora**; detrás, una **cabeza de botarga** le frota la espalda. Si miras mucho, se giran... y **hay otro detrás de ti**. Date la vuelta. |
 | 4 | El Hombre de la Niebla | Una niebla espesa y, dentro, un hombre en **chubasquero con capucha** y una sonrisa de oreja a oreja. Se acerca cuando apartas la vista; de noche llama a la puerta. |
 | 4 | Tu Tumba | Una campana a tu espalda. Una tumba con **tu nombre y la fecha de mañana**. Si te acercas, algo golpea **desde abajo** (y ahí está la Página VI). |
 | 5 | La Hora Muerta | Las **3:00**: animales y aldeanos **se paran y se giran a mirarte** mientras suena una campana tres veces. |

@@ -13,8 +13,8 @@ S = {
         "§4Horror Legends: §cFears§r",
     ),
     "pack.description": (
-        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, el Aldeano Sin Nombre, Herobrine, el Endermán Sin Rostro, el Falso Árbol, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Sonidos 3D y fuertes, y los Miedos.',
-        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, the Nameless Villager, Herobrine, the Faceless Enderman, the False Tree, the Man From The Fog, null, Entity 303 and the Hollow Miner. Loud 3D sound, and the Fears.',
+        'Terror en tres actos con las leyendas y creepypastas de Minecraft: HerobrineGamer788, el Morador de las Cuevas, el Aldeano Sin Nombre, Herobrine, el Endermán Sin Rostro, el Falso Árbol, Soup.AVI, el Hombre de la Niebla, null, Entity 303 y el Minero Hueco. Sonidos 3D y fuertes, y los Miedos.',
+        'Horror in three acts with the legends and creepypastas of Minecraft: HerobrineGamer788, the Cave Dweller, the Nameless Villager, Herobrine, the Faceless Enderman, the False Tree, Soup.AVI, the Man From The Fog, null, Entity 303 and the Hollow Miner. Loud 3D sound, and the Fears.',
     ),
     "entity.hl:herobrine.name": (
         "Herobrine",
@@ -157,8 +157,8 @@ S = {
         "§8[???]§r §7Don't look out of the window at night.",
     ),
     "hl.act.2.text": (
-        '§fHerobrine§r te observa con su cola de vértebras. Un §fEnderman sin rostro§r parpadea a tu alrededor. En la jungla y la taiga, un §ftronco§r te saluda. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
-        '§fHerobrine§r watches you with his tail of vertebrae. A §ffaceless Enderman§r blinks around you. In the jungle and the taiga, a §ftrunk§r waves at you. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
+        '§fHerobrine§r te observa con su cola de vértebras. Un §fEnderman sin rostro§r parpadea a tu alrededor. En la jungla y la taiga, un §ftronco§r te saluda. En tu casa, un hombre sin cara §fcome sopa y llora§r. Llega la §fniebla§r y, dentro, un hombre con chubasquero. Llaman a tu puerta con tu voz. Encuentras §ftu propia tumba§r. Y a las tres de la mañana, todo te mira.',
+        '§fHerobrine§r watches you with his tail of vertebrae. A §ffaceless Enderman§r blinks around you. In the jungle and the taiga, a §ftrunk§r waves at you. In your house, a man with no face §feats soup and cries§r. The §ffog§r rolls in and, in it, a man in a raincoat. Someone knocks on your door with your voice. You find §fyour own grave§r. And at three in the morning, everything looks at you.',
     ),
     "hl.act.3.name": (
         "El error",
@@ -423,6 +423,22 @@ S = {
     "hl.arrive.falsetree": ("§8[???]§r §7En la jungla y en la taiga, no todos los troncos son árboles.", "§8[???]§r §7In the jungle and the taiga, not every trunk is a tree."),
     "hl.falsetree.seen": ("§8§oEse tronco te saluda.", "§8§oThat trunk is waving at you."),
     "hl.falsetree.sub": ("§8ya no saludo", "§8i'm not waving now"),
+    # ------------------------------------------------------------ 1.5
+    "entity.hl:soup_man.name": ("El Hombre de la Sopa", "The Soup Man"),
+    "item.spawn_egg.entity.hl:soup_man.name": ("Generar: El Hombre de la Sopa", "Spawn The Soup Man"),
+    "entity.hl:soup_mascot.name": ("La Cabeza Grande", "The Big Head"),
+    "item.spawn_egg.entity.hl:soup_mascot.name": ("Generar: La Cabeza Grande", "Spawn The Big Head"),
+    "hl.threat.soup": ("Soup.AVI", "Soup.AVI"),
+    "hl.lore.soup": (
+        "§lSoup.AVI§r\n§8(la cinta de la habitación blanca)§r\n\nUna cinta que nadie debería tener. En tu casa, o fuera de noche, hay un hombre sentado en un taburete blanco comiendo sopa. Su cara es un bloque de cuadros censurados. Le tiemblan los hombros: está llorando. Detrás de él, alguien con una enorme cabeza de botarga le frota la espalda, en círculos, sin parar. La cinta corre: ves el contador.\n\nSi miras demasiado tiempo, o te acercas, paran, y las dos cabezas se giran hacia ti. Luego se va la luz, y hay otro. §cDetrás de ti.§r\n\n§eCómo sobrevivir:§r date la vuelta y míralo. Si no lo haces, empieza a frotarte la espalda a ti. Golpearlos, o alumbrar la cinta con la linterna antes de que se giren, la detiene.",
+        "§lSoup.AVI§r\n§8(the tape of the white room)§r\n\nA tape nobody should have. In your house, or outside at night, a man is sitting on a white stool eating soup. His face is a block of censored squares. His shoulders shake: he is crying. Behind him, someone in a huge mascot head rubs his back, round and round, without stopping. The tape is running: you can see the counter.\n\nWatch for too long, or walk up to them, and they stop, and both heads turn to you. Then the lights go, and there is another one. §cBehind you.§r\n\n§eHow to survive:§r turn round and look at it. If you don't, it starts rubbing your back instead. Hitting them, or shining the flashlight on the tape before they turn, stops it.",
+    ),
+    "hl.arrive.soup": ("§8[???]§r §7Si oyes a alguien sorber sopa y llorar en tu casa, no mires demasiado.", "§8[???]§r §7If you hear someone slurping soup and crying in your house, don't watch for too long."),
+    "hl.soup.minor": ("§8§oAlguien está comiendo sopa. Y llorando.", "§8§oSomeone is eating soup. And crying."),
+    "hl.soup.seen": ("§7§oSe han dado la vuelta.", "§7§oThey have turned round."),
+    "hl.soup.another": ("§8hay otro", "§8there's another one"),
+    "hl.soup.sub": ("§8ya está, ya está", "§8there, there"),
+    "hl.soup.rub": ("§7§oAlgo te frota la espalda. Ya está... ya está...", "§7§oSomething is rubbing your back. There, there..."),
     "hl.threat.phobias": ("Los Miedos", "The Fears"),
     "hl.lore.phobias": (
         "§lLos Miedos§r\n\nTodos le tienen miedo a algo, y el juego sabe a qué. Si te quedas a oscuras sin luz, en un saliente muy alto, en agua muy profunda o en un túnel por el que apenas cabes, un miedo se va llenando. Cuando se llena, ocurre algo hecho a su medida. Y es muy fuerte.\n\n§eConsejo:§r lleva luz, no mires abajo, sal del agua y no te metas en túneles estrechos. El Diario muestra cuánto se ha llenado cada miedo.",

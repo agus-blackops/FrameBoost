@@ -1,0 +1,42 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:soup_man",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/soup_man"
+      },
+      "geometry": {
+        "default": "geometry.hl.soup_man"
+      },
+      "animations": {
+        "eat": "animation.hl.soup.eat",
+        "sob": "animation.hl.soup.sob",
+        "stare": "animation.hl.soup.stare"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "eat": "!query.property('hl:stare')"
+          },
+          {
+            "sob": "!query.property('hl:stare')"
+          },
+          {
+            "stare": "query.property('hl:stare')"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#e8e6dc",
+        "overlay_color": "#9a6224"
+      }
+    }
+  }
+}

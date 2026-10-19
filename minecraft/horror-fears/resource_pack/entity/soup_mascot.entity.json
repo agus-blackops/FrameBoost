@@ -1,0 +1,42 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:soup_mascot",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/soup_mascot"
+      },
+      "geometry": {
+        "default": "geometry.hl.soup_mascot"
+      },
+      "animations": {
+        "rub": "animation.hl.mascot.rub",
+        "stare": "animation.hl.mascot.stare",
+        "walk": "animation.hl.mascot.walk"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "rub": "!query.property('hl:stare')"
+          },
+          {
+            "stare": "query.property('hl:stare')"
+          },
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#d8c9ac",
+        "overlay_color": "#1c1f26"
+      }
+    }
+  }
+}

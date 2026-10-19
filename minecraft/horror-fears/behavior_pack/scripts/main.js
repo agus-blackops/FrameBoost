@@ -6,7 +6,7 @@
 //                         the Cave Dweller, the Nameless Villager, the Ancient
 //                         City, the fears
 //   Act II   The woods    Herobrine, the Visit, the Countdown, the Faceless
-//                         Enderman, the False Tree, the Man From The Fog, your grave, the Dead Hour
+//                         Enderman, the False Tree, Soup.AVI, the Man From The Fog, your grave, the Dead Hour
 //   Act III  The error    null, Entity 303, the Red Night
 //   The end              seven torn pages, a ritual, and Herobrine's true form
 //
@@ -33,6 +33,7 @@ import "./creatures/dweller.js";
 import "./creatures/nameless.js";
 import "./creatures/faceless.js";
 import "./creatures/false_tree.js";
+import "./creatures/soup.js";
 import "./creatures/herobrine.js";
 import { onPlayerSpawn as fogSpawn, tickFog } from "./creatures/fog.js";
 import { restoreCorruption } from "./creatures/null.js";

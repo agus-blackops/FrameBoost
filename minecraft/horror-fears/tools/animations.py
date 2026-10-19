@@ -350,6 +350,34 @@ ANIMATIONS = {
         "rightArm": rot(cos(22, -10.0)), "leftArm": rot(cos(22, 10.0))}},
 
     # ------------------------------------------------------------------ #
+    # Soup.AVI
+    # ------------------------------------------------------------------ #
+    # The spoon goes down to the bowl and back up to the mouth, over and over.
+    "animation.hl.soup.eat": {"loop": True, "bones": {
+        "rightForearm": rot(f"math.max(0.0, math.sin({T} * 110.0)) * 62.0", 0, f"math.max(0.0, math.sin({T} * 110.0)) * -14.0"),
+        "rightArm": rot(f"math.max(0.0, math.sin({T} * 110.0)) * 14.0"),
+        "head": rot(f"math.max(0.0, math.sin({T} * 110.0)) * 8.0")}},
+    # Crying: the shoulders shake in bursts, the head drops and jerks.
+    "animation.hl.soup.sob": {"loop": True, "bones": {
+        "body": rot(f"(math.sin({T} * 55.0) > 0.1 ? math.sin({T} * 1500.0) * 2.2 : 0.0)"),
+        "head": rot(f"(math.sin({T} * 55.0) > 0.1 ? math.sin({T} * 1100.0) * 3.0 : 0.0)", 0, wave(23.0, 3.0)),
+        "leftArm": rot(f"(math.sin({T} * 55.0) > 0.1 ? math.sin({T} * 1500.0 + 40.0) * 1.5 : 0.0)")}},
+    # Watched for too long: he stops, and the censored face comes up to you.
+    "animation.hl.soup.stare": {"loop": True, "bones": {
+        "head": rot("-18.0 + query.target_x_rotation * 0.5", "query.target_y_rotation")}},
+    # Rubbing his back: round and round, slowly, the head tipped kindly.
+    "animation.hl.mascot.rub": {"loop": True, "bones": {
+        "rightArm": rot(f"-58.0 + math.sin({T} * 160.0) * 6.0", 0, 6.0),
+        "rightForearm": rot(f"-24.0 + math.cos({T} * 160.0) * 10.0", 0, f"math.sin({T} * 160.0) * 12.0"),
+        "head": rot(wave(18.0, 3.0, 8.0), 0, wave(13.0, 4.0, 10.0))}},
+    # It turns: the whole head at once, and holds.
+    "animation.hl.mascot.stare": {"loop": True, "bones": {
+        "head": rot("query.target_x_rotation", "query.target_y_rotation", f"{jolt(0.97, -10.0, 10.0)}")}},
+    "animation.hl.mascot.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(26, 20.0)), "leftLeg": rot(cos(26, -20.0)),
+        "rightArm": rot(cos(26, -12.0)), "leftArm": rot(cos(26, 12.0))}},
+
+    # ------------------------------------------------------------------ #
     # Entity 303
     # ------------------------------------------------------------------ #
     "animation.hl.e303.look": look(),

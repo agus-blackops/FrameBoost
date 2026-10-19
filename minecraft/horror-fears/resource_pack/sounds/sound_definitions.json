@@ -360,6 +360,30 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "hl.slurp": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 24,
+      "sounds": [
+        {
+          "name": "sounds/hl/slurp",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.sob": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 40,
+      "sounds": [
+        {
+          "name": "sounds/hl/sob",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

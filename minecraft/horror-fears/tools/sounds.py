@@ -674,6 +674,51 @@ def warp():
     return loud(v, 2.2, 0.7)
 
 
+# --------------------------------------------------------------------------- #
+# 1.5: Soup.AVI
+# --------------------------------------------------------------------------- #
+
+def slurp():
+    """A spoon of soup, sucked in too loud: a wet hiss rising, a gulp."""
+    length = 1.3
+    out = np.zeros(int(length * RATE))
+    for k, at in enumerate((0.05, 0.42)):
+        dur = 0.32 if k == 0 else 0.26
+        n = int(dur * RATE)
+        tt = np.linspace(0, 1, n)
+        hiss = noise(dur)
+        wet = np.zeros(n)
+        for f in (900, 1500, 2400):
+            wet += resonator(hiss, f * (0.8 + 0.5 * tt), 9)
+        bubbles = np.sign(sine(38 + 20 * k, dur)) * 0.5 + 0.5
+        place(out, wet * np.sin(np.pi * tt) ** 0.6 * (0.6 + 0.4 * bubbles), at)
+    m = int(0.18 * RATE)
+    gulp = sine(140 * (1 - 0.4 * np.linspace(0, 1, m)), 0.18) * decay(m, 0.06) * 2.0
+    place(out, gulp, 0.85)
+    return loud(out, 2.4, 0.7)
+
+
+def sob():
+    """A man crying into his soup: broken breaths in, a shaking voice out."""
+    length = 3.0
+    out = np.zeros(int(length * RATE))
+    at = 0.05
+    for k in range(4):
+        dur = 0.13
+        n = int(dur * RATE)
+        gasp = resonator(noise(dur), 1800, 3) * np.sin(np.linspace(0, np.pi, n)) * 0.7
+        place(out, gasp, at)
+        at += 0.16
+    dur = 1.6
+    n = int(dur * RATE)
+    tt = np.linspace(0, 1, n)
+    f = 230 * (1.0 - 0.3 * tt) * (1 + 0.05 * sine(7.5, dur))
+    src = saw(f, dur) * (0.6 + 0.4 * np.abs(sine(5.5, dur))) + 0.25 * noise(dur)
+    v = resonator(src, 600, 6) + 0.8 * resonator(src, 1250, 8) + 0.3 * resonator(src, 2600, 10)
+    place(out, v * np.sin(np.pi * tt) ** 0.7, at + 0.05)
+    return loud(out * env(len(out), 0.01, 0.6, 1.3), 2.6, 0.7)
+
+
 SOUNDS = {
     # name: (generator, category, min_distance, max_distance, volume)
     "heartbeat": (heartbeat, "hostile", 0.5, 8, 1.0),
@@ -707,6 +752,9 @@ SOUNDS = {
     "roar": (roar, "hostile", 3, 96, 1.0),
     "howl": (howl, "hostile", 6, 128, 1.0),
     "warp": (warp, "hostile", 1, 56, 1.0),
+    # 1.5: Soup.AVI
+    "slurp": (slurp, "hostile", 1, 24, 1.0),
+    "sob": (sob, "hostile", 1, 40, 1.0),
 }
 
 

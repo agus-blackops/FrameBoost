@@ -40,7 +40,7 @@ DIST = ROOT / "dist" / "HorrorFears.mcaddon"
 DIST_ZIP = ROOT / "dist" / "HorrorFears_WhatsApp.zip"
 
 CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "entity_303",
-             "nameless_villager", "faceless_enderman", "false_tree"]
+             "nameless_villager", "faceless_enderman", "false_tree", "soup_man", "soup_mascot"]
 MODULES = {name: importlib.import_module(f"models.{name}") for name in CREATURES}
 MODELS = {name: mod.model() for name, mod in MODULES.items()}
 SEEDS = {name: 10 * (i + 1) for i, name in enumerate(CREATURES)}
@@ -149,6 +149,8 @@ PREVIEW_POSES = {
     "cave_dweller": [("stalk", {}), ("hunt", animated(["dweller.lips_open", "dweller.attack"], attack=0.5))],
     "fake_player": [("", {}), ("mining", animated(["player.swing"], t=0.05))],
     "false_tree": [("", {}), ("wave", animated(["tree.wave"]))],
+    "soup_man": [("", {}), ("stare", animated(["soup.stare"]))],
+    "soup_mascot": [("rub", animated(["mascot.rub"])), ("stare", {})],
     "nameless_villager": [("", {}), ("point", animated(["villager.point"]))],
     "faceless_enderman": [("", {}), ("stare", animated(["ender.stare"]))],
     "entity_303": [("", animated(["e303.float"])), ("cast", animated(["e303.float", "e303.cast"]))],

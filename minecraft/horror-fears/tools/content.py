@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [1, 4, 1]
+VERSION = [1, 5, 0]
 UUID = {
     "bp": "14adbfa2-16d0-4c96-9745-648cda8d414d",
     "bp_data": "ecb604c1-31d8-4405-8f2f-2c06b96ad2be",
@@ -185,6 +185,11 @@ def entities():
     out["false_tree"] = entity("hl:false_tree", base_components(
         ["hl_false_tree", "hl_haunt"], 0.6, 3.9, 100, {**INVULNERABLE, **STILL}),
         properties={**flag("hl:revealed"), **flag("hl:wave")})
+    # 1.5: Soup.AVI. The man with the soup and the ones with the big heads.
+    out["soup_man"] = entity("hl:soup_man", base_components(
+        ["hl_soup_man", "hl_haunt"], 0.8, 1.9, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:stare"))
+    out["soup_mascot"] = entity("hl:soup_mascot", base_components(
+        ["hl_soup_mascot", "hl_haunt"], 0.8, 2.5, 100, {**INVULNERABLE, **STILL}), properties=flag("hl:stare"))
     out["entity_303"] = entity("hl:entity_303", base_components(
         ["hl_entity_303", "hl_haunt"], 0.6, 2.2, 100, {**INVULNERABLE, **STILL, "minecraft:physics": {"has_gravity": False}}),
         properties=flag("hl:cast"))
@@ -342,6 +347,16 @@ CLIENTS = {
                    [{"look": "query.property('hl:revealed')"}, {"idle": "query.property('hl:revealed')"},
                     {"wave": "query.property('hl:wave')"}, {"walk": MOVING}],
                    "false_tree", ("#0a0c14", "#f4f4f8")),
+    "soup_man": ({"default": "soup_man"},
+                 {"eat": "soup.eat", "sob": "soup.sob", "stare": "soup.stare"},
+                 [{"eat": "!query.property('hl:stare')"}, {"sob": "!query.property('hl:stare')"},
+                  {"stare": "query.property('hl:stare')"}],
+                 "default", ("#e8e6dc", "#9a6224")),
+    "soup_mascot": ({"default": "soup_mascot"},
+                    {"rub": "mascot.rub", "stare": "mascot.stare", "walk": "mascot.walk"},
+                    [{"rub": "!query.property('hl:stare')"}, {"stare": "query.property('hl:stare')"},
+                     {"walk": MOVING}],
+                    "default", ("#d8c9ac", "#1c1f26")),
     "null": ({"default": "null"}, {"look": "null.look", "glitch": "null.glitch"}, ["look", "glitch"],
              "null", ("#0a0a0c", "#f800f8")),
     "herobrine_boss": ({"default": "herobrine_boss", "phase2": "herobrine_boss_2"},
