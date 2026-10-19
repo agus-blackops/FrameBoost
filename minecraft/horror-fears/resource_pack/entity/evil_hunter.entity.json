@@ -1,0 +1,47 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:evil_hunter",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/evil_hunter"
+      },
+      "geometry": {
+        "default": "geometry.hl.evil_hunter"
+      },
+      "animations": {
+        "look": "animation.hl.hunter.look",
+        "idle": "animation.hl.hunter.idle",
+        "walk": "animation.hl.hunter.walk",
+        "hunt": "animation.hl.hunter.hunt",
+        "attack": "animation.hl.hunter.attack",
+        "hurt": "animation.hl.hunter.attack"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "idle",
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          },
+          {
+            "hunt": "query.property('hl:mode') == 'hunt'"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#060507",
+        "overlay_color": "#ff3a12"
+      }
+    }
+  }
+}

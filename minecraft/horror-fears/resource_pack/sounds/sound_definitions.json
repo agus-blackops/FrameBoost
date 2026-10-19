@@ -384,6 +384,30 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "hl.burn": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hl/burn",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hl.giggle": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 40,
+      "sounds": [
+        {
+          "name": "sounds/hl/giggle",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

@@ -72,6 +72,52 @@
         }
       ]
     },
+    "controller.render.hl.jenny": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "humanHead": "!query.property('hl:revealed')"
+        },
+        {
+          "ponytail": "!query.property('hl:revealed')"
+        },
+        {
+          "rightArm": "!query.property('hl:revealed')"
+        },
+        {
+          "leftArm": "!query.property('hl:revealed')"
+        },
+        {
+          "monsterHead": "query.property('hl:revealed')"
+        },
+        {
+          "monsterTail": "query.property('hl:revealed')"
+        },
+        {
+          "rightJaw": "query.property('hl:revealed')"
+        },
+        {
+          "leftJaw": "query.property('hl:revealed')"
+        },
+        {
+          "rightClaw": "query.property('hl:revealed')"
+        },
+        {
+          "leftClaw": "query.property('hl:revealed')"
+        }
+      ]
+    },
     "controller.render.hl.boss": {
       "geometry": "Geometry.default",
       "materials": [

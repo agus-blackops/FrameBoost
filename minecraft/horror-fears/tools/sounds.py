@@ -719,6 +719,45 @@ def sob():
     return loud(out * env(len(out), 0.01, 0.6, 1.3), 2.6, 0.7)
 
 
+# --------------------------------------------------------------------------- #
+# 1.6: the Evil Hunter, Jenny
+# --------------------------------------------------------------------------- #
+
+def burn():
+    """The Evil Hunter: a fire crackling inside a throat, and a groan under it."""
+    length = 2.8
+    n = int(length * RATE)
+    out = np.zeros(n)
+    at = 0.0
+    while at < length - 0.05:
+        m = int(0.03 * RATE)
+        pop = resonator(noise(0.03), rng.uniform(1500, 4500), 6) * decay(m, 0.006)
+        place(out, pop * rng.uniform(0.3, 1.0), at)
+        at += rng.uniform(0.01, 0.09)
+    t = t_axis(length)
+    f = 62 + 18 * np.sin(2 * np.pi * 0.6 * t) + 6 * sine(17, length)
+    src = saw(f, length) + 0.4 * noise(length)
+    groan = (resonator(src, 240, 4) + 0.7 * resonator(src, 620, 6)) * np.sin(np.pi * np.minimum(1, t / length)) ** 0.8
+    roar_ = one_pole(noise(length), 300) * 1.2
+    return loud(out * 0.8 + groan + roar_ * env(n, 0.2, 1.0, 1.2), 3.2)
+
+
+def giggle():
+    """Jenny: a girl's giggle, light and quick... and slightly too long."""
+    length = 1.8
+    out = np.zeros(int(length * RATE))
+    at = 0.04
+    for k in range(7):
+        dur = 0.09 + 0.01 * (k % 2)
+        n = int(dur * RATE)
+        f = 520 * (1.0 + 0.06 * np.sin(k * 1.7)) * (1.0 - 0.012 * k)
+        src = saw(f * (1 + 0.03 * sine(9, dur)), dur) + 0.35 * noise(dur)
+        v = resonator(src, 900, 6) + 0.9 * resonator(src, 2400, 9) + 0.4 * resonator(src, 3600, 12)
+        place(out, v * np.sin(np.linspace(0, np.pi, n)) ** 0.7, at)
+        at += 0.15 + 0.03 * k  # it slows down
+    return loud(out * env(len(out), 0.005, 0.4, 1.4), 2.2, 0.65)
+
+
 SOUNDS = {
     # name: (generator, category, min_distance, max_distance, volume)
     "heartbeat": (heartbeat, "hostile", 0.5, 8, 1.0),
@@ -755,6 +794,9 @@ SOUNDS = {
     # 1.5: Soup.AVI
     "slurp": (slurp, "hostile", 1, 24, 1.0),
     "sob": (sob, "hostile", 1, 40, 1.0),
+    # 1.6: the Evil Hunter, Jenny
+    "burn": (burn, "hostile", 2, 64, 1.0),
+    "giggle": (giggle, "hostile", 1, 40, 1.0),
 }
 
 

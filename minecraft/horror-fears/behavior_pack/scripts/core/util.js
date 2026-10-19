@@ -285,6 +285,12 @@ export function actionBar(player, message) {
   tryRun(() => player.onScreenDisplay.setActionBar(message));
 }
 
+/**
+ * @param {import("@minecraft/server").Player} player
+ * @param {string | import("@minecraft/server").RawMessage} main
+ * @param {string | import("@minecraft/server").RawMessage} [subtitle]
+ * @param {number} [stay]
+ */
 export function title(player, main, subtitle = " ", stay = 40) {
   tryRun(() =>
     player.onScreenDisplay.setTitle(main, { subtitle, fadeInDuration: 10, stayDuration: stay, fadeOutDuration: 20 })

@@ -1,0 +1,47 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:stalker",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/stalker"
+      },
+      "geometry": {
+        "default": "geometry.hl.stalker"
+      },
+      "animations": {
+        "look": "animation.hl.stalker.look",
+        "idle": "animation.hl.stalker.idle",
+        "walk": "animation.hl.stalker.walk",
+        "crawl": "animation.hl.stalker.crawl",
+        "attack": "animation.hl.stalker.attack"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "look": "!(query.property('hl:mode') == 'chase')"
+          },
+          {
+            "idle": "!(query.property('hl:mode') == 'chase')"
+          },
+          {
+            "crawl": "query.property('hl:mode') == 'chase'"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#050507",
+        "overlay_color": "#d6c6a6"
+      }
+    }
+  }
+}

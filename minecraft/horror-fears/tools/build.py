@@ -40,7 +40,8 @@ DIST = ROOT / "dist" / "HorrorFears.mcaddon"
 DIST_ZIP = ROOT / "dist" / "HorrorFears_WhatsApp.zip"
 
 CREATURES = ["herobrine", "herobrine_boss", "null", "fog_man", "cave_dweller", "fake_player", "entity_303",
-             "nameless_villager", "faceless_enderman", "false_tree", "soup_man", "soup_mascot"]
+             "nameless_villager", "faceless_enderman", "false_tree", "soup_man", "soup_mascot",
+             "evil_hunter", "stalker", "jenny_dweller"]
 MODULES = {name: importlib.import_module(f"models.{name}") for name in CREATURES}
 MODELS = {name: mod.model() for name, mod in MODULES.items()}
 SEEDS = {name: 10 * (i + 1) for i, name in enumerate(CREATURES)}
@@ -129,6 +130,7 @@ def paint_textures():
     art.flashlight().save(items / "flashlight.png")
     art.battery().save(items / "battery.png")
     art.hollow_pickaxe().save(items / "hollow_pickaxe.png")
+    art.silver_cross().save(items / "silver_cross.png")
     for n in range(1, 8):
         art.page(n).save(items / f"page_{n}.png")
     icon = art.pack_icon(render_view, 70)
@@ -149,6 +151,11 @@ PREVIEW_POSES = {
     "cave_dweller": [("stalk", {}), ("hunt", animated(["dweller.lips_open", "dweller.attack"], attack=0.5))],
     "fake_player": [("", {}), ("mining", animated(["player.swing"], t=0.05))],
     "false_tree": [("", {}), ("wave", animated(["tree.wave"]))],
+    "evil_hunter": [("", {}), ("hunt", animated(["hunter.hunt"]))],
+    "stalker": [("", {}), ("crawl", animated(["stalker.crawl"]))],
+    "jenny_dweller": [("", MODULES["jenny_dweller"].PREVIEW),
+                      ("wave", {**MODULES["jenny_dweller"].PREVIEW, **animated(["jenny.wave"])}),
+                      ("revealed", MODULES["jenny_dweller"].PREVIEW_MONSTER)],
     "soup_man": [("", {}), ("stare", animated(["soup.stare"]))],
     "soup_mascot": [("rub", animated(["mascot.rub"])), ("stare", {})],
     "nameless_villager": [("", {}), ("point", animated(["villager.point"]))],

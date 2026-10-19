@@ -378,6 +378,79 @@ ANIMATIONS = {
         "rightArm": rot(cos(26, -12.0)), "leftArm": rot(cos(26, 12.0))}},
 
     # ------------------------------------------------------------------ #
+    # 1.6: the Evil Hunter
+    # ------------------------------------------------------------------ #
+    "animation.hl.hunter.look": look("head", 0.8),
+    # Standing: it breathes like something on fire, the jaw working.
+    "animation.hl.hunter.idle": {"loop": True, "bones": {
+        "chest": {"scale": breathe(140.0, 0.025)},
+        "jaw": rot(f"{wave(400.0, 4.0, 4.0)} + {jolt(0.97, 0.0, 14.0)}"),
+        "head": rot(0, 0, f"{wave(30.0, 4.0)} + {jolt(0.985, -18.0, 18.0)}"),
+        "rightHand": rot(wave(50.0, 6.0)), "leftHand": rot(wave(44.0, -6.0))}},
+    "animation.hl.hunter.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(24, 22.0)), "leftLeg": rot(cos(24, -22.0)),
+        "rightShin": rot(lift(24, -24.0, -1)), "leftShin": rot(lift(24, -24.0)),
+        "rightArm": rot(cos(24, -16.0)), "leftArm": rot(cos(24, 16.0)),
+        "chest": rot(0, cos(24, 6.0), cos(24, 3.0))}},
+    # The Hunt: bent low, arms reaching, jaw hanging open.
+    "animation.hl.hunter.hunt": {"loop": True, "bones": {
+        "chest": rot(16.0), "head": rot(-14.0),
+        "jaw": rot(f"20.0 + math.sin({T} * 900.0) * 5.0"),
+        "rightArm": rot(f"-40.0 + math.cos({D} * 30.0) * 30.0 * {S}"),
+        "leftArm": rot(f"-40.0 - math.cos({D} * 30.0) * 30.0 * {S}")}},
+    "animation.hl.hunter.attack": {"loop": True, "bones": {
+        "chest": rot(swing(14.0)), "rightArm": rot(f"-{swing(90.0)}"), "leftArm": rot(f"-{swing(60.0)}"),
+        "jaw": rot(swing(26.0))}},
+
+    # ------------------------------------------------------------------ #
+    # 1.6: the Stalker
+    # ------------------------------------------------------------------ #
+    "animation.hl.stalker.look": look("head", 1.0),
+    # Standing perfectly still... nearly. The head tilts, slowly.
+    "animation.hl.stalker.idle": {"loop": True, "bones": {
+        "head": rot(0, 0, f"{wave(9.0, 10.0)} + {jolt(0.99, -25.0, 25.0)}"),
+        "rightHand": rot(wave(20.0, 8.0)), "leftHand": rot(wave(17.0, -8.0))}},
+    "animation.hl.stalker.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(16, 18.0)), "leftLeg": rot(cos(16, -18.0)),
+        "rightArm": rot(cos(16, -10.0)), "leftArm": rot(cos(16, 10.0))}},
+    # Hunting: down on all fours, the long arms become front legs.
+    "animation.hl.stalker.crawl": {"loop": True, "bones": {
+        "root": {"position": [0, -10.0, 0]},
+        "hips": rot(72.0), "neck": rot(-40.0), "head": rot(-36.0),
+        "rightLeg": rot(f"-20.0 + {cos(30, 26.0)}"), "leftLeg": rot(f"-20.0 + {cos(30, -26.0)}"),
+        "rightArm": rot(f"-62.0 + {cos(30, -26.0)}"), "leftArm": rot(f"-62.0 + {cos(30, 26.0)}"),
+        "rightForearm": rot(-20.0), "leftForearm": rot(-20.0)}},
+    "animation.hl.stalker.attack": {"loop": True, "bones": {
+        "rightArm": rot(f"-{swing(110.0)}"), "leftArm": rot(f"-{swing(80.0)}"), "head": rot(swing(-20.0))}},
+
+    # ------------------------------------------------------------------ #
+    # 1.6: Jenny Dweller
+    # ------------------------------------------------------------------ #
+    "animation.hl.jenny.look": look("neck", 0.9),
+    "animation.hl.jenny.idle": {"loop": True, "bones": {
+        "body": rot(0, 0, wave(40.0, 2.0)), "ponytail": rot(wave(60.0, 6.0), 0, wave(45.0, 5.0)),
+        "rightArm": rot(0, 0, wave(36.0, 3.0)), "leftArm": rot(0, 0, wave(36.0, -3.0))}},
+    # Hi! Over here!
+    "animation.hl.jenny.wave": {"loop": True, "bones": {
+        "rightArm": rot(-10.0, 0, f"150.0 + math.sin({T} * 500.0) * 18.0"),
+        "neck": rot(0, 0, f"-10.0 + {wave(80.0, 3.0)}")}},
+    # Come with me: the other hand reaching out, beckoning.
+    "animation.hl.jenny.beckon": {"loop": True, "bones": {
+        "leftArm": rot(f"-70.0 + math.max(0.0, math.sin({T} * 260.0)) * 25.0", 0, 0)}},
+    "animation.hl.jenny.walk": {"loop": True, "bones": {
+        "rightLeg": rot(cos(38, 30.0)), "leftLeg": rot(cos(38, -30.0)),
+        "rightArm": rot(cos(38, -26.0)), "leftArm": rot(cos(38, 26.0)),
+        "rightClaw": rot(cos(38, -30.0)), "leftClaw": rot(cos(38, 30.0))}},
+    # What she really is: the face open, the jaws snapping.
+    "animation.hl.jenny.reveal": {"loop": True, "bones": {
+        "rightJaw": rot(0, f"-{wave(700.0, 14.0, 10.0)}", 0), "leftJaw": rot(0, wave(700.0, 14.0, 10.0), 0),
+        "monsterHead": rot(f"{jolt(0.95, -20.0, 20.0)}", 0, f"{jolt(0.95, -30.0, 30.0)}"),
+        "rightClaw": rot(-30.0), "leftClaw": rot(-30.0)}},
+    "animation.hl.jenny.attack": {"loop": True, "bones": {
+        "rightClaw": rot(f"-{swing(100.0)}"), "leftClaw": rot(f"-{swing(70.0)}"),
+        "rightJaw": rot(0, f"-{swing(30.0)}", 0), "leftJaw": rot(0, swing(30.0), 0)}},
+
+    # ------------------------------------------------------------------ #
     # Entity 303
     # ------------------------------------------------------------------ #
     "animation.hl.e303.look": look(),

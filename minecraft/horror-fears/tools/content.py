@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BP = ROOT / "behavior_pack"
 RP = ROOT / "resource_pack"
 
-VERSION = [1, 5, 0]
+VERSION = [1, 6, 0]
 UUID = {
     "bp": "14adbfa2-16d0-4c96-9745-648cda8d414d",
     "bp_data": "ecb604c1-31d8-4405-8f2f-2c06b96ad2be",
@@ -210,6 +210,26 @@ def entities():
         "chase": {"minecraft:movement": {"value": 0.46}, **hunt(96, 8), "minecraft:can_climb": {},
                   "minecraft:navigation.climb": {"can_path_over_water": True, "avoid_water": True},
                   "minecraft:break_blocks": {"breakable_blocks": BREAKABLE}}})
+    # 1.6: they smash through doors, glass, leaves, fences and trapdoors.
+    smash = {"minecraft:break_blocks": {"breakable_blocks": BREAKABLE + [
+        "minecraft:fence", "minecraft:oak_fence", "minecraft:spruce_fence", "minecraft:birch_fence",
+        "minecraft:trapdoor", "minecraft:spruce_trapdoor", "minecraft:birch_trapdoor", "minecraft:glass_pane"]}}
+    climb = {"minecraft:can_climb": {}, "minecraft:navigation.climb": {
+        "can_path_over_water": True, "avoid_water": True, "can_pass_doors": True, "can_break_doors": True}}
+    out["evil_hunter"] = moded("hl:evil_hunter", ["hl_evil_hunter", "monster", "mob"], (0.8, 2.6), 200, {
+        **body, **INVULNERABLE, **look_at_player(6)}, {
+        "stalk": {"minecraft:movement": {"value": 0.0}, "minecraft:navigation.walk": {}},
+        "hunt": {"minecraft:movement": {"value": 0.42}, **hunt(96, 10, 1.2), **climb, **smash}})
+    out["stalker"] = moded("hl:stalker", ["hl_stalker", "monster", "mob"], (0.8, 4.0), 200, {
+        **body, **INVULNERABLE, **look_at_player(6, 128)}, {
+        "watch": {"minecraft:movement": {"value": 0.0}, "minecraft:navigation.walk": {}},
+        "chase": {"minecraft:movement": {"value": 0.5}, **hunt(128, 10, 1.3), **climb, **smash}})
+    out["jenny_dweller"] = moded("hl:jenny_dweller", ["hl_jenny_dweller", "monster", "mob"], (0.6, 1.9), 60, {
+        **body, **NO_FALL, **look_at_player(6)}, {
+        "lure": {"minecraft:movement": {"value": 0.0}, "minecraft:navigation.walk": {}, **INVULNERABLE},
+        "hunt": {"minecraft:movement": {"value": 0.42}, **hunt(64, 9, 1.25), **climb,
+                 "minecraft:behavior.leap_at_target": {"priority": 2, "yd": 0.4, "must_be_on_ground": True}}},
+        extra_props={**flag("hl:revealed"), **flag("hl:wave")})
     amphibious = {"minecraft:navigation.generic": {"is_amphibious": True, "can_path_over_water": False,
                                                    "can_swim": True, "can_walk": True, "can_break_doors": True},
                   "minecraft:underwater_movement": {"value": 0.12}}
@@ -357,6 +377,24 @@ CLIENTS = {
                     [{"rub": "!query.property('hl:stare')"}, {"stare": "query.property('hl:stare')"},
                      {"walk": MOVING}],
                     "default", ("#d8c9ac", "#1c1f26")),
+    "evil_hunter": ({"default": "evil_hunter"},
+                    {"look": "hunter.look", "idle": "hunter.idle", "walk": "hunter.walk", "hunt": "hunter.hunt",
+                     "attack": "hunter.attack", "hurt": "hunter.attack"},
+                    ["look", "idle", {"walk": MOVING}, {"hunt": mode_is("hunt")}, {"attack": ATTACK}],
+                    "default", ("#060507", "#ff3a12")),
+    "stalker": ({"default": "stalker"},
+                {"look": "stalker.look", "idle": "stalker.idle", "walk": "stalker.walk", "crawl": "stalker.crawl",
+                 "attack": "stalker.attack"},
+                [{"look": f"!({mode_is('chase')})"}, {"idle": f"!({mode_is('chase')})"},
+                 {"crawl": mode_is("chase")}, {"attack": ATTACK}],
+                "default", ("#050507", "#d6c6a6")),
+    "jenny_dweller": ({"default": "jenny_dweller"},
+                      {"look": "jenny.look", "idle": "jenny.idle", "wave": "jenny.wave", "beckon": "jenny.beckon",
+                       "walk": "jenny.walk", "reveal": "jenny.reveal", "attack": "jenny.attack"},
+                      ["look", {"idle": "!query.property('hl:revealed')"}, {"wave": "query.property('hl:wave')"},
+                       {"beckon": "!query.property('hl:revealed') && !query.property('hl:wave')"},
+                       {"walk": MOVING}, {"reveal": "query.property('hl:revealed')"}, {"attack": ATTACK}],
+                      "jenny", ("#a8262a", "#c4beb8")),
     "null": ({"default": "null"}, {"look": "null.look", "glitch": "null.glitch"}, ["look", "glitch"],
              "null", ("#0a0a0c", "#f800f8")),
     "herobrine_boss": ({"default": "herobrine_boss", "phase2": "herobrine_boss_2"},
@@ -413,6 +451,12 @@ def clients():
         # Hidden, only the trunk is drawn; revealed, everything but the trunk.
         "controller.render.hl.false_tree": rc(part_visibility=[
             {"*": "query.property('hl:revealed')"}, {"trunk": "!query.property('hl:revealed')"}]),
+        # The girl, or what is underneath her.
+        "controller.render.hl.jenny": rc(part_visibility=[
+            {"*": True},
+            *[{b: "!query.property('hl:revealed')"} for b in ("humanHead", "ponytail", "rightArm", "leftArm")],
+            *[{b: "query.property('hl:revealed')"} for b in (
+                "monsterHead", "monsterTail", "rightJaw", "leftJaw", "rightClaw", "leftClaw")]]),
         "controller.render.hl.boss": rc(
             textures=["query.property('hl:phase') == 2 ? Texture.phase2 : Texture.default"]),
     }})
@@ -447,6 +491,9 @@ def items():
     write(BP / "items" / "battery.json", item("hl:battery", "hl_battery", **{"minecraft:max_stack_size": 16}))
     for n in range(1, 8):
         write(BP / "items" / f"page_{n}.json", item(f"hl:page_{n}", f"hl_page_{n}", **stack1,
+                                                   **{"minecraft:glint": True}))
+    # 1.6: the Silver Cross banishes the Evil Hunter.
+    write(BP / "items" / "silver_cross.json", item("hl:silver_cross", "hl_silver_cross", "equipment", **stack1,
                                                    **{"minecraft:glint": True}))
     write(BP / "items" / "hollow_pickaxe.json", item(
         "hl:hollow_pickaxe", "hl_hollow_pickaxe", "equipment", **stack1,
@@ -493,6 +540,9 @@ def items():
         {"I": "minecraft:iron_ingot", "G": "minecraft:glowstone_dust", "R": "minecraft:redstone"}, "hl:flashlight"))
     write(BP / "recipes" / "battery.json", shapeless(
         "hl:battery", ["minecraft:redstone", "minecraft:iron_nugget", "minecraft:copper_ingot"], "hl:battery", 2))
+    write(BP / "recipes" / "silver_cross.json", shaped(
+        "hl:silver_cross", [" I ", "IGI", " I "], {"I": "minecraft:iron_ingot", "G": "minecraft:gold_ingot"},
+        "hl:silver_cross"))
     write(BP / "recipes" / "ward_lantern.json", shaped(
         "hl:ward_lantern", [" A ", "ALA", " A "], {"A": "minecraft:amethyst_shard", "L": "minecraft:lantern"},
         "hl:ward_lantern"))
@@ -504,7 +554,7 @@ def items():
         "resource_pack_name": "horror_legends", "texture_name": "atlas.terrain", "padding": 8, "num_mip_levels": 4,
         "texture_data": {"hl_corrupted": {"textures": "textures/blocks/hl/corrupted_block"},
                          "hl_ward_lantern": {"textures": "textures/blocks/hl/ward_lantern"}}})
-    icons = ["journal", "flashlight", "battery", "hollow_pickaxe"] + [f"page_{n}" for n in range(1, 8)]
+    icons = ["journal", "flashlight", "battery", "hollow_pickaxe", "silver_cross"] + [f"page_{n}" for n in range(1, 8)]
     write(RP / "textures" / "item_texture.json", {
         "resource_pack_name": "horror_legends", "texture_name": "atlas.items",
         "texture_data": {f"hl_{i}": {"textures": f"textures/items/hl/{i}"} for i in icons}})

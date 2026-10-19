@@ -14,6 +14,9 @@
     "hl_hollow_pickaxe": {
       "textures": "textures/items/hl/hollow_pickaxe"
     },
+    "hl_silver_cross": {
+      "textures": "textures/items/hl/silver_cross"
+    },
     "hl_page_1": {
       "textures": "textures/items/hl/page_1"
     },

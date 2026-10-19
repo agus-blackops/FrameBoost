@@ -1,0 +1,56 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hl:jenny_dweller",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hl/jenny_dweller"
+      },
+      "geometry": {
+        "default": "geometry.hl.jenny_dweller"
+      },
+      "animations": {
+        "look": "animation.hl.jenny.look",
+        "idle": "animation.hl.jenny.idle",
+        "wave": "animation.hl.jenny.wave",
+        "beckon": "animation.hl.jenny.beckon",
+        "walk": "animation.hl.jenny.walk",
+        "reveal": "animation.hl.jenny.reveal",
+        "attack": "animation.hl.jenny.attack"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          {
+            "idle": "!query.property('hl:revealed')"
+          },
+          {
+            "wave": "query.property('hl:wave')"
+          },
+          {
+            "beckon": "!query.property('hl:revealed') && !query.property('hl:wave')"
+          },
+          {
+            "walk": "query.modified_move_speed > 0.05"
+          },
+          {
+            "reveal": "query.property('hl:revealed')"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hl.jenny"
+      ],
+      "spawn_egg": {
+        "base_color": "#a8262a",
+        "overlay_color": "#c4beb8"
+      }
+    }
+  }
+}

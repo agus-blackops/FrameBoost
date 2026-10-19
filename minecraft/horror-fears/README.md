@@ -20,6 +20,9 @@ folclore ni monstruos de internet de fuera del juego.
   inspirados en las creepypastas de aldeanos y Endermen)
 - **El Falso Árbol** (nuevo en la 1.4, al estilo de Doctor Nowhere)
 - **Soup.AVI** (nuevo en la 1.5, la cinta de *Blank Room Soup*)
+- **Evil Hunter** (nuevo en la 1.6, del mod de Java de DregIr), **el Stalker**
+  (The Parallel / el Stalker de Twixxel) y **Jenny Dweller** (Jenny, en
+  versión de terror)
 
 Es un proyecto de fans: **no contiene código, arte ni sonido de esos mods**.
 Los modelos, las texturas y los sonidos se generan por código en `tools/`, y
@@ -32,6 +35,32 @@ todo el comportamiento está escrito desde cero para Bedrock.
 >
 > Fears usa los mismos identificadores que Horror Legends: **no actives los
 > dos a la vez en el mismo mundo**. Elige uno.
+
+## Novedades de la 1.6: Evil Hunter, el Stalker y Jenny Dweller
+
+Tres criaturas nuevas del Acto II, con modelos, animaciones y sonidos nuevos:
+
+- **Evil Hunter** (desde el día 5, de noche). Primero las **señales**: huele a
+  quemado, chispas a tu espalda, una risa lejos. Luego **LA CACERÍA**: un
+  hombre corrompido, **quemado del pecho para arriba** con grietas de lava y
+  **sombra de la cintura para abajo**, ojos rojos y garras. Te mira, y corre.
+  **No se le puede hacer daño**, rompe puertas y ventanas y **sus garras te
+  prenden fuego**. Aguanta 45 s, o usa la nueva **Cruz de Plata** (hierro y
+  oro, en cruz) cuando esté cerca: lo destierra al instante.
+- **El Stalker** (desde el día 4). Más de **4 bloques** de huesos negros, brazos
+  hasta el suelo, manos pálidas y una **cara-máscara beige con cuencas huecas y
+  sonrisa fija**. **Nunca se mueve mientras lo miras.** Te observa desde lejos
+  y, cada vez que apartas la vista, está más cerca, hasta que está **detrás de
+  ti**. Si te das la vuelta desaparece; si no, te toca. A veces **te persigue a
+  cuatro patas** rompiendo puertas, y se congela en cuanto lo miras.
+- **Jenny Dweller** (desde el día 3). Una chica **muy simpática** con sudadera
+  roja y coleta que te saluda, te habla por el chat, te **regala una flor** y
+  quiere que **la sigas**. Cada vez que te acercas se ríe y corre más lejos.
+  Cuando la alcanzas, **deja de fingir**: la cara se le abre en **dos fauces**,
+  le salen **brazos largos con garras** y te caza. Pega muy fuerte. Si la
+  ignoras, viene a buscarte. Se la puede matar.
+- Objeto nuevo: **Cruz de Plata** (receta: hierro arriba, abajo y a los lados,
+  oro en el centro). Sonidos nuevos: **fuego** y **risita**.
 
 ## Novedades de la 1.5: Soup.AVI
 
@@ -194,8 +223,8 @@ Después, al crear o editar un mundo, activa **Horror Legends: Fears** en *Packs
 de comportamiento* (el de recursos se añade solo). Requiere **Minecraft
 Bedrock 1.21.0 o superior**. No necesita experimentos.
 
-**Actualizar:** abre el `.mcaddon` nuevo (versión **1.5.0**). Si en los ajustes
-del mundo sigue apareciendo una versión antigua, quítala y activa la 1.5.0. Los
+**Actualizar:** abre el `.mcaddon` nuevo (versión **1.6.0**). Si en los ajustes
+del mundo sigue apareciendo una versión antigua, quítala y activa la 1.6.0. Los
 días que llevas se conservan; las páginas leídas siguen leídas.
 
 ## La historia
@@ -217,6 +246,9 @@ su propio aviso en el chat la noche en que aparece.
 | 3 | La Cuenta Atrás | *«Cuando llegue a cero, date la vuelta»*. 10, 9, 8... y **una cara delante de la tuya**. |
 | 4 | El Endermán Sin Rostro | Sin cara, solo una línea violeta. **Parpadea** hasta ti, cada vez más cerca, y lo oyes en 3D. Si lo miras, se echa encima. |
 | 3 | El Falso Árbol | En la jungla y la taiga, un tronco que no es un árbol: si lo miras, se endereza y te saluda. Si apartas la vista, es un tronco otra vez, más cerca. |
+| 3 | Jenny Dweller | Una chica simpática que te regala una flor y quiere que **la sigas**. Cuando la alcanzas, su cara se abre en dos fauces y te caza. |
+| 4 | El Stalker | Muy alto, negro, con **cara-máscara sonriente**. **Solo se mueve cuando no lo miras**; acaba detrás de ti. A veces persigue a cuatro patas. |
+| 5 | Evil Hunter | **La Cacería**: quemado y de sombra, invencible, rompe puertas y te prende fuego. Aguanta 45 s o usa la **Cruz de Plata**. |
 | 4 | Soup.AVI | En casa o fuera de noche, un hombre **sin cara come sopa y llora**; detrás, una **cabeza de botarga** le frota la espalda. Si miras mucho, se giran... y **hay otro detrás de ti**. Date la vuelta. |
 | 4 | El Hombre de la Niebla | Una niebla espesa y, dentro, un hombre en **chubasquero con capucha** y una sonrisa de oreja a oreja. Se acerca cuando apartas la vista; de noche llama a la puerta. |
 | 4 | Tu Tumba | Una campana a tu espalda. Una tumba con **tu nombre y la fecha de mañana**. Si te acercas, algo golpea **desde abajo** (y ahí está la Página VI). |

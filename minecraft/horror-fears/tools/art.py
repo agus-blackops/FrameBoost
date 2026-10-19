@@ -215,6 +215,28 @@ def hollow_pickaxe():
         "b": (0xd2, 0xc4, 0xa2), "B": (0x8a, 0x7c, 0x64)})
 
 
+def silver_cross():
+    return draw([
+        "................",
+        "......kkk.......",
+        "......kWk.......",
+        "......kSk.......",
+        "......kSk.......",
+        "..kkkkkSkkkkk...",
+        "..kWSSSgSSSSk...",
+        "..kkkkkSkkkkk...",
+        "......kSk.......",
+        "......kSk.......",
+        "......kSk.......",
+        "......kSk.......",
+        "......kDk.......",
+        "......kDk.......",
+        "......kkk.......",
+        "................",
+    ], {"k": (0x16, 0x16, 0x1c), "S": (0xb4, 0xb8, 0xc4), "W": (0xf4, 0xf6, 0xfc), "D": (0x76, 0x7a, 0x86),
+        "g": (0xe8, 0xb8, 0x30)})
+
+
 def ward_lantern():
     """The block texture, laid out for the model in content.py:
     (0,0) 8x8 iron top/bottom, (8,0) 8x1 iron sides, (8,2) 4x4 knob top,

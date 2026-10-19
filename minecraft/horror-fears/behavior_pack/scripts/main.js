@@ -6,7 +6,8 @@
 //                         the Cave Dweller, the Nameless Villager, the Ancient
 //                         City, the fears
 //   Act II   The woods    Herobrine, the Visit, the Countdown, the Faceless
-//                         Enderman, the False Tree, Soup.AVI, the Man From The Fog, your grave, the Dead Hour
+//                         Enderman, the False Tree, Soup.AVI, the Evil Hunter,
+//                         the Stalker, Jenny Dweller, the Man From The Fog, your grave, the Dead Hour
 //   Act III  The error    null, Entity 303, the Red Night
 //   The end              seven torn pages, a ritual, and Herobrine's true form
 //
@@ -34,6 +35,9 @@ import "./creatures/nameless.js";
 import "./creatures/faceless.js";
 import "./creatures/false_tree.js";
 import "./creatures/soup.js";
+import { CROSS, raiseCross } from "./creatures/evil_hunter.js";
+import "./creatures/stalker.js";
+import "./creatures/jenny.js";
 import "./creatures/herobrine.js";
 import { onPlayerSpawn as fogSpawn, tickFog } from "./creatures/fog.js";
 import { restoreCorruption } from "./creatures/null.js";
@@ -107,6 +111,8 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
   const id = itemStack.typeId;
   if (id === FLASHLIGHT) {
     if (!onCooldown(`flash:${source.id}`, 5)) toggleFlashlight(source);
+  } else if (id === CROSS) {
+    if (!onCooldown(`crossuse:${source.id}`, 10)) raiseCross(source);
   } else if (id === "hl:journal") {
     if (!onCooldown(`journal:${source.id}`, 10)) openJournal(source);
   } else if (PAGE_OF[id] && !onCooldown(`page:${source.id}`, 10)) {

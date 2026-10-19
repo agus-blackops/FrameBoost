@@ -185,6 +185,7 @@ function openTests(player) {
       give(player, FLASHLIGHT);
       give(player, BATTERY, 4);
       give(player, WARD);
+      give(player, "hl:silver_cross");
       for (const n of PAGES) if (!pageRead(n)) give(player, pageItem(n));
     }],
     ["hl.t.ritual", () => fighting() || startRitual(player, true)],
