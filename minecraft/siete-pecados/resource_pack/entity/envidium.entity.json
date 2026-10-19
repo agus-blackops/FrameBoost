@@ -4,7 +4,7 @@
     "description": {
       "identifier": "pecados:envidium",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/pecados/envidium"
@@ -18,19 +18,30 @@
       "animations": {
         "caminar": "animation.pecados.caminar",
         "mirar": "animation.pecados.mirar",
-        "respirar": "animation.pecados.respirar"
+        "respirar": "animation.pecados.respirar",
+        "atacar": "animation.pecados.atacar",
+        "flotar": "animation.pecados.flotar",
+        "particulas": "animation.pecados.envidium.particulas"
       },
       "scripts": {
         "scale": "1.0",
         "animate": [
           "caminar",
           "mirar",
-          "respirar"
+          "respirar",
+          {
+            "atacar": "variable.attack_time > 0"
+          },
+          "flotar",
+          "particulas"
         ]
       },
       "spawn_egg": {
         "base_color": "#1E5A28",
         "overlay_color": "#A0FF50"
+      },
+      "particle_effects": {
+        "fx": "minecraft:basic_smoke_particle"
       }
     }
   }

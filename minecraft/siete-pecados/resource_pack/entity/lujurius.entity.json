@@ -4,7 +4,7 @@
     "description": {
       "identifier": "pecados:lujurius",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/pecados/lujurius"
@@ -18,19 +18,32 @@
       "animations": {
         "caminar": "animation.pecados.caminar",
         "mirar": "animation.pecados.mirar",
-        "respirar": "animation.pecados.respirar"
+        "respirar": "animation.pecados.respirar",
+        "atacar": "animation.pecados.atacar",
+        "alas": "animation.pecados.alas",
+        "cola": "animation.pecados.cola",
+        "particulas": "animation.pecados.lujurius.particulas"
       },
       "scripts": {
         "scale": "1.0",
         "animate": [
           "caminar",
           "mirar",
-          "respirar"
+          "respirar",
+          {
+            "atacar": "variable.attack_time > 0"
+          },
+          "alas",
+          "cola",
+          "particulas"
         ]
       },
       "spawn_egg": {
         "base_color": "#F064AA",
         "overlay_color": "#B41E78"
+      },
+      "particle_effects": {
+        "fx": "minecraft:heart_particle"
       }
     }
   }

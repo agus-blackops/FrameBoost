@@ -4,7 +4,7 @@
     "description": {
       "identifier": "pecados:rey_pecados",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/pecados/rey_pecados"
@@ -18,19 +18,35 @@
       "animations": {
         "caminar": "animation.pecados.caminar",
         "mirar": "animation.pecados.mirar",
-        "respirar": "animation.pecados.respirar"
+        "respirar": "animation.pecados.respirar",
+        "atacar": "animation.pecados.atacar",
+        "capa": "animation.pecados.capa",
+        "orbes": "animation.pecados.orbes",
+        "particulas": "animation.pecados.rey_pecados.particulas",
+        "particulas2": "animation.pecados.rey_pecados.particulas2"
       },
       "scripts": {
         "scale": "1.0",
         "animate": [
           "caminar",
           "mirar",
-          "respirar"
+          "respirar",
+          {
+            "atacar": "variable.attack_time > 0"
+          },
+          "capa",
+          "orbes",
+          "particulas",
+          "particulas2"
         ]
       },
       "spawn_egg": {
         "base_color": "#230F2D",
         "overlay_color": "#F0C32D"
+      },
+      "particle_effects": {
+        "fx": "minecraft:soul_particle",
+        "fx2": "minecraft:basic_flame_particle"
       }
     }
   }

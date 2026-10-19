@@ -1,5 +1,7 @@
 # Los 7 Pecados Capitales — Addon para Minecraft Bedrock
 
+![Las criaturas, de frente y de espaldas](vista_previa.png)
+
 Siete criaturas hostiles nuevas, una por cada pecado capital. Cada una tiene su modelo, su textura,
 sus poderes y su propio botín, incluida una **Esencia** que puedes beber para conseguir su poder.
 
@@ -79,11 +81,20 @@ diamantes, una manzana de oro encantada, un tótem de la inmortalidad y una esen
 ## Estructura
 
 ```
-behavior_pack/   entidades, apariciones, botín, objetos y scripts/main.js (poderes)
-resource_pack/   modelos, texturas, animaciones e idiomas (es_ES, es_MX, en_US)
-dist/            el .mcaddon listo para instalar
-tools/generar.py genera los modelos, las texturas y todos los JSON
+behavior_pack/        entidades, apariciones, botín, objetos, receta y scripts/main.js (poderes)
+resource_pack/        modelos, texturas, animaciones, partículas e idiomas (es_ES, es_MX, en_US)
+dist/                 el .mcaddon listo para instalar
+tools/generar.py      genera los dos packs y el .mcaddon
+tools/modelos.py      los modelos de cada criatura (piezas, caras en pixel art, accesorios)
+tools/arte.py         materiales y texturas, geometría Bedrock y un renderizador 3D
+tools/vista_previa.py dibuja vista_previa.png con todas las criaturas
 ```
 
-Para cambiar algo (vida, daño, colores, modelos…), edita `tools/generar.py` y ejecuta
+Para cambiar algo (vida, daño, colores, modelos…), edita los archivos de `tools/` y ejecuta
 `python3 tools/generar.py` (requiere Pillow). Los poderes están en `behavior_pack/scripts/main.js`.
+
+Los ojos, las grietas de lava y las gemas brillan en la oscuridad (material `entity_emissive_alpha`).
+
+**Actualizar desde una versión anterior:** cada versión nueva sube el número de versión del pack
+(ahora 1.1.0), así que Minecraft la importa encima de la anterior. Si en un mundo sigues viendo los
+modelos viejos, quita el pack del mundo y vuelve a añadirlo.

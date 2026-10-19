@@ -4,7 +4,7 @@
     "description": {
       "identifier": "pecados:avaricity",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/pecados/avaricity"
@@ -18,19 +18,28 @@
       "animations": {
         "caminar": "animation.pecados.caminar",
         "mirar": "animation.pecados.mirar",
-        "respirar": "animation.pecados.respirar"
+        "respirar": "animation.pecados.respirar",
+        "atacar": "animation.pecados.atacar",
+        "particulas": "animation.pecados.avaricity.particulas"
       },
       "scripts": {
         "scale": "1.0",
         "animate": [
           "caminar",
           "mirar",
-          "respirar"
+          "respirar",
+          {
+            "atacar": "variable.attack_time > 0"
+          },
+          "particulas"
         ]
       },
       "spawn_egg": {
         "base_color": "#78AF3C",
         "overlay_color": "#F5C828"
+      },
+      "particle_effects": {
+        "fx": "minecraft:villager_happy"
       }
     }
   }

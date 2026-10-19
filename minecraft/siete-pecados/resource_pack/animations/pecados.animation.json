@@ -31,6 +31,13 @@
             0,
             0
           ]
+        },
+        "body": {
+          "rotation": [
+            0,
+            "math.cos(query.modified_distance_moved * 38.17) * 4.0 * query.modified_move_speed",
+            0
+          ]
         }
       }
     },
@@ -62,6 +69,209 @@
             0,
             "-math.sin(query.life_time * 90) * 3 - 3"
           ]
+        },
+        "head": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 90) * 0.2",
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.atacar": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180) * 80",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "-math.sin(variable.attack_time * 180) * 40",
+            0,
+            0
+          ]
+        },
+        "body": {
+          "rotation": [
+            0,
+            "math.sin(variable.attack_time * 180) * 12",
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.capa": {
+      "loop": true,
+      "bones": {
+        "capa": {
+          "rotation": [
+            "6 + math.clamp(query.modified_move_speed * 50, 0, 35) + math.sin(query.life_time * 90) * 2",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.alas": {
+      "loop": true,
+      "bones": {
+        "alaD": {
+          "rotation": [
+            0,
+            "-30 - math.sin(query.life_time * 240) * 18",
+            0
+          ]
+        },
+        "alaI": {
+          "rotation": [
+            0,
+            "30 + math.sin(query.life_time * 240) * 18",
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.cola": {
+      "loop": true,
+      "bones": {
+        "cola": {
+          "rotation": [
+            "math.sin(query.life_time * 100) * 6",
+            "math.sin(query.life_time * 140) * 22",
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.flotar": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "position": [
+            0,
+            "2 + math.sin(query.life_time * 120)",
+            0
+          ]
+        },
+        "rightLeg": {
+          "rotation": [
+            "12 + math.sin(query.life_time * 120) * 5",
+            0,
+            0
+          ]
+        },
+        "leftLeg": {
+          "rotation": [
+            "12 + math.sin(query.life_time * 120 + 60) * 5",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.cabecear": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "12 + math.sin(query.life_time * 45) * 7",
+            0,
+            "math.sin(query.life_time * 22) * 4"
+          ]
+        }
+      }
+    },
+    "animation.pecados.mandibula": {
+      "loop": true,
+      "bones": {
+        "mandibula": {
+          "rotation": [
+            "math.max(0, math.sin(query.life_time * 360)) * 18",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.orbes": {
+      "loop": true,
+      "bones": {
+        "orbes": {
+          "rotation": [
+            0,
+            "query.life_time * 50",
+            0
+          ],
+          "position": [
+            0,
+            "math.sin(query.life_time * 90) * 1.5",
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.avaricity.particulas": {
+      "loop": true,
+      "animation_length": 2.0,
+      "particle_effects": {
+        "0.0": {
+          "effect": "fx",
+          "locator": "fx"
+        }
+      }
+    },
+    "animation.pecados.lujurius.particulas": {
+      "loop": true,
+      "animation_length": 2.5,
+      "particle_effects": {
+        "0.0": {
+          "effect": "fx",
+          "locator": "fx"
+        }
+      }
+    },
+    "animation.pecados.iratus.particulas": {
+      "loop": true,
+      "animation_length": 1.0,
+      "particle_effects": {
+        "0.0": {
+          "effect": "fx",
+          "locator": "fx"
+        }
+      }
+    },
+    "animation.pecados.envidium.particulas": {
+      "loop": true,
+      "animation_length": 0.8,
+      "particle_effects": {
+        "0.0": {
+          "effect": "fx",
+          "locator": "fx"
+        }
+      }
+    },
+    "animation.pecados.rey_pecados.particulas": {
+      "loop": true,
+      "animation_length": 1.2,
+      "particle_effects": {
+        "0.0": {
+          "effect": "fx",
+          "locator": "fx"
+        }
+      }
+    },
+    "animation.pecados.rey_pecados.particulas2": {
+      "loop": true,
+      "animation_length": 0.6,
+      "particle_effects": {
+        "0.0": {
+          "effect": "fx2",
+          "locator": "fx2"
         }
       }
     }

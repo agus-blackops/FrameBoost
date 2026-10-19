@@ -4,7 +4,7 @@
     "description": {
       "identifier": "pecados:glotonix",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/pecados/glotonix"
@@ -18,14 +18,20 @@
       "animations": {
         "caminar": "animation.pecados.caminar",
         "mirar": "animation.pecados.mirar",
-        "respirar": "animation.pecados.respirar"
+        "respirar": "animation.pecados.respirar",
+        "atacar": "animation.pecados.atacar",
+        "mandibula": "animation.pecados.mandibula"
       },
       "scripts": {
         "scale": "1.0",
         "animate": [
           "caminar",
           "mirar",
-          "respirar"
+          "respirar",
+          {
+            "atacar": "variable.attack_time > 0"
+          },
+          "mandibula"
         ]
       },
       "spawn_egg": {
