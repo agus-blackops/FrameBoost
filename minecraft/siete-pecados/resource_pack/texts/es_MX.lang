@@ -1,0 +1,24 @@
+## Los 7 Pecados Capitales (es_MX)
+entity.pecados:superbius.name=Superbius
+item.spawn_egg.entity.pecados:superbius.name=Generar Superbius
+entity.pecados:avaricity.name=Avaricity
+item.spawn_egg.entity.pecados:avaricity.name=Generar Avaricity
+entity.pecados:lujurius.name=Lujurius
+item.spawn_egg.entity.pecados:lujurius.name=Generar Lujurius
+entity.pecados:iratus.name=Iratus
+item.spawn_egg.entity.pecados:iratus.name=Generar Iratus
+entity.pecados:glotonix.name=Glotonix
+item.spawn_egg.entity.pecados:glotonix.name=Generar Glotonix
+entity.pecados:envidium.name=Envidium
+item.spawn_egg.entity.pecados:envidium.name=Generar Envidium
+entity.pecados:perezoth.name=Perezoth
+item.spawn_egg.entity.pecados:perezoth.name=Generar Perezoth
+item.pecados:esencia_soberbia.name=Esencia de Soberbia
+item.pecados:esencia_avaricia.name=Esencia de Avaricia
+item.pecados:esencia_lujuria.name=Esencia de Lujuria
+item.pecados:esencia_ira.name=Esencia de Ira
+item.pecados:esencia_gula.name=Esencia de Gula
+item.pecados:esencia_envidia.name=Esencia de Envidia
+item.pecados:esencia_pereza.name=Esencia de Pereza
+pack.name=Los 7 Pecados Capitales
+pack.description=7 criaturas, una por cada pecado capital.

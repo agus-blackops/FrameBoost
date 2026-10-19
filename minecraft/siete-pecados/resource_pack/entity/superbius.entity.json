@@ -1,0 +1,37 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "pecados:superbius",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/pecados/superbius"
+      },
+      "geometry": {
+        "default": "geometry.pecados.superbius"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "animations": {
+        "caminar": "animation.pecados.caminar",
+        "mirar": "animation.pecados.mirar",
+        "respirar": "animation.pecados.respirar"
+      },
+      "scripts": {
+        "scale": "1.0",
+        "animate": [
+          "caminar",
+          "mirar",
+          "respirar"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#6E28A0",
+        "overlay_color": "#EBC32D"
+      }
+    }
+  }
+}

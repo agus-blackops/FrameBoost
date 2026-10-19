@@ -1,0 +1,24 @@
+## Los 7 Pecados Capitales (en_US)
+entity.pecados:superbius.name=Superbius
+item.spawn_egg.entity.pecados:superbius.name=Spawn Superbius
+entity.pecados:avaricity.name=Avaricity
+item.spawn_egg.entity.pecados:avaricity.name=Spawn Avaricity
+entity.pecados:lujurius.name=Lujurius
+item.spawn_egg.entity.pecados:lujurius.name=Spawn Lujurius
+entity.pecados:iratus.name=Iratus
+item.spawn_egg.entity.pecados:iratus.name=Spawn Iratus
+entity.pecados:glotonix.name=Glotonix
+item.spawn_egg.entity.pecados:glotonix.name=Spawn Glotonix
+entity.pecados:envidium.name=Envidium
+item.spawn_egg.entity.pecados:envidium.name=Spawn Envidium
+entity.pecados:perezoth.name=Perezoth
+item.spawn_egg.entity.pecados:perezoth.name=Spawn Perezoth
+item.pecados:esencia_soberbia.name=Essence of Pride
+item.pecados:esencia_avaricia.name=Essence of Greed
+item.pecados:esencia_lujuria.name=Essence of Lust
+item.pecados:esencia_ira.name=Essence of Wrath
+item.pecados:esencia_gula.name=Essence of Gluttony
+item.pecados:esencia_envidia.name=Essence of Envy
+item.pecados:esencia_pereza.name=Essence of Sloth
+pack.name=Los 7 Pecados Capitales
+pack.description=7 creatures, one for each deadly sin.

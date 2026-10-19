@@ -1,0 +1,69 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.pecados.caminar": {
+      "loop": true,
+      "bones": {
+        "rightLeg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17) * 40.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftLeg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17 + 180) * 40.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17 + 180) * 35.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17) * 35.0 * query.modified_move_speed",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.mirar": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "query.target_x_rotation",
+            "query.target_y_rotation",
+            0
+          ]
+        }
+      }
+    },
+    "animation.pecados.respirar": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 90) * 3 + 3"
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            0,
+            0,
+            "-math.sin(query.life_time * 90) * 3 - 3"
+          ]
+        }
+      }
+    }
+  }
+}

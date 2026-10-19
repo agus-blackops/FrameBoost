@@ -1,0 +1,27 @@
+{
+  "resource_pack_name": "pecados",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "pecados_esencia_soberbia": {
+      "textures": "textures/items/esencia_soberbia"
+    },
+    "pecados_esencia_avaricia": {
+      "textures": "textures/items/esencia_avaricia"
+    },
+    "pecados_esencia_lujuria": {
+      "textures": "textures/items/esencia_lujuria"
+    },
+    "pecados_esencia_ira": {
+      "textures": "textures/items/esencia_ira"
+    },
+    "pecados_esencia_gula": {
+      "textures": "textures/items/esencia_gula"
+    },
+    "pecados_esencia_envidia": {
+      "textures": "textures/items/esencia_envidia"
+    },
+    "pecados_esencia_pereza": {
+      "textures": "textures/items/esencia_pereza"
+    }
+  }
+}

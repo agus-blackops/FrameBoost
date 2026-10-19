@@ -1,0 +1,39 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Los 7 Pecados Capitales (RP)",
+    "description": "pack.description",
+    "uuid": "15c8a921-72a5-4114-a37e-96a0aac93924",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      40
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "8a3f5c27-1d4e-4b6a-9f0c-2e7d6b1a9c44",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "3d1ccddd-c3ab-4976-85a1-ed330acb9bea",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

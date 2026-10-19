@@ -1,0 +1,54 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Los 7 Pecados Capitales (BP)",
+    "description": "pack.description",
+    "uuid": "3d1ccddd-c3ab-4976-85a1-ed330acb9bea",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      40
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "f091af7d-9ae2-478d-9466-49f3c6a6041d",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "0effd3e2-bbbc-44ad-9357-721ae2a8460b",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "15c8a921-72a5-4114-a37e-96a0aac93924",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.11.0"
+    }
+  ]
+}
