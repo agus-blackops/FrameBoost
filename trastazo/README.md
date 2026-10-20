@@ -6,6 +6,8 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
+**Unity:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md).
+
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
 

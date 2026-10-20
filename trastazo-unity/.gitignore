@@ -1,0 +1,21 @@
+# dotnet verification builds
+build/bin/
+build/obj/
+tests/bin/
+tests/obj/
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/*.apk
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+!build/Core.csproj
+!tests/Tests.csproj
+*.sln
+*.pidb
+*.suo
+.vs/
+.idea/

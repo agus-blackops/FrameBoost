@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>CS0168;CS0219;CS0649;CS0414;CS0169;CS1591;CS0108;CS0162;CS0642;CS8981;CS1570;CS1587</NoWarn>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Trastazo.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/Trastazo/Core/**/*.cs" />
+  </ItemGroup>
+</Project>

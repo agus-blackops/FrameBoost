@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Tests</AssemblyName>
+    <NoWarn>CS0168;CS0219;CS0649;CS0414;CS0169;CS1591;CS0108;CS0162;CS0642;CS8981;CS1570;CS1587;CS0472</NoWarn>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/Trastazo/Core/**/*.cs" />
+    <Compile Include="Harness.cs" />
+    <Compile Include="Hand/**/*.cs" />
+    <Compile Include="Generated/**/*.cs" />
+  </ItemGroup>
+</Project>
