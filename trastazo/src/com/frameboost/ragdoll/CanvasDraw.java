@@ -30,8 +30,22 @@ final class CanvasDraw implements Draw2D {
         path.close();
         c.drawPath(path, p);
     }
-    @Override public void emissive(boolean on) { }
-    @Override public void light(float x, float y, float radius, int color, float intensity) { }
-    @Override public boolean hasLighting() { return false; }
+    /** Soft lights and glows, painted as stacked translucent discs (used by the Unity version; off elsewhere). */
+    boolean lighting;
+    private boolean glow;
+    private final Paint lp = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    @Override public void emissive(boolean on) { glow = on && lighting; }
+    @Override public void light(float x, float y, float radius, int color, float intensity) {
+        if (!lighting || intensity <= 0.01f) return;
+        lp.setStyle(Paint.Style.FILL);
+        int steps = 18;
+        for (int i = 0; i < steps; i++) {
+            float k = 1f - i / (float) steps;
+            lp.setColor(Renderer.alpha(color, Math.min(1f, intensity * 0.028f)));
+            c.drawCircle(x, y, radius * k * k * k * 0.85f + radius * 0.15f * k * 0.4f, lp);
+        }
+    }
+    @Override public boolean hasLighting() { return lighting; }
     @Override public void ripple(float x, float y, float radius, float strength) { }
 }

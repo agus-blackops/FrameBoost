@@ -64,6 +64,7 @@ namespace TrastazoUnity
             Application.logMessageReceivedThreaded += OnLog;
 
             Trastazo.Game.desktop = !Application.isMobilePlatform;
+            Trastazo.Game.lighting = true;
             Trastazo.File cache = new Trastazo.File(dataDir, "cache");
             cache.mkdirs();
 

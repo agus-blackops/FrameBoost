@@ -29,9 +29,23 @@ namespace Trastazo
             path.close();
             c.drawPath(path, p);
         }
-        public void emissive(bool on) { }
-        public void light(float x, float y, float radius, int color, float intensity) { }
-        public bool hasLighting() { return false; }
+        /** Soft lights and glows, painted as stacked translucent discs (used by the Unity version; off elsewhere). */
+        public bool lighting;
+        private bool glow;
+        private Paint lp = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        public void emissive(bool on) { glow = on && lighting; }
+        public void light(float x, float y, float radius, int color, float intensity) {
+            if (!lighting || intensity <= 0.01f) return;
+            lp.setStyle(Paint.Style.FILL);
+            int steps = 18;
+            for (int i = 0; i < steps; i++) {
+                float k = 1f - i / (float) steps;
+                lp.setColor(Renderer.alpha(color, Math.min(1f, intensity * 0.028f)));
+                c.drawCircle(x, y, radius * k * k * k * 0.85f + radius * 0.15f * k * 0.4f, lp);
+            }
+        }
+        public bool hasLighting() { return lighting; }
         public void ripple(float x, float y, float radius, float strength) { }
     }
 }

@@ -424,12 +424,38 @@ final class Game {
     private CanvasDraw canvasDraw;
     private int errStreak;
 
+    /** Lights, ambient tint and vignette on the Canvas path (set by the Unity version). */
+    static boolean lighting;
+
+    private void drawAtmosphere(Canvas c) {
+        int t = Math.max(0, Math.min(AMBIENT.length - 1, renderer.theme));
+        float[] a = AMBIENT[t];
+        float dark = 1f - (a[0] + a[1] + a[2]) / 3f;
+        p.setStyle(Paint.Style.FILL);
+        if (dark > 0.02f) {
+            p.setColor(Renderer.alpha(0xFF0a1030, Math.min(0.5f, dark * 0.75f)));
+            c.drawRect(0, 0, sw, sh, p);
+        }
+        float vig = (t == 2 || t == 4 ? 0.5f : 0.28f);
+        int n = 8;
+        for (int i = 0; i < n; i++) {
+            float f = 1f - i / (float) n, e = Math.min(sw, sh) * 0.22f * (i + 1) / n;
+            p.setColor(Renderer.alpha(0xFF000000, vig * 0.11f * f));
+            c.drawRect(0, 0, e, sh, p);
+            c.drawRect(sw - e, 0, sw, sh, p);
+            c.drawRect(e, 0, sw - e, e, p);
+            c.drawRect(e, sh - e, sw - e, sh, p);
+        }
+    }
+
     /** Software path (Canvas engine): world + interface on one canvas. */
     void draw(Canvas c) {
         c.drawColor(0xFF0e1117);
         if (canvasDraw == null) canvasDraw = new CanvasDraw(c);
         canvasDraw.c = c;
+        canvasDraw.lighting = lighting && settings.highQuality;
         drawWorld(canvasDraw);
+        if (canvasDraw.lighting) drawAtmosphere(c);
         if (fx.flash > 0.01f) {
             p.setStyle(Paint.Style.FILL);
             p.setColor(Renderer.alpha(0xFFfff6dd, fx.flash * 0.7f));
