@@ -9,7 +9,7 @@ Paquete de personalización (One UI) con Clawd, la mascota de Claude Code. Medid
 
 | Carpeta | Contenido |
 | --- | --- |
-| `animated/` | Fondo animado: `clawd-neon-1080x2400.mp4` (10 s en bucle, sin sonido) y una versión GIF más liviana |
+| `animated/` | Fondo animado: `clawd-neon-1080x2400.mp4` (15 s en bucle, sin sonido) y una versión GIF más liviana |
 | `wallpapers/` | 9 fondos fijos: 3 a todo color (Atardecer, Aurora, Ultravioleta, sacados del animado) y 6 más sobrios (Clásico, Naranja, Crema, Noche, Minimal, Terminal) |
 | `icons/` | 12 iconos de 512 px en dos estilos (`naranja` y `oscuro`) más una hoja resumen de cada uno |
 | `palette/` | Colores de Clawd en `paleta.png` y `palette.json` |
@@ -28,7 +28,7 @@ Paquete de personalización (One UI) con Clawd, la mascota de Claude Code. Medid
 2. **Ajustes → Fondo de pantalla y estilo → Cambiar fondos de pantalla → Galería** y elige el video.
 3. Samsung lo reproduce en la **pantalla de bloqueo**; la pantalla de inicio muestra un cuadro fijo.
    Si tu versión de One UI no lo acepta, usa el GIF (`clawd-neon-360x800.gif`), de menor calidad.
-4. El video dura 10 s y no tiene sonido. Gasta algo más de batería que un fondo fijo.
+4. El video dura 15 s y no tiene sonido. Gasta algo más de batería que un fondo fijo.
 5. Para ver el cielo en otro color, usa los fondos fijos Atardecer, Aurora y Ultravioleta.
 
 ### 2. Colores del sistema
