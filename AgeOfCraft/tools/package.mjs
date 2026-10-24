@@ -93,3 +93,14 @@ for (const [name, entries] of outputs) {
   writeFileSync(join(dist, name), buf);
   console.log(`dist/${name}: ${entries.length} files, ${(buf.length / 1024).toFixed(1)} KiB`);
 }
+
+// A plain .zip for chat apps such as WhatsApp, which may not open .mcaddon
+// files directly: the three archives above plus Spanish install notes.
+const shareName = `AgeOfCraft-${version}-WhatsApp.zip`;
+const shareEntries = [
+  ...outputs.map(([name]) => [name, join(dist, name)]),
+  ["LEEME.txt", join(ROOT, "tools/share/LEEME.txt")],
+];
+const shareBuf = zip(shareEntries);
+writeFileSync(join(dist, shareName), shareBuf);
+console.log(`dist/${shareName}: ${shareEntries.length} files, ${(shareBuf.length / 1024).toFixed(1)} KiB`);

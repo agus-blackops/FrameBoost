@@ -1,0 +1,40 @@
+AGE OF CRAFT - Prototipo (Hito 1)
+=================================
+
+Requisito: Minecraft Bedrock 1.26.50 o más nuevo.
+No hace falta activar experimentos ni trucos.
+
+CÓMO INSTALAR EN ANDROID
+1. Descarga este .zip desde WhatsApp.
+2. Ábrelo con el gestor de archivos y pulsa "Extraer".
+3. Toca el archivo AgeOfCraft-0.1.0.mcaddon y elige abrirlo con Minecraft.
+   Minecraft importa los dos paquetes (Comportamiento y Recursos).
+   Si el .mcaddon no se abre, toca primero AgeOfCraft_BP-0.1.0.mcpack
+   y después AgeOfCraft_RP-0.1.0.mcpack.
+4. Crea un mundo nuevo > Paquetes de comportamiento > activa
+   "Age Of Craft (Behavior)". Acepta cuando pida añadir los recursos.
+
+CÓMO INSTALAR EN WINDOWS
+Extrae el .zip y haz doble clic en AgeOfCraft-0.1.0.mcaddon.
+
+XBOX Y PLAYSTATION
+Las consolas no pueden importar archivos. Hay dos opciones:
+  a) Quien tenga Android o PC crea el mundo con el add-on y lo sube a un
+     Realm (Ajustes del Realm > Reemplazar mundo). Luego todos entran al
+     Realm. (Esta ruta todavía no está comprobada con este add-on.)
+  b) Quien tenga Android o PC aloja el mundo, y los demás se unen
+     desde la lista de amigos.
+
+CÓMO JUGAR
+- Al entrar recibes el "Mapa de comandante" (Commander Map).
+  También se fabrica con 2 papeles + 1 palo.
+- Úsalo (Xbox: LT, PlayStation: L2, móvil: mantener pulsado) y elige facción:
+  Aster Kingdom (azul) o Crimson Dominion (rojo).
+- Rompe troncos: cada tronco suma 1 de madera a tu facción.
+- Mapa > Recruit Spearman (15 de madera) para reclutar un lancero.
+- Apunta al suelo, abre el mapa y elige "Move to target": tus lanceros
+  marchan hasta la bandera. También hay "Rally to me" y "Halt".
+
+AVISO: es un prototipo y todavía no se ha probado dentro del juego.
+Si algo falla, activa Ajustes > Creador > Registro de contenido (Content Log)
+y manda una captura de los mensajes que empiezan por [AgeOfCraft].
