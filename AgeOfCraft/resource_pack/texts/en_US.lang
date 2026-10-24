@@ -1,0 +1,4 @@
+entity.aoc:spearman.name=Spearman
+entity.aoc:rally_marker.name=Rally Point
+item.spawn_egg.entity.aoc:spearman.name=Spawn Spearman
+item.aoc:commander_map.name=Commander Map

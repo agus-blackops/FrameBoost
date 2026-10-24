@@ -1,0 +1,24 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "aoc:rally_marker",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/aoc/rally_marker"
+      },
+      "geometry": {
+        "default": "geometry.aoc.rally_marker"
+      },
+      "scripts": {
+        "animate": ["wave"]
+      },
+      "animations": {
+        "wave": "animation.aoc.rally_marker.wave"
+      },
+      "render_controllers": ["controller.render.aoc.simple"]
+    }
+  }
+}

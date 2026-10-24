@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "age_of_craft",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "aoc_commander_map": {
+      "textures": "textures/items/aoc/commander_map"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+# Build output: produced by `npm run build` from src/.
+behavior_pack/scripts/main.js
+behavior_pack/scripts/main.js.map

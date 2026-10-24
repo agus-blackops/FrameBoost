@@ -1,0 +1,28 @@
+{
+  "name": "age-of-craft",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Age Of Craft: a real-time strategy Add-On for Minecraft Bedrock Edition.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.2"
+  },
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run",
+    "textures": "node tools/generate-textures.mjs",
+    "package": "node tools/package.mjs",
+    "mct:validate": "node tools/mct-validate.mjs",
+    "check": "npm run typecheck && npm run test && npm run build && npm run package"
+  },
+  "devDependencies": {
+    "@minecraft/server": "2.10.0",
+    "@minecraft/server-ui": "2.2.0",
+    "@types/node": "22.19.1",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

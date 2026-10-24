@@ -1,0 +1,42 @@
+{
+  "format_version": "1.10.0",
+  "animations": {
+    "animation.aoc.unit.hold_spear": {
+      "loop": true,
+      "bones": {
+        "rightArm": { "rotation": [-15.0, 0.0, 0.0] }
+      }
+    },
+    "animation.aoc.unit.walk": {
+      "loop": true,
+      "bones": {
+        "rightArm": { "rotation": ["-variable.walk_swing", 0.0, 0.0] },
+        "leftArm": { "rotation": ["variable.walk_swing", 0.0, 0.0] },
+        "rightLeg": { "rotation": ["variable.walk_swing * 1.4", 0.0, 0.0] },
+        "leftLeg": { "rotation": ["-variable.walk_swing * 1.4", 0.0, 0.0] }
+      }
+    },
+    "animation.aoc.unit.look_at_target": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "relative_to": { "rotation": "entity" },
+          "rotation": ["query.target_x_rotation", "query.target_y_rotation", 0.0]
+        }
+      }
+    },
+    "animation.aoc.unit.attack": {
+      "loop": true,
+      "bones": {
+        "rightArm": { "rotation": ["-math.sin(variable.attack_time * 180.0) * 70.0", 0.0, 0.0] },
+        "body": { "rotation": [0.0, "math.sin(variable.attack_time * 180.0) * 12.0", 0.0] }
+      }
+    },
+    "animation.aoc.rally_marker.wave": {
+      "loop": true,
+      "bones": {
+        "flag": { "rotation": [0.0, "math.sin(query.life_time * 140.0) * 12.0", 0.0] }
+      }
+    }
+  }
+}

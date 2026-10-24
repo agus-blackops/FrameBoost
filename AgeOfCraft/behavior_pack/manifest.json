@@ -1,0 +1,45 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Age Of Craft (Behavior)",
+    "description": "Real-time strategy for Bedrock. Milestone 1 prototype.",
+    "uuid": "9a40ce09-9bfb-41d7-ab2f-b85410d8d9b1",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 50]
+  },
+  "modules": [
+    {
+      "description": "Entities, items and recipes",
+      "type": "data",
+      "uuid": "f9ef232e-d32d-4cdc-a02f-5b6eafe7e26c",
+      "version": [0, 1, 0]
+    },
+    {
+      "description": "Strategy layer (bundled TypeScript)",
+      "type": "script",
+      "language": "javascript",
+      "uuid": "02fcba84-42cc-4ba0-bc31-3738c4bdd0fe",
+      "version": [0, 1, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "4e057f48-6e17-45c6-81e3-79ceaee6ffc5",
+      "version": [0, 1, 0]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.10.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.2.0"
+    }
+  ],
+  "metadata": {
+    "authors": ["Age Of Craft contributors"],
+    "license": "MIT",
+    "product_type": "addon"
+  }
+}

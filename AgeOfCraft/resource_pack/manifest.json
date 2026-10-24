@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Age Of Craft (Resources)",
+    "description": "Models, textures and text for Age Of Craft.",
+    "uuid": "4e057f48-6e17-45c6-81e3-79ceaee6ffc5",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 50]
+  },
+  "modules": [
+    {
+      "description": "Age Of Craft resources",
+      "type": "resources",
+      "uuid": "d11a5b0f-375d-4d28-accd-7e784f13cd5b",
+      "version": [0, 1, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "9a40ce09-9bfb-41d7-ab2f-b85410d8d9b1",
+      "version": [0, 1, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["Age Of Craft contributors"],
+    "license": "MIT",
+    "product_type": "addon"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.aoc.faction_unit": {
+      "arrays": {
+        "textures": {
+          "Array.faction_skins": ["Texture.unaligned", "Texture.aster", "Texture.crimson"]
+        }
+      },
+      "geometry": "Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": ["Array.faction_skins[query.property('aoc:faction')]"]
+    },
+    "controller.render.aoc.simple": {
+      "geometry": "Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": ["Texture.default"]
+    }
+  }
+}

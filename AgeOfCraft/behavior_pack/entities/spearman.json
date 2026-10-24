@@ -1,0 +1,397 @@
+{
+  "format_version": "1.26.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "aoc:spearman",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "properties": {
+        "aoc:faction": {
+          "type": "int",
+          "range": [
+            0,
+            2
+          ],
+          "default": 0,
+          "client_sync": true
+        },
+        "aoc:order": {
+          "type": "enum",
+          "values": [
+            "idle",
+            "move"
+          ],
+          "default": "idle",
+          "client_sync": false
+        }
+      }
+    },
+    "component_groups": {
+      "aoc:idle": {
+        "minecraft:behavior.hurt_by_target": {
+          "priority": 1,
+          "entity_types": {
+            "filters": {
+              "none_of": [
+                {
+                  "all_of": [
+                    {
+                      "test": "has_tag",
+                      "subject": "self",
+                      "value": "aoc_f_aster"
+                    },
+                    {
+                      "test": "has_tag",
+                      "subject": "other",
+                      "value": "aoc_f_aster"
+                    }
+                  ]
+                },
+                {
+                  "all_of": [
+                    {
+                      "test": "has_tag",
+                      "subject": "self",
+                      "value": "aoc_f_crimson"
+                    },
+                    {
+                      "test": "has_tag",
+                      "subject": "other",
+                      "value": "aoc_f_crimson"
+                    }
+                  ]
+                },
+                {
+                  "test": "is_family",
+                  "subject": "other",
+                  "value": "aoc_rally_marker"
+                }
+              ]
+            },
+            "max_dist": 24
+          }
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 2,
+          "must_see": true,
+          "reselect_targets": true,
+          "scan_interval": 10,
+          "entity_types": [
+            {
+              "filters": {
+                "any_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "monster"
+                  },
+                  {
+                    "all_of": [
+                      {
+                        "test": "has_tag",
+                        "subject": "self",
+                        "value": "aoc_f_aster"
+                      },
+                      {
+                        "test": "has_tag",
+                        "subject": "other",
+                        "value": "aoc_f_crimson"
+                      }
+                    ]
+                  },
+                  {
+                    "all_of": [
+                      {
+                        "test": "has_tag",
+                        "subject": "self",
+                        "value": "aoc_f_crimson"
+                      },
+                      {
+                        "test": "has_tag",
+                        "subject": "other",
+                        "value": "aoc_f_aster"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "max_dist": 16
+            }
+          ]
+        }
+      },
+      "aoc:moving": {
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "scan_interval": 5,
+          "entity_types": [
+            {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "aoc_rally_marker"
+                  },
+                  {
+                    "any_of": [
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_0"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_0"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_1"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_1"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_2"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_2"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_3"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_3"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_4"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_4"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_5"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_5"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_6"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_6"
+                          }
+                        ]
+                      },
+                      {
+                        "all_of": [
+                          {
+                            "test": "has_tag",
+                            "subject": "self",
+                            "value": "aoc_ch_7"
+                          },
+                          {
+                            "test": "has_tag",
+                            "subject": "other",
+                            "value": "aoc_ch_7"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "max_dist": 64,
+              "must_see": false,
+              "reevaluate_description": true
+            }
+          ]
+        },
+        "minecraft:timer": {
+          "looping": false,
+          "time": 90,
+          "time_down_event": {
+            "event": "aoc:order_idle",
+            "target": "self"
+          }
+        }
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "aoc_unit",
+          "aoc_infantry",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.6,
+        "height": 1.9
+      },
+      "minecraft:health": {
+        "value": 24,
+        "max": 24
+      },
+      "minecraft:attack": {
+        "damage": 4
+      },
+      "minecraft:movement": {
+        "value": 0.3
+      },
+      "minecraft:follow_range": {
+        "value": 48,
+        "max": 64
+      },
+      "minecraft:navigation.walk": {
+        "can_path_over_water": true,
+        "avoid_water": true,
+        "avoid_damage_blocks": true,
+        "can_pass_doors": true,
+        "can_open_doors": false,
+        "can_walk": true
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:can_climb": {},
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": true,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0
+      },
+      "minecraft:hurt_on_condition": {
+        "damage_conditions": [
+          {
+            "filters": {
+              "test": "in_lava",
+              "subject": "self",
+              "operator": "==",
+              "value": true
+            },
+            "cause": "lava",
+            "damage_per_tick": 4
+          }
+        ]
+      },
+      "minecraft:persistent": {},
+      "minecraft:nameable": {
+        "always_show": false,
+        "allow_name_tag_renaming": false
+      },
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.melee_attack": {
+        "priority": 3,
+        "speed_multiplier": 1.1,
+        "track_target": true,
+        "require_complete_path": false
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 8,
+        "look_distance": 8,
+        "probability": 0.02
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 9
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "aoc:idle"
+          ]
+        }
+      },
+      "aoc:order_move": {
+        "remove": {
+          "component_groups": [
+            "aoc:idle"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aoc:moving"
+          ]
+        },
+        "set_property": {
+          "aoc:order": "move"
+        }
+      },
+      "aoc:order_idle": {
+        "remove": {
+          "component_groups": [
+            "aoc:moving"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "aoc:idle"
+          ]
+        },
+        "set_property": {
+          "aoc:order": "idle"
+        }
+      }
+    }
+  }
+}

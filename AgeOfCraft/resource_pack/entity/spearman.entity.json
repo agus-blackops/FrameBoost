@@ -1,0 +1,41 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "aoc:spearman",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "unaligned": "textures/entity/aoc/spearman_unaligned",
+        "aster": "textures/entity/aoc/spearman_aster",
+        "crimson": "textures/entity/aoc/spearman_crimson"
+      },
+      "geometry": {
+        "default": "geometry.aoc.spearman"
+      },
+      "scripts": {
+        "pre_animation": [
+          "variable.walk_swing = math.cos(query.modified_distance_moved * 38.17) * query.modified_move_speed * 57.3;"
+        ],
+        "animate": [
+          "hold_spear",
+          "walk",
+          "look_at_target",
+          { "attack": "variable.attack_time > 0.0" }
+        ]
+      },
+      "animations": {
+        "hold_spear": "animation.aoc.unit.hold_spear",
+        "walk": "animation.aoc.unit.walk",
+        "look_at_target": "animation.aoc.unit.look_at_target",
+        "attack": "animation.aoc.unit.attack"
+      },
+      "render_controllers": ["controller.render.aoc.faction_unit"],
+      "spawn_egg": {
+        "base_color": "#6b4f2a",
+        "overlay_color": "#c0c6cc"
+      }
+    }
+  }
+}
