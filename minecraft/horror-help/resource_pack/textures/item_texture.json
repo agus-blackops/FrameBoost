@@ -1,0 +1,42 @@
+{
+  "resource_pack_name": "horror_legends",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "hl_journal": {
+      "textures": "textures/items/hl/journal"
+    },
+    "hl_flashlight": {
+      "textures": "textures/items/hl/flashlight"
+    },
+    "hl_battery": {
+      "textures": "textures/items/hl/battery"
+    },
+    "hl_hollow_pickaxe": {
+      "textures": "textures/items/hl/hollow_pickaxe"
+    },
+    "hl_silver_cross": {
+      "textures": "textures/items/hl/silver_cross"
+    },
+    "hl_page_1": {
+      "textures": "textures/items/hl/page_1"
+    },
+    "hl_page_2": {
+      "textures": "textures/items/hl/page_2"
+    },
+    "hl_page_3": {
+      "textures": "textures/items/hl/page_3"
+    },
+    "hl_page_4": {
+      "textures": "textures/items/hl/page_4"
+    },
+    "hl_page_5": {
+      "textures": "textures/items/hl/page_5"
+    },
+    "hl_page_6": {
+      "textures": "textures/items/hl/page_6"
+    },
+    "hl_page_7": {
+      "textures": "textures/items/hl/page_7"
+    }
+  }
+}
