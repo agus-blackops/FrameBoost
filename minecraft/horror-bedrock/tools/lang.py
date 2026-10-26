@@ -187,12 +187,14 @@ S = {
     ),
     "hb.lore.boiled": (
         "§lThe Boiled One§r\n\nEl Doctor Nowhere. Primero, la emisora: una voz plana leyendo números en una "
-        "frecuencia que nadie usa. Luego aparece de pie en el campo: una figura carmesí y marchita de cinco bloques, "
-        "con la cabeza deforme y dos puntos rojos por ojos. Los que la miran demasiado sufren el Fenómeno: todo se "
+        "frecuencia que nadie usa. Luego aparece de pie en el campo: una figura negra, encorvada, de cinco bloques, "
+        "con el borde blanco como una foto quemada, un solo brazo larguísimo hasta el suelo y una cabeza roja y "
+        "deforme que grita, con púas blancas alrededor. Los que la miran demasiado sufren el Fenómeno: todo se "
         "vuelve rojo, no te tienes en pie y duele.\n\n§eConsejo:§r NO LO MIRES.",
         "§lThe Boiled One§r\n\nDoctor Nowhere. First, the station: a flat voice reading numbers on a frequency "
-        "nobody uses. Then it is standing in the field: a crimson, withered figure five blocks tall, with a "
-        "misshapen head and two red points for eyes. Those who look too long suffer the Phenomenon: everything goes "
+        "nobody uses. Then it is standing in the field: a black, hunched figure five blocks tall, its edges "
+        "white like a burnt photograph, one arm far too long reaching to the ground, and a red, misshapen head "
+        "screaming, with white spikes all round it. Those who look too long suffer the Phenomenon: everything goes "
         "red, you can't stand straight, and it hurts.\n\n§eTip:§r DON'T LOOK AT IT.",
     ),
     "hb.lore.jeff": (
@@ -422,12 +424,12 @@ NOTES = {
     )),
     6: (("La antena", "The mast"), (
         "La radio capta una emisora que no existe. Una voz plana lee números. Entre los números, otra cosa.\n\nMonté "
-        "esta antena para oírla mejor. Error.\n\nAhora lo veo a él: rojo, quemado, de cinco bloques de alto, con dos "
-        "puntos rojos por ojos, de pie en el campo. Le llaman el Hervido. El Doctor Nowhere.\n\nNO LO MIRES. Si lo "
+        "esta antena para oírla mejor. Error.\n\nAhora lo veo a él: negro, encorvado, de cinco bloques de alto, con una "
+        "cabeza roja que grita, de pie en el campo. Le llaman el Hervido. El Doctor Nowhere.\n\nNO LO MIRES. Si lo "
         "miras demasiado todo se vuelve rojo, y duele.",
         "The radio picks up a station that doesn't exist. A flat voice reads numbers. Between the numbers, "
-        "something else.\n\nI built this mast to hear it better. Mistake.\n\nNow I see him: red, burnt, five blocks "
-        "tall, two red points for eyes, standing in the field. They call him the Boiled One. Doctor Nowhere.\n\n"
+        "something else.\n\nI built this mast to hear it better. Mistake.\n\nNow I see him: black, hunched, five blocks "
+        "tall, a red head that screams, standing in the field. They call him the Boiled One. Doctor Nowhere.\n\n"
         "DON'T LOOK AT HIM. Look too long and everything goes red, and it hurts.",
     )),
     7: (("El campamento", "The camp"), (

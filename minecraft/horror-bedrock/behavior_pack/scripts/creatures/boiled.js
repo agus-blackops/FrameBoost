@@ -1,8 +1,9 @@
 // Act II: the Boiled One (Doctor Nowhere). First, the broadcast: a numbers
 // station on a frequency nobody uses, a flat voice reading digits, and
 // between them, something else. Then, one evening, it is standing far out in
-// the open: a crimson, withered figure five blocks tall with a misshapen
-// head and two red points of light for eyes. Don't look at it. Those who
+// the open: a black, hunched figure five blocks tall, ragged white at the
+// edges, one long arm to the ground, and a small red head screaming, white
+// spikes all round it. Don't look at it. Those who
 // look too long suffer the Phenomenon: the world goes red, you can't stand
 // straight, and it hurts.
 //

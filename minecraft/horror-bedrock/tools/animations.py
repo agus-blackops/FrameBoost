@@ -173,10 +173,14 @@ ANIMATIONS = {
     # ------------------------------------------------------------------ #
     # The Boiled One
     # ------------------------------------------------------------------ #
+    # Swaying, hunched, the head twitching; the long arm's hand dragging a
+    # little in the grass.
     "animation.hb.boiled.idle": {"loop": True, "bones": {
-        "body": rot(wave(12.0, 1.5), 0, wave(9.0, 2.0, 2.0)),
-        "head": rot(0, 0, f"{wave(7.0, 4.0)} + {jolt(0.993, -15.0, 15.0)}"),
-        "rightArm": rot(wave(15.0, 2.0)), "leftArm": rot(wave(13.0, -2.0))}},
+        "body": rot(0, 0, wave(9.0, 1.5)),
+        "chest": rot(wave(12.0, 2.5), 0, wave(8.0, 2.0, 2.0)),
+        "head": rot(wave(10.0, 3.0), 0, f"{wave(7.0, 4.0)} + {jolt(0.993, -15.0, 15.0)}"),
+        "rightArm": rot(wave(15.0, 3.0), 0, wave(11.0, 2.0)), "rightForearm": rot(0, 0, wave(13.0, -3.0)),
+        "leftArm": rot(wave(13.0, -2.0))}},
     # It has noticed you: the head turns, slowly, all the way.
     "animation.hb.boiled.stare": {"loop": True, "bones": {
         "head": rot("query.target_x_rotation * 0.6", "query.target_y_rotation", -10.0),
