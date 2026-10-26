@@ -37,6 +37,11 @@ Las texturas se generan con `python3 herramientas/generar_texturas.py`
 | **Estrella** | Te hace invencible y más rápido durante 12 s, y derrota a los monstruos que tocas. |
 | **Tienda Oficial** | Usa el Catálogo para comprar poderes, Bloques ? y tuberías con monedas. |
 | **Modo Familiar** | Los creepers explotan pero ya no rompen bloques. La TNT sigue funcionando. |
+| **Demandas** | El departamento legal de Nintendo te demanda: cada 8 minutos puede inventar un motivo, y te demanda en el acto si le pones un nombre "registrado" a una mascota o a un objeto (Mario, Pikachu, Zelda...). Lo que tenga ese nombre queda confiscado y renombrado. |
+| **Abogado de Nintendo** | Aparece cerca de ti y te sigue. Es invencible, y si le pegas te sube la multa. Si no llega en 20 segundos, te manda la demanda "por correo". |
+| **Juicio** | Cuando llega el abogado eliges: pagar la multa, defenderte solo (20% de ganar; si pierdes pagas el doble), contratar a tu abogado (10 monedas, 60% de ganar) o firmar un acuerdo y pagar la mitad. Si cierras el juicio cuenta como huir: vuelve en un minuto con un 50% más de multa. |
+| **Embargo** | Si no te alcanza para pagar, te quitan todas las monedas y pasas 30 segundos de "arresto domiciliario" (lentitud y fatiga de minería). |
+| **Nether de pago** | El Nether ahora es DLC: sin comprar "Expansión: El Nether" (30 monedas en la Tienda), el portal te devuelve. En creativo no aplica. El End es "gratis por tiempo limitado". |
 | **Nintendo Online** | Cada 12 minutos llega un "aviso oficial". A veces te cobra 5 monedas de suscripción. |
 
 ## Recetas (mesa de crafteo)
@@ -56,13 +61,14 @@ Los poderes no se craftean: salen de los Bloques ?, de la Tienda o de los Champi
 NintendoCraft_BP/     Paquete de comportamiento
   blocks/             Bloque ?, Bloque Usado, Tubería
   items/              Monedas, poderes, catálogo
-  entities/           Champi Gruñón y bola de fuego
+  entities/           Champi Gruñón, Abogado de Nintendo y bola de fuego
   scripts/            Lógica (API @minecraft/server 2.0.0)
     main.js           Punto de entrada
     bloques.js        Bloques ?, cabezazos, bloques en el cielo y tuberías
     poderes.js        Champiñones, flor de fuego, estrella, aplastar
     vidas.js          Vidas, marcador, GAME OVER, Modo Familiar y avisos
-    tienda.js         Tienda Oficial
+    tienda.js         Tienda Oficial y Nether de pago
+    demandas.js       Demandas, abogado, juicio y embargos
 NintendoCraft_RP/     Paquete de recursos (texturas, modelo, textos en español)
 herramientas/         Generador de texturas
 construir.sh          Crea dist/NintendoCraft.mcaddon

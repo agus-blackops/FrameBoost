@@ -1,0 +1,17 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "nc:abogado",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/nc_abogado" },
+      "geometry": { "default": "geometry.nc_abogado" },
+      "animations": {
+        "caminar": "animation.nc_abogado.caminar",
+        "mirar": "animation.nc_abogado.mirar"
+      },
+      "scripts": { "animate": ["caminar", "mirar"] },
+      "render_controllers": ["controller.render.default"]
+    }
+  }
+}

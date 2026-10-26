@@ -46,6 +46,8 @@ function darBienvenida(jugador) {
     "§e• §fPuedes aplastar monstruos saltando encima de ellos.",
     "§e• §fModo Familiar: los creepers ya no rompen bloques.",
     "§e• §fCompra poderes con el §dCatálogo de la Tienda Oficial§f.",
+    "§e• §fEl §cNether§f ahora es una expansión de pago (30 monedas en la Tienda).",
+    "§e• §fNuestro §4departamento legal§f vigila tu mundo. No le pongas nombres registrados a nada.",
     "§7(Parodia no oficial. No afiliada con Nintendo ni con Mojang.)",
   ];
   for (const l of lineas) jugador.sendMessage(l);

@@ -1,0 +1,30 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.nc_abogado.caminar": {
+      "loop": true,
+      "bones": {
+        "brazo_derecho": {
+          "rotation": ["math.cos(query.modified_distance_moved * 38.17) * 40 * query.modified_move_speed", 0, 0]
+        },
+        "brazo_izquierdo": {
+          "rotation": ["math.cos(query.modified_distance_moved * 38.17 + 180) * 40 * query.modified_move_speed", 0, 0]
+        },
+        "pierna_derecha": {
+          "rotation": ["math.cos(query.modified_distance_moved * 38.17 + 180) * 50 * query.modified_move_speed", 0, 0]
+        },
+        "pierna_izquierda": {
+          "rotation": ["math.cos(query.modified_distance_moved * 38.17) * 50 * query.modified_move_speed", 0, 0]
+        }
+      }
+    },
+    "animation.nc_abogado.mirar": {
+      "loop": true,
+      "bones": {
+        "cabeza": {
+          "rotation": ["query.target_x_rotation", "query.target_y_rotation", 0]
+        }
+      }
+    }
+  }
+}

@@ -2,7 +2,9 @@
 // Parodia no oficial. No afiliada con Nintendo ni con Mojang.
 import { system } from "@minecraft/server";
 import { iniciarBloques, registrarComponentesDeBloques } from "./bloques.js";
+import { iniciarDemandas } from "./demandas.js";
 import { iniciarPoderes } from "./poderes.js";
+import { iniciarTienda } from "./tienda.js";
 import { iniciarVidas } from "./vidas.js";
 
 system.beforeEvents.startup.subscribe((ev) => {
@@ -14,3 +16,5 @@ system.beforeEvents.startup.subscribe((ev) => {
 iniciarVidas();
 iniciarPoderes();
 iniciarBloques();
+iniciarDemandas();
+iniciarTienda();

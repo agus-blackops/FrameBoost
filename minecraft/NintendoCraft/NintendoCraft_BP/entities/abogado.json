@@ -1,0 +1,38 @@
+{
+  "format_version": "1.20.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "nc:abogado",
+      "is_spawnable": false,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:type_family": { "family": ["abogado", "npc"] },
+      "minecraft:health": { "value": 100, "max": 100 },
+      "minecraft:damage_sensor": { "triggers": [{ "cause": "all", "deals_damage": false }] },
+      "minecraft:collision_box": { "width": 0.6, "height": 1.9 },
+      "minecraft:movement": { "value": 0.32 },
+      "minecraft:movement.basic": {},
+      "minecraft:navigation.walk": { "can_open_doors": true, "avoid_water": true, "can_path_over_water": true },
+      "minecraft:jump.static": {},
+      "minecraft:can_climb": {},
+      "minecraft:physics": {},
+      "minecraft:pushable": { "is_pushable": false, "is_pushable_by_piston": true },
+      "minecraft:persistent": {},
+      "minecraft:nameable": { "always_show": true, "allow_name_tag_renaming": false },
+      "minecraft:fire_immune": true,
+      "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0, "breathes_water": true },
+      "minecraft:behavior.float": { "priority": 0 },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 1,
+        "must_see": false,
+        "within_radius": 48.0,
+        "entity_types": [
+          { "filters": { "test": "is_family", "subject": "other", "value": "player" }, "max_dist": 48 }
+        ]
+      },
+      "minecraft:behavior.move_towards_target": { "priority": 2, "speed_multiplier": 1.0, "within_radius": 48 },
+      "minecraft:behavior.look_at_player": { "priority": 3, "look_distance": 16, "probability": 1.0 }
+    }
+  }
+}

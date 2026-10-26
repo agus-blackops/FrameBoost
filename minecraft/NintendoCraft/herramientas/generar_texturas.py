@@ -285,6 +285,60 @@ def textura_champi_grunon():
     return img
 
 
+def caja(img, u, v, ancho, alto, fondo, arriba, abajo, lados, frente, atras):
+    """Pinta un cubo con UV de caja (ancho x alto x fondo) desde (u, v)."""
+    rellenar(img, u + fondo, v, ancho, fondo, arriba)
+    rellenar(img, u + fondo + ancho, v, ancho, fondo, abajo)
+    rellenar(img, u, v + fondo, fondo, alto, lados)
+    rellenar(img, u + fondo, v + fondo, ancho, alto, frente)
+    rellenar(img, u + fondo + ancho, v + fondo, fondo, alto, lados)
+    rellenar(img, u + 2 * fondo + ancho, v + fondo, ancho, alto, atras)
+
+
+def textura_abogado():
+    """Textura 64x64 (UV de piel de jugador) para geometry.nc_abogado."""
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    # Cabeza 8x8x8 en uv [0, 0]: pelo arriba y atrás, cara al frente.
+    caja(img, 0, 0, 8, 8, 8, "b", "T", "T", "T", "b")
+    for u in (0, 8, 16, 24):
+        rellenar(img, u, 8, 8, 2, "b")
+    pegar(img, 8, 8, [
+        "bbbbbbbb",
+        "bbbbbbbb",
+        "TTTTTTTT",
+        "KKKKKKKK",   # lentes oscuros
+        "TKKTTKKT",
+        "TTTttTTT",
+        "TTKKKKTT",   # boca seria
+        "TTTTTTTT",
+    ])
+    # Cuerpo 8x12x4 en uv [16, 16]: traje negro, camisa blanca y corbata roja.
+    caja(img, 16, 16, 8, 12, 4, "K", "K", "K", "K", "K")
+    pegar(img, 20, 20, [
+        "KKWWWWKK",
+        "KKWRRWKK",
+        "KKKWRWKK",
+        "KKKWRKKK",
+        "KKKKRKKK",
+        "KKKKRKKK",
+        "KKKKRKKK",
+        "KKKKKKKK",
+        "KKKKKKKK",
+        "KWKKKKKK",
+        "KKKKKKKK",
+        "KKKKKKKK",
+    ])
+    # Brazos 4x12x4: manga negra con mano al final.
+    for u, v in ((40, 16), (32, 48)):
+        caja(img, u, v, 4, 12, 4, "K", "T", "K", "K", "K")
+        rellenar(img, u, v + 14, 16, 2, "T")
+    # Piernas 4x12x4: pantalón negro y zapatos marrones.
+    for u, v in ((0, 16), (16, 48)):
+        caja(img, u, v, 4, 12, 4, "K", "b", "K", "K", "K")
+        rellenar(img, u, v + 14, 16, 2, "b")
+    return img
+
+
 def main():
     items = RP / "textures" / "items"
     guardar(dibujar(MONEDA), items / "nc_moneda.png")
@@ -309,6 +363,7 @@ def main():
     guardar(dibujar(TUBERIA_LADO), bloques / "nc_tuberia_lado.png")
 
     guardar(textura_champi_grunon(), RP / "textures" / "entity" / "nc_champi_grunon.png")
+    guardar(textura_abogado(), RP / "textures" / "entity" / "nc_abogado.png")
 
     icono = dibujar(bloque_pregunta("O", "y", "W"), escala=8)
     guardar(icono, RP / "pack_icon.png")
