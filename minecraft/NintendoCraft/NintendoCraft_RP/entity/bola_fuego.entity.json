@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "nc:bola_fuego",
+      "materials": { "default": "snowball" },
+      "textures": { "default": "textures/items/nc_bola_fuego" },
+      "geometry": { "default": "geometry.item_sprite" },
+      "render_controllers": ["controller.render.item_sprite"],
+      "animations": { "flying": "animation.actor.billboard" },
+      "scripts": { "animate": ["flying"] }
+    }
+  }
+}

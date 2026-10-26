@@ -1,0 +1,19 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.nc_champi_grunon.caminar": {
+      "loop": true,
+      "bones": {
+        "pie_izquierdo": {
+          "rotation": ["math.cos(query.modified_distance_moved * 38.17) * 50 * query.modified_move_speed", 0, 0]
+        },
+        "pie_derecho": {
+          "rotation": ["math.cos(query.modified_distance_moved * 38.17 + 180) * 50 * query.modified_move_speed", 0, 0]
+        },
+        "cuerpo": {
+          "rotation": [0, 0, "math.sin(query.modified_distance_moved * 38.17) * 8 * query.modified_move_speed"]
+        }
+      }
+    }
+  }
+}

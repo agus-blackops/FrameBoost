@@ -1,0 +1,6 @@
+{
+  "format_version": "1.1.0",
+  "nc:bloque_pregunta": { "sound": "wood" },
+  "nc:bloque_usado": { "sound": "wood" },
+  "nc:tuberia": { "sound": "metal" }
+}

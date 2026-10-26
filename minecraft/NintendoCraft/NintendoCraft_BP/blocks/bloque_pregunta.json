@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:block": {
+    "description": {
+      "identifier": "nc:bloque_pregunta",
+      "menu_category": { "category": "construction" }
+    },
+    "components": {
+      "minecraft:display_name": "tile.nc.bloque_pregunta",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": { "texture": "nc_bloque_pregunta", "render_method": "opaque" }
+      },
+      "minecraft:destructible_by_explosion": { "explosion_resistance": 6 },
+      "minecraft:destructible_by_mining": { "seconds_to_destroy": 1.0 },
+      "minecraft:light_emission": 4,
+      "minecraft:map_color": "#F0A020",
+      "minecraft:loot": "loot_tables/blocks/nada.json",
+      "nc:bloque_pregunta": {}
+    }
+  }
+}

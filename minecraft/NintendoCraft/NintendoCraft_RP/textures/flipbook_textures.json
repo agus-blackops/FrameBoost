@@ -1,0 +1,8 @@
+[
+  {
+    "flipbook_texture": "textures/blocks/nc_bloque_pregunta",
+    "atlas_tile": "nc_bloque_pregunta",
+    "ticks_per_frame": 8,
+    "frames": [0, 0, 0, 0, 1, 2, 1]
+  }
+]

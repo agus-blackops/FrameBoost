@@ -1,0 +1,11 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": { "identifier": "nc:bloque_pregunta" },
+    "tags": ["crafting_table"],
+    "pattern": ["PPP", "POP", "PPP"],
+    "key": { "P": { "tag": "minecraft:planks" }, "O": { "item": "minecraft:gold_ingot" } },
+    "unlock": [{ "context": "AlwaysUnlocked" }],
+    "result": { "item": "nc:bloque_pregunta", "count": 2 }
+  }
+}

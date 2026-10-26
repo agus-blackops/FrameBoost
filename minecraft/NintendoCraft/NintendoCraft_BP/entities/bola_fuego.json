@@ -1,0 +1,41 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "nc:bola_fuego",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "runtime_identifier": "minecraft:snowball"
+    },
+    "component_groups": {
+      "nc:desaparecer": { "minecraft:instant_despawn": {} }
+    },
+    "components": {
+      "minecraft:collision_box": { "width": 0.3, "height": 0.3 },
+      "minecraft:projectile": {
+        "on_hit": {
+          "impact_damage": {
+            "damage": 5,
+            "knockback": true,
+            "catch_fire": true,
+            "semi_random_diff_damage": false
+          },
+          "remove_on_hit": {}
+        },
+        "power": 1.4,
+        "gravity": 0.04,
+        "angle_offset": 0.0
+      },
+      "minecraft:physics": {},
+      "minecraft:pushable": { "is_pushable": false, "is_pushable_by_piston": true },
+      "minecraft:timer": {
+        "looping": false,
+        "time": 4,
+        "time_down_event": { "event": "nc:desaparecer" }
+      }
+    },
+    "events": {
+      "nc:desaparecer": { "add": { "component_groups": ["nc:desaparecer"] } }
+    }
+  }
+}

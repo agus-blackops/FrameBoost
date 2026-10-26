@@ -1,0 +1,11 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": { "identifier": "nc:tuberia" },
+    "tags": ["crafting_table"],
+    "pattern": ["HHH", "HVH", "HHH"],
+    "key": { "H": { "item": "minecraft:iron_ingot" }, "V": { "item": "minecraft:green_dye" } },
+    "unlock": [{ "context": "AlwaysUnlocked" }],
+    "result": { "item": "nc:tuberia", "count": 4 }
+  }
+}

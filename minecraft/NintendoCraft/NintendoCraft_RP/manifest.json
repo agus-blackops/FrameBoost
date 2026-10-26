@@ -1,0 +1,34 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "NintendoCraft (Recursos)",
+    "description": "Texturas, modelos y textos de NintendoCraft. Parodia no oficial.",
+    "uuid": "5cb26e9b-b9f2-4a5d-b3f6-b551407f1923",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      90
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "2eaa9afc-26b8-443e-b9ab-64dce4c6ee69",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "agus-blackops"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:block": {
+    "description": {
+      "identifier": "nc:tuberia",
+      "menu_category": { "category": "construction" }
+    },
+    "components": {
+      "minecraft:display_name": "tile.nc.tuberia",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": { "texture": "nc_tuberia_lado", "render_method": "opaque" },
+        "up": { "texture": "nc_tuberia_arriba", "render_method": "opaque" },
+        "down": { "texture": "nc_tuberia_arriba", "render_method": "opaque" }
+      },
+      "minecraft:destructible_by_explosion": { "explosion_resistance": 6 },
+      "minecraft:destructible_by_mining": { "seconds_to_destroy": 1.5 },
+      "minecraft:map_color": "#38B838",
+      "nc:tuberia": {}
+    }
+  }
+}

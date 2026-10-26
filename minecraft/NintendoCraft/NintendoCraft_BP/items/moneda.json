@@ -1,0 +1,14 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "nc:moneda",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:icon": "nc_moneda",
+      "minecraft:display_name": { "value": "item.nc.moneda" },
+      "minecraft:max_stack_size": 64
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "nc:champi_grunon",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/nc_champi_grunon" },
+      "geometry": { "default": "geometry.nc_champi_grunon" },
+      "animations": { "caminar": "animation.nc_champi_grunon.caminar" },
+      "scripts": { "animate": ["caminar"] },
+      "render_controllers": ["controller.render.default"],
+      "spawn_egg": { "base_color": "#965222", "overlay_color": "#F6DCAA" }
+    }
+  }
+}
