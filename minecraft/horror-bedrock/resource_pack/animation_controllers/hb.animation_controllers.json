@@ -1,0 +1,182 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.hb.green_steve.flow": {
+      "initial_state": "still",
+      "states": {
+        "still": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "moving": "query.modified_move_speed > 0.05"
+            }
+          ],
+          "blend_transition": 0.3
+        },
+        "moving": {
+          "animations": [
+            "walk"
+          ],
+          "transitions": [
+            {
+              "still": "!(query.modified_move_speed > 0.05)"
+            }
+          ],
+          "blend_transition": 0.3
+        }
+      }
+    },
+    "controller.animation.hb.mimicer.flow": {
+      "initial_state": "still",
+      "states": {
+        "still": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "moving": "query.modified_move_speed > 0.05"
+            }
+          ],
+          "blend_transition": 0.3
+        },
+        "moving": {
+          "animations": [
+            {
+              "walk": "!(query.property('hb:mode') == 'chase')"
+            },
+            {
+              "run": "query.property('hb:mode') == 'chase'"
+            }
+          ],
+          "transitions": [
+            {
+              "still": "!(query.modified_move_speed > 0.05)"
+            }
+          ],
+          "blend_transition": 0.3
+        }
+      }
+    },
+    "controller.animation.hb.knocker.flow": {
+      "initial_state": "still",
+      "states": {
+        "still": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "moving": "query.modified_move_speed > 0.05"
+            }
+          ],
+          "blend_transition": 0.3
+        },
+        "moving": {
+          "animations": [
+            {
+              "walk": "!(query.property('hb:mode') == 'hunt')"
+            },
+            {
+              "run": "query.property('hb:mode') == 'hunt'"
+            }
+          ],
+          "transitions": [
+            {
+              "still": "!(query.modified_move_speed > 0.05)"
+            }
+          ],
+          "blend_transition": 0.3
+        }
+      }
+    },
+    "controller.animation.hb.lick.flow": {
+      "initial_state": "still",
+      "states": {
+        "still": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "moving": "query.modified_move_speed > 0.05"
+            }
+          ],
+          "blend_transition": 0.3
+        },
+        "moving": {
+          "animations": [
+            "run"
+          ],
+          "transitions": [
+            {
+              "still": "!(query.modified_move_speed > 0.05)"
+            }
+          ],
+          "blend_transition": 0.3
+        }
+      }
+    },
+    "controller.animation.hb.smile_dog.flow": {
+      "initial_state": "still",
+      "states": {
+        "still": {
+          "animations": [
+            "sit"
+          ],
+          "transitions": [
+            {
+              "moving": "query.modified_move_speed > 0.05"
+            }
+          ],
+          "blend_transition": 0.3
+        },
+        "moving": {
+          "animations": [
+            "run"
+          ],
+          "transitions": [
+            {
+              "still": "!(query.modified_move_speed > 0.05)"
+            }
+          ],
+          "blend_transition": 0.3
+        }
+      }
+    },
+    "controller.animation.hb.jeff.flow": {
+      "initial_state": "still",
+      "states": {
+        "still": {
+          "animations": [
+            "idle"
+          ],
+          "transitions": [
+            {
+              "moving": "query.modified_move_speed > 0.05"
+            }
+          ],
+          "blend_transition": 0.3
+        },
+        "moving": {
+          "animations": [
+            {
+              "walk": "!(query.property('hb:mode') == 'hunt')"
+            },
+            {
+              "run": "query.property('hb:mode') == 'hunt'"
+            }
+          ],
+          "transitions": [
+            {
+              "still": "!(query.modified_move_speed > 0.05)"
+            }
+          ],
+          "blend_transition": 0.3
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,419 @@
+"""Item icons, block textures and the pack icon, drawn as 16x16 pixel
+patterns (one character per pixel, each character a colour)."""
+
+import random
+
+from paint import Ramp
+from pixels import Canvas, jitter
+
+CLEAR = (0, 0, 0, 0)
+
+
+def draw(pattern, palette, cv=None, ox=0, oy=0):
+    cv = cv or Canvas(len(pattern[0]), len(pattern))
+    for y, row in enumerate(pattern):
+        for x, ch in enumerate(row):
+            if ch != "." and ch in palette:
+                cv.set(ox + x, oy + y, palette[ch])
+    return cv
+
+
+def journal():
+    return draw([
+        "................",
+        "..kkkkkkkkkkkk..",
+        "..kLLLLLLLLLLpk.",
+        "..kLsssssssslpk.",
+        "..kLsLLLLLLslpk.",
+        "..kLsLhLhLLslpk.",
+        "..kLsLhhhhLslpk.",
+        "..kLsLhhhhLslpk.",
+        "..kLsLLhhLLslpk.",
+        "..kLsLLLLLLslpk.",
+        "..kLsssssssslpk.",
+        "..kLLLLLLLLLLpk.",
+        "..kLLLLLLLrLLpk.",
+        "..kkkkkkkkrkkkk.",
+        "..........r.....",
+        "..........R.....",
+    ], {"k": (0x10, 0x0c, 0x0a), "L": (0x3a, 0x26, 0x1c), "l": (0x2c, 0x1c, 0x14), "s": (0x6a, 0x4e, 0x36),
+        "p": (0xe0, 0xd4, 0xb8), "h": (0x8a, 0x10, 0x12), "r": (0xb4, 0x18, 0x18), "R": (0x7a, 0x0c, 0x0c)})
+
+
+def flashlight():
+    return draw([
+        "............yyy.",
+        "...........yYYYy",
+        "..........yYWWYy",
+        ".........oyYWWYy",
+        "........ooOyYYy.",
+        ".......ooOOOyy..",
+        "......ggOOOo....",
+        ".....gGgOOo.....",
+        "....gGgGgo......",
+        "...gGgGgg.......",
+        "..gGgGgg........",
+        ".gGgGgg.........",
+        ".ggGgg..........",
+        ".gggg...........",
+        "..gg............",
+        "................",
+    ], {"g": (0x22, 0x22, 0x28), "G": (0x3e, 0x3e, 0x48), "o": (0x2e, 0x2e, 0x34), "O": (0x5a, 0x5a, 0x66),
+        "y": (0xd8, 0xa8, 0x20), "Y": (0xff, 0xec, 0x9c), "W": (0xff, 0xff, 0xf0)})
+
+
+def battery():
+    return draw([
+        "................",
+        "......cc........",
+        ".....cCCc.......",
+        ".....kkkk.......",
+        "....kKKKKk......",
+        "....kKKyKk......",
+        "....kKyyKk......",
+        "....kyyyyk......",
+        "....kKKyKk......",
+        "....kKyKKk......",
+        "....kKKKKk......",
+        "....kGGGGk......",
+        "....kGGGGk......",
+        "....kkkkkk......",
+        ".....ssss.......",
+        "................",
+    ], {"k": (0x0c, 0x0c, 0x10), "K": (0x26, 0x26, 0x2e), "y": (0xf0, 0xc8, 0x28), "c": (0x9a, 0x5a, 0x2a),
+        "C": (0xd8, 0x8a, 0x48), "G": (0x3a, 0x7a, 0x3a), "s": (0x8a, 0x8a, 0x92)})
+
+
+PAPER = {"p": (0xd8, 0xca, 0xa4), "P": (0xe8, 0xdc, 0xbc), "e": (0xa8, 0x94, 0x6c), "i": (0x2a, 0x22, 0x1c),
+         "r": (0x8a, 0x10, 0x12), "w": (0xff, 0xff, 0xff), "g": (0x7a, 0x7a, 0x80), "y": (0xf0, 0xd8, 0x60),
+         "m": (0xf8, 0x00, 0xf8), "k": (0x08, 0x08, 0x0a), "b": (0x5e, 0x4a, 0x30), "t": (0x9a, 0x8c, 0x74)}
+
+PAGE = [
+    "................",
+    "..epPpPpPpePp...",
+    ".epPPPPPPPPPPe..",
+    ".ePPPPPPPPPPPPe.",
+    "..PPPPPPPPPPPPe.",
+    ".ePPPPPPPPPPPe..",
+    ".ePPPPPPPPPPPPe.",
+    "..PPPPPPPPPPPPe.",
+    ".ePPPPPPPPPPPPe.",
+    ".ePPPPPPPPPPPe..",
+    "..PPPPPPPPPPPPe.",
+    ".ePPPPPPPPPPPPe.",
+    ".ePPPPPPPPPPPe..",
+    "..ePpPePpPpePe..",
+    "................",
+    "................",
+]
+
+DRAWINGS = {
+    1: [  # a player's head with white eyes
+        "....iiiiii....",
+        "....ibbbbi....",
+        "....iwbbwi....",
+        "....ibbbbi....",
+        "....iibbii....",
+        "....iiiiii....",
+        "..............",
+        "..tt.tt.tt.tt.",
+    ],
+    2: [  # four eyes in the dark
+        "...kkkkkkkk...",
+        "..kkykkkkykk..",
+        "..kkkkkkkkkk..",
+        "..kkkykkykkk..",
+        "...kkkkkkkk...",
+        "....kwkwkw....",
+        "..............",
+        "..tt.tt.tt....",
+    ],
+    3: [  # his pickaxe
+        "..gggggggg....",
+        ".g......b.g...",
+        "........b.....",
+        ".......b......",
+        "......b.......",
+        ".....b....rr..",
+        "....b......r..",
+        "..tt.tt.tt....",
+    ],
+    4: [  # a tall figure in the fog
+        "gg.....k....gg",
+        ".g....kwk...g.",
+        "gg.....k....gg",
+        "......kkk.....",
+        ".g...k.k.k..g.",
+        "......k.k.....",
+        "gg...k...k..gg",
+        "..tt.tt.tt....",
+    ],
+    5: [  # the missing texture
+        "...mmkkmmkk...",
+        "...mmkkmmkk...",
+        "...kkmmkkmm...",
+        "...kkmmkkmm...",
+        "..............",
+        "...i.ii.i.i...",
+        "...ii.i.i.i...",
+        "..tt.tt.tt....",
+    ],
+    6: [  # a headstone, a black rose, a mound
+        "....gggggg....",
+        "...gggggggg...",
+        "...gg.ii.gg...",
+        "...gg.ii.gg...",
+        "...ggiiiigg...",
+        "....g.ii.g....",
+        ".bbbbbbbbbbbb.",
+        "..tt.tt.tt.tt.",
+    ],
+    7: [  # a white hood, red eyes, red code
+        "....gggggg....",
+        "...gkkkkkkg...",
+        "...gkrkkrkg...",
+        "...gkkkkkkg...",
+        "..r.gggggg.r..",
+        ".r..gggggg..r.",
+        "..r........r..",
+        "..tt.tt.tt....",
+    ],
+}
+
+
+def page(n):
+    cv = draw(PAGE, PAPER)
+    draw(DRAWINGS[n], PAPER, cv, 1, 3)
+    # A smear of old blood in a corner.
+    rng = random.Random(n)
+    for _ in range(4):
+        x, y = rng.randint(9, 12), rng.randint(9, 12)
+        if cv.get(x, y)[3]:
+            cv.set(x, y, (0x7a, 0x14, 0x14))
+    return cv
+
+
+def hollow_pickaxe():
+    return draw([
+        "................",
+        "...kkkkkk.......",
+        "..kCCoCCCkk.....",
+        ".kCOkkkkCoCk....",
+        ".kCk....kkCOk...",
+        ".kk......bkCk...",
+        "........b.kOk...",
+        ".......b...kCk..",
+        "......b.....kk..",
+        ".....b..........",
+        "....B...........",
+        "...b............",
+        "..B.............",
+        ".b..............",
+        "b...............",
+        "................",
+    ], {"k": (0x0a, 0x08, 0x08), "C": (0x2e, 0x26, 0x24), "o": (0xff, 0x6a, 0x20), "O": (0xff, 0xb0, 0x40),
+        "b": (0xd2, 0xc4, 0xa2), "B": (0x8a, 0x7c, 0x64)})
+
+
+def silver_cross():
+    return draw([
+        "................",
+        "......kkk.......",
+        "......kWk.......",
+        "......kSk.......",
+        "......kSk.......",
+        "..kkkkkSkkkkk...",
+        "..kWSSSgSSSSk...",
+        "..kkkkkSkkkkk...",
+        "......kSk.......",
+        "......kSk.......",
+        "......kSk.......",
+        "......kSk.......",
+        "......kDk.......",
+        "......kDk.......",
+        "......kkk.......",
+        "................",
+    ], {"k": (0x16, 0x16, 0x1c), "S": (0xb4, 0xb8, 0xc4), "W": (0xf4, 0xf6, 0xfc), "D": (0x76, 0x7a, 0x86),
+        "g": (0xe8, 0xb8, 0x30)})
+
+
+def ward_lantern():
+    """The block texture, laid out for the model in content.py:
+    (0,0) 8x8 iron top/bottom, (8,0) 8x1 iron sides, (8,2) 4x4 knob top,
+    (8,6) 4x2 knob sides, (12,2) 4x1 handle, (0,8) 6x7 glass sides,
+    (6,8) 6x6 glass top, (12,8) 2x5 crystal sides, (14,8) 2x2 crystal top."""
+    iron = Ramp(colors=["#1a1a1e", "#2c2c32", "#44444c", "#5e5e68", "#7a7a86"])
+    amethyst = Ramp(colors=["#3a1e5c", "#5e3490", "#8a56c6", "#b48cff", "#dcc8ff"])
+    cv = Canvas(16, 16)
+    for y in range(8):
+        for x in range(8):
+            edge = x in (0, 7) or y in (0, 7)
+            cv.set(x, y, iron(0.25 if edge else 0.55 + 0.1 * ((x + y) % 2), x, y))
+    for x in range(8, 16):
+        cv.set(x, 0, iron(0.5, x, 0))
+    for y in range(2, 6):
+        for x in range(8, 12):
+            cv.set(x, y, iron(0.65, x, y))
+    for y in range(6, 8):
+        for x in range(8, 12):
+            cv.set(x, y, iron(0.4, x, y))
+    for x in range(12, 16):
+        cv.set(x, 2, iron(0.35, x, 2))
+    # Glass: an iron frame round clear panes with a scratch or two.
+    for y in range(8, 15):
+        for x in range(0, 6):
+            frame = x in (0, 5) or y in (8, 14)
+            cv.set(x, y, iron(0.3, x, y) if frame else ((0xe0, 0xe8, 0xff, 255) if (x + y) % 5 == 0 and y < 11 else CLEAR))
+    for y in range(8, 14):
+        for x in range(6, 12):
+            frame = x in (6, 11) or y in (8, 13)
+            cv.set(x, y, iron(0.3, x, y) if frame else CLEAR)
+    for y in range(8, 13):
+        for x in range(12, 14):
+            cv.set(x, y, amethyst(0.9 - (y - 8) * 0.12 + (0.1 if x == 12 else 0), x, y))
+    for y in range(8, 10):
+        for x in range(14, 16):
+            cv.set(x, y, amethyst(0.95, x, y))
+    return cv
+
+
+def corrupted(seed):
+    """The missing-texture checkerboard, four frames tall: the block's tears
+    crawl and it flickers inverted (see flipbook_textures.json)."""
+    rng = random.Random(seed)
+    frames = 4
+    cv = Canvas(16, 16 * frames)
+    for f in range(frames):
+        inverted = f == 2
+        for y in range(16):
+            shift = rng.choice([0, 0, 0, 2, 3, -2, -3]) if rng.random() < 0.3 else 0
+            for x in range(16):
+                sx = (x + shift) % 16
+                magenta = ((sx // 8) + (y // 8)) % 2 == 0
+                c = (0xF8, 0x00, 0xF8) if magenta else (0x00, 0x00, 0x00)
+                if inverted:
+                    c = (0x00, 0xE0, 0xE0) if magenta else (0x10, 0x00, 0x10)
+                if rng.random() < 0.03:
+                    c = (0xFF, 0xFF, 0xFF)
+                cv.set(x, f * 16 + y, c)
+    return cv
+
+
+FONT = {  # 3x5
+    "R": ["XX.", "X.X", "XX.", "X.X", "X.X"], "E": ["XXX", "X..", "XX.", "X..", "XXX"],
+    "M": ["X.X", "XXX", "XXX", "X.X", "X.X"], "A": [".X.", "X.X", "XXX", "X.X", "X.X"],
+    "S": [".XX", "X..", ".X.", "..X", "XX."], "T": ["XXX", ".X.", ".X.", ".X.", ".X."],
+    "D": ["XX.", "X.X", "X.X", "X.X", "XX."], "F": ["XXX", "X..", "XX.", "X..", "X.."],
+    "H": ["X.X", "X.X", "XXX", "X.X", "X.X"], "L": ["X..", "X..", "X..", "X..", "XXX"],
+    "P": ["XX.", "X.X", "XX.", "X..", "X.."], ".": ["...", "...", "...", "...", ".X."],
+    "B": ["XX.", "X.X", "XX.", "X.X", "XX."], "O": [".X.", "X.X", "X.X", "X.X", ".X."],
+    "C": [".XX", "X..", "X..", "X..", ".XX"], "K": ["X.X", "X.X", "XX.", "X.X", "X.X"],
+}
+
+
+def banner(cv, text, y, scale, color, shadow):
+    """Pixel letters, centred."""
+    width = (len(text) * 4 - 1) * scale
+    x0 = (cv.w - width) // 2
+    for i, ch in enumerate(text):
+        for r, row in enumerate(FONT[ch]):
+            for c, bit in enumerate(row):
+                if bit != "X":
+                    continue
+                for dy in range(scale):
+                    for dx in range(scale):
+                        x, yy = x0 + (i * 4 + c) * scale + dx, y + r * scale + dy
+                        cv.set(x + 1, yy + 1, shadow)
+                        cv.set(x, yy, color)
+
+
+def pack_icon(render_view, seed):
+    """A dark forest under a grey night: Slenderman between the trees at the
+    back, the Boiled One's red shape far off with two red points for eyes,
+    Green Steve in front glowing faintly, the Lick's white mask in the dark,
+    and the word BEDROCK at the bottom, cut into stone."""
+    rng = random.Random(seed)
+    cv = Canvas(128, 128)
+    for y in range(128):
+        for x in range(128):
+            v = 8 + int(26 * (1 - y / 127) ** 1.6) + rng.randint(-3, 3)
+            cv.set(x, y, (v, v + 2, v + 6))
+    for tx, w in ((2, 6), (20, 4), (40, 3), (86, 5), (106, 7), (122, 4)):
+        for y in range(0, 116):
+            for x in range(tx, tx + w):
+                cv.blend(x, y, (0x06, 0x06, 0x08), 0.9)
+    cv.paste(render_view("boiled_one", (16, 50), 10, -4), 58, 22)
+    cv.paste(render_view("slenderman", (30, 70), 15, -4), 18, 22)
+    cv.paste(render_view("lick", (26, 54), -20, -6), 92, 46)
+    cv.paste(render_view("green_steve", (44, 72), 20, -8), 44, 44)
+    for y in range(96, 128):
+        for x in range(128):
+            cv.blend(x, y, (0x14, 0x14, 0x16), min(1.0, (y - 96) / 18))
+    banner(cv, "BEDROCK", 112, 2, (0xC8, 0xC8, 0xC4), (0x02, 0x02, 0x02))
+    return cv
+
+
+def note():
+    return draw([
+        "................",
+        "...kkkkkkkkk....",
+        "...kPPPPPPPkk...",
+        "...kPllllllPk...",
+        "...kPPPPPPPPk...",
+        "...kPllllPPPk...",
+        "...kPPPPPPPPk...",
+        "...kPlllllllk...",
+        "...kPPPPPPPPk...",
+        "...kPllllPrPk...",
+        "...kPPPPPPrPk...",
+        "...kPlllPPPPk...",
+        "...kPPPPPPPPk...",
+        "...kkkkkkkkkk...",
+        "................",
+        "................",
+    ], {"k": (0x30, 0x2a, 0x22), "P": (0xd8, 0xd0, 0xb8), "l": (0x50, 0x48, 0x40), "r": (0x8a, 0x10, 0x14)})
+
+
+def slender_page_icon():
+    return draw([
+        "................",
+        "..kkkkkkkkkkk...",
+        "..kPPPPPPPPPk...",
+        "..kPlPlPlPlPk...",
+        "..kPPPPPPPPPk...",
+        "..kPPPPxPPPPk...",
+        "..kPPPxxxPPPk...",
+        "..kPPPPxPPPPk...",
+        "..kPPPPxPPPPk...",
+        "..kPPPxPxPPPk...",
+        "..kPPPPPPPPPk...",
+        "..kPlPlPlPlPk...",
+        "..kPPPPPPPPPk...",
+        "..kkkkkkkkkkk...",
+        "................",
+        "................",
+    ], {"k": (0x40, 0x3a, 0x30), "P": (0xee, 0xec, 0xe2), "l": (0x10, 0x10, 0x10), "x": (0x08, 0x08, 0x08)})
+
+
+def slender_page_block():
+    """The page on the tree: a sheet of lined paper with a child's drawing
+    of a tall faceless man among trees, and NO NO NO scrawled round it."""
+    return draw([
+        "................",
+        "................",
+        "...PPPPPPPPPP...",
+        "...PllllllllP...",
+        "...PPPPkPPPPP...",
+        "...PtPPkPPPtP...",
+        "...PtPkkkPPtP...",
+        "...PtPPkPPPtP...",
+        "...PtPPkPPPtP...",
+        "...PtPkPkPPtP...",
+        "...PPPPPPPPPP...",
+        "...PrrPrrPrrP...",
+        "...PPPPPPPPPP...",
+        "...PllllllllP...",
+        "...PPPPPPPPPP...",
+        "................",
+    ], {"P": (0xe6, 0xe4, 0xd8), "l": (0x7a, 0x86, 0xa8), "k": (0x0a, 0x0a, 0x0a), "t": (0x2a, 0x2a, 0x26),
+        "r": (0x6a, 0x0a, 0x0a)})

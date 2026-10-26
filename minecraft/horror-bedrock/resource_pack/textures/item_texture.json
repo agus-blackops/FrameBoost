@@ -1,0 +1,21 @@
+{
+  "resource_pack_name": "horror_bedrock",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "hb_journal": {
+      "textures": "textures/items/hb/journal"
+    },
+    "hb_flashlight": {
+      "textures": "textures/items/hb/flashlight"
+    },
+    "hb_battery": {
+      "textures": "textures/items/hb/battery"
+    },
+    "hb_note": {
+      "textures": "textures/items/hb/note"
+    },
+    "hb_page": {
+      "textures": "textures/items/hb/page"
+    }
+  }
+}

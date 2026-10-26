@@ -1,0 +1,42 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:slenderman",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/slenderman"
+      },
+      "geometry": {
+        "default": "geometry.hb.slenderman"
+      },
+      "animations": {
+        "look": "animation.hb.slender.look",
+        "idle": "animation.hb.slender.idle",
+        "tendrils": "animation.hb.slender.tendrils",
+        "fold": "animation.hb.slender.fold"
+      },
+      "scripts": {
+        "animate": [
+          "look",
+          "idle",
+          {
+            "tendrils": "query.property('hb:tendrils')"
+          },
+          {
+            "fold": "!query.property('hb:tendrils')"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#0b0b0e",
+        "overlay_color": "#f8f8f4"
+      }
+    }
+  }
+}

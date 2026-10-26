@@ -1,0 +1,41 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:jeff",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/jeff"
+      },
+      "geometry": {
+        "default": "geometry.hb.jeff"
+      },
+      "animations": {
+        "look": "animation.hb.jeff.look",
+        "idle": "animation.hb.jeff.idle",
+        "walk": "animation.hb.jeff.walk",
+        "run": "animation.hb.jeff.run",
+        "attack": "animation.hb.jeff.attack",
+        "flow": "controller.animation.hb.jeff.flow"
+      },
+      "scripts": {
+        "animate": [
+          "flow",
+          "look",
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#dcdcd4",
+        "overlay_color": "#6e0a10"
+      }
+    }
+  }
+}

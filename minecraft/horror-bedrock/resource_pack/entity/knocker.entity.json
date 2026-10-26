@@ -1,0 +1,45 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:knocker",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/knocker"
+      },
+      "geometry": {
+        "default": "geometry.hb.knocker"
+      },
+      "animations": {
+        "look": "animation.hb.knocker.look",
+        "idle": "animation.hb.knocker.idle",
+        "walk": "animation.hb.knocker.walk",
+        "run": "animation.hb.knocker.run",
+        "knock": "animation.hb.knocker.knock",
+        "attack": "animation.hb.knocker.attack",
+        "flow": "controller.animation.hb.knocker.flow"
+      },
+      "scripts": {
+        "animate": [
+          "flow",
+          "look",
+          {
+            "knock": "query.property('hb:knock')"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#aaa8a2",
+        "overlay_color": "#5c1618"
+      }
+    }
+  }
+}

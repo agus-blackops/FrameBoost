@@ -1,0 +1,227 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hb:knocker",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "hb:mode": {
+          "type": "enum",
+          "values": [
+            "lurk",
+            "hunt"
+          ],
+          "default": "lurk",
+          "client_sync": true
+        },
+        "hb:knock": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "hb:vanish": {
+        "minecraft:instant_despawn": {}
+      },
+      "hb:lurk": {
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:navigation.walk": {},
+        "minecraft:damage_sensor": {
+          "triggers": [
+            {
+              "cause": "all",
+              "deals_damage": false
+            }
+          ]
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hb_knocker",
+            "monster",
+            "mob"
+          ]
+        }
+      },
+      "hb:hunt": {
+        "minecraft:navigation.walk": {
+          "can_path_over_water": true,
+          "avoid_water": true,
+          "avoid_damage_blocks": true,
+          "can_open_doors": true,
+          "can_pass_doors": true,
+          "can_break_doors": true
+        },
+        "minecraft:movement": {
+          "value": 0.38
+        },
+        "minecraft:attack": {
+          "damage": 7
+        },
+        "minecraft:follow_range": {
+          "value": 48,
+          "max": 48
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 1,
+          "must_see": false,
+          "reselect_targets": true,
+          "within_radius": 48.0,
+          "entity_types": [
+            {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "max_dist": 128
+            }
+          ]
+        },
+        "minecraft:behavior.melee_attack": {
+          "priority": 3,
+          "speed_multiplier": 1.2,
+          "track_target": true
+        },
+        "minecraft:break_blocks": {
+          "breakable_blocks": [
+            "minecraft:glass",
+            "minecraft:glass_pane",
+            "minecraft:oak_leaves",
+            "minecraft:spruce_leaves",
+            "minecraft:birch_leaves",
+            "minecraft:jungle_leaves",
+            "minecraft:acacia_leaves",
+            "minecraft:dark_oak_leaves",
+            "minecraft:mangrove_leaves",
+            "minecraft:cherry_leaves",
+            "minecraft:azalea_leaves",
+            "minecraft:leaves",
+            "minecraft:leaves2",
+            "minecraft:wooden_door",
+            "minecraft:spruce_door",
+            "minecraft:birch_door",
+            "minecraft:jungle_door",
+            "minecraft:acacia_door",
+            "minecraft:dark_oak_door",
+            "minecraft:mangrove_door",
+            "minecraft:cherry_door",
+            "minecraft:bamboo_door",
+            "minecraft:crimson_door",
+            "minecraft:warped_door"
+          ]
+        },
+        "minecraft:behavior.leap_at_target": {
+          "priority": 2,
+          "yd": 0.4,
+          "must_be_on_ground": true
+        },
+        "minecraft:type_family": {
+          "family": [
+            "hb_knocker",
+            "monster",
+            "mob"
+          ]
+        }
+      }
+    },
+    "components": {
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 128,
+          "max_distance": 160
+        }
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:type_family": {
+        "family": [
+          "hb_knocker",
+          "monster",
+          "mob"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.7,
+        "height": 2.6
+      },
+      "minecraft:health": {
+        "value": 60,
+        "max": 60
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:loot": {
+        "table": "loot_tables/empty.json"
+      },
+      "minecraft:knockback_resistance": {
+        "value": 0.6
+      },
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 6,
+        "look_distance": 48,
+        "probability": 1.0,
+        "angle_of_view_horizontal": 360
+      }
+    },
+    "events": {
+      "hb:vanish": {
+        "add": {
+          "component_groups": [
+            "hb:vanish"
+          ]
+        }
+      },
+      "hb:lurk": {
+        "remove": {
+          "component_groups": [
+            "hb:hunt"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hb:lurk"
+          ]
+        }
+      },
+      "hb:hunt": {
+        "remove": {
+          "component_groups": [
+            "hb:lurk"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "hb:hunt"
+          ]
+        }
+      },
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "hb:lurk"
+          ]
+        }
+      }
+    }
+  }
+}

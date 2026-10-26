@@ -1,0 +1,14 @@
+{
+  "resource_pack_name": "horror_bedrock",
+  "texture_name": "atlas.terrain",
+  "padding": 8,
+  "num_mip_levels": 4,
+  "texture_data": {
+    "hb_ward_lantern": {
+      "textures": "textures/blocks/hb/ward_lantern"
+    },
+    "hb_slender_page": {
+      "textures": "textures/blocks/hb/slender_page"
+    }
+  }
+}

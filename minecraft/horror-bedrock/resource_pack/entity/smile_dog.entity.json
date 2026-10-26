@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:smile_dog",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/smile_dog"
+      },
+      "geometry": {
+        "default": "geometry.hb.smile_dog"
+      },
+      "animations": {
+        "look": "animation.hb.dog.look",
+        "sit": "animation.hb.dog.sit",
+        "run": "animation.hb.dog.run",
+        "attack": "animation.hb.dog.attack",
+        "flow": "controller.animation.hb.smile_dog.flow"
+      },
+      "scripts": {
+        "animate": [
+          "flow",
+          "look",
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#54565c",
+        "overlay_color": "#e2e2dc"
+      }
+    }
+  }
+}

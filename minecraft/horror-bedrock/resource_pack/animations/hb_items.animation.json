@@ -1,0 +1,107 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.hb.item.flashlight.first": {
+      "loop": true,
+      "bones": {
+        "flashlight": {
+          "rotation": [
+            -90,
+            -120,
+            -50
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hb.item.flashlight.third": {
+      "loop": true,
+      "bones": {
+        "flashlight": {
+          "rotation": [
+            20,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hb.item.battery.first": {
+      "loop": true,
+      "bones": {
+        "battery": {
+          "rotation": [
+            -80,
+            -110,
+            -60
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hb.item.battery.third": {
+      "loop": true,
+      "bones": {
+        "battery": {
+          "rotation": [
+            20,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hb.item.journal.first": {
+      "loop": true,
+      "bones": {
+        "journal": {
+          "rotation": [
+            50,
+            -60,
+            130
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.hb.item.journal.third": {
+      "loop": true,
+      "bones": {
+        "journal": {
+          "rotation": [
+            70,
+            0,
+            -180
+          ],
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  }
+}

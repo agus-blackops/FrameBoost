@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:lick",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/lick"
+      },
+      "geometry": {
+        "default": "geometry.hb.lick"
+      },
+      "animations": {
+        "look": "animation.hb.lick.look",
+        "idle": "animation.hb.lick.idle",
+        "run": "animation.hb.lick.run",
+        "attack": "animation.hb.lick.attack",
+        "flow": "controller.animation.hb.lick.flow"
+      },
+      "scripts": {
+        "animate": [
+          "flow",
+          "look",
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#08080a",
+        "overlay_color": "#f2eee6"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:green_steve",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/green_steve"
+      },
+      "geometry": {
+        "default": "geometry.hb.green_steve"
+      },
+      "animations": {
+        "look": "animation.hb.steve.look",
+        "idle": "animation.hb.steve.idle",
+        "walk": "animation.hb.steve.walk",
+        "attack": "animation.hb.steve.attack",
+        "flow": "controller.animation.hb.green_steve.flow"
+      },
+      "scripts": {
+        "animate": [
+          "flow",
+          "look",
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#2a602e",
+        "overlay_color": "#145042"
+      }
+    }
+  }
+}

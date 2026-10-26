@@ -1,0 +1,45 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:mimicer",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/mimicer"
+      },
+      "geometry": {
+        "default": "geometry.hb.mimicer"
+      },
+      "animations": {
+        "look": "animation.hb.mimicer.look",
+        "idle": "animation.hb.mimicer.idle",
+        "walk": "animation.hb.mimicer.walk",
+        "run": "animation.hb.mimicer.run",
+        "talk": "animation.hb.mimicer.talk",
+        "attack": "animation.hb.mimicer.attack",
+        "flow": "controller.animation.hb.mimicer.flow"
+      },
+      "scripts": {
+        "animate": [
+          "flow",
+          "look",
+          {
+            "talk": "query.property('hb:talk')"
+          },
+          {
+            "attack": "variable.attack_time > 0.0"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#9a8678",
+        "overlay_color": "#010102"
+      }
+    }
+  }
+}

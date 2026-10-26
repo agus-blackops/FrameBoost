@@ -1,0 +1,98 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.hb.slender_page",
+        "texture_width": 16,
+        "texture_height": 16
+      },
+      "bones": [
+        {
+          "name": "page",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -5,
+                2,
+                7.5
+              ],
+              "size": [
+                10,
+                12,
+                0.5
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    3,
+                    2
+                  ],
+                  "uv_size": [
+                    10,
+                    12
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    3,
+                    2
+                  ],
+                  "uv_size": [
+                    10,
+                    12
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    12
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    1,
+                    12
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    10,
+                    1
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    10,
+                    1
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

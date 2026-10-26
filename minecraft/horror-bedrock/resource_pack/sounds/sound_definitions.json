@@ -1,0 +1,305 @@
+{
+  "format_version": "1.14.0",
+  "sound_definitions": {
+    "hb.heartbeat": {
+      "category": "hostile",
+      "min_distance": 0.5,
+      "max_distance": 8,
+      "sounds": [
+        {
+          "name": "sounds/hb/heartbeat",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.breath": {
+      "category": "hostile",
+      "min_distance": 0.5,
+      "max_distance": 12,
+      "sounds": [
+        {
+          "name": "sounds/hb/breath",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.whisper": {
+      "category": "hostile",
+      "min_distance": 0.5,
+      "max_distance": 14,
+      "sounds": [
+        {
+          "name": "sounds/hb/whisper",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.static": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 24,
+      "sounds": [
+        {
+          "name": "sounds/hb/static",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.stinger": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 32,
+      "sounds": [
+        {
+          "name": "sounds/hb/stinger",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.ringing": {
+      "category": "hostile",
+      "min_distance": 0.5,
+      "max_distance": 8,
+      "sounds": [
+        {
+          "name": "sounds/hb/ringing",
+          "volume": 0.7,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.drone": {
+      "category": "ambient",
+      "min_distance": 1,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hb/drone",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.scream": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 48,
+      "sounds": [
+        {
+          "name": "sounds/hb/scream",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.knock": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 24,
+      "sounds": [
+        {
+          "name": "sounds/hb/knock",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.page": {
+      "category": "player",
+      "min_distance": 0.5,
+      "max_distance": 8,
+      "sounds": [
+        {
+          "name": "sounds/hb/page",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.click": {
+      "category": "player",
+      "min_distance": 0.5,
+      "max_distance": 8,
+      "sounds": [
+        {
+          "name": "sounds/hb/click",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.dawn": {
+      "category": "ambient",
+      "min_distance": 0.5,
+      "max_distance": 16,
+      "sounds": [
+        {
+          "name": "sounds/hb/dawn",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.musicbox": {
+      "category": "ambient",
+      "min_distance": 1,
+      "max_distance": 24,
+      "sounds": [
+        {
+          "name": "sounds/hb/musicbox",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.boom": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hb/boom",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.screech": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hb/screech",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.wail": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/hb/wail",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.shatter": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 48,
+      "sounds": [
+        {
+          "name": "sounds/hb/shatter",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.step": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 40,
+      "sounds": [
+        {
+          "name": "sounds/hb/step",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.creak": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 32,
+      "sounds": [
+        {
+          "name": "sounds/hb/creak",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.glitch": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 48,
+      "sounds": [
+        {
+          "name": "sounds/hb/glitch",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.laugh": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 72,
+      "sounds": [
+        {
+          "name": "sounds/hb/laugh",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.voice": {
+      "category": "hostile",
+      "min_distance": 4,
+      "max_distance": 96,
+      "sounds": [
+        {
+          "name": "sounds/hb/voice",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.snarl": {
+      "category": "hostile",
+      "min_distance": 1,
+      "max_distance": 40,
+      "sounds": [
+        {
+          "name": "sounds/hb/snarl",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.numbers": {
+      "category": "hostile",
+      "min_distance": 2,
+      "max_distance": 64,
+      "sounds": [
+        {
+          "name": "sounds/hb/numbers",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "hb.drum": {
+      "category": "hostile",
+      "min_distance": 0.5,
+      "max_distance": 24,
+      "sounds": [
+        {
+          "name": "sounds/hb/drum",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "format_version": "1.20.50",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "hb:slenderman",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "hb:tendrils": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "hb:vanish": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:is_hidden_when_invisible": {},
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 128,
+          "max_distance": 160
+        }
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:type_family": {
+        "family": [
+          "hb_slenderman",
+          "hb_haunt"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.8,
+        "height": 3.9
+      },
+      "minecraft:health": {
+        "value": 100,
+        "max": 100
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:loot": {
+        "table": "loot_tables/empty.json"
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "all",
+            "deals_damage": false
+          }
+        ]
+      },
+      "minecraft:movement": {
+        "value": 0.0
+      },
+      "minecraft:navigation.walk": {},
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 0,
+        "look_distance": 96,
+        "probability": 1.0,
+        "angle_of_view_horizontal": 360
+      }
+    },
+    "events": {
+      "hb:vanish": {
+        "add": {
+          "component_groups": [
+            "hb:vanish"
+          ]
+        }
+      }
+    }
+  }
+}

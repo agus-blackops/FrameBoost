@@ -1,0 +1,61 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "hb:green_steve": {
+        "volume": 1.0,
+        "pitch": [
+          0.9,
+          1.0
+        ],
+        "events": {
+          "hurt": "game.player.hurt",
+          "death": "game.player.die"
+        }
+      },
+      "hb:smile_dog": {
+        "volume": 1.0,
+        "pitch": [
+          0.6,
+          0.7
+        ],
+        "events": {
+          "hurt": "mob.wolf.hurt",
+          "death": "mob.wolf.death"
+        }
+      },
+      "hb:jeff": {
+        "volume": 1.0,
+        "pitch": [
+          0.8,
+          0.9
+        ],
+        "events": {
+          "hurt": "game.player.hurt",
+          "death": "game.player.die"
+        }
+      },
+      "hb:knocker": {
+        "volume": 1.0,
+        "pitch": [
+          0.5,
+          0.6
+        ],
+        "events": {
+          "hurt": "mob.zombie.hurt",
+          "death": "mob.zombie.death"
+        }
+      },
+      "hb:mimicer": {
+        "volume": 1.0,
+        "pitch": [
+          0.5,
+          0.6
+        ],
+        "events": {
+          "hurt": "game.player.hurt",
+          "death": "mob.zombie.death"
+        }
+      }
+    }
+  }
+}

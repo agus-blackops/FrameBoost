@@ -1,0 +1,36 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "hb:boiled_one",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/hb/boiled_one"
+      },
+      "geometry": {
+        "default": "geometry.hb.boiled_one"
+      },
+      "animations": {
+        "idle": "animation.hb.boiled.idle",
+        "stare": "animation.hb.boiled.stare"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "stare": "query.property('hb:stare')"
+          }
+        ]
+      },
+      "render_controllers": [
+        "controller.render.hb.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#8c1c18",
+        "overlay_color": "#ff1408"
+      }
+    }
+  }
+}
