@@ -18,3 +18,4 @@ entity.nc:bola_fuego.name=Bola de Fuego
 entity.nc:abogado.name=Abogado de Nintendo
 item.nc.juego_nintendo=Juego de Nintendo
 item.nc.juego_basura=Juego Basura
+item.nc.formulario_demanda=Formulario de Demanda contra Nintendo

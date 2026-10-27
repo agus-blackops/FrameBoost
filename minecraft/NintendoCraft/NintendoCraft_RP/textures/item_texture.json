@@ -25,6 +25,9 @@
     },
     "nc_juego_basura": {
       "textures": "textures/items/nc_juego_basura"
+    },
+    "nc_formulario_demanda": {
+      "textures": "textures/items/nc_formulario_demanda"
     }
   }
 }

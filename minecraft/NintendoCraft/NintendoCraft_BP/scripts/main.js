@@ -2,6 +2,7 @@
 // Parodia no oficial. No afiliada con Nintendo ni con Mojang.
 import { system } from "@minecraft/server";
 import { iniciarBloques, registrarComponentesDeBloques } from "./bloques.js";
+import { iniciarDemandarANintendo } from "./demandar_a_nintendo.js";
 import { iniciarDemandas } from "./demandas.js";
 import { iniciarJuegos } from "./juegos.js";
 import { iniciarPoderes } from "./poderes.js";
@@ -20,3 +21,4 @@ iniciarBloques();
 iniciarDemandas();
 iniciarTienda();
 iniciarJuegos();
+iniciarDemandarANintendo();

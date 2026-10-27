@@ -1,6 +1,6 @@
 import { Player, system, world } from "@minecraft/server";
 import { ActionFormData, FormCancelationReason } from "@minecraft/server-ui";
-import { ID, azar, contarItem, darItem, quitarItem } from "./util.js";
+import { ID, azar, contarItem, darItem, quitarItem, registrarPrueba } from "./util.js";
 
 const ABOGADO = "nc:abogado";
 const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
@@ -85,6 +85,7 @@ export function demandar(jugador, motivo, multa) {
     abogadoId = undefined;
   }
   casos.set(jugador.id, { motivos: [motivo], multa, abogadoId, desde: system.currentTick, enJuicio: false });
+  registrarPrueba(jugador, "demandado");
   jugador.onScreenDisplay.setTitle("§l§4¡TE DEMANDARON!", {
     subtitle: "§fUn abogado de Nintendo viene hacia ti",
     fadeInDuration: 5,

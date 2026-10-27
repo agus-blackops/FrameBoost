@@ -24,7 +24,7 @@ Las texturas se generan con `python3 herramientas/generar_texturas.py`
 
 | Novedad | Cómo funciona |
 |---|---|
-| **Comunicado oficial** | La primera vez que entras al mundo sale el anuncio y te dan un kit: Tarjeta de la Nintendo Shop, 10 monedas, 2 Bloques ? y 2 tuberías. |
+| **Comunicado oficial** | La primera vez que entras al mundo sale el anuncio y te dan un kit: Tarjeta de la Nintendo Shop, 10 monedas, 2 Bloques ?, 2 tuberías y un Formulario de Demanda. |
 | **Monedas y vidas** | Abajo de la pantalla ves tus monedas y tus vidas. Cada **100 monedas** se convierten en **1 vida**. |
 | **3 vidas y GAME OVER** | Cada muerte te quita una vida. Si pierdes la última sale **GAME OVER** y Nintendo te regala 3 vidas nuevas. |
 | **Bloque ?** | Golpéalo **saltando desde abajo** (o tócalo con clic derecho, o rómpelo). Suelta monedas o un poder y se vuelve un Bloque Usado. Cada 45 segundos pueden aparecer Bloques ? nuevos en el cielo cerca de ti. |
@@ -43,6 +43,7 @@ Las texturas se generan con `python3 herramientas/generar_texturas.py`
 | **Demandas** | El departamento legal de Nintendo te demanda: cada 8 minutos puede inventar un motivo, y te demanda en el acto si le pones un nombre "registrado" a una mascota o a un objeto (Mario, Pikachu, Zelda...). Lo que tenga ese nombre queda confiscado y renombrado. |
 | **Abogado de Nintendo** | Aparece cerca de ti y te sigue. Es invencible, y si le pegas te sube la multa. Si no llega en 20 segundos, te manda la demanda "por correo". |
 | **Juicio** | Cuando llega el abogado eliges: pagar la multa, defenderte solo (20% de ganar; si pierdes pagas el doble), contratar a tu abogado (10 monedas, 60% de ganar) o firmar un acuerdo y pagar la mitad. Si cierras el juicio cuenta como huir: vuelve en un minuto con un 50% más de multa. |
+| **Demandar a Nintendo** | Usa el **Formulario de Demanda contra Nintendo** (los jugadores nuevos reciben uno; también se craftea). Eliges un motivo, como la comisión de la tienda, el Nether de pago, el Pato Clicker que no da monedas, tu Pokemán que se cerró, el caparazón azul o que te demandaron. Después eliges abogado: tú mismo (gratis), barato (10 monedas, +10%) o carísimo (60 monedas, +30%). Presentar la demanda cuesta 15 monedas. Si eso **te pasó de verdad** en el juego, tienes una *prueba* y +25% de probabilidad. El juicio se ve en pantalla. Si ganas, Nintendo te paga, aunque a veces apela y te paga la mitad; si ganas por el Nether, te lo devuelven gratis. Si pierdes, Nintendo te contrademanda. Solo puedes demandar cada 5 minutos. |
 | **Embargo** | Si no te alcanza para pagar, te quitan todas las monedas y pasas 30 segundos de "arresto domiciliario" (lentitud y fatiga de minería). |
 | **Nether de pago** | El Nether ahora es DLC: sin comprar "Expansión: El Nether" (99 monedas en la Nintendo Shop), el portal te devuelve. En creativo no aplica. El End es "gratis por tiempo limitado". |
 | **Nintendo Online** | Cada 12 minutos llega un "aviso oficial". A veces te cobra 5 monedas de suscripción. |
@@ -55,6 +56,7 @@ Las texturas se generan con `python3 herramientas/generar_texturas.py`
 | 4 × Tubería | 8 lingotes de hierro alrededor de 1 tinte verde |
 | 4 × Monedas | 1 lingote de oro |
 | Tarjeta de la Nintendo Shop | 1 libro + 1 pepita de oro |
+| Formulario de Demanda contra Nintendo | 1 papel + 1 saco de tinta + 1 pluma |
 
 Los poderes no se craftean: salen de los Bloques ?, de la Nintendo Shop o de los Champi Gruñón.
 
@@ -63,7 +65,7 @@ Los poderes no se craftean: salen de los Bloques ?, de la Nintendo Shop o de los
 ```
 NintendoCraft_BP/     Paquete de comportamiento
   blocks/             Bloque ?, Bloque Usado, Tubería
-  items/              Monedas, poderes, tarjeta de la tienda, cartuchos
+  items/              Monedas, poderes, tarjeta de la tienda, cartuchos, formulario de demanda
   entities/           Champi Gruñón, Abogado de Nintendo y bola de fuego
   scripts/            Lógica (API @minecraft/server 2.0.0)
     main.js           Punto de entrada
@@ -73,6 +75,7 @@ NintendoCraft_BP/     Paquete de comportamiento
     tienda.js         Nintendo Shop y Nether de pago
     juegos.js         Juegos de Nintendo y juegos basura (cartuchos)
     demandas.js       Demandas, abogado, juicio y embargos
+    demandar_a_nintendo.js  Tú demandas a Nintendo (motivos, pruebas, juicio)
 NintendoCraft_RP/     Paquete de recursos (texturas, modelo, textos en español)
 herramientas/         Generador de texturas
 construir.sh          Crea dist/NintendoCraft.mcaddon

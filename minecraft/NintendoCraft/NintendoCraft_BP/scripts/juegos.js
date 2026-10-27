@@ -1,5 +1,5 @@
 import { ItemStack, Player, system, world } from "@minecraft/server";
-import { ID, azar, darItem } from "./util.js";
+import { ID, azar, darItem, registrarPrueba } from "./util.js";
 import { mensajeBarra } from "./vidas.js";
 
 /**
@@ -40,6 +40,7 @@ export const JUEGOS = [
           jugador.applyKnockback({ x: 0, z: 0 }, 1.2);
           jugador.addEffect("slowness", 20 * 4, { amplifier: 3 });
           pantalla(jugador, "§9¡CAPARAZÓN AZUL!", "§fIba primero. Ya no.");
+          registrarPrueba(jugador, "caparazon");
           jugador.playSound("random.explode", { volume: 0.5 });
         }, 20 * 8);
       }
@@ -70,6 +71,7 @@ export const JUEGOS = [
       if (Math.random() < 0.3) {
         jugador.addEffect("blindness", 20 * 3, { amplifier: 0 });
         pantalla(jugador, "§cEl programa se cerró", "§7Error 0x00B06. Gracias por tu paciencia.");
+        registrarPrueba(jugador, "pokeman");
         jugador.playSound("note.bass");
         return;
       }
@@ -177,6 +179,7 @@ export const JUEGOS = [
         mensajeBarra(jugador, "§eClic. ¡+1 moneda! ¡RÉCORD MUNDIAL!");
       } else {
         mensajeBarra(jugador, "§7Clic. (+0 monedas)", 20);
+        registrarPrueba(jugador, "pato");
       }
     },
   },

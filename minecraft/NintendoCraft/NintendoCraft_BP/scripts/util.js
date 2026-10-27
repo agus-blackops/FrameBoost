@@ -9,6 +9,7 @@ export const ID = {
   catalogo: "nc:catalogo_tienda",
   juegoNintendo: "nc:juego_nintendo",
   juegoBasura: "nc:juego_basura",
+  formularioDemanda: "nc:formulario_demanda",
   bloquePregunta: "nc:bloque_pregunta",
   bloqueUsado: "nc:bloque_usado",
   tuberia: "nc:tuberia",
@@ -93,4 +94,29 @@ export function azar(min, max) {
 /** @param {import("@minecraft/server").Vector3} v */
 export function centro(v) {
   return { x: Math.floor(v.x) + 0.5, y: Math.floor(v.y) + 0.5, z: Math.floor(v.z) + 0.5 };
+}
+
+/**
+ * Guarda una "prueba" de algo que Nintendo le hizo al jugador, para usarla
+ * cuando demande a Nintendo.
+ * @param {import("@minecraft/server").Player} jugador
+ * @param {string} clave
+ */
+export function registrarPrueba(jugador, clave) {
+  const pruebas = leerPruebas(jugador);
+  if (pruebas.includes(clave)) return;
+  pruebas.push(clave);
+  jugador.setDynamicProperty("nc:pruebas", JSON.stringify(pruebas));
+  jugador.sendMessage("§8(Guardaste una prueba para demandar a Nintendo.)");
+}
+
+/** @param {import("@minecraft/server").Player} jugador @returns {string[]} */
+export function leerPruebas(jugador) {
+  const datos = jugador.getDynamicProperty("nc:pruebas");
+  if (typeof datos !== "string") return [];
+  try {
+    return JSON.parse(datos);
+  } catch {
+    return [];
+  }
 }

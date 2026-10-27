@@ -1,7 +1,7 @@
 import { GameMode, system, world } from "@minecraft/server";
 import { ActionFormData, MessageFormData } from "@minecraft/server-ui";
 import { JUEGOS, agregarABiblioteca, biblioteca, cartucho } from "./juegos.js";
-import { ID, contarItem, darItem, quitarItem } from "./util.js";
+import { ID, contarItem, darItem, quitarItem, registrarPrueba } from "./util.js";
 
 const DLC_NETHER = "nc:dlc_nether";
 /** "Comisión por usar la tienda" que se suma a todo. */
@@ -53,6 +53,7 @@ function confirmarCompra(jugador, nombre, precio, entregar, volver) {
         return;
       }
       entregar();
+      registrarPrueba(jugador, "comision");
       jugador.sendMessage(`§a¡Compraste ${nombre}! §7Gracias por tu compra. Te enviamos un correo que nadie va a leer.`);
       jugador.playSound("random.orb", { pitch: 1.2 });
     });
@@ -200,6 +201,7 @@ export function iniciarTienda() {
     system.runTimeout(() => {
       if (jugador.isValid) jugador.teleport(fromLocation, { dimension: fromDimension });
     }, 10);
+    registrarPrueba(jugador, "nether");
     jugador.onScreenDisplay.setTitle("§l§cCONTENIDO DESCARGABLE", {
       subtitle: `§fCompra "El Nether" en la Nintendo Shop por ${EXPANSIONES[0].precio} monedas`,
       fadeInDuration: 5,

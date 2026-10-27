@@ -48,6 +48,7 @@ function darBienvenida(jugador) {
     "§e• §fCompra juegos y poderes en la §cNintendo Shop§f (usa la Tarjeta). Todo es carísimo.",
     "§e• §fEl §cNether§f ahora es una expansión de pago (99 monedas en la Nintendo Shop).",
     "§e• §fNuestro §4departamento legal§f vigila tu mundo. No le pongas nombres registrados a nada.",
+    "§e• §fTú también puedes §ademandar a Nintendo§f con el Formulario de Demanda. Suerte con eso.",
     "§7(Parodia no oficial. No afiliada con Nintendo ni con Mojang.)",
   ];
   for (const l of lineas) jugador.sendMessage(l);
@@ -55,6 +56,7 @@ function darBienvenida(jugador) {
   darItem(jugador, ID.moneda, 10);
   darItem(jugador, ID.bloquePregunta, 2);
   darItem(jugador, ID.tuberia, 2);
+  darItem(jugador, ID.formularioDemanda, 1);
   jugador.playSound("random.levelup");
 }
 
