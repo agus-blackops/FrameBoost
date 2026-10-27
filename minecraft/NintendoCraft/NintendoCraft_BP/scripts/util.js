@@ -7,6 +7,8 @@ export const ID = {
   florFuego: "nc:flor_fuego",
   estrella: "nc:estrella",
   catalogo: "nc:catalogo_tienda",
+  juegoNintendo: "nc:juego_nintendo",
+  juegoBasura: "nc:juego_basura",
   bloquePregunta: "nc:bloque_pregunta",
   bloqueUsado: "nc:bloque_usado",
   tuberia: "nc:tuberia",

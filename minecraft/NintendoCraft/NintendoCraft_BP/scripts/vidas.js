@@ -45,8 +45,8 @@ function darBienvenida(jugador) {
     "§e• §fAgáchate sobre una §2Tubería§f para viajar a la siguiente.",
     "§e• §fPuedes aplastar monstruos saltando encima de ellos.",
     "§e• §fModo Familiar: los creepers ya no rompen bloques.",
-    "§e• §fCompra poderes con el §dCatálogo de la Tienda Oficial§f.",
-    "§e• §fEl §cNether§f ahora es una expansión de pago (30 monedas en la Tienda).",
+    "§e• §fCompra juegos y poderes en la §cNintendo Shop§f (usa la Tarjeta). Todo es carísimo.",
+    "§e• §fEl §cNether§f ahora es una expansión de pago (99 monedas en la Nintendo Shop).",
     "§e• §fNuestro §4departamento legal§f vigila tu mundo. No le pongas nombres registrados a nada.",
     "§7(Parodia no oficial. No afiliada con Nintendo ni con Mojang.)",
   ];
@@ -81,12 +81,27 @@ function avisoOficial() {
   }
 }
 
+/** @type {Map<string, number>} jugador -> tick hasta el que no se dibuja el marcador */
+const marcadorPausado = new Map();
+
+/**
+ * Muestra un mensaje en la barra de acción sin que el marcador lo tape enseguida.
+ * @param {Player} jugador
+ * @param {string} texto
+ * @param {number} ticks
+ */
+export function mensajeBarra(jugador, texto, ticks = 40) {
+  marcadorPausado.set(jugador.id, system.currentTick + ticks);
+  jugador.onScreenDisplay.setActionBar(texto);
+}
+
 /** Muestra el marcador y convierte cada 100 monedas en una vida. */
 function actualizarMarcador() {
   for (const jugador of world.getAllPlayers()) {
     if (contarItem(jugador, ID.moneda) >= MONEDAS_POR_VIDA && quitarItem(jugador, ID.moneda, MONEDAS_POR_VIDA)) {
       ganarVida(jugador);
     }
+    if ((marcadorPausado.get(jugador.id) ?? 0) > system.currentTick) continue;
     const monedas = contarItem(jugador, ID.moneda);
     jugador.onScreenDisplay.setActionBar(`§6Monedas §fx${monedas}    §cVidas §fx${getVidas(jugador)}`);
   }

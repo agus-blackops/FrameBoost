@@ -1,5 +1,6 @@
 import { ItemStack, system, world } from "@minecraft/server";
 import { ID, azar, centro, darItem } from "./util.js";
+import { mensajeBarra } from "./vidas.js";
 
 // ---------------------------------------------------------------- Bloque ?
 
@@ -181,7 +182,7 @@ function viajarPorTuberia(jugador, origen) {
     jugador.teleport({ x: destino.x + 0.5, y: destino.y + 1, z: destino.z + 0.5 }, { dimension });
     system.runTimeout(() => {
       jugador.playSound("mob.shulker.teleport", { pitch: 0.7 });
-      jugador.onScreenDisplay.setActionBar("§2¡Viaje por tubería completado!");
+      mensajeBarra(jugador, "§2¡Viaje por tubería completado!");
     }, 2);
     return;
   }

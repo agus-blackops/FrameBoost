@@ -6,7 +6,7 @@ item.nc.super_champinon=Súper Champiñón
 item.nc.champinon_vida=Champiñón 1-UP
 item.nc.flor_fuego=Flor de Fuego
 item.nc.estrella=Estrella de Invencibilidad
-item.nc.catalogo_tienda=Catálogo de la Tienda Oficial
+item.nc.catalogo_tienda=Tarjeta de la Nintendo Shop
 
 tile.nc.bloque_pregunta=Bloque ?
 tile.nc.bloque_usado=Bloque Usado
@@ -16,3 +16,5 @@ entity.nc:champi_grunon.name=Champi Gruñón
 item.spawn_egg.entity.nc:champi_grunon.name=Generar Champi Gruñón
 entity.nc:bola_fuego.name=Bola de Fuego
 entity.nc:abogado.name=Abogado de Nintendo
+item.nc.juego_nintendo=Juego de Nintendo
+item.nc.juego_basura=Juego Basura

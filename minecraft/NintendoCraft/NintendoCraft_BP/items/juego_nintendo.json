@@ -1,0 +1,14 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "nc:juego_nintendo",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:icon": "nc_juego_nintendo",
+      "minecraft:display_name": { "value": "item.nc.juego_nintendo" },
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

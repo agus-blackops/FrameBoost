@@ -3,6 +3,7 @@
 import { system } from "@minecraft/server";
 import { iniciarBloques, registrarComponentesDeBloques } from "./bloques.js";
 import { iniciarDemandas } from "./demandas.js";
+import { iniciarJuegos } from "./juegos.js";
 import { iniciarPoderes } from "./poderes.js";
 import { iniciarTienda } from "./tienda.js";
 import { iniciarVidas } from "./vidas.js";
@@ -18,3 +19,4 @@ iniciarPoderes();
 iniciarBloques();
 iniciarDemandas();
 iniciarTienda();
+iniciarJuegos();

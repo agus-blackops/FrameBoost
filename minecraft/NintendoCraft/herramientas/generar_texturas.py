@@ -217,6 +217,28 @@ TUBERIA_ARRIBA = [
 TUBERIA_LADO = ["KLLWGGGGGGGGGggK"] * 16
 
 
+def cartucho(etiqueta, sombra, detalle):
+    e, s, d = etiqueta, sombra, detalle
+    return [
+        "................",
+        "..KKKKKKKKKKKK..",
+        "..KwwwwwwwwwwK..",
+        "..KwKKKKKKKKwK..",
+        "..KwK" + e * 6 + "KwK..",
+        "..KwK" + e + d * 4 + e + "KwK..",
+        "..KwK" + e + d + e * 2 + d + e + "KwK..",
+        "..KwK" + e + d * 4 + e + "KwK..",
+        "..KwK" + s * 6 + "KwK..",
+        "..KwKKKKKKKKwK..",
+        "..KwwwwwwwwwwK..",
+        "..KwwwwwwwwwwK..",
+        "..KwKwKwKwKwwK..",
+        "..KKKKKKKKKKKK..",
+        "...KYKYKYKYKK...",
+        "................",
+    ]
+
+
 def dibujar(filas, escala=1):
     alto, ancho = len(filas), len(filas[0])
     img = Image.new("RGBA", (ancho, alto))
@@ -348,6 +370,8 @@ def main():
     guardar(dibujar(ESTRELLA), items / "nc_estrella.png")
     guardar(dibujar(CATALOGO), items / "nc_catalogo_tienda.png")
     guardar(dibujar(BOLA_FUEGO), items / "nc_bola_fuego.png")
+    guardar(dibujar(cartucho("R", "r", "W")), items / "nc_juego_nintendo.png")
+    guardar(dibujar(cartucho("B", "b", "t")), items / "nc_juego_basura.png")
 
     bloques = RP / "textures" / "blocks"
     guardar(

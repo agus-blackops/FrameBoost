@@ -2,11 +2,29 @@
   "resource_pack_name": "nintendocraft",
   "texture_name": "atlas.items",
   "texture_data": {
-    "nc_moneda": { "textures": "textures/items/nc_moneda" },
-    "nc_super_champinon": { "textures": "textures/items/nc_super_champinon" },
-    "nc_champinon_vida": { "textures": "textures/items/nc_champinon_vida" },
-    "nc_flor_fuego": { "textures": "textures/items/nc_flor_fuego" },
-    "nc_estrella": { "textures": "textures/items/nc_estrella" },
-    "nc_catalogo_tienda": { "textures": "textures/items/nc_catalogo_tienda" }
+    "nc_moneda": {
+      "textures": "textures/items/nc_moneda"
+    },
+    "nc_super_champinon": {
+      "textures": "textures/items/nc_super_champinon"
+    },
+    "nc_champinon_vida": {
+      "textures": "textures/items/nc_champinon_vida"
+    },
+    "nc_flor_fuego": {
+      "textures": "textures/items/nc_flor_fuego"
+    },
+    "nc_estrella": {
+      "textures": "textures/items/nc_estrella"
+    },
+    "nc_catalogo_tienda": {
+      "textures": "textures/items/nc_catalogo_tienda"
+    },
+    "nc_juego_nintendo": {
+      "textures": "textures/items/nc_juego_nintendo"
+    },
+    "nc_juego_basura": {
+      "textures": "textures/items/nc_juego_basura"
+    }
   }
 }
