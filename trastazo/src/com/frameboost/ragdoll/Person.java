@@ -29,6 +29,7 @@ final class Person extends Ent {
     final boolean[] broken = new boolean[NPARTS];     // fractured: its joint is limp
     final boolean[] severed = new boolean[NJOINTS];
     final float[] bleed = new float[NPARTS];
+    final float[] soak = new float[NPARTS];         // blood V3: how soaked in blood each part's clothes/skin are (0..1)
     final boolean[] gibbed = new boolean[NPARTS];
     // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
     float frozenT;

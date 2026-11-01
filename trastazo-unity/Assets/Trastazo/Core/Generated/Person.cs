@@ -33,6 +33,7 @@ namespace Trastazo
         public bool[] broken = new bool[NPARTS];     // fractured: its joint is limp
         public bool[] severed = new bool[NJOINTS];
         public float[] bleed = new float[NPARTS];
+        public float[] soak = new float[NPARTS];         // blood V3: how soaked in blood each part's clothes/skin are (0..1)
         public bool[] gibbed = new bool[NPARTS];
         // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
         public float frozenT;

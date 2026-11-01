@@ -23,6 +23,15 @@ namespace Trastazo
         public float splatT;
         public float lastSp;                   // speed at the end of the previous frame
         public float wear;                     // damage taken by breakable things (crates, planks, blocks)
+        // destruction engine: where it was hit (local frame) and how deep each crack / dent goes
+        public const int MAXCRACK = 6;
+        public float[] crU = new float[MAXCRACK], crV = new float[MAXCRACK], crS = new float[MAXCRACK];
+        public int ncr;
+        public float impX = Float.NaN, impY;   // last hard hit (world), where a fracture starts
+        // SAW traps
+        public float talkT;                    // Billy: speech bubble time left
+        public int talkLine;
+        public Person victim;                  // reverse bear trap: whose head it is locked on
         public bool gib, frag;              // flesh chunk / fragment of something that broke
         // animals
         public int face = 1;                   // which way the head points
@@ -280,6 +289,39 @@ namespace Trastazo
                     Shape hd = Shape.capsule(22f, 3f).at(-6f, 0, 0).mat(0.9f, 0.7f, 0.05f).col(unchecked((int)0xFF6b4a2fU)); hd.user = p;
                     Shape hh = Shape.box(7f, 13f).at(20f, 0, 0).mat(7f, 0.6f, 0.05f).col(p.color); hh.user = p;
                     b.add(hd); b.add(hh);
+                    b.user = p; p.bodies.add(b);
+                    break;
+                }
+                case Items.BEARTRAP: {
+                    p.color = unchecked((int)0xFF5d6168U); p.hw = 30f; p.hh = 5f; p.on = true; p.sharp = false;
+                    b = box(p, x, y - 5f, 30f, 5f, 3f, 0.9f, 0f);
+                    break;
+                }
+                case Items.PENDULUM: {
+                    // a static mount and a long arm with a crescent blade, swung kinematically around the mount
+                    p.color = unchecked((int)0xFF6f7782U); p.param = 250f; p.hw = 46f; p.hh = 125f; p.on = true; p.sharp = true;
+                    RB mount = new RB(x, y, 0);
+                    Shape ms = Shape.box(26f, 9f).mat(3f, 0.8f, 0.05f).col(unchecked((int)0xFF3a4048U)); ms.user = p; mount.add(ms);
+                    mount.user = p; p.bodies.add(mount);
+                    b = new RB(x, y, 0);
+                    Shape arm = Shape.capsule(105f, 3.5f).at(0, 112f, (float) Math.PI / 2).mat(2f, 0.6f, 0.05f).col(unchecked((int)0xFF4a5059U)); arm.user = p;
+                    Shape blade = Shape.box(46f, 11f).at(0, 236f, 0).mat(4f, 0.6f, 0.02f).col(unchecked((int)0xFFc9ced6U)); blade.user = p;
+                    b.add(arm); b.add(blade);
+                    b.user = p; p.bodies.add(b);
+                    break;
+                }
+                case Items.REVTRAP: {
+                    p.color = unchecked((int)0xFF6b5a44U); p.hw = 15f; p.hh = 12f; p.work = 12f;
+                    b = box(p, x, y, 15f, 12f, 1.6f, 0.8f, 0.05f);
+                    break;
+                }
+                case Items.BILLY: {
+                    p.color = unchecked((int)0xFFf2f0eaU); p.hw = 22f; p.hh = 38f; p.on = true; p.face = 1;
+                    b = new RB(x, y, 0);
+                    Shape body = Shape.box(12f, 26f).at(0, -8f, 0).mat(0.8f, 0.3f, 0.05f).col(unchecked((int)0xFF1d1f24U)); body.user = p;
+                    Shape wf = Shape.circle(13f).at(18f, 26f, 0).mat(1.2f, 0.002f, 0.05f).col(unchecked((int)0xFFb3262eU)); wf.user = p;
+                    Shape wb = Shape.circle(10f).at(-18f, 29f, 0).mat(1.2f, 0.002f, 0.05f).col(unchecked((int)0xFFb3262eU)); wb.user = p;
+                    b.add(body); b.add(wf); b.add(wb);
                     b.user = p; p.bodies.add(b);
                     break;
                 }

@@ -29,6 +29,8 @@ namespace Trastazo
         }
         /** True in the PC port: mouse and keyboard, settings show full screen instead of vibration/engine. */
         public static bool desktop;
+        /** Edition shown on the title screen ("Unity 1.3" in the Unity build; null = the Android/PC beta). */
+        public static string edition;
         public bool fullscreen;
         public Host host;
         public Settings settings = new Settings();
@@ -420,6 +422,36 @@ namespace Trastazo
         private CanvasDraw canvasDraw;
         private int errStreak;
 
+        private RectF bubble = new RectF();
+
+        /** Billy talks: a speech bubble over his head. */
+        private void speech(Canvas c) {
+            for (int i = 0; i < world.ents.size(); i++) {
+                Ent e = world.ents.get(i);
+                if (!(e is Prop)) continue;
+                Prop q = (Prop) e;
+                if (q.type != Items.BILLY || q.talkT <= 0f || q.removed) continue;
+                string line = Traps.BILLY_LINES[q.talkLine % Traps.BILLY_LINES.Length];
+                float a = Math.min(1f, Math.min(q.talkT * 3f, (3.2f - q.talkT) * 6f));
+                float x = (q.cx() - camX) * zoom + sw / 2f, y = (q.cy() - 70f - camY) * zoom + sh / 2f;
+                p.setTextSize(13 * density);
+                p.setFakeBoldText(true);
+                float tw = p.measureText(line), pad = 10 * density;
+                float bx = Math.max(6 * density, Math.min(sw - tw - 2 * pad - 6 * density, x - tw / 2 - pad)), by = y - 36 * density;
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(Renderer.alpha(unchecked((int)0xFF0b0e14U), 0.85f * a));
+                bubble.set(bx, by, bx + tw + 2 * pad, by + 28 * density);
+                c.drawRoundRect(bubble, 10 * density, 10 * density, p);
+                Path tail = new Path();
+                tail.moveTo(x - 6 * density, by + 27 * density); tail.lineTo(x + 6 * density, by + 27 * density); tail.lineTo(x, by + 38 * density); tail.close();
+                c.drawPath(tail, p);
+                p.setColor(Renderer.alpha(unchecked((int)0xFFff3b30U), a));
+                p.setTextAlign(Paint.Align.LEFT);
+                c.drawText(line, bx + pad, by + 19 * density, p);
+                p.setFakeBoldText(false);
+            }
+        }
+
         /** Lights, ambient tint and vignette on the Canvas path (set by the Unity version). */
         public static bool lighting;
 
@@ -474,6 +506,7 @@ namespace Trastazo
         /** Everything that is interface, drawn on top of the world (a Canvas overlay on the GPU path). */
         public void drawOverlay(Canvas c) {
             Challenges.drawOverlay(c, this, p);
+            if (screens.screen == Screens.NONE || screens.screen == Screens.TITLE) speech(c);
             // pending rope / weld / hinge
             if (linkBody != null && (tool == Items.ROPE || tool == Items.WELD || tool == Items.HINGE)) {
                 float lx = (linkBody.localToWorldX(linkLx, linkLy) - camX) * zoom + sw / 2f, ly = (linkBody.localToWorldY(linkLx, linkLy) - camY) * zoom + sh / 2f;
@@ -1126,6 +1159,9 @@ namespace Trastazo
                     q.on = !q.on;
                     ui.toast_(Items.find(q.type).name + (q.on ? ": encendida" : ": apagada"));
                     break;
+                case Items.BEARTRAP: case Items.PENDULUM: case Items.REVTRAP: case Items.BILLY:
+                    ui.toast_(Traps.activate(world, q));
+                    break;
                 case Items.TURRET: case Items.DRONE:
                     if (q.dead) { ui.toast_("Está averiado"); break; }
                     q.on = !q.on;
@@ -1147,7 +1183,7 @@ namespace Trastazo
             ctxEnt = e; ctxX = x; ctxY = y; ctxN = 0;
             bool activatable = e is Person ? ((Person) e).able : (((Prop) e).type == Items.WHEEL || ((Prop) e).type == Items.MOTOR
                     || ((Prop) e).type == Items.THRUSTER || ((Prop) e).type == Items.GUN_PISTOL || ((Prop) e).type == Items.GUN_RIFLE
-                    || ((Prop) e).type == Items.GUN_MG || ((Prop) e).machine() || ((Prop) e).explosive || ((Prop) e).type == Items.BALLOON);
+                    || ((Prop) e).type == Items.GUN_MG || ((Prop) e).machine() || ((Prop) e).explosive || ((Prop) e).type == Items.BALLOON || Items.isTrap(((Prop) e).type));
             if (activatable) ctxActs[ctxN++] = CX_ACTIVATE;
             if (e is Person) ctxActs[ctxN++] = CX_INSPECT;
             ctxActs[ctxN++] = CX_DUPLICATE;

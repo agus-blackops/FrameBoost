@@ -15,9 +15,15 @@ namespace Trastazo
         public int[] type = new int[MAXP], color = new int[MAXP];
         public int next;
 
-        public float[] sx = new float[MAXS], sw = new float[MAXS];
+        public float[] sx = new float[MAXS], sw = new float[MAXS], sa = new float[MAXS];
         public int[] sc = new int[MAXS];
         public int sn, sNext;
+
+        // blood V3: splats on the back wall with drips that run down, aging from bright red to dark brown
+        public const int MAXD = 160;
+        public float[] dx = new float[MAXD], dy = new float[MAXD], dr = new float[MAXD], dage = new float[MAXD];
+        public int[] dc = new int[MAXD], dseed = new int[MAXD];
+        public int dn, dNext;
 
         public float[] rx = new float[MAXR], ry = new float[MAXR], rr = new float[MAXR], rmax = new float[MAXR], rt = new float[MAXR];
         public int rNext;
@@ -40,6 +46,7 @@ namespace Trastazo
         public void clear() {
             for (int i = 0; i < MAXP; i++) life[i] = 0f;
             sn = 0; sNext = 0; bt = 0f; flash = 0f; shake = 0f;
+            dn = 0; dNext = 0;
             for (int i = 0; i < MAXR; i++) rt[i] = 0f;
         }
 
@@ -90,11 +97,29 @@ namespace Trastazo
             rx[i] = px; ry[i] = py; rmax[i] = rmaxv; rr[i] = 0f; rt[i] = 1f;
         }
 
+        /** A drop lands on the floor: it joins a pool it falls into (pools spread) or starts a new stain. */
         public void stain(float px, float w, int col) {
+            for (int k = 0; k < sn; k++) {
+                if (Math.abs(sx[k] - px) < sw[k] * 0.45f && sw[k] < 150f && (sc[k] & 0xFFFFFF) == (col & 0xFFFFFF)) {
+                    sw[k] += w * 0.22f;
+                    sa[k] = Math.min(sa[k], 2f);              // fresh blood on top
+                    return;
+                }
+            }
             int i = sNext;
             sNext = (sNext + 1) % MAXS;
-            sx[i] = px; sw[i] = w; sc[i] = col;
+            sx[i] = px; sw[i] = w; sc[i] = col; sa[i] = 0f;
             if (sn < MAXS) sn++;
+        }
+
+        /** A splat on the back wall (gore that sprays behind, traps, blasts). */
+        public void wallSplat(float px, float py, float r, int col) {
+            if (!gore) return;
+            if (py > floorY - 4f) py = floorY - 4f;
+            int i = dNext;
+            dNext = (dNext + 1) % MAXD;
+            dx[i] = px; dy[i] = py; dr[i] = r; dc[i] = col; dage[i] = 0f; dseed[i] = rnd.nextInt(1 << 20);
+            if (dn < MAXD) dn++;
         }
 
         public void explosion(float px, float py, float R) {
@@ -126,6 +151,8 @@ namespace Trastazo
         }
 
         public void update(float dt) {
+            for (int i = 0; i < sn; i++) sa[i] += dt;
+            for (int i = 0; i < dn; i++) dage[i] += dt;
             if (flash > 0) flash = Math.max(0, flash - dt * 2.6f);
             if (shake > 0) shake = Math.max(0, shake - dt * 2.4f);
             if (bt > 0) bt -= dt;
@@ -144,7 +171,10 @@ namespace Trastazo
                         if (y[i] >= floorY) {
                             if (type[i] == BLOOD) stain(x[i], 2f + size[i] * 1.7f, Renderer.alpha(color[i], 0.85f));
                             life[i] = 0;
-                        } else if (x[i] < wallL || x[i] > wallR) life[i] = 0;
+                        } else if (x[i] < wallL || x[i] > wallR) {
+                            if (type[i] == BLOOD && rnd.nextFloat() < 0.5f) wallSplat(x[i] < wallL ? wallL + 6f : wallR - 6f, y[i], 3f + size[i], color[i]);
+                            life[i] = 0;
+                        }
                         break;
                     case FLAME:
                         vy[i] -= 120f * dt;
@@ -171,11 +201,54 @@ namespace Trastazo
 
         // ------------------------------------------------------------------------------- drawing ---
 
+        /** Blood darkens and dries over half a minute. */
+        public static int aged(int col, float age) {
+            float k = Math.min(1f, age / 30f) * 0.55f;
+            int a = Sys.ushr(col, 24);
+            return (Renderer.mix(col, unchecked((int)0xFF2a0d0aU), k) & 0xFFFFFF) | (a << 24);
+        }
+
         public void drawStains(Draw2D c, Paint p) {
             p.setStyle(Paint.Style.FILL);
+            // splats on the wall: a blot, satellite drops, and drips that run down for a few seconds
+            for (int i = 0; i < dn; i++) {
+                int col = aged(dc[i], dage[i]);
+                float r = dr[i], cx = dx[i], cy = dy[i];
+                int seed = dseed[i];
+                p.setColor(Renderer.alpha(col, 0.8f));
+                c.drawCircle(cx, cy, r * 0.55f, p);
+                for (int k = 0; k < 7; k++) {
+                    int h = seed * (k + 3) * 2654435 + k * 40503;
+                    float an = ((Sys.ushr(h, 3)) & 1023) / 1023f * 6.283f, dd = r * (0.35f + ((Sys.ushr(h, 13)) & 255) / 255f * 0.9f);
+                    float rr = r * (0.12f + ((Sys.ushr(h, 21)) & 63) / 63f * 0.22f);
+                    c.drawCircle(cx + (float) Math.cos(an) * dd, cy + (float) Math.sin(an) * dd * 0.8f, rr, p);
+                }
+                float run = Math.min(1f, dage[i] / 5f);
+                p.setStyle(Paint.Style.STROKE);
+                for (int k = 0; k < 3; k++) {
+                    int h = seed * (k + 11) * 69069 + 12345;
+                    float ox = (((Sys.ushr(h, 5)) & 255) / 255f - 0.5f) * r * 1.1f;
+                    float len = r * (0.8f + ((Sys.ushr(h, 15)) & 255) / 255f * 2.6f) * run;
+                    if (len < 1f) continue;
+                    float wd = Math.max(1.2f, r * 0.13f);
+                    p.setStrokeWidth(wd);
+                    c.drawLine(cx + ox, cy, cx + ox, Math.min(floorY - 2f, cy + len), p);
+                    c.drawCircle(cx + ox, Math.min(floorY - 2f, cy + len), wd * 0.7f, p);
+                }
+                p.setStyle(Paint.Style.FILL);
+            }
+            // pools on the floor: a flat ellipse with a glossy streak, darker as they dry
             for (int i = 0; i < sn; i++) {
-                p.setColor(sc[i]);
-                c.drawRect(sx[i] - sw[i] * 0.5f, floorY - 1f, sx[i] + sw[i] * 0.5f, floorY + 2.2f, p);
+                int col = aged(sc[i], sa[i]);
+                float w = sw[i];
+                p.setColor(Renderer.alpha(col, 0.9f));
+                c.drawRect(sx[i] - w * 0.5f, floorY - 1f, sx[i] + w * 0.5f, floorY + 2.2f, p);
+                if (w > 14f) {
+                    c.drawCircle(sx[i] - w * 0.5f, floorY + 0.6f, 1.6f, p);
+                    c.drawCircle(sx[i] + w * 0.5f, floorY + 0.6f, 1.6f, p);
+                    p.setColor(Renderer.alpha(unchecked((int)0xFFffffffU), 0.16f * Math.max(0f, 1f - sa[i] / 25f)));
+                    c.drawRect(sx[i] - w * 0.3f, floorY - 0.6f, sx[i] + w * 0.15f, floorY + 0.2f, p);
+                }
             }
         }
 
@@ -185,7 +258,20 @@ namespace Trastazo
                 if (life[i] <= 0) continue;
                 float k = life[i] / maxLife[i];
                 switch (type[i]) {
-                    case BLOOD: p.setColor(color[i]); c.drawCircle(x[i], y[i], size[i] * 0.55f, p); break;
+                    case BLOOD: {
+                        // a drop with a short streak behind it, stretched by its speed
+                        p.setColor(color[i]);
+                        float sp = (float) Math.sqrt(vx[i] * vx[i] + vy[i] * vy[i]);
+                        if (sp > 160f) {
+                            float k2 = Math.min(0.03f, 6f / sp);
+                            p.setStyle(Paint.Style.STROKE);
+                            p.setStrokeWidth(size[i] * 0.75f);
+                            c.drawLine(x[i] - vx[i] * k2, y[i] - vy[i] * k2, x[i], y[i], p);
+                            p.setStyle(Paint.Style.FILL);
+                        }
+                        c.drawCircle(x[i], y[i], size[i] * 0.55f, p);
+                        break;
+                    }
                     case WATER: p.setColor(Renderer.alpha(color[i], 0.8f)); c.drawCircle(x[i], y[i], size[i], p); break;
                     case FLAME: {
                         c.emissive(true);

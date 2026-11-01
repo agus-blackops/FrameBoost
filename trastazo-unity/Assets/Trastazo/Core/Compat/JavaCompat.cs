@@ -60,6 +60,7 @@ namespace Trastazo
     public static class Float
     {
         public const float MAX_VALUE = float.MaxValue;
+        public const float NaN = float.NaN;
         public const float MIN_VALUE = float.Epsilon;
         public static float parseFloat(string s)
         {

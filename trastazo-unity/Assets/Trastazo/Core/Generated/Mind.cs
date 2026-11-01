@@ -205,11 +205,11 @@ namespace Trastazo
                     Ent e = w.ents.get(i);
                     if (!(e is Prop)) continue;
                     Prop q = (Prop) e;
-                    bool hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on);
+                    bool hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on) || (q.type == Items.PENDULUM && q.on);
                     if (!hazard || q.removed || Math.abs(q.cy() - pel.y) > 300f) continue;
                     float reach = q.type == Items.TESLA ? 300f : (q.type == Items.SPIKES ? 110f : 170f);
                     float dx = (q.cx() - pel.x) * d;
-                    float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : 34f);
+                    float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : (q.type == Items.PENDULUM ? 70f : 34f));
                     if (dx > -half && dx - half < reach) { p.walk = -d; p.mood = "Evita el peligro"; return; }
                 }
             }

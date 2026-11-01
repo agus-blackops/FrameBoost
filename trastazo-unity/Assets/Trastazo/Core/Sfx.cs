@@ -21,10 +21,10 @@ namespace Trastazo
         public float volume = 0.9f;
 
         private ISoundBackend backend;
-        private readonly int[] ids = new int[12];
+        private readonly int[] ids = new int[14];
         private const int BOOM = 0, SHOT = 1, THUD = 2, SPLAT = 3, POP = 4, ZAP = 5, LAUNCH = 6, CLICK = 7, CRUNCH = 8,
-                BARK = 9, FART = 10, CHOMP = 11;
-        private readonly long[] last = new long[12];
+                BARK = 9, FART = 10, CHOMP = 11, SNAP = 12, LAUGH = 13;
+        private readonly long[] last = new long[14];
         private readonly Random rnd = new Random();
 
         public Sfx(ISoundBackend backend)
@@ -47,6 +47,8 @@ namespace Trastazo
                     voice(0.2f, 520f, 300f),
                     fart(r, 0.75f),
                     noise(r, 0.09f, 0.8f, 40f, 900f, 0.8f),
+                    clank(r),
+                    cackle(),
                 };
                 for (int i = 0; i < data.Length; i++) ids[i] = backend.load(data[i], RATE) + 1;
             }
@@ -87,6 +89,44 @@ namespace Trastazo
                 ph += 2 * Math.PI * (f0 + (f1 - f0) * t) / RATE;
                 float v = (float)(Math.sin(ph) * 0.6 + Math.sin(ph * 2) * 0.3 + Math.sin(ph * 3) * 0.18 + Math.signum(Math.sin(ph)) * 0.12) * env;
                 outp[i] = (short)(Math.max(-1f, Math.min(1f, v * 0.8f)) * 30000);
+            }
+            return outp;
+        }
+
+        /** Steel jaws snapping shut: a sharp click and a ringing body. */
+        public static short[] clank(Random r)
+        {
+            int n = (int)(0.45f * RATE);
+            short[] outp = new short[n];
+            double ph = 0, ph2 = 0;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)RATE;
+                float click = t < 0.012f ? (r.nextFloat() * 2f - 1f) * (1f - t / 0.012f) : 0f;
+                ph += 2 * Math.PI * 1870 / RATE; ph2 += 2 * Math.PI * 2950 / RATE;
+                float ring = (float)(Math.sin(ph) * 0.6 + Math.sin(ph2) * 0.4) * (float)Math.exp(-t * 11f);
+                float v = click * 1.1f + ring * 0.55f;
+                outp[i] = (short)(Math.max(-1f, Math.min(1f, v)) * 30000);
+            }
+            return outp;
+        }
+
+        /** A puppet's creepy cackle: five falling "ha" syllables. */
+        public static short[] cackle()
+        {
+            int n = (int)(1.1f * RATE);
+            short[] outp = new short[n];
+            double ph = 0;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)RATE;
+                int syl = (int)(t / 0.2f);
+                float k = (t - syl * 0.2f) / 0.2f;
+                float env = syl < 5 ? (float)Math.sin(Math.PI * Math.min(1f, k * 1.4f)) * (1f - syl * 0.12f) : 0f;
+                float f = 330f - syl * 22f - k * 60f;
+                ph += 2 * Math.PI * f / RATE;
+                float v = (float)(Math.sin(ph) * 0.5 + Math.sin(ph * 2) * 0.28 + Math.sin(ph * 3) * 0.16 + Math.sin(ph * 5) * 0.08) * env;
+                outp[i] = (short)(Math.max(-1f, Math.min(1f, v * 0.85f)) * 30000);
             }
             return outp;
         }
@@ -138,6 +178,8 @@ namespace Trastazo
         public void call(float pitch) { play(BARK, 0.7f, 120, 0.05f, pitch); }
         public void fart() { play(FART, 0.85f, 300, 0.12f); }
         public void chomp() { play(CHOMP, 0.6f, 90, 0.2f); }
+        public void snap() { play(SNAP, 0.9f, 80, 0.06f); }
+        public void laugh() { play(LAUGH, 0.8f, 900, 0.04f); }
 
         public void release() { if (backend != null) { try { backend.release(); } catch (Exception) { } backend = null; } }
     }

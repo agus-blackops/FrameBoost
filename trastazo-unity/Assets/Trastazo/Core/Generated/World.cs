@@ -9,7 +9,7 @@ namespace Trastazo
         public const int MAX_BODIES = 900;
 
         public sealed class Stats {
-            public int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges;
+            public int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats;
             public float recentT;
         }
 
@@ -159,6 +159,9 @@ namespace Trastazo
                         case Items.POOP: ry = Math.min(y, fl - 9f); break;
                         case Items.FRIDGE: ry = Math.min(y, fl - 101f); break;
                         case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: ry = Math.min(y + 40f, fl); break;
+                        case Items.BEARTRAP: ry = fl; break;
+                        case Items.PENDULUM: ry = Math.max(sim.ceilY + 30f, Math.min(y, fl - 60f) - 240f); break;
+                        case Items.BILLY: ry = Math.min(y, fl - 40f); break;
                         default: ry = Math.min(y, fl - 14f); break;
                     }
                     Prop p = Prop.make(sim, item, x, ry, rnd);
@@ -169,8 +172,23 @@ namespace Trastazo
                     if (p.fuse >= 0f) p.fuse = item == Items.GRENADE ? 3f : 4f;
                     if (item == Items.KNIFE || item == Items.SWORD) { /* sharp bodies are registered by the factory */ }
                     p.register(sim);
-                    if (p.fixedMachine() || p.type == Items.FRIDGE) foreach (RB b in p.bodies) b.setFrozen(true);
+                    if (p.fixedMachine() || p.type == Items.FRIDGE || p.type == Items.BEARTRAP || p.type == Items.PENDULUM) foreach (RB b in p.bodies) b.setFrozen(true);
+                    if (p.type == Items.BILLY) p.face = dir >= 0 ? 1 : -1;
                     e = add(p);
+                    if (p.type == Items.REVTRAP) {
+                        // placed on someone: it locks on the nearest head
+                        Person best = null;
+                        float bd = 150f;
+                        for (int i = 0; i < ents.size(); i++) {
+                            Ent o = ents.get(i);
+                            if (!(o is Person) || o.removed) continue;
+                            Person op = (Person) o;
+                            if (op.gibbed[Person.HEAD] || op.kind == Person.ROBOT) continue;
+                            float dd = (float) Math.hypot(op.rb[Person.HEAD].x - x, op.rb[Person.HEAD].y - y);
+                            if (dd < bd) { bd = dd; best = op; }
+                        }
+                        if (best != null) Traps.lockOn(this, p, best);
+                    }
                     if (p.type == Items.FRIDGE) stockFridge(p, x);
                 }
              break; }
@@ -283,6 +301,16 @@ namespace Trastazo
                 lost += 2.2f;
                 if (p.organic() || p.kind == Person.ZOMBIE) {
                     if (rnd.nextFloat() < dt * 22f) fx.blood(b.x, b.y, 0f, 0.4f, 1);
+                    // blood soaks the clothes and runs down the body
+                    p.soak[i] = Math.min(1f, p.soak[i] + dt * 0.05f);
+                    int below = i == Person.CHEST ? Person.PELVIS : (i == Person.PELVIS ? Person.THIGH_F : (i == Person.HEAD ? Person.CHEST : -1));
+                    if (below >= 0) p.soak[below] = Math.min(1f, p.soak[below] + dt * 0.025f);
+                    // an open neck pumps
+                    if (i == Person.CHEST && p.severed[Person.NECK] && p.bleed[i] > 4f && rnd.nextFloat() < dt * 9f) {
+                        Joint nk = p.jt[Person.NECK];
+                        float ux = (float) Math.sin(b.a), uy = (float) -Math.cos(b.a);
+                        fx.blood(nk.anchorAX(), nk.anchorAY(), ux, uy, 3);
+                    }
                 } else if (rnd.nextFloat() < dt * 6f) fx.sparks(b.x, b.y, 2, unchecked((int)0xFFffd25aU));
             }
             if (!p.dead && p.organic() || p.kind == Person.ZOMBIE) { if (!p.dead) p.blood -= lost * dt * 0.5f; }
@@ -380,7 +408,14 @@ namespace Trastazo
             p.hp[part] -= dmg;
             if (p.kind == Person.ROBOT) fx.sparks(x, y, 4, unchecked((int)0xFFffd25aU));
             else if (p.kind == Person.SKELETON) fx.debris(x, y, 2, unchecked((int)0xFFf0ead6U), 160f);
-            else if (dmg > 3f) fx.blood(x, y, dx, dy, (int) Math.min(10, 2 + dmg * 0.25f));
+            else if (dmg > 3f) {
+                fx.blood(x, y, dx, dy, (int) Math.min(10, 2 + dmg * 0.25f));
+                if (p.organic() || p.kind == Person.ZOMBIE) {
+                    p.soak[part] = Math.min(1f, p.soak[part] + dmg * 0.012f);
+                    // a hard hit sprays the wall behind
+                    if (dmg > 14f && fx.gore && rnd.nextFloat() < 0.5f) { fx.wallSplat(x + dx * 30f + fx.rr_(20f), y + dy * 20f + fx.rr_(20f), 6f + Math.min(18f, dmg * 0.25f), fx.bloodA); stats.splats++; }
+                }
+            }
             if (!p.dead && p.organic()) p.blood -= dmg * 0.22f;
             if (!p.dead && p.kind == Person.ZOMBIE) p.blood -= dmg * 0.18f;
             if (dmg > 9f && !p.dead) {
@@ -428,7 +463,8 @@ namespace Trastazo
             bloodStyle(p);
             if (p.organic() || p.kind == Person.ZOMBIE) {
                 fx.blood(x, y, 0f, -0.3f, 18);
-                foreach (int part in stumpParts(j)) p.bleed[part] = Math.max(p.bleed[part], 9f);
+                fx.wallSplat(x + fx.rr_(25f), y + fx.rr_(20f), 9f + fx.rf() * 10f, fx.bloodA);
+                foreach (int part in stumpParts(j)) { p.bleed[part] = Math.max(p.bleed[part], 9f); p.soak[part] = Math.min(1f, p.soak[part] + 0.3f); }
                 if (!p.dead) p.blood -= 6f;
             } else fx.sparks(x, y, 14, unchecked((int)0xFFffd25aU));
             if (sfx != null) sfx.crunch();
@@ -523,6 +559,8 @@ namespace Trastazo
                 }
                 if (sharp && dv > 140f) {
                     p.hitCd[part] = 0.18f;
+                    Prop blade = (Prop) other.body.user;
+                    if (Items.isTrap(blade.type) && flesh(p)) blade.wear = Math.min(1f, blade.wear + 0.15f);
                     wound(p, part, Person.W_CUT, px, py, dx, dy, 5f + Math.min(9f, dv * 0.01f));
                     hurt(p, part, 8f + dv * 0.05f, px, py, dx, dy);
                     if (dv > 330f && rnd.nextFloat() < 0.55f) {
@@ -569,8 +607,12 @@ namespace Trastazo
                             float om = other.body.invM > 0f ? other.body.m : 20000f;
                             heavy = Math.max(0.3f, Math.min(2.5f, (float) Math.sqrt(om / Math.max(1f, s.body.m))));
                         }
-                        wear(q, (dv - th) * 0.04f * heavy * (sharp ? 2f : 1f), true);
+                        float dmg = (dv - th) * 0.04f * heavy * (sharp ? 2f : 1f);
+                        crack(q, px, py, dmg / Math.max(20f, toughness(q)));
+                        wear(q, dmg, true);
                     }
+                } else if ((q.type == Items.BARREL || q.type == Items.XBARREL || q.type == Items.STEEL || q.type == Items.FRIDGE) && dv > 520f) {
+                    crack(q, px, py, (dv - 520f) * 0.0012f);       // dents and scratches
                 }
             }
         }
@@ -632,6 +674,10 @@ namespace Trastazo
             else if (bone) fx.debris(bx, by, 12, unchecked((int)0xFFf0ead6U), 320f);
             else {
                 // a mist of blood in every direction, a heavier spray along the blow, and a few droplets that hang
+                if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) {
+                    for (int k = 0; k < 3; k++) fx.wallSplat(bx + dx * 30f + fx.rr_(60f), by + dy * 20f + fx.rr_(45f), 14f + fx.rf() * 20f, k == 0 ? fx.bloodA : fx.bloodB);
+                    stats.splats += 3;
+                }
                 for (int k = 0; k < 8; k++) { float an = k * 0.785f + rnd.nextFloat() * 0.4f; fx.blood(bx, by, (float) Math.cos(an), (float) Math.sin(an) - 0.3f, 6); }
                 fx.blood(bx, by, dx, dy, 22);
                 fx.debris(bx, by, 6, p.kind == Person.ZOMBIE ? unchecked((int)0xFF4f7d2aU) : unchecked((int)0xFF8e1111U), 300f);
@@ -827,6 +873,7 @@ namespace Trastazo
         }
 
         private static int dark(int c, float t) { return Renderer.dark(c, t); }
+        private static bool flesh(Person p) { return p.organic() || p.kind == Person.ZOMBIE; }
 
         public void keepChunk(Prop c) {
             chunks.add(c);
@@ -865,9 +912,30 @@ namespace Trastazo
             else fracture(q, q.cx(), q.cy());
         }
 
-        /** Splits a block/crate/plank into smaller fragments; small ones just turn to splinters. */
+        /** Destruction engine: a crack (or a dent on metal) where something hit, in the thing's own frame. */
+        public void crack(Prop q, float wx, float wy, float amount) {
+            if (q.bodies.isEmpty() || amount <= 0f) return;
+            RB b = q.main();
+            float ex = wx - b.x, ey = wy - b.y;
+            float u = ex * b.c + ey * b.s, v = -ex * b.s + ey * b.c;
+            u = Math.max(-q.hw * 0.9f, Math.min(q.hw * 0.9f, u));
+            v = Math.max(-q.hh * 0.9f, Math.min(q.hh * 0.9f, v));
+            q.impX = wx; q.impY = wy;
+            // a hit next to an old crack makes it longer
+            for (int i = 0; i < q.ncr; i++) {
+                if (Math.abs(q.crU[i] - u) < 10f && Math.abs(q.crV[i] - v) < 10f) { q.crS[i] = Math.min(1.6f, q.crS[i] + amount); return; }
+            }
+            int slot = q.ncr < Prop.MAXCRACK ? q.ncr++ : rnd.nextInt(Prop.MAXCRACK);
+            q.crU[slot] = u; q.crV[slot] = v; q.crS[slot] = Math.min(1.6f, amount);
+        }
+
+        /**
+         * Breaks a block/crate/plank: the piece is cut again and again around the point of impact, so the pieces
+         * are small and fly fast where it was hit and large and slow far from it; tiny bits become splinters.
+         */
         public void fracture(Prop q, float ix, float iy) {
             if (q.removed) return;
+            if (!Float.isNaN(q.impX)) { ix = q.impX; iy = q.impY; }
             RB b = q.main();
             float hw = q.hw, hh = q.hh, bx = b.x, by = b.y, a = b.a, vx = b.vx, vy = b.vy, w = b.w;
             bool burning = q.burning;
@@ -876,31 +944,73 @@ namespace Trastazo
             remove(q);
             stats.broken++;
             if (!q.gib) stats.destroyed++;
-            fx.debris(bx, by, 10, col, 260f);
-            fx.smoke(bx, by, brick ? 14f : 8f, brick ? unchecked((int)0xFFb09a8aU) : unchecked((int)0xFF9a9a9aU));
-            if (steel) fx.sparks(bx, by, 10, unchecked((int)0xFFffd25aU));
+            // splinters and dust by material
+            int nsp = Math.min(16, 4 + (int) ((hw + hh) * 0.15f));
+            for (int k = 0; k < nsp; k++) {
+                float an = rnd.nextFloat() * 6.283f, sp = 120f + rnd.nextFloat() * 300f;
+                fx.add(Fx.DEBRIS, ix + fx.rr_(hw * 0.4f), iy + fx.rr_(hh * 0.4f), (float) Math.cos(an) * sp, (float) Math.sin(an) * sp - 140f, 0.9f + rnd.nextFloat() * 0.8f,
+                        brick ? 2.5f + rnd.nextFloat() * 3f : 1.6f + rnd.nextFloat() * 2.4f, k % 3 == 0 ? Renderer.dark(col, 0.25f) : col);
+            }
+            fx.smoke(ix, iy, brick ? 16f : 9f, brick ? unchecked((int)0xFFb09a8aU) : (steel ? unchecked((int)0xFF7a7a7aU) : unchecked((int)0xFFa89a86U)));
+            if (brick) for (int k = 0; k < 4; k++) fx.smoke(bx + fx.rr_(hw), by + fx.rr_(hh), 10f, unchecked((int)0xFFc4ae9cU));
+            if (steel) fx.sparks(ix, iy, 12, unchecked((int)0xFFffd25aU));
             if (sfx != null) sfx.crunch();
             rumble += 0.1f;
             if (Math.max(hw, hh) < 9f || q.gib) return;
-            int nx = hw >= 2f * hh ? Math.min(4, Math.round(hw / hh)) : (hw >= 10f ? 2 : 1);
-            int ny = hh >= 2f * hw ? Math.min(4, Math.round(hh / hw)) : (hh >= 10f ? 2 : 1);
-            if (nx * ny < 2) return;
-            float pw = hw / nx, ph = hh / ny, ca = (float) Math.cos(a), sa = (float) Math.sin(a);
-            for (int i = 0; i < nx; i++) for (int j = 0; j < ny; j++) {
+            // pieces as rectangles in the local frame: l, t, r, b
+            float ca = (float) Math.cos(a), sa = (float) Math.sin(a);
+            float lix = (ix - bx) * ca + (iy - by) * sa, liy = -(ix - bx) * sa + (iy - by) * ca;
+            lix = Math.max(-hw, Math.min(hw, lix)); liy = Math.max(-hh, Math.min(hh, liy));
+            float[][] pc = new float[10][];
+            int n = 1;
+            pc[0] = new float[]{-hw, -hh, hw, hh};
+            int cuts = Math.min(7, 2 + (int) ((hw + hh) / 26f));
+            for (int c = 0; c < cuts && n < pc.Length; c++) {
+                // cut the piece that holds the impact point most of the time, otherwise the biggest one
+                int pick = 0;
+                float best = -1f;
+                bool nearHit = rnd.nextFloat() < 0.65f;
+                for (int k = 0; k < n; k++) {
+                    float[] rk = pc[k];
+                    float area = (rk[2] - rk[0]) * (rk[3] - rk[1]);
+                    bool holds = lix >= rk[0] - 0.5f && lix <= rk[2] + 0.5f && liy >= rk[1] - 0.5f && liy <= rk[3] + 0.5f;
+                    float score = nearHit ? (holds ? area + 1e6f : area) : area;
+                    if (score > best) { best = score; pick = k; }
+                }
+                float[] r = pc[pick];
+                float pw = r[2] - r[0], ph = r[3] - r[1];
+                if (Math.max(pw, ph) < 14f) continue;
+                bool vertical = pw > ph * (0.8f + rnd.nextFloat() * 0.5f);
+                float lo = vertical ? r[0] : r[1], len = vertical ? pw : ph, at = vertical ? lix : liy;
+                float f = 0.3f + rnd.nextFloat() * 0.4f;
+                if (at > lo && at < lo + len) f = f * 0.5f + Math.max(0.2f, Math.min(0.8f, (at - lo) / len)) * 0.5f;
+                float cut = lo + len * f;
+                float[] other = r.clone();
+                if (vertical) { r[2] = cut; other[0] = cut; } else { r[3] = cut; other[1] = cut; }
+                pc[n++] = other;
+            }
+            for (int k = 0; k < n; k++) {
                 if (!canAdd()) return;
-                float lx = -hw + (i + 0.5f) * 2f * pw, ly = -hh + (j + 0.5f) * 2f * ph;
+                float[] r = pc[k];
+                float pw = (r[2] - r[0]) * 0.5f, ph = (r[3] - r[1]) * 0.5f;
+                float lx = (r[0] + r[2]) * 0.5f, ly = (r[1] + r[3]) * 0.5f;
                 float wx = bx + ca * lx - sa * ly, wy = by + sa * lx + ca * ly;
-                float jw = pw * (0.82f + rnd.nextFloat() * 0.14f), jh = ph * (0.82f + rnd.nextFloat() * 0.14f);
+                if (Math.min(pw, ph) < 2.5f || pw * ph < 30f) { fx.debris(wx, wy, 2, col, 220f); continue; }
+                float jw = pw * (0.9f + rnd.nextFloat() * 0.08f), jh = ph * (0.9f + rnd.nextFloat() * 0.08f);
                 Prop f = Prop.block(wx, wy, jw, jh, col, q.type == Items.BLOCK ? q.dens : 0.7f, q.flammable);
                 f.frag = true;
                 f.register(sim);
-                RB r = f.main();
-                r.setAngle(a + (rnd.nextFloat() - 0.5f) * 0.3f);
+                RB rb = f.main();
+                rb.setAngle(a + (rnd.nextFloat() - 0.5f) * 0.25f);
                 float ox = wx - ix, oy = wy - iy, ol = (float) Math.sqrt(ox * ox + oy * oy) + 1f;
-                float kick = 90f + rnd.nextFloat() * 160f;
-                r.vx = vx - w * (wy - by) + ox / ol * kick;
-                r.vy = vy + w * (wx - bx) + oy / ol * kick;
-                r.w = w + fx.rr_(6f);
+                // close to the hit: fast; far: just falls apart
+                float kick = (60f + rnd.nextFloat() * 120f) + 5200f / (ol + 25f);
+                rb.vx = vx - w * (wy - by) + ox / ol * kick;
+                rb.vy = vy + w * (wx - bx) + oy / ol * kick - 40f;
+                rb.w = w + fx.rr_(8f);
+                // the broken edges keep a crack or two
+                f.ncr = 1; f.crU[0] = (ix - wx) * ca + (iy - wy) * sa; f.crV[0] = -(ix - wx) * sa + (iy - wy) * ca;
+                f.crU[0] = Math.max(-jw, Math.min(jw, f.crU[0])); f.crV[0] = Math.max(-jh, Math.min(jh, f.crV[0])); f.crS[0] = 0.5f;
                 add(f);
                 keepChunk(f);
                 if (burning) ignite(f);
@@ -961,6 +1071,7 @@ namespace Trastazo
             }
             if (q.type == Items.FRIDGE) fridgeTick(q, dt);
             if (q.fixedMachine()) Machines.update(this, q, dt);
+            if (Items.isTrap(q.type)) Traps.update(this, q, dt);
             if (q.animal()) Fauna.think(this, q, dt);
             else if (q.type == Items.POOP) Fauna.stink(this, q, dt);
         }
@@ -1057,6 +1168,8 @@ namespace Trastazo
                     if (q.explosive && q.fuse < 0f && f > 0.15f) q.fuse = 0.06f + rnd.nextFloat() * 0.25f;
                     if (q.flammable && f > 0.35f) ignite(q);
                     if (q.machine()) damageMachine(q, dmg * f * f * 2f);
+                    if (f > 0.1f && breakable(q)) crack(q, x, y, f);
+                    else if (f > 0.1f && (q.type == Items.BARREL || q.type == Items.STEEL || q.type == Items.FRIDGE)) crack(q, x, y, f * 0.6f);
                     if (f > 0.1f) wear(q, dmg * f * f * 2.6f, false);
                 } else {
                     Person p = (Person) e;
@@ -1194,7 +1307,8 @@ namespace Trastazo
                 b.applyImpulse(dx * J, dy * J, hx, hy);
                 fx.sparks(hx, hy, 5, q.type == Items.CRATE || q.type == Items.PLANK ? unchecked((int)0xFFe8c48aU) : unchecked((int)0xFFffe08aU));
                 if (q.type == Items.CRATE || q.type == Items.PLANK) fx.debris(hx, hy, 2, q.color, 180f);
-                if (breakable(q)) { fx.debris(hx, hy, 2, q.color, 160f); wear(q, dmg * 1.3f, false); }
+                if (breakable(q)) { fx.debris(hx, hy, 2, q.color, 160f); crack(q, hx, hy, dmg * 1.3f / Math.max(20f, toughness(q))); wear(q, dmg * 1.3f, false); }
+                else if (q.type == Items.BARREL || q.type == Items.XBARREL || q.type == Items.STEEL || q.type == Items.FRIDGE) crack(q, hx, hy, 0.35f);
             } else if (u is Person) {
                 Person p = (Person) u;
                 int part = Person.partOf(p, s);
@@ -1329,6 +1443,7 @@ namespace Trastazo
             p.burning = false; p.burnT = 0f; p.acid = 0f; p.ko = 0f; p.infected = -1f; p.bitten = false;
             for (int i = 0; i < Person.NPARTS; i++) {
                 p.bleed[i] = 0f;
+                p.soak[i] *= 0.3f;
                 if (p.broken[i]) p.broken[i] = false;
                 p.hp[i] = Person.maxHp(p, i);
             }

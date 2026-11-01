@@ -1,4 +1,4 @@
-# Trastazo para Unity
+# Trastazo para Unity — 1.3
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,40 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Unity 1.3
+
+* **Menú principal nuevo:** sangre que gotea desde arriba, botones con iconos, cinta *UNITY 1.3* y un
+  cuadro de novedades.
+* **Modelos renovados V2:** ropa por estilos (camiseta, rayas, sudadera con capucha, camisa y corbata,
+  cuadros, chaqueta, camiseta estampada; vaqueros con costuras, chinos, cargo, pantalón corto), zapatillas
+  con suela y cordones, orejas, nariz, ojos con pupila, cejas, barba y seis peinados (corto, largo, de punta,
+  calvo, coleta, rizado). Las expresiones cambian: miedo y dolor (boca abierta), inconsciente, muerto.
+* **Sangre V3:** gotas con estela, **charcos que crecen** donde cae la sangre y **se secan** (se oscurecen)
+  con el tiempo, **salpicaduras en la pared** de fondo que **chorrean** hacia abajo, ropa y piel **empapadas**,
+  heridas que gotean mientras sangran y el cuello cortado que bombea.
+* **Gore V4:** miembros destrozados enseñan **músculo y hueso** (que se ve partido si está roto), **muñones**
+  con piel, carne, grasa, hueso asomando y jirones colgando (cables en los robots), **cráneo agrietado** y
+  **cerebro a la vista**, ojo morado, e **intestinos** que cuelgan y se balancean si el vientre se abre.
+* **Trampas de SAW** (categoría nueva *Trampas SAW*):
+  * **Cepo:** se esconde en el suelo y atrapa el pie que lo pisa (le rompe la pierna). *Activar* lo vuelve a armar.
+  * **Péndulo:** una cuchilla gigante que oscila desde el techo y corta lo que encuentra; se mancha de sangre.
+  * **Trampa invertida:** colócala sobre una cabeza; cuenta atrás de 12 s en su pantalla. *Activar* la quita a
+    tiempo... si no, las mandíbulas se abren.
+  * **Billy:** el muñeco del triciclo: pedalea, se ríe y habla («Hola. Quiero jugar a un juego.»).
+* **Motor de destrucción:** cada golpe deja una **grieta** donde pega (abolladuras y arañazos en el metal);
+  al romperse, la pieza se parte **alrededor del punto de impacto** en trozos de tamaños distintos (pequeños y
+  rápidos cerca del golpe, grandes lejos), con astillas, polvo de ladrillo o chispas según el material.
+* **Texturas nuevas:** veta y nudos en la madera de las cajas, óxido en los barriles, acero cepillado,
+  ladrillos de tonos distintos; y los dibujos de la ropa de arriba.
+* Sonidos nuevos (sintetizados): el chasquido metálico de las trampas y la risa de Billy.
+
+![Menú 1.3](docs/unity13-title.png)
+![Trampas SAW](docs/unity13-traps.png)
+![Trampa invertida](docs/unity13-revtrap.png)
+![Péndulo](docs/unity13-pendulum.png)
+![Gore V4](docs/unity13-gore.png)
+![Ropa V2](docs/unity13-outfits.png)
 
 ![Inicio](docs/unity-core-title.png)
 ![Juego](docs/unity-core-game.png)
@@ -86,7 +120,9 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `PersonTest` ragdoll activo: se levanta, camina, corre, gira | todo pasa |
 | `WorldTest`, `AiTest`, `BuildTest`, `DestroyTest`, `AnimalTest`, `Test39`, `InputTest` | todo pasa |
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
+| `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test13` (1.3: cepo, péndulo, trampa invertida, Billy, grietas y roturas, charcos, ropa empapada, gore, ropa V2, menú) | 25/25 pasan |
 | `MonkeyTest` (acciones al azar) y `SoakTest` (30 semillas × 40 s con todos los objetos) | sin excepciones ni NaN |
 | Dibujo | `LayoutShot` y `CanvasDemo` generan SVG con el teselador; revisados a ojo (capturas de arriba) |
 | Capa de Unity | se comprueba de tipos con `dotnet build tests/UnityLayer.csproj` (y `UnityLayerNew.csproj` para la rama del Input System) contra *stubs* de la API de Unity y el código real |

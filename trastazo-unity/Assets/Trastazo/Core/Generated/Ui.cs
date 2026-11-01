@@ -435,6 +435,7 @@ namespace Trastazo
             if (ci == Items.CAT_BUILD) { drawIcon(c, Items.HOUSE, cx, cy, s); return; }
             if (ci == Items.CAT_ANIMALS) { drawIcon(c, Items.DOG, cx, cy, s); return; }
             if (ci == Items.CAT_MACHINES) { drawIcon(c, Items.SAW, cx, cy, s); return; }
+            if (ci == Items.CAT_TRAPS) { drawIcon(c, Items.BEARTRAP, cx, cy, s); return; }
             if (ci < rep.Length) { drawIcon(c, rep[ci], cx, cy, s); return; }
             p.setStyle(Paint.Style.FILL);
             if (ci == Items.CAT_MODS) {            // puzzle-piece-ish gear
@@ -884,6 +885,42 @@ namespace Trastazo
                     line(c, cx - s * 0.3f, cy - s * 0.7f, cx - s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), unchecked((int)0xFF8fa23eU));
                     line(c, cx + s * 0.3f, cy - s * 0.7f, cx + s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), unchecked((int)0xFF8fa23eU));
                     break;
+                case Items.BEARTRAP: {
+                    box(c, cx - s * 0.8f, cy + s * 0.35f, cx + s * 0.8f, cy + s * 0.55f, unchecked((int)0xFF4a4f57U), s * 0.05f);
+                    float w2 = Math.max(1.5f, s * 0.14f);
+                    for (int i = 0; i < 7; i++) {
+                        double a0 = Math.PI + i * Math.PI / 7, a1 = Math.PI + (i + 1) * Math.PI / 7;
+                        line(c, cx + (float) Math.cos(a0) * s * 0.62f, cy + s * 0.3f + (float) Math.sin(a0) * s * 0.62f, cx + (float) Math.cos(a1) * s * 0.62f, cy + s * 0.3f + (float) Math.sin(a1) * s * 0.62f, w2, unchecked((int)0xFF8a9099U));
+                    }
+                    for (int i = 1; i < 6; i++) { double a = Math.PI + i * Math.PI / 6; float tx = cx + (float) Math.cos(a) * s * 0.6f, ty = cy + s * 0.3f + (float) Math.sin(a) * s * 0.6f; line(c, tx, ty, tx + (cx - tx) * 0.25f, ty + (cy + s * 0.3f - ty) * 0.25f, Math.max(1f, s * 0.08f), unchecked((int)0xFFdfe4eaU)); }
+                    break;
+                }
+                case Items.PENDULUM: {
+                    box(c, cx - s * 0.3f, cy - s * 0.95f, cx + s * 0.3f, cy - s * 0.78f, unchecked((int)0xFF3a4048U), s * 0.03f);
+                    line(c, cx, cy - s * 0.85f, cx + s * 0.25f, cy + s * 0.25f, Math.max(1.5f, s * 0.12f), unchecked((int)0xFF59616cU));
+                    box(c, cx - s * 0.35f, cy + s * 0.2f, cx + s * 0.85f, cy + s * 0.55f, unchecked((int)0xFFc9ced6U), s * 0.15f);
+                    line(c, cx - s * 0.3f, cy + s * 0.55f, cx + s * 0.8f, cy + s * 0.55f, Math.max(1f, s * 0.06f), unchecked((int)0xFFf4f7fbU));
+                    break;
+                }
+                case Items.REVTRAP: {
+                    box(c, cx - s * 0.55f, cy - s * 0.55f, cx + s * 0.55f, cy + s * 0.55f, unchecked((int)0xFF7a6248U), s * 0.25f);
+                    box(c, cx - s * 0.4f, cy - s * 0.4f, cx + s * 0.4f, cy + s * 0.4f, unchecked((int)0xF0161a22U), s * 0.18f);
+                    line(c, cx + s * 0.5f, cy + s * 0.2f, cx + s * 0.95f, cy - s * 0.1f, Math.max(1.5f, s * 0.12f), unchecked((int)0xFF8a929cU));
+                    line(c, cx + s * 0.5f, cy + s * 0.25f, cx + s * 0.95f, cy + s * 0.55f, Math.max(1.5f, s * 0.12f), unchecked((int)0xFF8a929cU));
+                    box(c, cx - s * 0.35f, cy - s * 0.9f, cx + s * 0.35f, cy - s * 0.58f, unchecked((int)0xFF2f343bU), s * 0.05f);
+                    line(c, cx - s * 0.2f, cy - s * 0.74f, cx + s * 0.2f, cy - s * 0.74f, Math.max(1f, s * 0.08f), unchecked((int)0xFFff2a1fU));
+                    break;
+                }
+                case Items.BILLY: {
+                    disc(c, cx + s * 0.45f, cy + s * 0.6f, s * 0.28f, unchecked((int)0xFFb3262eU));
+                    disc(c, cx - s * 0.45f, cy + s * 0.65f, s * 0.22f, unchecked((int)0xFFb3262eU));
+                    box(c, cx - s * 0.25f, cy - s * 0.25f, cx + s * 0.25f, cy + s * 0.4f, unchecked((int)0xFF1d1f24U), s * 0.1f);
+                    disc(c, cx, cy - s * 0.55f, s * 0.36f, unchecked((int)0xFFf2f0eaU));
+                    disc(c, cx + s * 0.12f, cy - s * 0.6f, s * 0.07f, unchecked((int)0xFF111111U));
+                    disc(c, cx + s * 0.26f, cy - s * 0.45f, s * 0.08f, unchecked((int)0xFFc0121bU));
+                    disc(c, cx - s * 0.12f, cy - s * 0.45f, s * 0.08f, unchecked((int)0xFFc0121bU));
+                    break;
+                }
                 default:
                     disc(c, cx, cy, s * 0.4f, unchecked((int)0xFFaaaaaaU));
              break; }

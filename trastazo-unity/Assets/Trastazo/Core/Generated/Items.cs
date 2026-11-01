@@ -16,7 +16,8 @@ namespace Trastazo
                 PISTOL = 60, RIFLE = 61, SHOTGUN = 62, ROCKET = 63, KNIFE = 64, SWORD = 65, GUN_PISTOL = 66, GUN_RIFLE = 67, GUN_MG = 68, TURRET = 69, DRONE = 70,
                 FIRE = 80, LIGHTNING = 81, PUSH = 82,
                 SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
-                ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+                ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
+                BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
         public sealed class Item {
             public int id;
@@ -25,10 +26,10 @@ namespace Trastazo
         }
 
         public const string PLACE = "Toca para colocar";
-        public static readonly string[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Jeringas", "Taller", "Estilo", "Desafío", "Construir", "Animales", "Máquinas"};
-        public const int CAT_TOOLS = 0, CAT_PEOPLE = 1, CAT_OBJECTS = 2, CAT_EXPLOSIVES = 3, CAT_WEAPONS = 4, CAT_FX = 5, CAT_SYRINGES = 6, CAT_MODS = 7, CAT_STYLE = 8, CAT_CHAL = 9, CAT_BUILD = 10, CAT_ANIMALS = 11, CAT_MACHINES = 12;
+        public static readonly string[] CAT_NAMES = {"Herramientas", "Gente", "Objetos", "Explosivos", "Armas", "Efectos", "Jeringas", "Taller", "Estilo", "Desafío", "Construir", "Animales", "Máquinas", "Trampas SAW"};
+        public const int CAT_TOOLS = 0, CAT_PEOPLE = 1, CAT_OBJECTS = 2, CAT_EXPLOSIVES = 3, CAT_WEAPONS = 4, CAT_FX = 5, CAT_SYRINGES = 6, CAT_MODS = 7, CAT_STYLE = 8, CAT_CHAL = 9, CAT_BUILD = 10, CAT_ANIMALS = 11, CAT_MACHINES = 12, CAT_TRAPS = 13;
         /** Tabs shown in the normal sandbox, the constructions first (the easiest way to start building). */
-        public static readonly int[] PALETTE = {CAT_BUILD, 0, 1, CAT_ANIMALS, 2, CAT_MACHINES, 3, 4, 5, 6, 7, 8};
+        public static readonly int[] PALETTE = {CAT_BUILD, 0, 1, CAT_ANIMALS, 2, CAT_MACHINES, CAT_TRAPS, 3, 4, 5, 6, 7, 8};
 
         public static Item[][] CATS = {
             new Item[] {
@@ -129,6 +130,12 @@ namespace Trastazo
                 new Item(CRUSHER, "Prensa hidráulica", PLACE + " · Activar: encender/apagar · aplasta lo que hay debajo"),
                 new Item(TESLA, "Bobina Tesla", PLACE + " · Activar: encender/apagar · electrocuta lo que se acerca"),
             },
+            new Item[] {
+                new Item(BEARTRAP, "Cepo", PLACE + " en el suelo · atrapa el pie que lo pisa · Activar: volver a armarlo"),
+                new Item(PENDULUM, "Péndulo", PLACE + " · una cuchilla gigante que oscila · Activar: parar/arrancar"),
+                new Item(REVTRAP, "Trampa invertida", "Tócalo sobre una cabeza · cuenta atrás de 12 s · Activar: liberarlo a tiempo"),
+                new Item(BILLY, "Billy", PLACE + " · el muñeco del triciclo · Activar: \"Quiero jugar a un juego\""),
+            },
         };
 
         public static readonly string[] THEMES = {"Habitación", "Laboratorio", "Noche", "Ladrillos", "Neón", "Desierto", "Sandbox"};
@@ -155,10 +162,11 @@ namespace Trastazo
         public static bool isBuild(int id) { return id >= HOUSE && id <= CAR; }
         public static bool isAnimal(int id) { return id >= DOG && id <= RAT; }
         public static bool isMachine(int id) { return id >= SAW && id <= TESLA; }
+        public static bool isTrap(int id) { return id >= BEARTRAP && id <= BILLY; }
 
         public static bool isSpawn(int id) {
             return isBuild(id) || (id >= HUMAN && id <= PLATFORM) || (id >= GRENADE && id <= XBARREL) || id == C4 || id == KNIFE || id == SWORD
-                    || (id >= GUN_PISTOL && id <= DRONE) || (id >= DOG && id <= POOP) || (id >= SAW && id <= FRIDGE);
+                    || (id >= GUN_PISTOL && id <= DRONE) || (id >= DOG && id <= POOP) || (id >= SAW && id <= FRIDGE) || isTrap(id);
         }
 
         public static bool isSyringe(int id) { return id >= SYR_HEAL && id <= SYR_FREEZE; }
@@ -166,10 +174,10 @@ namespace Trastazo
 
         public static readonly string[] KEYS = {"human", "giant", "kid", "robot", "zombie", "skeleton", "soldier", "medic", "firefighter", "thug", "crate", "bigcrate",
                 "plank", "barrel", "ball", "balloon", "steel", "wheel", "motor", "thruster", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel",
-                "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop", "saw", "spikes", "fan", "crusher", "tesla", "bat", "hammer", "fridge"};
+                "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop", "saw", "spikes", "fan", "crusher", "tesla", "bat", "hammer", "fridge", "beartrap", "pendulum", "reversetrap", "billy"};
         public static readonly int[] KEY_IDS = {HUMAN, GIANT, KID, ROBOT, ZOMBIE, SKELETON, SOLDIER, MEDIC, FIREFIGHTER, THUG, CRATE, BIGCRATE,
                 PLANK, BARREL, BALL, BALLOON, STEEL, WHEEL, MOTOR, THRUSTER, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL,
-                KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP, SAW, SPIKES, FAN, CRUSHER, TESLA, BAT, HAMMER, FRIDGE};
+                KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP, SAW, SPIKES, FAN, CRUSHER, TESLA, BAT, HAMMER, FRIDGE, BEARTRAP, PENDULUM, REVTRAP, BILLY};
 
         public static int keyId(string k) {
             for (int i = 0; i < KEYS.Length; i++) if (KEYS[i].equals(k)) return KEY_IDS[i];

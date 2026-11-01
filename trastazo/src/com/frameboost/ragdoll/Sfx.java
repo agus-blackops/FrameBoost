@@ -18,10 +18,10 @@ final class Sfx {
     float volume = 0.9f;
 
     private SoundPool pool;
-    private final int[] ids = new int[12];
+    private final int[] ids = new int[14];
     private static final int BOOM = 0, SHOT = 1, THUD = 2, SPLAT = 3, POP = 4, ZAP = 5, LAUNCH = 6, CLICK = 7, CRUNCH = 8,
-            BARK = 9, FART = 10, CHOMP = 11;
-    private final long[] last = new long[12];
+            BARK = 9, FART = 10, CHOMP = 11, SNAP = 12, LAUGH = 13;
+    private final long[] last = new long[14];
     private final Random rnd = new Random();
 
     Sfx(File cacheDir) {
@@ -42,6 +42,8 @@ final class Sfx {
                 voice(0.2f, 520f, 300f),
                 fart(r, 0.75f),
                 noise(r, 0.09f, 0.8f, 40f, 900f, 0.8f),
+                clank(r),
+                cackle(),
             };
             for (int i = 0; i < data.length; i++) {
                 File f = new File(cacheDir, "sfx" + i + ".wav");
@@ -83,6 +85,40 @@ final class Sfx {
             ph += 2 * Math.PI * (f0 + (f1 - f0) * t) / RATE;
             float v = (float) (Math.sin(ph) * 0.6 + Math.sin(ph * 2) * 0.3 + Math.sin(ph * 3) * 0.18 + Math.signum(Math.sin(ph)) * 0.12) * env;
             out[i] = (short) (Math.max(-1f, Math.min(1f, v * 0.8f)) * 30000);
+        }
+        return out;
+    }
+
+    /** Steel jaws snapping shut: a sharp click and a ringing body. */
+    static short[] clank(Random r) {
+        int n = (int) (0.45f * RATE);
+        short[] out = new short[n];
+        double ph = 0, ph2 = 0;
+        for (int i = 0; i < n; i++) {
+            float t = i / (float) RATE;
+            float click = t < 0.012f ? (r.nextFloat() * 2f - 1f) * (1f - t / 0.012f) : 0f;
+            ph += 2 * Math.PI * 1870 / RATE; ph2 += 2 * Math.PI * 2950 / RATE;
+            float ring = (float) (Math.sin(ph) * 0.6 + Math.sin(ph2) * 0.4) * (float) Math.exp(-t * 11f);
+            float v = click * 1.1f + ring * 0.55f;
+            out[i] = (short) (Math.max(-1f, Math.min(1f, v)) * 30000);
+        }
+        return out;
+    }
+
+    /** A puppet's creepy cackle: five falling "ha" syllables. */
+    static short[] cackle() {
+        int n = (int) (1.1f * RATE);
+        short[] out = new short[n];
+        double ph = 0;
+        for (int i = 0; i < n; i++) {
+            float t = i / (float) RATE;
+            int syl = (int) (t / 0.2f);
+            float k = (t - syl * 0.2f) / 0.2f;
+            float env = syl < 5 ? (float) Math.sin(Math.PI * Math.min(1f, k * 1.4f)) * (1f - syl * 0.12f) : 0f;
+            float f = 330f - syl * 22f - k * 60f;
+            ph += 2 * Math.PI * f / RATE;
+            float v = (float) (Math.sin(ph) * 0.5 + Math.sin(ph * 2) * 0.28 + Math.sin(ph * 3) * 0.16 + Math.sin(ph * 5) * 0.08) * env;
+            out[i] = (short) (Math.max(-1f, Math.min(1f, v * 0.85f)) * 30000);
         }
         return out;
     }
@@ -145,6 +181,8 @@ final class Sfx {
     void call(float pitch) { play(BARK, 0.7f, 120, 0.05f, pitch); }
     void fart() { play(FART, 0.85f, 300, 0.12f); }
     void chomp() { play(CHOMP, 0.6f, 90, 0.2f); }
+    void snap() { play(SNAP, 0.9f, 80, 0.06f); }
+    void laugh() { play(LAUGH, 0.8f, 900, 0.04f); }
 
     void release() { if (pool != null) { try { pool.release(); } catch (Throwable ignored) { } pool = null; } }
 }

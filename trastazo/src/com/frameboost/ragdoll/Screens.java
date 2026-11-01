@@ -189,6 +189,56 @@ final class Screens {
     }
 
     private void button(Canvas c, float x, float y, float w, float h, String label, int action, boolean primary) {
+        button(c, x, y, w, h, label, action, primary, 0);
+    }
+
+    static final int IC_PLAY = 1, IC_CONTINUE = 2, IC_STAR = 3, IC_TROPHY = 4, IC_GEAR = 5;
+
+    /** Small vector icons for the menu buttons. */
+    private void icon(Canvas c, int ic, float cx, float cy, float s, int col) {
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(col);
+        android.graphics.Path path = new android.graphics.Path();
+        switch (ic) {
+            case IC_PLAY:
+                path.moveTo(cx - s * 0.45f, cy - s * 0.6f); path.lineTo(cx + s * 0.6f, cy); path.lineTo(cx - s * 0.45f, cy + s * 0.6f); path.close();
+                c.drawPath(path, p);
+                break;
+            case IC_CONTINUE:
+                path.moveTo(cx - s * 0.6f, cy - s * 0.55f); path.lineTo(cx + s * 0.1f, cy); path.lineTo(cx - s * 0.6f, cy + s * 0.55f); path.close();
+                path.moveTo(cx - s * 0.05f, cy - s * 0.55f); path.lineTo(cx + s * 0.65f, cy); path.lineTo(cx - s * 0.05f, cy + s * 0.55f); path.close();
+                c.drawPath(path, p);
+                break;
+            case IC_STAR:
+                for (int i = 0; i < 10; i++) {
+                    double a = -Math.PI / 2 + i * Math.PI / 5;
+                    float rr = (i & 1) == 0 ? s * 0.7f : s * 0.3f;
+                    float x = cx + (float) Math.cos(a) * rr, y = cy + (float) Math.sin(a) * rr;
+                    if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+                }
+                path.close();
+                c.drawPath(path, p);
+                break;
+            case IC_TROPHY:
+                r.set(cx - s * 0.45f, cy - s * 0.65f, cx + s * 0.45f, cy + s * 0.15f); c.drawRoundRect(r, s * 0.25f, s * 0.25f, p);
+                c.drawRect(cx - s * 0.08f, cy + s * 0.1f, cx + s * 0.08f, cy + s * 0.4f, p);
+                c.drawRect(cx - s * 0.35f, cy + s * 0.4f, cx + s * 0.35f, cy + s * 0.6f, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(s * 0.13f);
+                c.drawCircle(cx - s * 0.5f, cy - s * 0.3f, s * 0.2f, p); c.drawCircle(cx + s * 0.5f, cy - s * 0.3f, s * 0.2f, p);
+                break;
+            case IC_GEAR:
+                c.drawCircle(cx, cy, s * 0.45f, p);
+                for (int k = 0; k < 8; k++) {
+                    double a = k * Math.PI / 4;
+                    c.drawCircle(cx + (float) Math.cos(a) * s * 0.55f, cy + (float) Math.sin(a) * s * 0.55f, s * 0.15f, p);
+                }
+                break;
+            default: break;
+        }
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    private void button(Canvas c, float x, float y, float w, float h, String label, int action, boolean primary, int ic) {
         int i = bn++;
         bx[i] = x; by[i] = y; bw[i] = w; bh[i] = h; ba[i] = action;
         boolean down = pressed == i;
@@ -200,11 +250,18 @@ final class Screens {
         p.setColor(primary ? (down ? 0xFFd99a22 : 0xFF2fd0b5) : (down ? 0xFF2c3446 : 0xFF394459));
         r.set(x, y + o, x + w, y + h + o);
         c.drawRoundRect(r, 14 * d, 14 * d, p);
+        if (ic != 0) {
+            // a red stripe and the icon on the left of the menu buttons
+            p.setColor(primary ? 0x33000000 : 0x22ffffff);
+            r.set(x, y + o, x + h, y + h + o);
+            c.drawRoundRect(r, 14 * d, 14 * d, p);
+            icon(c, ic, x + h * 0.5f, y + h * 0.5f + o, h * 0.3f, primary ? 0xFF1b2029 : 0xFFe0463c);
+        }
         p.setColor(primary ? 0xFF1b2029 : 0xFFeef2f8);
         p.setTextAlign(Paint.Align.CENTER);
         p.setFakeBoldText(true);
         p.setTextSize(Math.min(17 * d, h * 0.42f));
-        c.drawText(label, x + w / 2, y + h / 2 + p.getTextSize() * 0.36f + o, p);
+        c.drawText(label, x + w / 2 + (ic != 0 ? h * 0.4f : 0f), y + h / 2 + p.getTextSize() * 0.36f + o, p);
         p.setFakeBoldText(false);
     }
 
@@ -244,34 +301,85 @@ final class Screens {
         p.setFakeBoldText(false);
     }
 
+    /** What is new, on the title screen's card. */
+    static final String[] NEWS = {
+        "Menú principal nuevo",
+        "Modelos renovados V2: ropa, caras y peinados",
+        "Sangre V3: charcos, salpicaduras y ropa empapada",
+        "Gore V4: músculo, hueso, muñones y cráneo roto",
+        "Trampas de SAW: cepo, péndulo, trampa invertida y Billy",
+        "Motor de destrucción: grietas y roturas por el impacto",
+        "Texturas nuevas para personas y objetos",
+    };
+
     private void title(Canvas c, Game g, int sw, int sh) {
-        // darken the left side where the menu sits, the live demo stays visible on the right
         p.setStyle(Paint.Style.FILL);
-        for (int i = 0; i < 12; i++) {
-            p.setColor(Renderer.alpha(0xFF0b0e14, 0.82f * (1f - i / 12f)));
-            c.drawRect(i * sw * 0.05f, 0, (i + 1) * sw * 0.05f, sh, p);
+        // darken the left side where the menu sits, the live demo stays visible on the right
+        for (int i = 0; i < 14; i++) {
+            p.setColor(Renderer.alpha(0xFF07090d, 0.9f * (1f - i / 14f)));
+            c.drawRect(i * sw * 0.045f, 0, (i + 1) * sw * 0.045f, sh, p);
         }
-        float colX = 40 * d, colW = Math.min(sw * 0.42f, 360 * d);
-        {   // a small BETA badge at the top right of the logo
-            String tag = "BETA " + Report.VERSION;
-            float bw = 74 * d, bh = 22 * d, bx = colX + colW - bw, by = sh * 0.2f - 62 * d;
-            p.setStyle(Paint.Style.FILL);
-            p.setColor(0xFFf2b134);
+        for (int i = 0; i < 8; i++) {                    // a dark red glow from the top
+            p.setColor(Renderer.alpha(0xFF5a0a10, 0.18f * (1f - i / 8f)));
+            c.drawRect(0, i * sh * 0.03f, sw, (i + 1) * sh * 0.03f, p);
+        }
+        // blood running down from the top edge
+        p.setColor(0xFF7d0a10);
+        c.drawRect(0, 0, sw, 5 * d, p);
+        for (int i = 0; i < 22; i++) {
+            float x = sw * (0.015f + i * 0.047f) + (i * 37 % 11) * d;
+            float ph = (time * 0.07f + i * 0.37f) % 1f;
+            float maxLen = sh * (0.06f + (i * 53 % 10) / 10f * 0.22f);
+            float len = 5 * d + ph * maxLen, wdt = (2.5f + i % 3) * d;
+            p.setColor(i % 3 == 0 ? 0xFF8e1218 : 0xFF6e0a10);
+            c.drawRect(x - wdt / 2, 0, x + wdt / 2, len, p);
+            c.drawCircle(x, len, wdt * 0.9f, p);
+            c.drawCircle(x, 5 * d, wdt * 1.4f, p);
+        }
+        float colX = 40 * d, colW = Math.min(sw * 0.4f, 380 * d);
+        float logoY = sh * 0.21f, logoSize = Math.min(70 * d, colW / 5f);
+        logo(c, colX + colW / 2, logoY, logoSize);
+        {   // edition ribbon: "UNITY 1.3" on the Unity build, "BETA 4.0" elsewhere
+            String tag = Game.edition != null ? Game.edition.toUpperCase() : "BETA " + Report.VERSION;
+            p.setTextSize(12 * d);
+            p.setFakeBoldText(true);
+            float bw = p.measureText(tag) + 22 * d, bh = 22 * d, bx = colX + colW - bw, by = Math.max(14 * d, logoY - logoSize - 18 * d);
+            p.setFakeBoldText(false);
+            p.setColor(Game.edition != null ? 0xFFc0121b : 0xFFf2b134);
             r.set(bx, by, bx + bw, by + bh);
             c.drawRoundRect(r, 8 * d, 8 * d, p);
-            text(c, tag, bx + bw / 2, by + bh * 0.72f, 12 * d, 0xFF1b2029, Paint.Align.CENTER, true);
+            text(c, tag, bx + bw / 2, by + bh * 0.72f, 12 * d, Game.edition != null ? 0xFFffffff : 0xFF1b2029, Paint.Align.CENTER, true);
         }
+        text(c, "laboratorio de muñecos, trampas y caos", colX + colW / 2, logoY + 30 * d, 14 * d, 0xFFb9c2d0, Paint.Align.CENTER, false);
         if (Report.lastCrash != null) text(c, "La última vez el juego se cerró por un error. Informe: " + Report.lastCrash, colX, sh - 52 * d, 10 * d, 0xFFf2b134, Paint.Align.LEFT, false);
-        logo(c, colX + colW / 2, sh * 0.2f, Math.min(64 * d, colW / 5.2f));
-        text(c, "laboratorio de muñecos y caos", colX + colW / 2, sh * 0.2f + 30 * d, 14 * d, 0xFFb9c2d0, Paint.Align.CENTER, false);
-        float y = sh * 0.33f, bh = Math.min(54 * d, sh * 0.12f), gap = Math.min(12 * d, sh * 0.025f);
-        if (g.hasSave()) { button(c, colX, y, colW, bh, "Continuar", A_CONTINUE, true); y += bh + gap; }
-        button(c, colX, y, colW, bh, "Sandbox libre", A_SANDBOX, !g.hasSave()); y += bh + gap;
-        button(c, colX, y, colW, bh, "Desafíos   ★ " + g.settings.totalStars() + "/" + Challenges.LIST.length * 3, A_CHALLENGES, false); y += bh + gap;
+        float y = sh * 0.34f, bh = Math.min(54 * d, sh * 0.115f), gap = Math.min(11 * d, sh * 0.022f);
+        if (g.hasSave()) { button(c, colX, y, colW, bh, "Continuar", A_CONTINUE, true, IC_CONTINUE); y += bh + gap; }
+        button(c, colX, y, colW, bh, "Jugar: sandbox libre", A_SANDBOX, !g.hasSave(), IC_PLAY); y += bh + gap;
+        button(c, colX, y, colW, bh, "Desafíos   " + g.settings.totalStars() + "/" + Challenges.LIST.length * 3, A_CHALLENGES, false, IC_STAR); y += bh + gap;
         float half = (colW - gap) / 2;
-        button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false);
-        button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false);
-        text(c, "Física, arte y música originales · v" + Report.VERSION + " beta · " + (Game.desktop ? "versión PC" : "Android"), colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
+        button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.length, A_ACH, false, IC_TROPHY);
+        button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false, IC_GEAR);
+        // what's new, on the right when there is room
+        float cardW = Math.min(330 * d, sw - colX - colW - 70 * d);
+        if (cardW > 220 * d) {
+            float lh = 19 * d, cardH = 54 * d + NEWS.length * lh;
+            float cx = sw - cardW - 28 * d, cy = Math.max(70 * d, sh - cardH - 64 * d);
+            p.setColor(0xD8101318);
+            r.set(cx, cy, cx + cardW, cy + cardH);
+            c.drawRoundRect(r, 16 * d, 16 * d, p);
+            p.setColor(0xFFc0121b);
+            r.set(cx, cy, cx + 6 * d, cy + cardH);
+            c.drawRect(r, p);
+            text(c, "Novedades " + (Game.edition != null ? Game.edition : "v" + Report.VERSION), cx + 20 * d, cy + 30 * d, 16 * d, 0xFFffffff, Paint.Align.LEFT, true);
+            for (int i = 0; i < NEWS.length; i++) {
+                float ly = cy + 54 * d + i * lh;
+                p.setColor(i % 2 == 0 ? 0xFFe0463c : 0xFF2fd0b5);
+                c.drawCircle(cx + 24 * d, ly - 4 * d, 3 * d, p);
+                text(c, NEWS[i], cx + 34 * d, ly, 11.5f * d, 0xFFd5dbe6, Paint.Align.LEFT, false);
+            }
+        }
+        String plat = Game.edition != null ? Game.edition : (Game.desktop ? "versión PC" : "Android");
+        text(c, "Física, arte y música originales · v" + Report.VERSION + " · " + plat, colX, sh - 16 * d, 11 * d, 0x88ffffff, Paint.Align.LEFT, false);
         if (Game.desktop) text(c, "Ratón: arrastra y toca · clic derecho: mover cámara · rueda: zoom · Esc: menú · Espacio: pausa · 1-9: categorías · F11: pantalla completa", colX, sh - 32 * d, 10 * d, 0x88ffffff, Paint.Align.LEFT, false);
     }
 

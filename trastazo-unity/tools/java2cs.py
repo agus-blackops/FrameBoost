@@ -50,7 +50,7 @@ PATCHES = {
          {"t": "nt", "dx": "ndx", "dy": "ndy"}),
     ],
     "Screens.java": [
-        ("rename_in", "float bw = 74 * d, bh = 22 * d", "Paint.Align.CENTER, true);", {"bh": "tbh"}),
+        ("rename_in", "float bw = p.measureText(tag) + 22 * d, bh = 22 * d", "Paint.Align.CENTER, true);", {"bh": "tbh"}),
     ],
     "World.java": [
         ("rename_in", "Joint j = Joint.pin(prev, seg, px, py);", "sim.add(j);", {"j": "sj"}),
@@ -531,7 +531,7 @@ def field_names(rest):
     return names
 
 
-TEST_FILES = ["PhysTest", "PersonTest", "WorldTest", "AiTest", "InputTest", "BuildTest", "DestroyTest", "AnimalTest",
+TEST_FILES = ["Test13", "PhysTest", "PersonTest", "WorldTest", "AiTest", "InputTest", "BuildTest", "DestroyTest", "AnimalTest",
               "MachineTest", "Test39", "SoakTest", "MonkeyTest"]
 TESTS = False
 
