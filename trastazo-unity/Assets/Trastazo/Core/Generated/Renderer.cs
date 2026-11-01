@@ -1362,11 +1362,11 @@ namespace Trastazo
                 for (int i = n; i >= 0; i--) { float x = -54f + 108f * i / n, t = x / 54f; big[k++] = x; big[k++] = 232f + 20f * (1f - t * t); }
                 p.setStyle(Paint.Style.FILL);
                 p.setColor(alpha(unchecked((int)0xFF1d2026U), fade));
-                c.drawPoly(big, k / 2, p);
+                crescent(c, n);
                 for (int i = 0; i < k; i += 2) big[i] *= 0.96f;
                 for (int i = 1; i < k; i += 2) big[i] = 228f + (big[i] - 228f) * 0.9f;
                 p.setColor(alpha(mix(unchecked((int)0xFFc9ced6U), unchecked((int)0xFF8e1218U), q.wear * 0.55f), fade));
-                c.drawPoly(big, k / 2, p);
+                crescent(c, n);
                 if (g == 0) {
                     // the polished cutting edge
                     p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(unchecked((int)0xFFf4f7fbU));
@@ -1381,6 +1381,19 @@ namespace Trastazo
                     p.setColor(unchecked((int)0xFF2a2f36U)); c.drawCircle(0, 0, 7f, p); p.setColor(unchecked((int)0xFF8a929cU)); c.drawCircle(0, 0, 3.5f, p);
                 }
                 c.restore();
+            }
+        }
+
+        /** The crescent in big[] (top edge left to right, then bottom edge right to left) as convex quads: the GPU engine fills polygons as fans. */
+        private void crescent(Draw2D c, int n) {
+            int m = n + 1;
+            for (int i = 0; i < n; i++) {
+                int b0 = (2 * m - 1 - i) * 2, b1 = (2 * m - 2 - i) * 2;
+                poly[0] = big[i * 2]; poly[1] = big[i * 2 + 1];
+                poly[2] = big[i * 2 + 2]; poly[3] = big[i * 2 + 3];
+                poly[4] = big[b1]; poly[5] = big[b1 + 1];
+                poly[6] = big[b0]; poly[7] = big[b0 + 1];
+                c.drawPoly(poly, 4, p);
             }
         }
 

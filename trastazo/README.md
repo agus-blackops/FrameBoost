@@ -1,4 +1,4 @@
-# Trastazo 4.0 beta — pulido
+# Trastazo 4.1 — trampas de SAW, sangre V3 y gore V4
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,23 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 1.3:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (el código Java ya los incluye; el APK y el zip de PC de `dist/` siguen siendo la 4.0).
+**Unity 1.3:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.1).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 4.1 (lo de Trastazo Unity 1.3, ahora en Android)
+
+* **Menú principal nuevo:** sangre que gotea, botones con iconos y un cuadro de novedades.
+* **Trampas de SAW** (categoría *Trampas SAW*): **cepo** que atrapa el pie que lo pisa, **péndulo** con una
+  cuchilla gigante, **trampa invertida** con cuenta atrás de 12 s (*Activar* la quita a tiempo) y **Billy** en
+  su triciclo («Hola. Quiero jugar a un juego.»).
+* **Sangre V3:** charcos que crecen y se secan, salpicaduras en la pared que chorrean, ropa empapada, heridas
+  que gotean.
+* **Gore V4:** músculo y hueso a la vista, muñones con hueso y jirones, cráneo roto y cerebro, intestinos.
+* **Modelos V2:** ropa por estilos, zapatillas, caras con ojos, cejas, nariz y expresiones, seis peinados.
+* **Motor de destrucción:** grietas donde pegan los golpes y roturas en trozos alrededor del impacto.
+* **Texturas nuevas:** madera con veta, barriles oxidados, acero cepillado, ladrillos de varios tonos.
 
 ## Novedades de la 4.0 beta (pulido)
 
