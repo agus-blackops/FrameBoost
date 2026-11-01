@@ -885,6 +885,11 @@ namespace Trastazo
                     line(c, cx - s * 0.3f, cy - s * 0.7f, cx - s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), unchecked((int)0xFF8fa23eU));
                     line(c, cx + s * 0.3f, cy - s * 0.7f, cx + s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), unchecked((int)0xFF8fa23eU));
                     break;
+                case Items.GLASS:
+                    box(c, cx - s * 0.35f, cy - s * 0.85f, cx + s * 0.35f, cy + s * 0.85f, unchecked((int)0xFF9fd2efU), s * 0.05f);
+                    line(c, cx - s * 0.18f, cy - s * 0.6f, cx - s * 0.18f, cy - s * 0.1f, Math.max(1.5f, s * 0.1f), unchecked((int)0xCCffffffU));
+                    line(c, cx - s * 0.18f, cy + s * 0.15f, cx - s * 0.18f, cy + s * 0.35f, Math.max(1.5f, s * 0.1f), unchecked((int)0xCCffffffU));
+                    break;
                 case Items.BEARTRAP: {
                     box(c, cx - s * 0.8f, cy + s * 0.35f, cx + s * 0.8f, cy + s * 0.55f, unchecked((int)0xFF4a4f57U), s * 0.05f);
                     float w2 = Math.max(1.5f, s * 0.14f);

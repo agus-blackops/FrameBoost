@@ -1,6 +1,7 @@
 package com.frameboost.ragdoll;
 
 import android.graphics.Paint;
+import android.graphics.RectF;
 
 import java.util.Random;
 
@@ -208,6 +209,8 @@ final class Fx {
         return (Renderer.mix(col, 0xFF2a0d0a, k) & 0xFFFFFF) | (a << 24);
     }
 
+    private final RectF sr = new RectF();
+
     void drawStains(Draw2D c, Paint p) {
         p.setStyle(Paint.Style.FILL);
         // splats on the wall: a blot, satellite drops, and drips that run down for a few seconds
@@ -241,6 +244,15 @@ final class Fx {
         for (int i = 0; i < sn; i++) {
             int col = aged(sc[i], sa[i]);
             float w = sw[i];
+            if (w > 80f && (sc[i] & 0xFFFFFF) < 0x201810) {          // scorch mark from a blast: a wide dark smear
+                p.setColor(Renderer.alpha(0xFF0a0806, 0.55f));
+                sr.set(sx[i] - w * 0.5f, floorY - 3f, sx[i] + w * 0.5f, floorY + 9f);
+                c.drawOval(sr, p);
+                p.setColor(Renderer.alpha(0xFF0a0806, 0.35f));
+                sr.set(sx[i] - w * 0.3f, floorY - 5f, sx[i] + w * 0.3f, floorY + 6f);
+                c.drawOval(sr, p);
+                continue;
+            }
             p.setColor(Renderer.alpha(col, 0.9f));
             c.drawRect(sx[i] - w * 0.5f, floorY - 1f, sx[i] + w * 0.5f, floorY + 2.2f, p);
             if (w > 14f) {

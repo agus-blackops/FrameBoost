@@ -106,7 +106,7 @@ namespace Trastazo
                                     : item == Items.BLOCK ? Prop.block(400f, -100f, Float.parseFloat(t[13]), Float.parseFloat(t[14]), Integer.parseInt(t[15]),
                                     Float.parseFloat(t[16]), t[17].equals("1")) : item == Items.ROPE_ITEM ? w.ropeShell(Math.max(2, (int) Float.parseFloat(t[2])), 0, 0, 16f * Math.max(2, (int) Float.parseFloat(t[2])), 0)
                                     : (item == Items.ANCHOR_ITEM ? Prop.anchor(w.sim, 0, 0) : (Prop) w.spawnRaw(item));
-                            if (q != null && item == Items.BLOCK) { q.register(w.sim); w.ents.add(q); }
+                            if (q != null && item == Items.BLOCK) { q.register(w.sim); w.ents.add(q); if (q.color == Build.GLASS) q.sharp = true; }
                             if (q != null && item == Items.ANCHOR_ITEM) w.ents.add(q);
                             cur = q; bi = 0;
                             if (q != null) {

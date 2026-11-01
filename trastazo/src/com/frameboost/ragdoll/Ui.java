@@ -885,6 +885,11 @@ final class Ui {
                 line(c, cx - s * 0.3f, cy - s * 0.7f, cx - s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), 0xFF8fa23e);
                 line(c, cx + s * 0.3f, cy - s * 0.7f, cx + s * 0.2f, cy - s * 0.95f, Math.max(1f, s * 0.06f), 0xFF8fa23e);
                 break;
+            case Items.GLASS:
+                box(c, cx - s * 0.35f, cy - s * 0.85f, cx + s * 0.35f, cy + s * 0.85f, 0xFF9fd2ef, s * 0.05f);
+                line(c, cx - s * 0.18f, cy - s * 0.6f, cx - s * 0.18f, cy - s * 0.1f, Math.max(1.5f, s * 0.1f), 0xCCffffff);
+                line(c, cx - s * 0.18f, cy + s * 0.15f, cx - s * 0.18f, cy + s * 0.35f, Math.max(1.5f, s * 0.1f), 0xCCffffff);
+                break;
             case Items.BEARTRAP: {
                 box(c, cx - s * 0.8f, cy + s * 0.35f, cx + s * 0.8f, cy + s * 0.55f, 0xFF4a4f57, s * 0.05f);
                 float w2 = Math.max(1.5f, s * 0.14f);

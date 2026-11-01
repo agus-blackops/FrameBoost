@@ -1,4 +1,4 @@
-# Trastazo para Unity — 1.3
+# Trastazo para Unity — 1.5
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,21 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Unity 1.5
+
+* **Destruction Engine 1.5:**
+  * **Cristal** (Objetos): se agrieta con cada golpe o bala y se hace **añicos** en 6-16 esquirlas finas que
+    salen disparadas desde el impacto, con destellos y sonido; las esquirlas **cortan** (menos que un cuchillo)
+    y no se rompen otra vez.
+  * **Astillas:** los golpes fuertes arrancan astillas y trocitos del punto golpeado (no en metal).
+  * **Colapsos en cadena:** cuando se suelta una unión de una construcción, las piezas vecinas cargan con más
+    peso, se **agrietan y se debilitan**, y el derrumbe se extiende; nubes de polvo en cada unión.
+  * **Suelo quemado:** las explosiones cerca del suelo dejan **marcas de quemadura** anchas.
+  * Las esquirlas de cristal conservan el filo al guardar y cargar.
+
+![Cristal](docs/destruction15-e_glass_burst.png)
+![Colapso](docs/destruction15-e_collapse.png)
 
 ## Novedades de Trastazo Unity 1.3
 
@@ -122,6 +137,7 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
 | `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test15` (1.5: cristal, esquirlas, astillas, quemaduras, colapso en cadena, guardado) | 8/8 pasan |
 | `Test13` (1.3: cepo, péndulo, trampa invertida, Billy, grietas y roturas, charcos, ropa empapada, gore, ropa V2, menú) | 25/25 pasan |
 | `MonkeyTest` (acciones al azar) y `SoakTest` (30 semillas × 40 s con todos los objetos) | sin excepciones ni NaN |
 | Dibujo | `LayoutShot` y `CanvasDemo` generan SVG con el teselador; revisados a ojo (capturas de arriba) |

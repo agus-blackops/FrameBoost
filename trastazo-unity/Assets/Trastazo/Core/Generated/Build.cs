@@ -14,7 +14,7 @@ namespace Trastazo
         /** Joints made by constructions carry this tag: breaking one counts as destruction. */
         public const int TAG = 77;
 
-        public static readonly int WOOD = unchecked((int)0xFFc9a066U), BRICK = unchecked((int)0xFFa8553aU), STEEL = unchecked((int)0xFF8d96a3U), ROOF = unchecked((int)0xFF6d4a2fU);
+        public static readonly int GLASS = unchecked((int)0xFF9fd2efU), WOOD = unchecked((int)0xFFc9a066U), BRICK = unchecked((int)0xFFa8553aU), STEEL = unchecked((int)0xFF8d96a3U), ROOF = unchecked((int)0xFF6d4a2fU);
         public const float DENS_WOOD = 0.6f, DENS_BRICK = 1.2f, DENS_STEEL = 2.5f;
         /** Breaking force per material (force units; a block of mass m standing still carries about m * gravity). */
         public const float BF_WOOD = 2.5e8f, BF_BRICK = 4.0e8f, BF_STEEL = 6.0e7f;

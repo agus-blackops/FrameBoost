@@ -1,4 +1,4 @@
-# Trastazo 4.1 — trampas de SAW, sangre V3 y gore V4
+# Trastazo 4.2 — Destruction Engine 1.5
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,22 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 1.3:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.1).
+**Unity 1.5:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.2).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 4.2 (Destruction Engine 1.5)
+
+* **Destruction Engine 1.5:**
+  * **Cristal** (Objetos): se agrieta con cada golpe o bala y se hace **añicos** en 6-16 esquirlas finas que
+    salen disparadas desde el impacto, con destellos y sonido; las esquirlas **cortan** (menos que un cuchillo)
+    y no se rompen otra vez.
+  * **Astillas:** los golpes fuertes arrancan astillas y trocitos del punto golpeado (no en metal).
+  * **Colapsos en cadena:** cuando se suelta una unión de una construcción, las piezas vecinas cargan con más
+    peso, se **agrietan y se debilitan**, y el derrumbe se extiende; nubes de polvo en cada unión.
+  * **Suelo quemado:** las explosiones cerca del suelo dejan **marcas de quemadura** anchas.
+  * Las esquirlas de cristal conservan el filo al guardar y cargar.
 
 ## Novedades de la 4.1 (lo de Trastazo Unity 1.3, ahora en Android)
 

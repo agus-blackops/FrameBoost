@@ -134,6 +134,11 @@ namespace Trastazo
                     b.makeStatic();
                     break;
                 }
+                case Items.GLASS: {
+                    p.color = Build.GLASS; p.hw = 8f; p.hh = 62f;
+                    b = box(p, x, y, 8f, 62f, 0.5f, 0.4f, 0.05f);
+                    break;
+                }
                 case Items.BALL: {
                     p.param = 24f; p.color = BALLC[rnd.nextInt(BALLC.Length)];
                     b = circle(p, x, y, 24f, 0.4f, 0.7f, 0.62f);

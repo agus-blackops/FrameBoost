@@ -9,7 +9,7 @@ namespace Trastazo
         public const int MAX_BODIES = 900;
 
         public sealed class Stats {
-            public int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats;
+            public int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats, glass, collapses;
             public float recentT;
         }
 
@@ -150,6 +150,7 @@ namespace Trastazo
                         case Items.MELON: ry = Math.min(y, fl - 24f); break;
                         case Items.STEEL: ry = Math.min(y, fl - 27f); break;
                         case Items.PLATFORM: ry = y; break;
+                        case Items.GLASS: ry = Math.min(y, fl - 63f); break;
                         case Items.THRUSTER: ry = Math.min(y, fl - 20f); break;
                         case Items.DOG: case Items.PIG: case Items.RAT: {
                             float[] d = Prop.ANIMAL[item - Items.DOG];
@@ -491,6 +492,17 @@ namespace Trastazo
                 float x = j.anchorBX(), y = j.anchorBY();
                 fx.debris(x, y, 7, Build.WOOD, 200f);
                 fx.smoke(x, y, 10, unchecked((int)0xFF9a9a9aU));
+                for (int k = 0; k < 3; k++) fx.smoke(x + fx.rr_(30f), y + fx.rr_(20f), 12f, unchecked((int)0xFFb3a595U));
+                // the structure around a lost joint carries more load: its pieces weaken and crack, so collapses spread
+                for (int side = 0; side < 2; side++) {
+                    RB rb = side == 0 ? j.a : j.b;
+                    if (rb == null || !(rb.user is Prop)) continue;
+                    Prop o = (Prop) rb.user;
+                    if (!breakable(o) || o.removed) continue;
+                    crack(o, x, y, 0.3f);
+                    wear(o, toughness(o) * 0.22f, true);
+                }
+                stats.collapses++;
                 if (sfx != null) sfx.crunch();
                 stats.destroyed++;
                 rumble += 0.12f;
@@ -561,9 +573,10 @@ namespace Trastazo
                     p.hitCd[part] = 0.18f;
                     Prop blade = (Prop) other.body.user;
                     if (Items.isTrap(blade.type) && flesh(p)) blade.wear = Math.min(1f, blade.wear + 0.15f);
-                    wound(p, part, Person.W_CUT, px, py, dx, dy, 5f + Math.min(9f, dv * 0.01f));
-                    hurt(p, part, 8f + dv * 0.05f, px, py, dx, dy);
-                    if (dv > 330f && rnd.nextFloat() < 0.55f) {
+                    bool glassEdge = ((Prop) other.body.user).color == Build.GLASS;
+                    wound(p, part, Person.W_CUT, px, py, dx, dy, (5f + Math.min(9f, dv * 0.01f)) * (glassEdge ? 0.6f : 1f));
+                    hurt(p, part, (8f + dv * 0.05f) * (glassEdge ? 0.3f : 1f), px, py, dx, dy);
+                    if (dv > 330f && rnd.nextFloat() < (glassEdge ? 0.06f : 0.55f)) {
                         int j = Person.PART_JOINT[part];
                         if (j >= 0 && j != Person.WAIST && !p.severed[j]) sever(p, j, px, py);
                     }
@@ -597,7 +610,7 @@ namespace Trastazo
                 if (q.explosive && q.fuse < 0f && q.type != Items.C4 && dv > 1500f && q.age > 0.8f) q.fuse = 0.05f;
                 if (q.machine() && dv > 600f) damageMachine(q, (dv - 600f) * 0.08f);
                 if (breakable(q)) {
-                    float th = sharp ? 200f : 650f;
+                    float th = q.color == Build.GLASS ? 150f : (sharp ? 200f : 650f);
                     // the contact speed is noisy for heavy welded stacks: cap it by how fast things were really moving
                     float osp = other == null ? 0f : (other.body.user is Prop ? ((Prop) other.body.user).lastSp : (float) Math.hypot(other.body.vx, other.body.vy));
                     dv = Math.min(dv, q.lastSp + osp);
@@ -886,13 +899,15 @@ namespace Trastazo
         /** Things that splinter and break apart (not machines, bombs or static pillars). */
         public static bool breakable(Prop q) {
             if (q.bodies.isEmpty() || q.main().isStatic) return false;
-            return q.type == Items.CRATE || q.type == Items.BIGCRATE || q.type == Items.PLANK || q.type == Items.BLOCK;
+            if (q.color == Build.GLASS && q.frag) return false;       // shards do not break again
+            return q.type == Items.CRATE || q.type == Items.BIGCRATE || q.type == Items.PLANK || q.type == Items.BLOCK || q.type == Items.GLASS;
         }
 
         /** How much damage a breakable thing takes before it breaks. */
         public static float toughness(Prop q) {
             float base_;
             if (q.gib) base_ = 30f;
+            else if (q.color == Build.GLASS) base_ = 30f;
             else if (q.type == Items.CRATE) base_ = 70f;
             else if (q.type == Items.BIGCRATE) base_ = 120f;
             else if (q.type == Items.PLANK) base_ = 80f;
@@ -921,6 +936,9 @@ namespace Trastazo
             u = Math.max(-q.hw * 0.9f, Math.min(q.hw * 0.9f, u));
             v = Math.max(-q.hh * 0.9f, Math.min(q.hh * 0.9f, v));
             q.impX = wx; q.impY = wy;
+            // chips fly off the spot (not off metal): the harder the hit the more
+            bool metal = q.type == Items.BARREL || q.type == Items.XBARREL || q.type == Items.STEEL || q.type == Items.FRIDGE || q.color == Build.STEEL;
+            if (!metal && amount > 0.06f) fx.debris(wx, wy, 1 + (int) Math.min(4f, amount * 6f), q.color == Build.GLASS ? unchecked((int)0xFFd8efffU) : q.color, 150f + amount * 200f);
             // a hit next to an old crack makes it longer
             for (int i = 0; i < q.ncr; i++) {
                 if (Math.abs(q.crU[i] - u) < 10f && Math.abs(q.crV[i] - v) < 10f) { q.crS[i] = Math.min(1.6f, q.crS[i] + amount); return; }
@@ -944,6 +962,7 @@ namespace Trastazo
             remove(q);
             stats.broken++;
             if (!q.gib) stats.destroyed++;
+            if (col == Build.GLASS) { shatterGlass(q, bx, by, a, hw, hh, vx, vy, w, ix, iy); return; }
             // splinters and dust by material
             int nsp = Math.min(16, 4 + (int) ((hw + hh) * 0.15f));
             for (int k = 0; k < nsp; k++) {
@@ -1015,6 +1034,37 @@ namespace Trastazo
                 keepChunk(f);
                 if (burning) ignite(f);
             }
+        }
+
+        /** Glass: many thin shards with sharp edges that spray out from the hit and cut whoever they hit; a glittering burst. */
+        private void shatterGlass(Prop q, float bx, float by, float a, float hw, float hh, float vx, float vy, float w, float ix, float iy) {
+            stats.glass++;
+            float ca = (float) Math.cos(a), sa = (float) Math.sin(a);
+            int n = Math.min(16, 6 + (int) ((hw + hh) * 0.1f));
+            for (int k = 0; k < n && canAdd(); k++) {
+                float lx = (rnd.nextFloat() * 2f - 1f) * hw, ly = (rnd.nextFloat() * 2f - 1f) * hh;
+                float wx = bx + ca * lx - sa * ly, wy = by + sa * lx + ca * ly;
+                float sw = 2.5f + rnd.nextFloat() * Math.min(9f, Math.max(hw, hh) * 0.2f), sh = 1.1f + rnd.nextFloat() * 1.3f;
+                Prop f = Prop.block(wx, wy, sw, sh, Build.GLASS, 0.4f, false);
+                f.frag = true; f.sharp = true;
+                f.register(sim);
+                RB rb = f.main();
+                rb.setAngle(rnd.nextFloat() * 6.283f);
+                float ox = wx - ix, oy = wy - iy, ol = (float) Math.sqrt(ox * ox + oy * oy) + 1f;
+                float kick = 120f + rnd.nextFloat() * 260f + 3600f / (ol + 30f);
+                rb.vx = vx - w * (wy - by) + ox / ol * kick;
+                rb.vy = vy + w * (wx - bx) + oy / ol * kick - 60f;
+                rb.w = rnd.nextFloat() * 20f - 10f;
+                add(f);
+                keepChunk(f);
+            }
+            for (int k = 0; k < 18; k++) {
+                float an = rnd.nextFloat() * 6.283f, sp = 120f + rnd.nextFloat() * 420f;
+                fx.add(Fx.DEBRIS, ix + fx.rr_(hw), iy + fx.rr_(hh), (float) Math.cos(an) * sp, (float) Math.sin(an) * sp - 160f, 0.8f + rnd.nextFloat() * 0.9f, 1.5f + rnd.nextFloat() * 2.2f, k % 3 == 0 ? unchecked((int)0xFFffffffU) : unchecked((int)0xFFbfe3f7U));
+            }
+            fx.sparks(ix, iy, 8, unchecked((int)0xFFeaf6ffU));
+            if (sfx != null) { sfx.pop(); sfx.crunch(); }
+            rumble += 0.08f;
         }
 
         public void pop(Prop q) {
@@ -1143,6 +1193,11 @@ namespace Trastazo
             if (sfx != null) sfx.boom(Math.min(1f, R / 600f));
             sim.blast(x, y, R, power);
             shockWelds(x, y, R);
+            // a blast near the ground burns it black
+            if (y > sim.floorY - R * 0.9f) {
+                fx.stain(x, R * 1.1f, unchecked((int)0xE6120e0bU));
+                fx.stain(x + fx.rr_(R * 0.3f), R * 0.6f, unchecked((int)0xE61c130dU));
+            }
             alarm(x, y, R * 2f + 300f, 6f);
             Ent[] list = snapshot();
             int n = ents.size();

@@ -308,7 +308,7 @@ final class Screens {
         "Sangre V3: charcos, salpicaduras y ropa empapada",
         "Gore V4: músculo, hueso, muñones y cráneo roto",
         "Trampas de SAW: cepo, péndulo, trampa invertida y Billy",
-        "Motor de destrucción: grietas y roturas por el impacto",
+        "Destruction Engine 1.5: cristal, astillas, colapsos y suelo quemado",
         "Texturas nuevas para personas y objetos",
     };
 

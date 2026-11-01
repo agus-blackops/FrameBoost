@@ -596,7 +596,7 @@ namespace Trastazo
                     c.restore();
                     break;
                 }
-                case Items.BLOCK: drawBlock(c, q, col); break;
+                case Items.BLOCK: case Items.GLASS: drawBlock(c, q, col); break;
                 case Items.DOG: case Items.PIG: case Items.RAT: drawAnimal(c, q, col); break;
                 case Items.POOP: drawPoop(c, q, col); break;
                 case Items.FRIDGE: drawFridge(c, q); break;
@@ -614,7 +614,7 @@ namespace Trastazo
                 }
                 default: foreach (RB b in q.bodies) foreach (Shape s in b.shapes) { if (s.type == Shape.CIRCLE) circleShape(c, s, col); else if (s.type == Shape.BOX) boxShape(c, s, col, true); else capsuleShape(c, s, col); }
              break; }
-            if (q.ncr > 0 && q.type != Items.BLOCK && detail) cracks(c, q);
+            if (q.ncr > 0 && q.type != Items.BLOCK && q.type != Items.GLASS && detail) cracks(c, q);
             if (m.frozen && !Items.isTrap(q.type)) pin(c, m.x, m.y);
         }
 
@@ -1001,6 +1001,20 @@ namespace Trastazo
                 c.restore();
                 return;
             }
+            if (q.color == Build.GLASS) {
+                local(c, m.x, m.y, m.a);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(alpha(unchecked((int)0xFF2a4a5cU), 0.5f)); rf.set(-hw - 1f, -hh - 1f, hw + 1f, hh + 1f); c.drawRoundRect(rf, 1.5f, 1.5f, p);
+                p.setColor(alpha(unchecked((int)0xFFa9dcf4U), q.frag ? 0.75f : 0.5f)); rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, 1f, 1f, p);
+                p.setColor(alpha(unchecked((int)0xFFffffffU), 0.5f));
+                if (hh > 12f) { rf.set(-hw * 0.6f, -hh * 0.85f, -hw * 0.1f, -hh * 0.2f); c.drawRect(rf, p); rf.set(-hw * 0.6f, -hh * 0.1f, -hw * 0.25f, hh * 0.3f); c.drawRect(rf, p); }
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.2f); p.setColor(alpha(unchecked((int)0xFFeaf8ffU), 0.9f));
+                rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, 1f, 1f, p);
+                p.setStyle(Paint.Style.FILL);
+                c.restore();
+                if (q.ncr > 0) cracks(c, q);
+                return;
+            }
             boxShape(c, s, col, true);
             local(c, m.x, m.y, m.a);
             p.setStyle(Paint.Style.STROKE);
@@ -1247,7 +1261,7 @@ namespace Trastazo
                         float x1 = x0 + (float) Math.cos(an + bend) * seg, y1 = y0 + (float) Math.sin(an + bend) * seg;
                         x1 = Math.max(-hw, Math.min(hw, x1)); y1 = Math.max(-hh, Math.min(hh, y1));
                         p.setStrokeWidth(Math.max(0.8f, (2.4f - st * 0.7f) * (0.6f + k * 0.4f)));
-                        p.setColor(alpha(unchecked((int)0xFF15100cU), 0.8f));
+                        p.setColor(q.color == Build.GLASS ? alpha(unchecked((int)0xFFffffffU), 0.9f) : alpha(unchecked((int)0xFF15100cU), 0.8f));
                         c.drawLine(x0, y0, x1, y1, p);
                         x0 = x1; y0 = y1;
                         seg *= 0.7f;
