@@ -16,7 +16,7 @@ namespace Trastazo
                 PISTOL = 60, RIFLE = 61, SHOTGUN = 62, ROCKET = 63, KNIFE = 64, SWORD = 65, GUN_PISTOL = 66, GUN_RIFLE = 67, GUN_MG = 68, TURRET = 69, DRONE = 70,
                 FIRE = 80, LIGHTNING = 81, PUSH = 82,
                 SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
-                ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
+                ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, PYRAMID = 115, CASTLE = 116, GREENHOUSE = 117, DOMINOES = 118, SCAFFOLD = 119, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
                 GLASS = 154, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
         public sealed class Item {
@@ -117,6 +117,11 @@ namespace Trastazo
                 new Item(TOWER, "Torre", PLACE + " · ladrillos apilados; tirarla es divertido"),
                 new Item(WALL, "Muro", PLACE + " · un muro de ladrillos para derribar"),
                 new Item(CAR, "Coche", PLACE + " · un coche con motor que arranca solo"),
+                new Item(PYRAMID, "Pirámide", PLACE + " · 28 ladrillos escalonados; derrúmbala desde la base"),
+                new Item(CASTLE, "Castillo", PLACE + " · un muro con dos torres de ladrillo"),
+                new Item(GREENHOUSE, "Invernadero", PLACE + " · marco de acero y paredes y techo de cristal"),
+                new Item(DOMINOES, "Dominó", PLACE + " · 14 fichas en fila; empuja la primera"),
+                new Item(SCAFFOLD, "Andamio", PLACE + " · postes de acero y tablones en dos pisos"),
             },
             new Item[] {
                 new Item(DOG, "Perro", PLACE + " · pasea, ladra a los zombis y se come a los muertos"),
@@ -160,7 +165,7 @@ namespace Trastazo
             return HAND_ITEM;
         }
 
-        public static bool isBuild(int id) { return id >= HOUSE && id <= CAR; }
+        public static bool isBuild(int id) { return id >= HOUSE && id <= SCAFFOLD; }
         public static bool isAnimal(int id) { return id >= DOG && id <= RAT; }
         public static bool isMachine(int id) { return id >= SAW && id <= TESLA; }
         public static bool isTrap(int id) { return id >= BEARTRAP && id <= BILLY; }

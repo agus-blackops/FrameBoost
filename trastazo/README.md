@@ -1,4 +1,4 @@
-# Trastazo 4.2 — Destruction Engine 1.5
+# Trastazo 4.3 — más construcciones
 
 **Laboratorio de muñecos y caos** para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,17 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 1.5:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.2).
+**Unity 1.6:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 4.3
+
+* **Más construcciones** (categoría *Construir*, ahora 10): **Pirámide** (28 ladrillos escalonados),
+  **Castillo** (muro con dos torres y almenas), **Invernadero** (marco de acero con paredes y techo de
+  cristal que se hace añicos), **Dominó** (14 fichas en fila, la primera inclinada) y **Andamio** (postes de
+  acero y tablones en dos pisos). Todas aguantan solas y se derrumban con una explosión.
 
 ## Novedades de la 4.2 (Destruction Engine 1.5)
 

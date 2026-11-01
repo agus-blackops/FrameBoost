@@ -29,6 +29,11 @@ namespace Trastazo
                 case Items.TOWER: grid(w, out_, x, f, 3, 10, BRICK, DENS_BRICK, BF_BRICK); break;
                 case Items.WALL: grid(w, out_, x, f, 12, 4, BRICK, DENS_BRICK, BF_BRICK); break;
                 case Items.CAR: car(w, out_, x, f); break;
+                case Items.PYRAMID: pyramid(w, out_, x, f); break;
+                case Items.CASTLE: castle(w, out_, x, f); break;
+                case Items.GREENHOUSE: greenhouse(w, out_, x, f); break;
+                case Items.DOMINOES: dominoes(w, out_, x, f); break;
+                case Items.SCAFFOLD: scaffold(w, out_, x, f); break;
                 default: break;
             }
             return out_;
@@ -107,6 +112,117 @@ namespace Trastazo
                 w.add(wheel);
                 out_.add(wheel);
                 w.link(chassis.main(), wx, wy, wheel.main(), wx, wy, false);
+            }
+        }
+
+        /** A stepped pyramid: rows of 7, 6 ... 1 bricks, each brick welded to its row neighbours and to the two bricks under it. */
+        private static void pyramid(World w, JList<Ent> out_, float x, float f) {
+            int rows = 7;
+            Prop[][] g = new Prop[rows][];
+            for (int r = 0; r < rows; r++) {
+                int n = rows - r;
+                g[r] = new Prop[n];
+                for (int c = 0; c < n; c++) {
+                    float bx = x + (c - (n - 1) / 2f) * 40f, by = f - 10 - 20f * r;
+                    g[r][c] = piece(w, out_, bx, by, 20, 10, BRICK, DENS_BRICK, false);
+                }
+            }
+            for (int r = 0; r < rows; r++) {
+                int n = rows - r;
+                for (int c = 0; c < n; c++) {
+                    float bx = x + (c - (n - 1) / 2f) * 40f, by = f - 10 - 20f * r;
+                    if (c + 1 < n) weld(w, g[r][c], g[r][c + 1], bx + 20f, by, BF_BRICK);
+                    if (r > 0) {                                  // the row below is one brick wider: this brick sits on c and c + 1 of it
+                        weld(w, g[r][c], g[r - 1][c], bx - 10f, by + 10f, BF_BRICK);
+                        weld(w, g[r][c], g[r - 1][c + 1], bx + 10f, by + 10f, BF_BRICK);
+                    }
+                }
+            }
+        }
+
+        /** A castle: a low curtain wall between two taller towers, with a battlement of merlons on top. */
+        private static void castle(World w, JList<Ent> out_, float x, float f) {
+            int wc = 6, wr = 3, tc = 3, tr = 6;
+            float wallW = wc * 40f, towerW = tc * 40f;
+            float tx = wallW / 2f + towerW / 2f;
+            Prop[][] wall = JArr.make<Prop>(wc, wr);
+            Prop[][] tw0 = JArr.make<Prop>(tc, tr), tw1 = JArr.make<Prop>(tc, tr);
+            for (int r = 0; r < wr; r++) for (int c = 0; c < wc; c++)
+                wall[c][r] = piece(w, out_, x + (c - (wc - 1) / 2f) * 40f, f - 10 - 20f * r, 20, 10, BRICK, DENS_BRICK, false);
+            for (int t = 0; t < 2; t++) for (int r = 0; r < tr; r++) for (int c = 0; c < tc; c++)
+                (t == 0 ? tw0 : tw1)[c][r] = piece(w, out_, x + (t == 0 ? -tx : tx) + (c - (tc - 1) / 2f) * 40f, f - 10 - 20f * r, 20, 10, BRICK, DENS_BRICK, false);
+            for (int r = 0; r < wr; r++) for (int c = 0; c < wc; c++) {
+                float bx = x + (c - (wc - 1) / 2f) * 40f, by = f - 10 - 20f * r;
+                if (c + 1 < wc) weld(w, wall[c][r], wall[c + 1][r], bx + 20f, by, BF_BRICK);
+                if (r + 1 < wr) weld(w, wall[c][r], wall[c][r + 1], bx, by - 10f, BF_BRICK);
+            }
+            for (int t = 0; t < 2; t++) {
+                Prop[][] tg = t == 0 ? tw0 : tw1;
+                float cx = x + (t == 0 ? -tx : tx);
+                for (int r = 0; r < tr; r++) for (int c = 0; c < tc; c++) {
+                    float bx = cx + (c - (tc - 1) / 2f) * 40f, by = f - 10 - 20f * r;
+                    if (c + 1 < tc) weld(w, tg[c][r], tg[c + 1][r], bx + 20f, by, BF_BRICK);
+                    if (r + 1 < tr) weld(w, tg[c][r], tg[c][r + 1], bx, by - 10f, BF_BRICK);
+                }
+                // the gate: the wall's outer column is welded to the tower's inner column
+                int wcI = t == 0 ? 0 : wc - 1, tcI = t == 0 ? tc - 1 : 0;
+                for (int r = 0; r < wr; r++) {
+                    float by = f - 10 - 20f * r, ex = x + (t == 0 ? -wallW / 2f : wallW / 2f);
+                    weld(w, wall[wcI][r], tg[tcI][r], ex, by, BF_BRICK);
+                }
+            }
+            // merlons on the wall
+            for (int c = 0; c < wc; c += 2) {
+                Prop m = piece(w, out_, x + (c - (wc - 1) / 2f) * 40f, f - 10 - 20f * wr, 20, 10, BRICK, DENS_BRICK, false);
+                weld(w, wall[c][wr - 1], m, x + (c - (wc - 1) / 2f) * 40f, f - 20f * wr, BF_BRICK);
+            }
+        }
+
+        /** A greenhouse: a steel base and corner posts holding glass walls and a glass roof. */
+        private static void greenhouse(World w, JList<Ent> out_, float x, float f) {
+            float bf = BF_BRICK;
+            Prop base_ = piece(w, out_, x, f - 6, 150, 6, STEEL, DENS_STEEL * 0.5f, false);
+            Prop wl = piece(w, out_, x - 138, f - 78, 7, 66, GLASS, 0.5f, false);
+            Prop wr = piece(w, out_, x + 138, f - 78, 7, 66, GLASS, 0.5f, false);
+            Prop mid = piece(w, out_, x, f - 78, 6, 66, GLASS, 0.5f, false);
+            Prop roof = piece(w, out_, x, f - 150, 150, 6, GLASS, 0.5f, false);
+            Prop pl = piece(w, out_, x - 153, f - 78, 4, 66, STEEL, DENS_STEEL * 0.4f, false);
+            Prop pr = piece(w, out_, x + 153, f - 78, 4, 66, STEEL, DENS_STEEL * 0.4f, false);
+            weld(w, base_, wl, x - 138, f - 12, bf);
+            weld(w, base_, wr, x + 138, f - 12, bf);
+            weld(w, wl, roof, x - 138, f - 144, bf);
+            weld(w, wr, roof, x + 138, f - 144, bf);
+            weld(w, mid, roof, x, f - 144, bf);
+            weld(w, base_, pl, x - 153, f - 12, BF_BRICK);
+            weld(w, base_, pr, x + 153, f - 12, BF_BRICK);
+        }
+
+        /** Fourteen dominoes in a row (not welded); the first one leans so it falls on the next. */
+        private static void dominoes(World w, JList<Ent> out_, float x, float f) {
+            int n = 14;
+            int[] cols = {unchecked((int)0xFFe9e2cfU), unchecked((int)0xFFd8453aU), unchecked((int)0xFF3a8fd5U), unchecked((int)0xFF4cbf6bU), unchecked((int)0xFFf2b134U)};
+            for (int i = 0; i < n; i++) {
+                float bx = x + (i - (n - 1) / 2f) * 46f;
+                Prop d = piece(w, out_, bx, f - 36f, 6, 34, cols[i % cols.Length], 0.9f, false);
+                if (i == 0) { d.main().setAngle(0.28f); d.main().x -= 4f; d.main().update(); }
+            }
+        }
+
+        /** Scaffolding: four steel posts and two plank decks. */
+        private static void scaffold(World w, JList<Ent> out_, float x, float f) {
+            Prop[] low = new Prop[2], high = new Prop[2];
+            for (int s = 0; s < 2; s++) {
+                float px = x + (s == 0 ? -62f : 62f);
+                low[s] = piece(w, out_, px, f - 42f, 4, 42, STEEL, DENS_STEEL * 0.4f, false);
+                high[s] = piece(w, out_, px, f - 130f, 4, 42, STEEL, DENS_STEEL * 0.4f, false);
+            }
+            Prop deck1 = piece(w, out_, x, f - 88f, 78, 4, WOOD, DENS_WOOD, false);
+            Prop deck2 = piece(w, out_, x, f - 176f, 78, 4, WOOD, DENS_WOOD, false);
+            for (int s = 0; s < 2; s++) {
+                float px = x + (s == 0 ? -62f : 62f);
+                weld(w, low[s], deck1, px, f - 86f, BF_STEEL);
+                weld(w, deck1, high[s], px, f - 90f, BF_STEEL);
+                weld(w, high[s], deck2, px, f - 174f, BF_STEEL);
             }
         }
     }

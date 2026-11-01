@@ -795,6 +795,30 @@ namespace Trastazo
                     c.drawLine(cx - s * 0.75f, cy - s * 0.05f, cx, cy - s * 0.75f, p);
                     c.drawLine(cx, cy - s * 0.75f, cx + s * 0.75f, cy - s * 0.05f, p);
                     break;
+                case Items.PYRAMID:
+                    for (int r = 0; r < 4; r++) for (int k = 0; k < 4 - r; k++) box(c, cx + (k - (3 - r) / 2f) * s * 0.42f - s * 0.19f, cy + s * 0.55f - r * s * 0.32f - s * 0.14f, cx + (k - (3 - r) / 2f) * s * 0.42f + s * 0.19f, cy + s * 0.55f - r * s * 0.32f + s * 0.14f, unchecked((int)0xFFa8553aU), s * 0.02f);
+                    break;
+                case Items.CASTLE:
+                    box(c, cx - s * 0.9f, cy - s * 0.1f, cx + s * 0.9f, cy + s * 0.6f, unchecked((int)0xFFa8553aU), s * 0.03f);
+                    box(c, cx - s * 0.95f, cy - s * 0.7f, cx - s * 0.5f, cy + s * 0.6f, unchecked((int)0xFFb8654aU), s * 0.03f);
+                    box(c, cx + s * 0.5f, cy - s * 0.7f, cx + s * 0.95f, cy + s * 0.6f, unchecked((int)0xFFb8654aU), s * 0.03f);
+                    for (int k = 0; k < 3; k++) box(c, cx - s * 0.35f + k * s * 0.35f, cy - s * 0.25f, cx - s * 0.15f + k * s * 0.35f, cy - s * 0.1f, unchecked((int)0xFFa8553aU), 0f);
+                    break;
+                case Items.GREENHOUSE:
+                    box(c, cx - s * 0.85f, cy + s * 0.5f, cx + s * 0.85f, cy + s * 0.62f, unchecked((int)0xFF8d96a3U), s * 0.02f);
+                    box(c, cx - s * 0.8f, cy - s * 0.5f, cx + s * 0.8f, cy + s * 0.5f, unchecked((int)0x889fd2efU), s * 0.03f);
+                    line(c, cx - s * 0.85f, cy - s * 0.55f, cx + s * 0.85f, cy - s * 0.55f, Math.max(1.5f, s * 0.12f), unchecked((int)0xFF8d96a3U));
+                    line(c, cx, cy - s * 0.5f, cx, cy + s * 0.5f, Math.max(1f, s * 0.07f), unchecked((int)0xFFeaf8ffU));
+                    break;
+                case Items.DOMINOES:
+                    for (int k = 0; k < 4; k++) box(c, cx - s * 0.8f + k * s * 0.45f + (k == 0 ? s * 0.1f : 0f), cy - s * 0.55f + (k == 0 ? s * 0.12f : 0f), cx - s * 0.62f + k * s * 0.45f + (k == 0 ? s * 0.25f : 0f), cy + s * 0.6f, k % 2 == 0 ? unchecked((int)0xFFe9e2cfU) : unchecked((int)0xFFd8453aU), s * 0.03f);
+                    break;
+                case Items.SCAFFOLD:
+                    line(c, cx - s * 0.65f, cy - s * 0.8f, cx - s * 0.65f, cy + s * 0.7f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFF8d96a3U));
+                    line(c, cx + s * 0.65f, cy - s * 0.8f, cx + s * 0.65f, cy + s * 0.7f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFF8d96a3U));
+                    line(c, cx - s * 0.85f, cy - s * 0.05f, cx + s * 0.85f, cy - s * 0.05f, Math.max(2f, s * 0.14f), unchecked((int)0xFFc9a066U));
+                    line(c, cx - s * 0.85f, cy - s * 0.75f, cx + s * 0.85f, cy - s * 0.75f, Math.max(2f, s * 0.14f), unchecked((int)0xFFc9a066U));
+                    break;
                 case Items.BRIDGE:
                     line(c, cx - s * 0.9f, cy - s * 0.25f, cx + s * 0.9f, cy - s * 0.25f, w * 1.6f, unchecked((int)0xFFc9a066U));
                     line(c, cx - s * 0.7f, cy - s * 0.25f, cx - s * 0.7f, cy + s * 0.6f, w * 1.2f, unchecked((int)0xFF8d96a3U));

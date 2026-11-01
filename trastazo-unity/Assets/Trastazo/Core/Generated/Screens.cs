@@ -309,6 +309,7 @@ namespace Trastazo
             "Gore V4: músculo, hueso, muñones y cráneo roto",
             "Trampas de SAW: cepo, péndulo, trampa invertida y Billy",
             "Destruction Engine 1.5: cristal, astillas, colapsos y suelo quemado",
+            "5 construcciones nuevas: pirámide, castillo, invernadero, dominó y andamio",
             "Texturas nuevas para personas y objetos",
         };
 
