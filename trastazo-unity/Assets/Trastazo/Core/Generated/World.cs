@@ -79,6 +79,7 @@ namespace Trastazo
             ents.clear();
             sim.clear();
             rockets.clear();
+            events.clear(); bannerT = 0f;
             fx.clear();
             for (int i = 0; i < 8; i++) trT[i] = 0f;
         }
@@ -220,6 +221,9 @@ namespace Trastazo
         }
 
         public bool integrityDirty;
+        public JList<Levolution.Event> events = new JList<Levolution.Event>();
+        public string banner = "";
+        public float bannerT;
 
         /** Works out which pieces of the standing constructions touch each other (by their boxes). */
         public void linkStruct() {
@@ -291,6 +295,7 @@ namespace Trastazo
             sim.update(dt);
             post(dt);
             if (integrityDirty) { integrityDirty = false; integrity(); }
+            Levolution.update(this, dt);
             fx.update(dt);
             for (int i = 0; i < 8; i++) if (trT[i] > 0) trT[i] -= dt;
             foreach (float[] a in arcs) if (a[4] > 0f) a[4] -= dt;

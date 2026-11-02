@@ -1,0 +1,102 @@
+package com.frameboost.ragdoll;
+
+import java.util.ArrayList;
+
+/** Levolution: controlled demolition, earthquake, air raid and tornado. */
+public class Test24 {
+    static int fails;
+    static void check(String n, boolean ok) { System.out.println((ok ? "PASS " : "FAIL ") + n); if (!ok) fails++; }
+    static void run(World w, float secs) { int n = (int) (secs * 60); for (int i = 0; i < n; i++) w.update(1f / 60f); }
+    static float topY(ArrayList<Ent> list) { float t = 1e9f; for (Ent e : list) { Prop p = (Prop) e; if (!p.removed) t = Math.min(t, p.main().y - p.hh); } return t; }
+
+    public static void main(String[] a) throws Exception {
+        String out = a.length > 0 ? a[0] : "/tmp";
+        Game.edition = "Unity 2.5";
+
+        // 0. palette
+        check("Levolution has its own tab with four events", Items.CATS[Items.CAT_LEVO].length == 4 && Items.isLevo(Items.LEVO_TORNADO) && !Items.isLevo(Items.BUILDING));
+
+        // 1. controlled demolition: charges at the foot, the tower comes down, a dust wave pushes what stands near
+        World w = new World(null);
+        check("no building: it says so", Levolution.start(w, Items.LEVO_COLLAPSE, 1500).startsWith("No hay") && w.events.isEmpty());
+        ArrayList<Ent> sk = w.buildAt(Items.SKYSCRAPER, 1500, 0);
+        Prop crate = (Prop) w.spawn(Items.CRATE, 2000, -40, 1, 1f);
+        Person p = (Person) w.spawn(Items.HUMAN, 1900, -120, 1, 1f);
+        run(w, 2f);
+        float top0 = topY(sk), cx0 = crate.cx();
+        String msg = Levolution.start(w, Items.LEVO_COLLAPSE, 1500);
+        check("the demolition starts with its banner", msg.contains("DERRUMBE") && w.events.size() == 1 && w.bannerT > 0f);
+        run(w, 2f);
+        WorldTest.shot(w, out + "/u_levo_charges.png", 1500, -400, 0.55f);
+        run(w, 1.5f);
+        WorldTest.shot(w, out + "/u_levo_collapse.png", 1500, -450, 0.5f);
+        run(w, 6f);
+        float top1 = topY(sk);
+        System.out.printf("   demolition: top %.0f -> %.0f, crate moved %.0f, destroyed %d%n", top0, top1, crate.cx() - cx0, w.stats.destroyed);
+        check("the tower comes down", top1 > top0 + 600f);
+        check("the dust wave pushes the crate away", crate.cx() - cx0 > 40f || crate.removed);
+        check("the event ends", w.events.isEmpty());
+        WorldTest.shot(w, out + "/u_levo_after.png", 1700, -200, 0.8f);
+
+        // 2. earthquake: bodies jump and the building cracks and loses pieces
+        w = new World(null);
+        ArrayList<Ent> bd = w.buildAt(Items.BUILDING, 1500, 0);
+        Prop c2 = (Prop) w.spawn(Items.CRATE, 2100, -40, 1, 1f);
+        run(w, 2f);
+        float yMin = 1e9f;
+        int stand0 = 0; for (Ent e : bd) if (((Prop) e).main().frozen || ((Prop) e).anchor) stand0++;
+        check("the earthquake starts", Levolution.start(w, Items.LEVO_QUAKE, 1500).contains("TERREMOTO") && Levolution.active(w, Levolution.QUAKE));
+        float shake = 0f;
+        for (int i = 0; i < 60 * 9; i++) { w.update(1f / 60f); yMin = Math.min(yMin, c2.cy()); shake = Math.max(shake, w.fx.shake); }
+        int stand1 = 0; for (Ent e : bd) if (!((Prop) e).removed && (((Prop) e).main().frozen || ((Prop) e).anchor)) stand1++;
+        System.out.printf("   quake: crate rose to %.0f, shake %.2f, standing %d -> %d, destroyed %d%n", yMin, shake, stand0, stand1, w.stats.destroyed);
+        check("things jump around", yMin < -100f && yMin > -500f);
+        check("the screen shakes", shake > 0.3f);
+        check("the building suffers: pieces break or fall", stand1 < stand0);
+        check("the earthquake ends", w.events.isEmpty());
+        WorldTest.shot(w, out + "/u_levo_quake.png", 1500, -280, 0.8f);
+
+        // 3. air raid: a rain of rockets
+        w = new World(null);
+        Person t3 = (Person) w.spawn(Items.HUMAN, 1500, -120, 1, 1f);
+        run(w, 1.5f);
+        int booms0 = w.stats.explosions;
+        check("the air raid starts", Levolution.start(w, Items.LEVO_STRIKE, 1500).contains("BOMBARDEO"));
+        run(w, 2f);
+        WorldTest.shot(w, out + "/u_levo_strike.png", 1500, -300, 0.8f);
+        run(w, 8f);
+        System.out.printf("   air raid: %d explosions%n", w.stats.explosions - booms0);
+        check("many explosions", w.stats.explosions - booms0 >= 6);
+        check("the air raid ends", w.events.isEmpty());
+
+        // 4. tornado: lifts things, moves, tears a building, ends
+        w = new World(null);
+        Prop cr = (Prop) w.spawn(Items.CRATE, 1500, -40, 1, 1f);
+        Prop big = (Prop) w.spawn(Items.BARREL, 1560, -40, 1, 1f);
+        ArrayList<Ent> house = w.buildAt(Items.BUILDING, 1950, 0);
+        run(w, 2f);
+        Levolution.Event ev = null;
+        check("the tornado starts", Levolution.start(w, Items.LEVO_TORNADO, 1500).contains("TORNADO"));
+        ev = w.events.get(0);
+        ev.b = 1f;
+        float high = 0f, moved0 = ev.a;
+        for (int i = 0; i < 60 * 6; i++) { w.update(1f / 60f); high = Math.max(high, -cr.cy()); }
+        WorldTest.shot(w, out + "/u_levo_tornado.png", ev.a, -300, 0.8f);
+        for (int i = 0; i < 60 * 12; i++) w.update(1f / 60f);
+        System.out.printf("   tornado: crate rose to %.0f, tornado moved %.0f, destroyed %d%n", high, ev.a - moved0, w.stats.destroyed);
+        check("it lifts things off the ground", high > 160f);
+        check("it travels across the room", Math.abs(ev.a - moved0) > 300f);
+        check("it tears the building up", w.stats.destroyed > 5);
+        check("it ends", w.events.isEmpty());
+
+        // 5. the palette draws
+        Game g = Harness.newGame();
+        g.ui.stripOpen = true; g.ui.cat = Items.CAT_LEVO;
+        g.world.buildAt(Items.SKYSCRAPER, 1500, 0);
+        g.world.banner = "LEVOLUTION · DERRUMBE"; g.world.bannerT = 3f;
+        Harness.run(g, 0.6f);
+        Harness.shot(g, out + "/u_levo_palette.png");
+        check("the Levolution tab draws", true);
+        System.out.println(fails == 0 ? "T24 ALL PASS" : "T24 FAILURES " + fails);
+    }
+}

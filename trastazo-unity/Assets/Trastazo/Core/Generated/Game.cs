@@ -458,6 +458,22 @@ namespace Trastazo
 
         private RectF bubble = new RectF();
 
+        /** Levolution: the name of the event that has just started, big over the scene. */
+        private void banner(Canvas c) {
+            if (world.bannerT <= 0f || world.banner.length() == 0) return;
+            float a = Math.min(1f, Math.min(world.bannerT * 2f, (3.5f - world.bannerT) * 4f));
+            p.setStyle(Paint.Style.FILL);
+            p.setFakeBoldText(true);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setTextSize(24 * density);
+            p.setColor(Renderer.alpha(unchecked((int)0xFF000000U), 0.5f * a));
+            c.drawText(world.banner, sw * 0.6f + 2 * density, sh * 0.28f + 2 * density, p);
+            p.setColor(Renderer.alpha(unchecked((int)0xFFffb02eU), a));
+            c.drawText(world.banner, sw * 0.6f, sh * 0.28f, p);
+            p.setTextAlign(Paint.Align.LEFT);
+            p.setFakeBoldText(false);
+        }
+
         /** Billy talks: a speech bubble over his head. */
         private void speech(Canvas c) {
             for (int i = 0; i < world.ents.size(); i++) {
@@ -541,6 +557,7 @@ namespace Trastazo
         public void drawOverlay(Canvas c) {
             Challenges.drawOverlay(c, this, p);
             if (screens.screen == Screens.NONE || screens.screen == Screens.TITLE) speech(c);
+            if (screens.screen == Screens.NONE) banner(c);
             // pending rope / weld / hinge
             if (linkBody != null && (tool == Items.ROPE || tool == Items.WELD || tool == Items.HINGE)) {
                 float lx = (linkBody.localToWorldX(linkLx, linkLy) - camX) * zoom + sw / 2f, ly = (linkBody.localToWorldY(linkLx, linkLy) - camY) * zoom + sh / 2f;
@@ -563,7 +580,7 @@ namespace Trastazo
                     c.drawCircle(pt.x, pt.y, 22 * density, p);
                     p.setStyle(Paint.Style.FILL);
                     ui.drawIcon(c, tool, pt.x, pt.y, 18 * density);
-                } else if (Items.isShot(tool) || tool == Items.LIGHTNING || tool == Items.DETONATE || tool == Items.NUKE || tool == Items.PUSH) {
+                } else if (Items.isShot(tool) || tool == Items.LIGHTNING || tool == Items.DETONATE || tool == Items.NUKE || tool == Items.PUSH || Items.isLevo(tool)) {
                     p.setStyle(Paint.Style.STROKE);
                     p.setStrokeWidth(2f * density);
                     p.setColor(unchecked((int)0xCCffffffU));
@@ -700,6 +717,8 @@ namespace Trastazo
                 case Items.DETONATE: world.explode(wx, wy, 330f, 1900f, 95f, true); break;
                 case Items.NUKE: world.explode(wx, Math.min(wy, floorY() - 60), 1400f, 4200f, 420f, true); break;
                 case Items.PUSH: world.push(wx, wy); break;
+                case Items.LEVO_COLLAPSE: case Items.LEVO_QUAKE: case Items.LEVO_STRIKE: case Items.LEVO_TORNADO:
+                    ui.toast_(Levolution.start(world, tool, wx)); break;
                 default:
                     if (Items.isSyringe(tool)) {
                         Person h = pickPerson(wx, wy);

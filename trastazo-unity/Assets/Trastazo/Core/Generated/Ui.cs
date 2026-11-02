@@ -436,6 +436,7 @@ namespace Trastazo
             if (ci == Items.CAT_ANIMALS) { drawIcon(c, Items.DOG, cx, cy, s); return; }
             if (ci == Items.CAT_MACHINES) { drawIcon(c, Items.SAW, cx, cy, s); return; }
             if (ci == Items.CAT_TRAPS) { drawIcon(c, Items.BEARTRAP, cx, cy, s); return; }
+            if (ci == Items.CAT_LEVO) { drawIcon(c, Items.LEVO_COLLAPSE, cx, cy, s); return; }
             if (ci < rep.Length) { drawIcon(c, rep[ci], cx, cy, s); return; }
             p.setStyle(Paint.Style.FILL);
             if (ci == Items.CAT_MODS) {            // puzzle-piece-ish gear
@@ -824,6 +825,36 @@ namespace Trastazo
                     break;
                 case Items.DOMINOES:
                     for (int k = 0; k < 4; k++) box(c, cx - s * 0.8f + k * s * 0.45f + (k == 0 ? s * 0.1f : 0f), cy - s * 0.55f + (k == 0 ? s * 0.12f : 0f), cx - s * 0.62f + k * s * 0.45f + (k == 0 ? s * 0.25f : 0f), cy + s * 0.6f, k % 2 == 0 ? unchecked((int)0xFFe9e2cfU) : unchecked((int)0xFFd8453aU), s * 0.03f);
+                    break;
+                case Items.LEVO_COLLAPSE:
+                    box(c, cx - s * 0.75f, cy - s * 0.1f, cx - s * 0.2f, cy + s * 0.75f, unchecked((int)0xFF59687aU), s * 0.03f);
+                    box(c, cx - s * 0.2f, cy - s * 0.7f, cx + s * 0.25f, cy + s * 0.75f, unchecked((int)0xFF7a8b9fU), s * 0.03f);
+                    disc(c, cx + s * 0.4f, cy + s * 0.55f, s * 0.3f, unchecked((int)0xAAb8ab9cU));
+                    disc(c, cx + s * 0.7f, cy + s * 0.65f, s * 0.22f, unchecked((int)0xAAa39a8eU));
+                    disc(c, cx - s * 0.5f, cy + s * 0.7f, s * 0.2f, unchecked((int)0xAAb8ab9cU));
+                    break;
+                case Items.LEVO_QUAKE:
+                    line(c, cx - s * 0.9f, cy + s * 0.5f, cx - s * 0.4f, cy + s * 0.35f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFb3a595U));
+                    line(c, cx - s * 0.4f, cy + s * 0.35f, cx - s * 0.1f, cy + s * 0.65f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFb3a595U));
+                    line(c, cx - s * 0.1f, cy + s * 0.65f, cx + s * 0.3f, cy + s * 0.3f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFb3a595U));
+                    line(c, cx + s * 0.3f, cy + s * 0.3f, cx + s * 0.9f, cy + s * 0.55f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFb3a595U));
+                    box(c, cx - s * 0.35f, cy - s * 0.55f, cx + s * 0.35f, cy + s * 0.25f, unchecked((int)0xFF7a8b9fU), s * 0.03f);
+                    line(c, cx - s * 0.5f, cy - s * 0.2f, cx - s * 0.65f, cy - s * 0.2f, Math.max(1f, s * 0.07f), unchecked((int)0xFFffd25aU));
+                    line(c, cx + s * 0.5f, cy - s * 0.2f, cx + s * 0.65f, cy - s * 0.2f, Math.max(1f, s * 0.07f), unchecked((int)0xFFffd25aU));
+                    break;
+                case Items.LEVO_STRIKE:
+                    for (int k = -1; k <= 1; k++) {
+                        line(c, cx + k * s * 0.5f - s * 0.1f, cy - s * 0.85f + Math.abs(k) * s * 0.2f, cx + k * s * 0.5f, cy - s * 0.1f + Math.abs(k) * s * 0.2f, Math.max(2f, s * 0.14f), unchecked((int)0xFF8a929cU));
+                        disc(c, cx + k * s * 0.5f, cy - s * 0.05f + Math.abs(k) * s * 0.2f, s * 0.13f, unchecked((int)0xFFff7a1fU));
+                    }
+                    disc(c, cx, cy + s * 0.7f, s * 0.3f, unchecked((int)0xFFffb02eU));
+                    break;
+                case Items.LEVO_TORNADO:
+                    line(c, cx - s * 0.8f, cy - s * 0.7f, cx + s * 0.8f, cy - s * 0.7f, Math.max(2f, s * 0.14f), unchecked((int)0xFF77706aU));
+                    line(c, cx - s * 0.6f, cy - s * 0.35f, cx + s * 0.6f, cy - s * 0.35f, Math.max(2f, s * 0.14f), unchecked((int)0xFF5a5f66U));
+                    line(c, cx - s * 0.4f, cy, cx + s * 0.4f, cy, Math.max(2f, s * 0.14f), unchecked((int)0xFF77706aU));
+                    line(c, cx - s * 0.25f, cy + s * 0.35f, cx + s * 0.25f, cy + s * 0.35f, Math.max(2f, s * 0.14f), unchecked((int)0xFF5a5f66U));
+                    line(c, cx - s * 0.1f, cy + s * 0.7f, cx + s * 0.1f, cy + s * 0.7f, Math.max(2f, s * 0.14f), unchecked((int)0xFF77706aU));
                     break;
                 case Items.BUILDING:
                     box(c, cx - s * 0.7f, cy - s * 0.85f, cx + s * 0.7f, cy + s * 0.8f, unchecked((int)0xFFb9b4acU), s * 0.03f);

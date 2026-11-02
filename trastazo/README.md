@@ -1,4 +1,4 @@
-# Trastazo Playground 5.1
+# Trastazo Playground 5.2
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,26 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 2.4:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 2.5:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 5.2
+
+* **Levolution** (pestaña nueva, inspirada en el Levolution de Battlefield): eventos enormes que cambian el mapa, con
+  título grande en pantalla. Se eligen y se tocan en la escena:
+  * **Derrumbe:** toca junto a un Edificio o Rascacielos: suena el aviso, se colocan cargas una a una en los pilares y
+    muros de la planta baja y el edificio entero se viene abajo; al caer rueda por el suelo una **ola de polvo** que empuja
+    todo lo que hay cerca.
+  * **Terremoto:** 8 s de temblor: la pantalla vibra, todo salta, los edificios se agrietan y pierden piezas.
+  * **Bombardeo:** una lluvia de 16 misiles sobre la zona; la gente huye.
+  * **Tornado:** un embudo de humo y escombros que recorre la sala 16 s, arranca lo que pilla, destroza edificios y lanza
+    rayos.
+
+![Levolution](../trastazo-unity/docs/levo-paleta.png)
+![Derrumbe](../trastazo-unity/docs/levo-derrumbe.png)
+![Tornado](../trastazo-unity/docs/levo-tornado.png)
 
 ## Novedades de la 5.1
 

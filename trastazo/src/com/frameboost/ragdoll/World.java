@@ -78,6 +78,7 @@ final class World implements Sim.Listener, Sim.Hook {
         ents.clear();
         sim.clear();
         rockets.clear();
+        events.clear(); bannerT = 0f;
         fx.clear();
         for (int i = 0; i < 8; i++) trT[i] = 0f;
     }
@@ -219,6 +220,9 @@ final class World implements Sim.Listener, Sim.Hook {
     }
 
     boolean integrityDirty;
+    final java.util.ArrayList<Levolution.Event> events = new java.util.ArrayList<Levolution.Event>();
+    String banner = "";
+    float bannerT;
 
     /** Works out which pieces of the standing constructions touch each other (by their boxes). */
     void linkStruct() {
@@ -290,6 +294,7 @@ final class World implements Sim.Listener, Sim.Hook {
         sim.update(dt);
         post(dt);
         if (integrityDirty) { integrityDirty = false; integrity(); }
+        Levolution.update(this, dt);
         fx.update(dt);
         for (int i = 0; i < 8; i++) if (trT[i] > 0) trT[i] -= dt;
         for (float[] a : arcs) if (a[4] > 0f) a[4] -= dt;

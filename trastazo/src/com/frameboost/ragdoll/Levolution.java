@@ -1,0 +1,253 @@
+package com.frameboost.ragdoll;
+
+import java.util.ArrayList;
+
+/**
+ * Levolution: big scripted events that change the whole map (the idea comes from Battlefield): a controlled
+ * demolition that brings a building down with a wave of dust, an earthquake, an air raid and a tornado.
+ */
+final class Levolution {
+    private Levolution() { }
+
+    static final int COLLAPSE = 0, QUAKE = 1, STRIKE = 2, TORNADO = 3;
+    static final float QUAKE_TIME = 8f, TORNADO_TIME = 16f, STRIKE_TIME = 5f;
+
+    static final class Event {
+        int type, n;
+        float t, x, a, b, c;
+        ArrayList<Prop> list = new ArrayList<Prop>();
+    }
+
+    static int typeOf(int item) { return item - Items.LEVO_COLLAPSE; }
+
+    static boolean active(World w, int type) {
+        for (int i = 0; i < w.events.size(); i++) if (w.events.get(i).type == type) return true;
+        return false;
+    }
+
+    /** Starts an event at world x. Returns the message for the toast ("" means it did not start). */
+    static String start(World w, int item, float x) {
+        int type = typeOf(item);
+        Event e = new Event();
+        e.type = type; e.x = x;
+        switch (type) {
+            case COLLAPSE: {
+                Prop anchor = null;
+                float best = 1e9f;
+                for (int i = 0; i < w.ents.size(); i++) {
+                    Ent o = w.ents.get(i);
+                    if (!(o instanceof Prop)) continue;
+                    Prop q = (Prop) o;
+                    if (!q.isStruct || !q.anchor || q.removed) continue;
+                    float d = Math.abs(q.cx() - x);
+                    if (d < best) { best = d; anchor = q; }
+                }
+                if (anchor == null || best > 700f) return "No hay ningún edificio cerca: coloca un Edificio o un Rascacielos";
+                for (int i = 0; i < w.events.size(); i++) if (w.events.get(i).type == COLLAPSE && Math.abs(w.events.get(i).a - anchor.cx()) < 50f) return "Ya está en marcha";
+                e.a = anchor.cx(); e.b = anchor.hw;
+                float floor = w.floorY();
+                for (int i = 0; i < w.ents.size(); i++) {      // the load-bearing pieces of the ground floor, left to right
+                    Ent o = w.ents.get(i);
+                    if (!(o instanceof Prop)) continue;
+                    Prop q = (Prop) o;
+                    if (!q.isStruct || q.anchor || q.removed || q.bodies.isEmpty() || !q.main().frozen) continue;
+                    if (Math.abs(q.cx() - e.a) > e.b + 12f || q.cy() < floor - 150f) continue;
+                    e.list.add(q);
+                }
+                if (e.list.isEmpty()) return "Ese edificio ya está sin planta baja";
+                for (int i = 1; i < e.list.size(); i++) {
+                    Prop k = e.list.get(i);
+                    int j = i - 1;
+                    while (j >= 0 && e.list.get(j).cx() > k.cx()) { e.list.set(j + 1, e.list.get(j)); j--; }
+                    e.list.set(j + 1, k);
+                }
+                w.banner = "LEVOLUTION · DERRUMBE"; w.bannerT = 3.5f;
+                if (w.sfx != null) w.sfx.click();
+                break;
+            }
+            case QUAKE:
+                if (active(w, QUAKE)) return "Ya está temblando";
+                w.banner = "LEVOLUTION · TERREMOTO"; w.bannerT = 3.5f;
+                break;
+            case STRIKE:
+                e.a = x;
+                w.banner = "LEVOLUTION · BOMBARDEO"; w.bannerT = 3.5f;
+                w.alarm(x, w.floorY(), 2200f, 8f);
+                break;
+            default:
+                e.a = x; e.b = w.rnd.nextBoolean() ? 1f : -1f;
+                w.banner = "LEVOLUTION · TORNADO"; w.bannerT = 3.5f;
+                break;
+        }
+        w.events.add(e);
+        return w.banner;
+    }
+
+    static void update(World w, float dt) {
+        if (w.bannerT > 0f) w.bannerT -= dt;
+        for (int i = w.events.size() - 1; i >= 0; i--) {
+            Event e = w.events.get(i);
+            e.t += dt;
+            boolean done;
+            switch (e.type) {
+                case COLLAPSE: done = collapse(w, e, dt); break;
+                case QUAKE: done = quake(w, e, dt); break;
+                case STRIKE: done = strike(w, e, dt); break;
+                default: done = tornado(w, e, dt); break;
+            }
+            if (done) w.events.remove(i);
+        }
+    }
+
+    // ------------------------------------------------------------------------------ collapse ---
+
+    private static boolean collapse(World w, Event e, float dt) {
+        float floor = w.floorY();
+        if (e.t < 1.4f) {                                    // the warning: a siren and sparks at the charges
+            if (w.rnd.nextFloat() < dt * 4f && w.sfx != null) w.sfx.click();
+            return false;
+        }
+        // one charge every 0.16 s
+        int due = (int) ((e.t - 1.4f) / 0.16f) + 1;
+        while (e.n < due && e.n < e.list.size()) {
+            Prop q = e.list.get(e.n++);
+            if (q.removed) continue;
+            float px = q.cx(), py = q.cy();
+            w.fx.explosion(px, py, 55f);
+            w.fx.dust(px, py, 40f, 4);
+            w.fx.debris(px, py, 8, q.color, 320f);
+            if (w.sfx != null) w.sfx.boom(0.35f);
+            w.rumble += 0.25f;
+            q.impX = px; q.impY = py;
+            w.fracture(q, px, py);
+        }
+        if (e.n < e.list.size()) return false;
+        float since = e.t - 1.4f - e.list.size() * 0.16f;
+        if (e.c == 0f && since > 1.7f) {                     // the building is coming down: the dust wave rolls out
+            e.c = 1f;
+            float reach = Math.max(700f, e.b * 4f);
+            for (int k = 0; k < 46; k++) {
+                float dir = k % 2 == 0 ? 1f : -1f;
+                float off = e.b * 0.6f + 30f + (k / 2) * (reach / 23f);
+                float px = e.a + dir * off;
+                w.fx.add(Fx.SMOKE, px, floor - 14f - w.rnd.nextFloat() * 30f, dir * (180f + w.rnd.nextFloat() * 260f), -10f - w.rnd.nextFloat() * 30f, 3f + w.rnd.nextFloat() * 2f, 26f + w.rnd.nextFloat() * 26f, w.rnd.nextFloat() < 0.5f ? 0xFFb8ab9c : 0xFFa39a8e);
+            }
+            for (int i = 0; i < w.sim.bodies.size(); i++) {  // the blast of air pushes everything along the ground
+                RB b = w.sim.bodies.get(i);
+                if (b.invM == 0f) continue;
+                float dx = b.x - e.a;
+                if (Math.abs(dx) > reach + 200f || b.y < floor - 420f) continue;
+                float f = 1f - Math.abs(dx) / (reach + 200f);
+                float push = 1300f * f;
+                b.vx += (dx >= 0f ? 1f : -1f) * push;
+                b.vy -= push * 0.25f;
+                b.w += (dx >= 0f ? 1f : -1f) * f * 3f;
+            }
+            w.fx.shake = Math.min(1f, w.fx.shake + 0.8f);
+            w.rumble += 1f;
+            w.stats.collapses++;
+            w.alarm(e.a, floor, 1600f, 6f);
+            if (w.sfx != null) w.sfx.boom(1f);
+        }
+        return since > 3.2f;
+    }
+
+    // ------------------------------------------------------------------------------ earthquake ---
+
+    private static boolean quake(World w, Event e, float dt) {
+        float k = Math.min(1f, e.t / 1.5f) * Math.min(1f, (QUAKE_TIME - e.t) / 1.5f);
+        if (k < 0f) k = 0f;
+        w.fx.shake = Math.max(w.fx.shake, 0.5f * k);
+        w.rumble += 0.02f;
+        for (int i = 0; i < w.sim.bodies.size(); i++) {
+            RB b = w.sim.bodies.get(i);
+            if (b.invM == 0f || b.vy < -90f || w.rnd.nextFloat() > dt * 2.2f * k) continue;
+            b.vy -= 300f + w.rnd.nextFloat() * 380f * k;
+            b.vx += (w.rnd.nextFloat() - 0.5f) * 260f * k;
+            b.w += (w.rnd.nextFloat() - 0.5f) * 3f * k;
+        }
+        e.b += dt;
+        if (e.b >= 0.14f) {                                  // the structures crack and give way
+            e.b = 0f;
+            int tries = 0, hit = 0;
+            for (int n = w.ents.size(); n > 0 && hit < 3 && tries < 40; tries++) {
+                Ent o = w.ents.get(w.rnd.nextInt(n));
+                if (!(o instanceof Prop)) continue;
+                Prop q = (Prop) o;
+                if (!q.isStruct || q.removed || q.anchor || q.bodies.isEmpty() || !World.breakable(q)) continue;
+                w.crack(q, q.cx() + w.fx.rr(q.hw * 0.6f), q.cy() + w.fx.rr(q.hh * 0.6f), 0.25f * k);
+                w.wear(q, World.toughness(q) * 0.22f * k, true);
+                hit++;
+            }
+            float fx0 = w.sim.wallL + w.rnd.nextFloat() * (w.sim.wallR - w.sim.wallL);
+            w.fx.dust(fx0, w.floorY() - 6f, 24f, 1);
+        }
+        if (w.rnd.nextFloat() < dt * 1.6f && w.sfx != null) w.sfx.crunch();
+        return e.t >= QUAKE_TIME;
+    }
+
+    // ------------------------------------------------------------------------------- air raid ---
+
+    private static boolean strike(World w, Event e, float dt) {
+        int due = Math.min(16, (int) (e.t / 0.3f));
+        while (e.n < due) {
+            e.n++;
+            float px = e.a + (w.rnd.nextFloat() - 0.5f) * 1100f;
+            px = Math.max(w.sim.wallL + 60f, Math.min(w.sim.wallR - 60f, px));
+            w.launchRocket(px, w.sim.ceilY + 80f, (w.rnd.nextFloat() - 0.5f) * 0.18f, 1f, null);
+        }
+        return e.t >= STRIKE_TIME;
+    }
+
+    // --------------------------------------------------------------------------------- tornado ---
+
+    private static boolean tornado(World w, Event e, float dt) {
+        float floor = w.floorY();
+        float fade = Math.min(1f, Math.min(e.t / 1.5f, (TORNADO_TIME - e.t) / 2f));
+        if (fade < 0f) fade = 0f;
+        e.a += e.b * 60f * dt;
+        if (e.a < w.sim.wallL + 200f) { e.a = w.sim.wallL + 200f; e.b = 1f; }
+        if (e.a > w.sim.wallR - 200f) { e.a = w.sim.wallR - 200f; e.b = -1f; }
+        float cx = e.a;
+        e.c += dt * 5f;
+        // the funnel: grey smoke spiralling up, wider at the top
+        int cnt = (int) (22f * dt * 60f * 0.1f * fade + w.rnd.nextFloat());
+        for (int k = 0; k < cnt + 4; k++) {
+            float h = w.rnd.nextFloat() * 560f;
+            float r = 22f + h * 0.24f;
+            float th = w.rnd.nextFloat() * 6.283f;
+            w.fx.add(Fx.SMOKE, cx + (float) Math.sin(th) * r, floor - h, (float) Math.cos(th) * r * 2.2f, -30f, 0.7f + w.rnd.nextFloat() * 0.5f, 12f + h * 0.03f, w.rnd.nextFloat() < 0.5f ? 0xFF5a5f66 : 0xFF77706a);
+        }
+        if (w.rnd.nextFloat() < dt * 14f) w.fx.dust(cx + w.fx.rr(60f), floor - 10f, 20f, 1);
+        if (w.rnd.nextFloat() < dt * 10f) w.fx.add(Fx.DEBRIS, cx + w.fx.rr(120f), floor - 20f, w.fx.rr(260f), -400f - w.rnd.nextFloat() * 500f, 1.2f, 3f, 0xFF8a7a68);
+        float time = w.time;
+        for (int i = 0; i < w.sim.bodies.size(); i++) {
+            RB b = w.sim.bodies.get(i);
+            if (b.invM == 0f) continue;
+            float dx = b.x - cx;
+            float ad = Math.abs(dx);
+            if (ad > 460f || b.y < floor - 1300f) continue;
+            float f = (1f - ad / 460f) * fade;
+            float h = floor - b.y;
+            float tang = (float) Math.sin(time * 3.2f + h * 0.02f);
+            b.vx += (-dx * 3.4f * f + tang * 1500f * f) * dt;
+            b.vy -= (3500f * f * (ad < 220f ? 1f : 0.3f)) * dt;
+            b.vx *= 1f - Math.min(0.9f, 1.2f * f * dt);
+            b.w += tang * 5f * f * dt * 20f;
+        }
+        e.n++;
+        if (e.n % 12 == 0) {                                 // it tears the buildings apart
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent o = w.ents.get(i);
+                if (!(o instanceof Prop)) continue;
+                Prop q = (Prop) o;
+                if (!q.isStruct || q.removed || q.anchor || q.bodies.isEmpty() || Math.abs(q.cx() - cx) > 230f || !World.breakable(q)) continue;
+                w.crack(q, q.cx(), q.cy(), 0.2f * fade);
+                w.wear(q, World.toughness(q) * 0.28f * fade, true);
+            }
+        }
+        if (e.n % 150 == 70 && fade > 0.5f) w.lightning(cx + w.fx.rr(260f), floor - 300f);
+        if (w.rnd.nextFloat() < dt * 2.5f && w.sfx != null) w.sfx.launch();
+        return e.t >= TORNADO_TIME;
+    }
+}

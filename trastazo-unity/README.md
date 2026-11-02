@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 2.4
+# Trastazo Playground para Unity — 2.5
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,12 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 2.5
+
+* **Levolution:** derrumbe controlado con ola de polvo, terremoto, bombardeo y tornado (pestaña nueva). Test24 traducido a C#.
+
+![Derrumbe](docs/levo-derrumbe.png)
 
 ## Novedades de Trastazo Playground Unity 2.4
 
@@ -258,6 +264,7 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
 | `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test24` (2.5: Levolution) | pasan |
 | `Test23` (2.4: edificio, rascacielos, integridad estructural) | pasan |
 | `Test22` (2.3: mina, guillotina, lanzallamas, láser) | pasan |
 | `Test21` (2.2: sangre arterial, salpicaduras satélite, cuerpos que gotean, armas ensangrentadas, charcos) | 7/7 pasan |
