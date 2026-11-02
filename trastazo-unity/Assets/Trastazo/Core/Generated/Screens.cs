@@ -324,6 +324,19 @@ namespace Trastazo
                 p.setColor(Renderer.alpha(unchecked((int)0xFF5a0a10U), 0.18f * (1f - i / 8f)));
                 c.drawRect(0, i * sh * 0.03f, sw, (i + 1) * sh * 0.03f, p);
             }
+            // a spotlight from above on the scene, like a poster
+            {
+                float lx = sw * 0.66f;
+                for (int i = 0; i < 4; i++) {
+                    p.setColor(Renderer.alpha(unchecked((int)0xFFfff2d0U), 0.028f));
+                    Path cone = new Path();
+                    float top = 6 * d, wTop = (10 + i * 5) * d, wBot = (sw * 0.16f) + i * sw * 0.035f;
+                    cone.moveTo(lx - wTop, top); cone.lineTo(lx + wTop, top); cone.lineTo(lx + wBot, sh * 0.8f); cone.lineTo(lx - wBot, sh * 0.8f); cone.close();
+                    c.drawPath(cone, p);
+                }
+                p.setColor(unchecked((int)0xFF1b1f27U)); c.drawRect(lx - 24 * d, 0, lx + 24 * d, 10 * d, p);
+                p.setColor(Renderer.alpha(unchecked((int)0xFFfff2d0U), 0.9f)); c.drawRect(lx - 14 * d, 8 * d, lx + 14 * d, 12 * d, p);
+            }
             // blood running down from the top edge
             p.setColor(unchecked((int)0xFF7d0a10U));
             c.drawRect(0, 0, sw, 5 * d, p);
@@ -370,31 +383,16 @@ namespace Trastazo
             float half = (colW - gap) / 2;
             button(c, colX, y, half, bh, "Logros " + g.achievements.count(g.settings) + "/" + Achievements.LIST.Length, A_ACH, false, IC_TROPHY);
             button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false, IC_GEAR);
-            // what's new, on the right when there is room
-            float cardW = Math.min(330 * d, sw - colX - colW - 70 * d);
-            if (cardW > 220 * d) {
-                float lh = 19 * d, cardH = 54 * d + NEWS.Length * lh;
-                float cx = sw - cardW - 28 * d, cy = Math.max(70 * d, sh - cardH - 64 * d);
-                p.setColor(unchecked((int)0xD8101318U));
-                r.set(cx, cy, cx + cardW, cy + cardH);
-                c.drawRoundRect(r, 16 * d, 16 * d, p);
-                p.setColor(unchecked((int)0xFFc0121bU));
-                r.set(cx, cy, cx + 6 * d, cy + cardH);
-                c.drawRect(r, p);
-                text(c, "Novedades " + (Game.edition != null ? Game.edition : "v" + Report.VERSION), cx + 20 * d, cy + 30 * d, 16 * d, unchecked((int)0xFFffffffU), Paint.Align.LEFT, true);
-                float ns = 11.5f * d, maxW = 0f;
-                p.setTextSize(ns);
-                foreach (string n in NEWS) maxW = Math.max(maxW, p.measureText(n));
-                if (maxW > cardW - 48 * d) ns *= (cardW - 48 * d) / maxW;
-                for (int i = 0; i < NEWS.Length; i++) {
-                    float ly = cy + 54 * d + i * lh;
-                    p.setColor(i % 2 == 0 ? unchecked((int)0xFFe0463cU) : unchecked((int)0xFF2fd0b5U));
-                    c.drawCircle(cx + 24 * d, ly - 4 * d, 3 * d, p);
-                    text(c, NEWS[i], cx + 34 * d, ly, ns, unchecked((int)0xFFd5dbe6U), Paint.Align.LEFT, false);
-                }
+            // what's new: one line at the bottom, so the cover scene stays clear
+            {
+                string news = "Novedades: Destruction Engine 1.5 · trampas de SAW · sangre V3 · gore V4 · 10 construcciones";
+                p.setTextSize(11 * d);
+                float nw = p.measureText(news), maxN = sw - colX - 24 * d;
+                float ns = nw > maxN ? 11 * d * maxN / nw : 11 * d;
+                text(c, news, colX, sh - 42 * d, ns, unchecked((int)0xFFe0463cU), Paint.Align.LEFT, true);
             }
             string plat = Game.edition != null ? Game.edition : (Game.desktop ? "versión PC" : "Android");
-            text(c, "Trastazo Playground · física, arte y música originales · v" + Report.VERSION + " · " + plat, colX, sh - 16 * d, 11 * d, unchecked((int)0x88ffffffU), Paint.Align.LEFT, false);
+            text(c, "Trastazo Playground · v" + Report.VERSION + " · " + plat, colX, sh - 16 * d, 11 * d, unchecked((int)0x88ffffffU), Paint.Align.LEFT, false);
             if (Game.desktop) text(c, "Ratón: arrastra y toca · clic derecho: mover cámara · rueda: zoom · Esc: menú · Espacio: pausa · 1-9: categorías · F11: pantalla completa", colX, sh - 32 * d, 10 * d, unchecked((int)0x88ffffffU), Paint.Align.LEFT, false);
         }
 

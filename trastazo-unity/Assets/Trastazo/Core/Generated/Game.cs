@@ -108,18 +108,39 @@ namespace Trastazo
 
         public float floorY() { return world.sim.floorY; }
 
-        /** Live scene behind the title menu: people, zombies and the odd explosion. */
+        /**
+         * The cover: a live scene behind the title menu, like a poster of the game. Billy rides in from the left, a
+         * man wears the reverse bear trap with its timer counting down, a pendulum swings over a pair of victims, a
+         * pane of glass and a barrel wait on the right and a zombie shambles in. Re-staged every few seconds.
+         */
         public void titleDemo() {
             clearWorld();
-            for (int i = 0; i < 3; i++) world.spawn(Items.HUMAN, 1500 + i * 140, -120, -1, 1f);
-            world.spawn(Items.ZOMBIE, 2500, -120, -1, 1f);
-            world.spawn(Items.ZOMBIE, 2640, -120, -1, 1f);
-            for (int i = 0; i < 3; i++) world.spawn(Items.CRATE, 2050, -40 - i * 62, 1, 1f);
-            world.spawn(Items.XBARREL, 2210, -40, 1, 1f);
+            Ent billy = world.spawn(Items.BILLY, 1570, -60, 1, 1f);
+            if (billy is Prop) { ((Prop) billy).on = false; titleBilly = (Prop) billy; }
+            Person victim = (Person) world.spawn(Items.HUMAN, 1750, -120, -1, 1f);
+            Ent pend = world.spawn(Items.PENDULUM, 2030, -60, 1, 1f);
+            if (pend is Prop) { ((Prop) pend).on = false; titlePend = (Prop) pend; titlePendT = 4f; }
+            world.spawn(Items.HUMAN, 1960, -120, 1, 1f);
+            world.spawn(Items.HUMAN, 2100, -120, -1, 1f);
+            world.spawn(Items.BEARTRAP, 1860, -40, 1, 1f);
+            world.spawn(Items.GLASS, 2200, -80, 1, 1f);
+            world.spawn(Items.XBARREL, 2290, -40, 1, 1f);
+            world.spawn(Items.ZOMBIE, 2380, -120, -1, 1f);
+            for (int i = 0; i < 2; i++) world.spawn(Items.CRATE, 2290, -100 - i * 62, 1, 1f);
+            // the reverse bear trap goes on once the man has landed
+            titleTrapT = 0.8f;
+            titleVictim = victim;
+            if (billy is Prop) Traps.say(world, (Prop) billy);
+            // the cast stands still like a poster (nobody thinks for a while), until the pendulum starts
+            foreach (Ent e in world.ents) if (e is Person) ((Person) e).thinkT = 1e9f;
             demoT = 0;
         }
 
-        public void spawnDemo() {
+        private float titleTrapT, titlePendT;
+        private Prop titlePend, titleBilly;
+        private Person titleVictim;
+
+            public void spawnDemo() {
             clearWorld();
             world.spawn(Items.HUMAN, ROOM_W / 2 - 80, -120, 1, 1f);
             world.spawn(Items.CRATE, ROOM_W / 2 + 160, -200, 1, 1f);
@@ -320,13 +341,26 @@ namespace Trastazo
             float sim = paused || menu ? 0f : dtReal * (slow ? 0.3f : 1f) * mods.timescale * (slowmoT > 0 ? 0.35f : 1f);
             lastSimDt = sim;
             if (screens.screen == Screens.TITLE) {
+                if (titlePendT > 0f) {
+                    titlePendT -= dtReal;
+                    if (titlePendT <= 0f && titlePend != null && !titlePend.removed) titlePend.on = true;
+                    if (titlePendT <= 0f && titleBilly != null && !titleBilly.removed) titleBilly.on = true;
+                }
+                if (titleTrapT > 0f) {
+                    titleTrapT -= dtReal;
+                    if (titleTrapT <= 0f && titleVictim != null && !titleVictim.removed) {
+                        RB h = titleVictim.rb[Person.HEAD];
+                        Ent t = world.spawn(Items.REVTRAP, h.x, h.y, 1, 1f);
+                        titleVictim = null;
+                    }
+                }
                 demoT += dtReal;
-                if (demoT > 7f) {
+                if (demoT > 11f) {
                     demoT = 0;
                     int n = 0;
                     foreach (Ent e in world.ents) if (e is Person && !((Person) e).dead) n++;
-                    if (n < 4 || world.ents.size() < 6) titleDemo();
-                    else world.explode(1900 + rnd.nextFloat() * 600, floorY() - 30, 260, 1800f, 30f, true);
+                    if (n < 4 || world.ents.size() < 8) titleDemo();
+                    else world.explode(2100 + rnd.nextFloat() * 250, floorY() - 30, 260, 1800f, 30f, true);
                 }
             }
             ui.dockBadge = challenge >= 0 && chUses >= 0 ? "×" + chUses : null;

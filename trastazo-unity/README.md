@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 1.7
+# Trastazo Playground para Unity — 1.8
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,17 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 1.8
+
+* **Portada nueva:** la pantalla de inicio es ahora un póster del juego: un foco desde el techo y, debajo,
+  una escena en vivo: Billy en su triciclo, un hombre con la **trampa invertida** y su cuenta atrás, un
+  **cepo**, un **péndulo** que se pone en marcha, una lámina de cristal, un barril rojo y un zombi. Los
+  personajes posan quietos unos segundos y luego empieza el espectáculo. Las novedades pasan a una línea
+  roja abajo para no tapar la escena. **Icono nuevo** de la app (T sobre fondo oscuro con sangre y «PLAYGROUND»).
+
+![Portada](docs/portada-playground.png)
+![Portada en acción](docs/portada-playground-accion.png)
 
 ## Novedades de Trastazo Playground Unity 1.7
 

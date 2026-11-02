@@ -14,7 +14,7 @@ namespace Trastazo
 
         public static void RunMain(string[] a){
             string out_ = a.Length > 0 ? a[0] : "/tmp";
-            Game.edition = "Unity 1.7";
+            Game.edition = "Unity 1.8";
             // 1. the bear trap snaps on a foot that steps on it; Activate opens it again
             World w = new World(null);
             Prop bear = (Prop) w.spawn(Items.BEARTRAP, 1500, -40, 1, 1f);
