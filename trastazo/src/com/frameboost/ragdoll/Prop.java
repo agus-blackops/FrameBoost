@@ -13,6 +13,12 @@ final class Prop extends Ent {
     boolean thrust;                 // thruster
     float fireCd, shotCd, reloadT, thinkT, work, aimA;
     int ammo = 12;
+    boolean isStruct, anchor;         // part of a construction: blasts carve it, its breaking raises dust; anchor = foundation
+    boolean slab;                   // a floor section: it only overhangs a couple of sections past its last support
+    int hops;                       // scratch: sections between this slab and a support
+    float relT = -1f;               // >= 0: unsupported, it lets go and falls when this runs out
+    int mark = 3;                   // scratch for the support search
+    java.util.ArrayList<Prop> nbr;  // pieces it touches (what it holds up and what holds it up)
     float hp = 100f, flash, age, trim;
     float dens = 1f;                // block density (constructions)
     // gib chunks: what they are made of (for drawing and for the blood they leave)

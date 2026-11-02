@@ -628,7 +628,7 @@ namespace Trastazo
                 default: foreach (RB b in q.bodies) foreach (Shape s in b.shapes) { if (s.type == Shape.CIRCLE) circleShape(c, s, col); else if (s.type == Shape.BOX) boxShape(c, s, col, true); else capsuleShape(c, s, col); }
              break; }
             if (q.ncr > 0 && q.type != Items.BLOCK && q.type != Items.GLASS && detail) cracks(c, q);
-            if (m.frozen && !Items.isTrap(q.type)) pin(c, m.x, m.y);
+            if (m.frozen && !Items.isTrap(q.type) && !q.isStruct) pin(c, m.x, m.y);
         }
 
         private void limbLine(Draw2D c, float x0, float y0, float x1, float y1, float wdt, int col) {

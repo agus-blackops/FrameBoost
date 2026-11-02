@@ -15,6 +15,12 @@ namespace Trastazo
         public bool thrust;                 // thruster
         public float fireCd, shotCd, reloadT, thinkT, work, aimA;
         public int ammo = 12;
+        public bool isStruct, anchor;         // part of a construction: blasts carve it, its breaking raises dust; anchor = foundation
+        public bool slab;                   // a floor section: it only overhangs a couple of sections past its last support
+        public int hops;                       // scratch: sections between this slab and a support
+        public float relT = -1f;               // >= 0: unsupported, it lets go and falls when this runs out
+        public int mark = 3;                   // scratch for the support search
+        public JList<Prop> nbr;  // pieces it touches (what it holds up and what holds it up)
         public float hp = 100f, flash, age, trim;
         public float dens = 1f;                // block density (constructions)
         // gib chunks: what they are made of (for drawing and for the blood they leave)
@@ -425,7 +431,7 @@ namespace Trastazo
             return p;
         }
 
-        public static Prop anchor(Sim sim, float x, float y) {
+        public static Prop anchor_(Sim sim, float x, float y) {
             Prop p = of(Items.ANCHOR_ITEM);
             p.color = unchecked((int)0xFF9aa3adU);
             RB b = circle(p, x, y, 6f, 1f, 0.5f, 0.1f);

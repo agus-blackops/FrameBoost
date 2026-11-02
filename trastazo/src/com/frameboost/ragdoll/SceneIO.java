@@ -36,7 +36,7 @@ final class SceneIO {
                 Prop q = (Prop) e;
                 o.println(String.format(Locale.US, "Q %d %.2f %.2f %d %d %d %d %d %.2f %d %d %d %.2f %.2f %d %.2f %d %d %d", q.item, q.item == Items.FRIDGE ? (float) list.indexOf(q.meal) : q.param, q.fuse, q.burning ? 1 : 0, q.motor, q.thrust ? 1 : 0,
                         q.on ? 1 : 0, q.firing ? 1 : 0, q.burnT, q.dead ? 1 : 0, q.homeDirV, q.bodies.size(), q.hw, q.hh, q.color, q.dens, q.flammable ? 1 : 0,
-                        (q.gib ? 1 : 0) | (q.frag ? 2 : 0) | (q.bone ? 4 : 0) | (q.bloody ? 8 : 0) | (q.round ? 16 : 0), q.color2));
+                        (q.gib ? 1 : 0) | (q.frag ? 2 : 0) | (q.bone ? 4 : 0) | (q.bloody ? 8 : 0) | (q.round ? 16 : 0) | (q.isStruct ? 32 : 0) | (q.anchor ? 64 : 0), q.color2));
             }
             for (RB b : e.bodies) o.println(String.format(Locale.US, "B %.2f %.2f %.4f %d", b.x, b.y, b.a, b.frozen ? 1 : 0));
             o.println("X");
@@ -122,6 +122,7 @@ final class SceneIO {
                             q.burnT = Float.parseFloat(t[9]); q.dead = t[10].equals("1");
                             q.homeDirV = Integer.parseInt(t[11]);
                             if (item == Items.FRIDGE) { q.param = Float.parseFloat(t[2]); }
+                            if (t.length > 18) { q.isStruct = (gf & 32) != 0; q.anchor = (gf & 64) != 0; if (q.anchor) q.main().makeStatic(); }
                             if (t.length > 18) { q.gib = (gf & 1) != 0; q.frag = (gf & 2) != 0; q.bone = (gf & 4) != 0; q.bloody = (gf & 8) != 0; q.round = (gf & 16) != 0; q.color2 = Integer.parseInt(t[19]); }
                             if (item == Items.FRIDGE) q.work = q.on ? 1f : 0f;
                             if (q.dead) w.damageMachine(q, 1e9f);
@@ -163,6 +164,7 @@ final class SceneIO {
                 }
             }
             in.close();
+            w.linkStruct();
             // frozen people keep their joints locked; fridges get their inmate back
             for (Ent e : made) {
                 if (e instanceof Prop && ((Prop) e).type == Items.FRIDGE) {

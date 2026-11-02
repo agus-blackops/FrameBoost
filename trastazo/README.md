@@ -1,4 +1,4 @@
-# Trastazo Playground 5.0
+# Trastazo Playground 5.1
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,28 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 2.3:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 2.4:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 5.1
+
+* **Edificio** (5 plantas) y **Rascacielos** (10 plantas, con mástil) en *Construir*. Cada planta tiene forjado de hormigón,
+  muros de ladrillo con ventana, tabiques de yeso (el edificio) o columnas de acero y paneles de cristal (el rascacielos).
+* **Destrucción tipo The Finals:**
+  * **Todo se rompe por trozos:** los forjados están cortados en secciones y los muros en paneles; una explosión
+    **abre un agujero** donde cae y deja el resto en pie. También se dañan con disparos, golpes y cascotes.
+  * **Integridad estructural:** una pieza solo se sostiene mientras esté unida a la cimentación a través de otras piezas
+    en pie. Lo que se queda sin apoyo **se suelta y cae** (con retraso escalonado, de abajo arriba), y un forjado no
+    puede quedar en voladizo más de dos secciones. Si vuelas la planta baja, **cae todo el edificio**.
+  * **Polvo:** cada pieza que se rompe o se suelta levanta **nubes de polvo** pesadas que flotan y se disipan despacio.
+  * Los edificios no gastan física mientras están intactos (sus piezas están quietas hasta que pierden apoyo) y se
+    guardan y cargan con la escena.
+
+![Edificio con un agujero](../trastazo-unity/docs/finals-edificio.png)
+![Rascacielos](../trastazo-unity/docs/finals-rascacielos.png)
+![Rascacielos cayendo](../trastazo-unity/docs/finals-colapso.png)
 
 ## Novedades de la 5.0
 

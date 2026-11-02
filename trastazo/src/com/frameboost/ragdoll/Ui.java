@@ -825,6 +825,17 @@ final class Ui {
             case Items.DOMINOES:
                 for (int k = 0; k < 4; k++) box(c, cx - s * 0.8f + k * s * 0.45f + (k == 0 ? s * 0.1f : 0f), cy - s * 0.55f + (k == 0 ? s * 0.12f : 0f), cx - s * 0.62f + k * s * 0.45f + (k == 0 ? s * 0.25f : 0f), cy + s * 0.6f, k % 2 == 0 ? 0xFFe9e2cf : 0xFFd8453a, s * 0.03f);
                 break;
+            case Items.BUILDING:
+                box(c, cx - s * 0.7f, cy - s * 0.85f, cx + s * 0.7f, cy + s * 0.8f, 0xFFb9b4ac, s * 0.03f);
+                for (int r = 0; r < 4; r++) for (int k = 0; k < 3; k++)
+                    box(c, cx - s * 0.5f + k * s * 0.38f, cy - s * 0.7f + r * s * 0.4f, cx - s * 0.3f + k * s * 0.38f, cy - s * 0.45f + r * s * 0.4f, (r + k) % 3 == 0 ? 0xFFffe27a : 0xFF9fd2ef, s * 0.02f);
+                break;
+            case Items.SKYSCRAPER:
+                line(c, cx, cy - s * 1.05f, cx, cy - s * 0.8f, Math.max(1f, s * 0.06f), 0xFF8d96a3);
+                box(c, cx - s * 0.45f, cy - s * 0.8f, cx + s * 0.45f, cy + s * 0.85f, 0xFF59687a, s * 0.03f);
+                for (int r = 0; r < 7; r++) for (int k = 0; k < 2; k++)
+                    box(c, cx - s * 0.32f + k * s * 0.36f, cy - s * 0.7f + r * s * 0.22f, cx - s * 0.08f + k * s * 0.36f, cy - s * 0.55f + r * s * 0.22f, (r * 2 + k) % 4 == 0 ? 0xFFffe27a : 0xFF9fd2ef, s * 0.01f);
+                break;
             case Items.SCAFFOLD:
                 line(c, cx - s * 0.65f, cy - s * 0.8f, cx - s * 0.65f, cy + s * 0.7f, Math.max(1.5f, s * 0.1f), 0xFF8d96a3);
                 line(c, cx + s * 0.65f, cy - s * 0.8f, cx + s * 0.65f, cy + s * 0.7f, Math.max(1.5f, s * 0.1f), 0xFF8d96a3);

@@ -303,6 +303,7 @@ final class Screens {
 
     /** What is new, on the title screen's card. */
     static final String[] NEWS = {
+        "Edificio y rascacielos + destrucción tipo The Finals",
         "Más trampas: mina, guillotina, lanzallamas, láser",
         "Hombre óxido y barra de óxido",
         "Modelo de humanos V3 renovado",

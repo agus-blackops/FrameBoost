@@ -84,6 +84,14 @@ namespace Trastazo
             add(SMOKE, px, py, rr_(40), -20f - rf() * 50f, 0.9f + rf() * 0.9f, sz, shade);
         }
 
+        /** A heavy cloud of dust that rolls out and hangs in the air: n puffs spread over a radius r. */
+        public void dust(float px, float py, float r, int n) {
+            for (int i = 0; i < n; i++) {
+                float a = rf() * 6.283f, d = rf() * r;
+                add(SMOKE, px + (float) Math.cos(a) * d, py + (float) Math.sin(a) * d * 0.6f, (float) Math.cos(a) * (30f + rf() * 90f), -10f - rf() * 40f, 2.2f + rf() * 2.4f, r * 0.35f + 10f + rf() * 14f, rf() < 0.5f ? unchecked((int)0xFFb8ab9cU) : unchecked((int)0xFFa39a8eU));
+            }
+        }
+
         public void sparks(float px, float py, int n, int col) {
             for (int i = 0; i < n; i++) {
                 float a = rf() * 6.28f, sp = 150f + rf() * 380f;

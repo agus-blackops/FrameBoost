@@ -12,14 +12,17 @@ final class Build {
     /** Joints made by constructions carry this tag: breaking one counts as destruction. */
     static final int TAG = 77;
 
+    static final int CONCRETE = 0xFFb9b4ac, PLASTER = 0xFFd8d2c4;
     static final int GLASS = 0xFF9fd2ef, WOOD = 0xFFc9a066, BRICK = 0xFFa8553a, STEEL = 0xFF8d96a3, ROOF = 0xFF6d4a2f;
     static final float DENS_WOOD = 0.6f, DENS_BRICK = 1.2f, DENS_STEEL = 2.5f;
     /** Breaking force per material (force units; a block of mass m standing still carries about m * gravity). */
     static final float BF_WOOD = 2.5e8f, BF_BRICK = 4.0e8f, BF_STEEL = 6.0e7f;
+    /** Frames of tall buildings: stiffer, so a stack of many floors does not shake itself apart while it settles. */
+    static final float BF_FRAME = 3.0e9f;
 
     static ArrayList<Ent> build(World w, int item, float x, float y) {
         ArrayList<Ent> out = new ArrayList<>();
-        if (w.sim.bodies.size() > World.MAX_BODIES - 60) return out;
+        if (w.sim.bodies.size() > World.MAX_BODIES - (item == Items.SKYSCRAPER || item == Items.BUILDING ? 130 : 60)) return out;
         float f = w.floorY() - 2f;                         // lifted a hair: no hard landing when placed
         switch (item) {
             case Items.HOUSE: house(w, out, x, f); break;
@@ -32,6 +35,8 @@ final class Build {
             case Items.GREENHOUSE: greenhouse(w, out, x, f); break;
             case Items.DOMINOES: dominoes(w, out, x, f); break;
             case Items.SCAFFOLD: scaffold(w, out, x, f); break;
+            case Items.BUILDING: building(w, out, x, f); break;
+            case Items.SKYSCRAPER: skyscraper(w, out, x, f); break;
             default: break;
         }
         return out;
@@ -39,6 +44,7 @@ final class Build {
 
     private static Prop piece(World w, ArrayList<Ent> out, float x, float y, float hw, float hh, int color, float dens, boolean isStatic) {
         Prop p = Prop.block(x, y, hw, hh, color, dens, color == WOOD || color == ROOF);
+        p.isStruct = true;
         if (isStatic) p.main().makeStatic();
         p.register(w.sim);
         w.add(p);
@@ -222,5 +228,60 @@ final class Build {
             weld(w, deck1, high[s], px, f - 90f, BF_STEEL);
             weld(w, high[s], deck2, px, f - 174f, BF_STEEL);
         }
+    }
+
+    /** A piece of a construction that stands on its own until its supports are destroyed (see World.integrity). */
+    private static Prop frame(World w, ArrayList<Ent> out, float x, float y, float hw, float hh, int color, float dens, boolean anchor) {
+        Prop p = piece(w, out, x, y, hw, hh, color, dens, anchor);
+        if (anchor) p.anchor = true; else p.main().setFrozen(true);
+        return p;
+    }
+
+    /** A floor slab cut into side-by-side sections, so a blast takes a bite out of it instead of the whole floor. */
+    private static void sections(World w, ArrayList<Ent> out, float x, float y, float hw, float hh, int n, int color, float dens) {
+        float sw = hw / n;
+        for (int k = 0; k < n; k++) frame(w, out, x - hw + sw * (2 * k + 1), y, sw, hh, color, dens, false);
+    }
+
+    /**
+     * An apartment block, five floors: a foundation, concrete floors, brick outer walls with a window above each sill
+     * and a plaster partition in every flat. Nothing is welded: each piece stands while something holds it up, so
+     * a blast carves holes in it and, when the supports are gone, whole floors come down.
+     */
+    private static void building(World w, ArrayList<Ent> out, float x, float f) {
+        int n = 5;
+        float H = 120f, hwS = 186f, wallX = 176f;
+        frame(w, out, x, f - 6f, hwS, 6, CONCRETE, DENS_BRICK, true);
+        for (int i = 1; i <= n; i++) sections(w, out, x, f - 6f - i * H, hwS, 6, 6, CONCRETE, 0.5f);
+        for (int i = 1; i <= n; i++) {
+            float top = f - 12f - (i - 1) * H;               // top of the slab below
+            for (int k = 0; k < 3; k++) {
+                float wx = k == 0 ? x - wallX : (k == 1 ? x + wallX : x);
+                boolean mid = k == 2;
+                float hw = mid ? 4f : 8f;
+                frame(w, out, wx, top - 30f, hw, 30, mid ? PLASTER : BRICK, mid ? 0.4f : 0.8f, false);
+                frame(w, out, wx, top - 84f, hw, 24, mid ? PLASTER : GLASS, mid ? 0.4f : 0.5f, false);
+            }
+        }
+        w.linkStruct();
+    }
+
+    /**
+     * A skyscraper, ten floors: a foundation, slabs held by three steel columns, and glass curtain panes
+     * between the columns, with a mast on the roof. Cut the columns at the bottom and it comes down floor on floor.
+     */
+    private static void skyscraper(World w, ArrayList<Ent> out, float x, float f) {
+        int n = 10;
+        float H = 115f, hwS = 134f;
+        frame(w, out, x, f - 5f, hwS, 5, CONCRETE, DENS_BRICK, true);
+        for (int i = 1; i <= n; i++) sections(w, out, x, f - 5f - i * H, hwS, 5, 4, CONCRETE, 0.4f);
+        for (int i = 1; i <= n; i++) {
+            float top = f - 10f - (i - 1) * H;
+            float hh = (H - 10f) / 2f;
+            for (int k = -1; k <= 1; k++) frame(w, out, x + k * 126f, top - hh, 6, hh, STEEL, 0.6f, false);
+            for (int k = -1; k <= 1; k += 2) frame(w, out, x + k * 63f, top - hh, 54, hh - 3f, GLASS, 0.45f, false);
+        }
+        frame(w, out, x, f - 10f - n * H - 52f, 3, 52, STEEL, 0.5f, false);
+        w.linkStruct();
     }
 }

@@ -17,7 +17,7 @@ namespace Trastazo
                 FIRE = 80, LIGHTNING = 81, PUSH = 82,
                 SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
                 ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, PYRAMID = 115, CASTLE = 116, GREENHOUSE = 117, DOMINOES = 118, SCAFFOLD = 119, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
-                GLASS = 154, RUSTBAR = 155, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+                GLASS = 154, RUSTBAR = 155, BUILDING = 160, SKYSCRAPER = 161, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
         public sealed class Item {
             public int id;
@@ -123,6 +123,8 @@ namespace Trastazo
                 new Item(GREENHOUSE, "Invernadero", PLACE + " · marco de acero y paredes y techo de cristal"),
                 new Item(DOMINOES, "Dominó", PLACE + " · 14 fichas en fila; empuja la primera"),
                 new Item(SCAFFOLD, "Andamio", PLACE + " · postes de acero y tablones en dos pisos"),
+                new Item(BUILDING, "Edificio", PLACE + " · 5 plantas con pisos, ventanas y tabiques; vuélalo por partes"),
+                new Item(SKYSCRAPER, "Rascacielos", PLACE + " · 10 plantas con estructura de acero y fachada de cristal; derríbalo desde la base"),
             },
             new Item[] {
                 new Item(DOG, "Perro", PLACE + " · pasea, ladra a los zombis y se come a los muertos"),
@@ -171,7 +173,7 @@ namespace Trastazo
             return HAND_ITEM;
         }
 
-        public static bool isBuild(int id) { return id >= HOUSE && id <= SCAFFOLD; }
+        public static bool isBuild(int id) { return (id >= HOUSE && id <= SCAFFOLD) || id == BUILDING || id == SKYSCRAPER; }
         public static bool isAnimal(int id) { return id >= DOG && id <= RAT; }
         public static bool isMachine(int id) { return (id >= SAW && id <= TESLA) || id == RUSTBAR; }
         public static bool isTrap(int id) { return (id >= BEARTRAP && id <= BILLY) || (id >= LANDMINE && id <= LASER); }

@@ -994,7 +994,7 @@ namespace Trastazo
         private bool pickLink(float wx, float wy, RB[] bodyOut, float[] localOut) {
             Shape s = world.sim.pick(wx, wy, 30f / zoom, true);
             if (s == null) {
-                Prop an = Prop.anchor(world.sim, wx, wy);
+                Prop an = Prop.anchor_(world.sim, wx, wy);
                 world.add(an);
                 undo.add(an);
                 bodyOut[0] = an.main();

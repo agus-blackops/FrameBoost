@@ -9,7 +9,7 @@ public class Test22 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.3";
+        Game.edition = "Unity 2.4";
 
         // 1. landmine: clicks when stepped on, then blows the walker apart; Activate detonates
         World w = new World(null);

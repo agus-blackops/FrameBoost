@@ -45,7 +45,7 @@ public class Test16 {
         System.out.printf("   greenhouse: %d panes -> %d sharp shards%n", glass, sharp);
         check("the greenhouse has glass panes that shatter into shards", glass == 4 && sharp > 10);
         // all of them fit in the palette and in a saved scene
-        check("five new entries in Construir", Items.CATS[Items.CAT_BUILD].length == 10);
+        check("seven new entries in Construir", Items.CATS[Items.CAT_BUILD].length == 12);
         Game g = Harness.newGame();
         g.world.buildAt(Items.CASTLE, 1300, 0);
         g.world.buildAt(Items.PYRAMID, 1800, 0);

@@ -59,6 +59,7 @@ namespace Trastazo
         public void remove(Ent e) {
             if (e == null || e.removed) return;
             e.removed = true;
+            if (e is Prop && ((Prop) e).isStruct) integrityDirty = true;
             foreach (RB b in e.bodies) sim.remove(b);
             foreach (Joint j in e.joints) sim.remove(j);
             // links made by the player that hang from this entity's bodies
@@ -218,12 +219,78 @@ namespace Trastazo
             }
         }
 
+        public bool integrityDirty;
+
+        /** Works out which pieces of the standing constructions touch each other (by their boxes). */
+        public void linkStruct() {
+            JList<Prop> list = new JList<Prop>();
+            for (int i = 0; i < ents.size(); i++) {
+                Ent e = ents.get(i);
+                if (!(e is Prop)) continue;
+                Prop q = (Prop) e;
+                if (q.isStruct && !q.removed && !q.bodies.isEmpty() && (q.anchor || (q.main().frozen && q.relT < 0f))) list.add(q);
+            }
+            foreach (Prop q in list) { q.nbr = new JList<Prop>(); q.slab = !q.anchor && q.hh <= 6.5f && q.hw > q.hh * 3f; }
+            for (int i = 0; i < list.size(); i++) {
+                Prop a = list.get(i);
+                for (int j = i + 1; j < list.size(); j++) {
+                    Prop b = list.get(j);
+                    if (Math.abs(a.main().x - b.main().x) <= a.hw + b.hw + 3f && Math.abs(a.main().y - b.main().y) <= a.hh + b.hh + 3f) { a.nbr.add(b); b.nbr.add(a); }
+                }
+            }
+            integrityDirty = true;
+        }
+
+        /**
+         * Structural integrity: what is no longer joined to a foundation through standing pieces lets go and falls, and a
+         * floor slab needs at least two supports below it. Checked whenever a piece of a construction is destroyed.
+         */
+        private void integrity() {
+            JList<Prop> all = new JList<Prop>();
+            for (int i = 0; i < ents.size(); i++) {
+                Ent e = ents.get(i);
+                if (!(e is Prop)) continue;
+                Prop q = (Prop) e;
+                if (q.isStruct && !q.removed && q.nbr != null && q.relT < 0f && (q.anchor || q.main().frozen)) all.add(q);
+            }
+            if (all.isEmpty()) return;
+            foreach (Prop q in all) { q.mark = 0; q.hops = 99; }
+            // spread from the foundations; floor sections may overhang at most 2 sections past a support
+            JList<Prop> stack = new JList<Prop>();
+            foreach (Prop q in all) if (q.anchor) { q.mark = 1; q.hops = 0; stack.add(q); }
+            while (!stack.isEmpty()) {
+                Prop q = stack.remove(stack.size() - 1);
+                foreach (Prop n in q.nbr) {
+                    if (n.removed || n.mark == 3) continue;
+                    int h = n.slab && q.slab ? q.hops + 1 : 0;
+                    if (n.slab && h > 2) continue;
+                    if (n.mark == 1 && n.hops <= h) continue;
+                    n.mark = 1; n.hops = h;
+                    stack.add(n);
+                }
+            }
+            int freed = 0;
+            foreach (Prop q in all) {
+                if (q.mark == 1 || q.anchor) continue;
+                q.relT = 0.04f + rnd.nextFloat() * 0.45f;
+                q.mark = 3;
+                freed++;
+            }
+            foreach (Prop q in all) if (q.mark == 1) q.mark = 3;
+            if (freed > 0) {
+                stats.collapses++;
+                rumble += 0.4f;
+                if (sfx != null) sfx.crunch();
+            }
+        }
+
         public void update(float dt) {
             if (dt > 0.1f) dt = 0.1f;
             time += dt;
             rumble = 0f;
             sim.update(dt);
             post(dt);
+            if (integrityDirty) { integrityDirty = false; integrity(); }
             fx.update(dt);
             for (int i = 0; i < 8; i++) if (trT[i] > 0) trT[i] -= dt;
             foreach (float[] a in arcs) if (a[4] > 0f) a[4] -= dt;
@@ -625,6 +692,7 @@ namespace Trastazo
             if (j.tag == Build.TAG) {                       // a construction let go: pieces fall and debris flies
                 float x = j.anchorBX(), y = j.anchorBY();
                 fx.debris(x, y, 7, Build.WOOD, 200f);
+                fx.dust(x, y, 26f, 3);
                 fx.smoke(x, y, 10, unchecked((int)0xFF9a9a9aU));
                 for (int k = 0; k < 3; k++) fx.smoke(x + fx.rr_(30f), y + fx.rr_(20f), 12f, unchecked((int)0xFFb3a595U));
                 // the structure around a lost joint carries more load: its pieces weaken and crack, so collapses spread
@@ -1059,6 +1127,7 @@ namespace Trastazo
             else if (q.type == Items.BIGCRATE) base_ = 120f;
             else if (q.type == Items.PLANK) base_ = 80f;
             else if (q.color == Build.STEEL) base_ = 420f;
+            else if (q.color == Build.CONCRETE) base_ = 230f;
             else if (q.color == Build.BRICK) base_ = 150f;
             else base_ = 85f;
             float size = Math.max(q.hw, q.hh);
@@ -1105,10 +1174,11 @@ namespace Trastazo
             float hw = q.hw, hh = q.hh, bx = b.x, by = b.y, a = b.a, vx = b.vx, vy = b.vy, w = b.w;
             bool burning = q.burning;
             int col = q.color;
-            bool brick = col == Build.BRICK, steel = col == Build.STEEL;
+            bool brick = col == Build.BRICK || col == Build.CONCRETE, steel = col == Build.STEEL;
             remove(q);
             stats.broken++;
             if (!q.gib) stats.destroyed++;
+            if (q.isStruct) fx.dust(bx, by, Math.min(70f, (hw + hh) * 0.5f), Math.min(8, 2 + (int) ((hw + hh) / 30f)));
             if (col == Build.GLASS) { shatterGlass(q, bx, by, a, hw, hh, vx, vy, w, ix, iy); return; }
             // splinters and dust by material
             int nsp = Math.min(16, 4 + (int) ((hw + hh) * 0.15f));
@@ -1270,6 +1340,15 @@ namespace Trastazo
             }
             if (q.type == Items.FRIDGE) fridgeTick(q, dt);
             if (q.fixedMachine()) Machines.update(this, q, dt);
+            if (q.isStruct && q.relT >= 0f && m.frozen) {                 // unsupported: it lets go
+                q.relT -= dt;
+                if (q.relT <= 0f) {
+                    m.setFrozen(false);
+                    m.w += fx.rr_(0.8f);
+                    fx.dust(q.cx(), q.cy(), Math.min(60f, Math.max(q.hw, q.hh) * 0.6f), 2);
+                    stats.destroyed++;
+                }
+            }
             if (Items.isTrap(q.type)) Traps.update(this, q, dt);
             if (q.animal()) Fauna.think(this, q, dt);
             else if (q.type == Items.POOP) Fauna.stink(this, q, dt);
@@ -1372,6 +1451,7 @@ namespace Trastazo
                     if (q.explosive && q.fuse < 0f && f > 0.15f) q.fuse = 0.06f + rnd.nextFloat() * 0.25f;
                     if (q.flammable && f > 0.35f) ignite(q);
                     if (q.machine()) damageMachine(q, dmg * f * f * 2f);
+                    if (q.isStruct && f > 0.42f && breakable(q)) { q.impX = x; q.impY = y; wear(q, toughness(q) * 3f, true); }   // the blast carves a hole
                     if (f > 0.1f && breakable(q)) crack(q, x, y, f);
                     else if (f > 0.1f && (q.type == Items.BARREL || q.type == Items.STEEL || q.type == Items.FRIDGE)) crack(q, x, y, f * 0.6f);
                     if (f > 0.1f) wear(q, dmg * f * f * 2.6f, false);
