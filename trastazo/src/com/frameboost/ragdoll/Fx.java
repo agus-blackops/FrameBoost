@@ -35,7 +35,7 @@ final class Fx {
 
     float flash, shake;
     float floorY, wallL, wallR;
-    int bloodA = 0xFFc0121b, bloodB = 0xFF7d0a10;
+    int bloodA = 0xFFa80f18, bloodB = 0xFF5e0a0f;
     boolean gore = true;
 
     /** Live blood particles (used by tests). */

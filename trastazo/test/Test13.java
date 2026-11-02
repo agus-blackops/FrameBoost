@@ -10,7 +10,7 @@ public class Test13 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.0";
+        Game.edition = "Unity 2.1";
         // 1. the bear trap snaps on a foot that steps on it; Activate opens it again
         World w = new World(null);
         Prop bear = (Prop) w.spawn(Items.BEARTRAP, 1500, -40, 1, 1f);

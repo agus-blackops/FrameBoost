@@ -34,7 +34,7 @@ namespace Trastazo
 
         public float flash, shake;
         public float floorY, wallL, wallR;
-        public int bloodA = unchecked((int)0xFFc0121bU), bloodB = unchecked((int)0xFF7d0a10U);
+        public int bloodA = unchecked((int)0xFFa80f18U), bloodB = unchecked((int)0xFF5e0a0fU);
         public bool gore = true;
 
         /** Live blood particles (used by tests). */

@@ -1007,6 +1007,7 @@ final class Renderer {
             rf.set(-hw, -hh, hw, hh); c.drawRoundRect(rf, hh, hh, p);
             c.drawCircle(-hw, -hh * 0.6f, hh * 0.95f, p); c.drawCircle(-hw, hh * 0.6f, hh * 0.95f, p); c.drawCircle(hw, -hh * 0.6f, hh * 0.95f, p); c.drawCircle(hw, hh * 0.6f, hh * 0.95f, p);
             p.setColor(alpha(0xFFffffff, 0.5f)); rf.set(-hw * 0.7f, -hh * 0.7f, hw * 0.5f, -hh * 0.2f); c.drawRect(rf, p);
+            if (detail) { p.setColor(0xFFb5565a); c.drawCircle(-hw - hh * 0.2f, 0f, hh * 0.5f, p); c.drawCircle(hw + hh * 0.2f, 0f, hh * 0.5f, p); }
             c.restore();
             return;
         }
@@ -1536,6 +1537,11 @@ final class Renderer {
     private int bodyColor(Person b, int col) {
         if (b.frozenT > 0f) return tint(b, mix(col, 0xFFbfe6ff, 0.62f), b.flash);
         if (b.dead) col = mix(col, 0xFF9aa0a8, 0.22f);
+        if (b.fleshy() && b.kind != Person.RUSTMAN) {
+            // gore V6: losing blood drains the colour from the skin; the dead go grey-blue as the minutes pass
+            if (!b.dead && b.maxBlood > 0f) { float bl = b.blood / b.maxBlood; if (bl < 0.65f) col = mix(col, 0xFFd9cfc6, (0.65f - bl) / 0.65f * 0.5f); }
+            else if (b.dead) col = mix(col, 0xFF7f8b9c, Math.min(0.45f, b.deadT / 90f * 0.45f));
+        }
         if (b.rustT >= 0f) col = mix(col, 0xFFb5651d, Math.max(0f, Math.min(0.85f, (1f - b.rustT / 7f) * 0.85f)));
         return tint(b, col, b.flash);
     }
@@ -1685,27 +1691,33 @@ final class Renderer {
         Shape s = b.rb[idx].shapes.get(0);
         boolean open = false;
         boolean metal = b.kind == Person.ROBOT, bone = b.kind == Person.SKELETON, z = b.kind == Person.ZOMBIE;
-        int deep = metal ? 0xFF15171b : (bone ? 0xFF4a4536 : (z ? 0xFF2c4a14 : (gore ? 0xFF4a060b : 0xFF2e2e33)));
-        int red = metal ? 0xFF3a3f47 : (bone ? 0xFF8d8774 : (z ? 0xFF4f8a2a : (gore ? 0xFFa3141c : 0xFF5d5d66)));
-        boolean drips = gore && flesh(b) && b.frozenT <= 0f && detail;
+        int deep0 = metal ? 0xFF15171b : (bone ? 0xFF4a4536 : (z ? 0xFF2c4a14 : (gore ? 0xFF4a060b : 0xFF2e2e33)));
+        int red0 = metal ? 0xFF3a3f47 : (bone ? 0xFF8d8774 : (z ? 0xFF4f8a2a : (gore ? 0xFF9a1018 : 0xFF5d5d66)));
+        int deep = deep0, red = red0;
+        boolean drips = gore && flesh(b) && b.frozenT <= 0f && detail, dropsOn = drips;
         float dropX = s.ay, dropY = s.ax;                 // world "down" in the shape's frame
         float bleed = Math.min(1f, b.bleed[idx] / 8f + b.soak[idx] * 0.6f);
         for (int i = 0; i < b.nw; i++) {
             if (b.wpart[i] != idx || b.ws[i] <= 0f) continue;
             if (!open) { local(c, s.cx, s.cy, (float) Math.atan2(s.ay, s.ax)); open = true; }
             float u = b.wu[i], v = b.wv[i], r = b.ws[i];
+            float age = b.wt[i], clot = Math.min(1f, age / 45f), fresh = Math.max(0f, 1f - age / 4f);
+            // gore V6: wounds clot and darken, and a fresh one is wet and glossy
+            if (gore && flesh(b)) { red = mix(red0, z ? 0xFF2c4616 : 0xFF3a0a0c, clot * 0.8f); deep = mix(deep0, 0xFF1a0305, clot * 0.6f); }
+            if (age > 25f) dropsOn = false; else dropsOn = drips;
             p.setStyle(Paint.Style.FILL);
             switch (b.wkind[i]) {
                 case Person.W_HOLE:
-                    if (drips && bleed > 0.05f) {
+                    if (dropsOn && bleed > 0.05f) {
                         float len = r * (1.5f + 3.5f * bleed);
                         p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(Math.max(1.2f, r * 0.55f)); p.setColor(alpha(red, 0.9f));
                         c.drawLine(u, v, u + dropX * len, v + dropY * len, p);
                         p.setStyle(Paint.Style.FILL); c.drawCircle(u + dropX * len, v + dropY * len, Math.max(0.9f, r * 0.38f), p);
                     }
+                    if (gore && flesh(b)) { p.setColor(alpha(0xFF3a1208, 0.45f)); c.drawCircle(u, v, r * 1.6f, p); }
                     p.setColor(red); c.drawCircle(u, v, r * 1.25f, p);
                     p.setColor(deep); c.drawCircle(u, v, r * 0.75f, p);
-                    if (gore && flesh(b)) { p.setColor(alpha(0xFFffb0b0, 0.35f)); c.drawCircle(u - r * 0.3f, v - r * 0.3f, r * 0.25f, p); }
+                    if (gore && flesh(b) && fresh > 0f) { p.setColor(alpha(0xFFffd0d0, 0.5f * fresh)); c.drawCircle(u - r * 0.3f, v - r * 0.3f, r * 0.25f, p); }
                     if (metal) { p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(0xFFb5bcc6); c.drawCircle(u, v, r * 1.3f, p); }
                     break;
                 case Person.W_CUT: {
@@ -1715,7 +1727,14 @@ final class Renderer {
                     c.drawLine(u - dx, v - dy, u + dx, v + dy, p);
                     p.setStrokeWidth(Math.max(1f, r * 0.2f)); p.setColor(deep);
                     c.drawLine(u - dx * 0.8f, v - dy * 0.8f, u + dx * 0.8f, v + dy * 0.8f, p);
-                    if (drips && bleed > 0.05f) {
+                    if (gore && flesh(b) && detail) {
+                        // the skin curls back at the edges
+                        p.setStrokeWidth(Math.max(0.8f, r * 0.12f)); p.setColor(alpha(0xFFf0c8b0, 0.55f));
+                        c.drawLine(u - dx * 0.9f - dy * 0.3f, v - dy * 0.9f + dx * 0.3f, u + dx * 0.9f - dy * 0.3f, v + dy * 0.9f + dx * 0.3f, p);
+                        c.drawLine(u - dx * 0.9f + dy * 0.3f, v - dy * 0.9f - dx * 0.3f, u + dx * 0.9f + dy * 0.3f, v + dy * 0.9f - dx * 0.3f, p);
+                        if (fresh > 0f) { p.setColor(alpha(0xFFffffff, 0.4f * fresh)); c.drawLine(u - dx * 0.5f, v - dy * 0.5f - 0.8f, u + dx * 0.2f, v + dy * 0.2f - 0.8f, p); }
+                    }
+                    if (dropsOn && bleed > 0.05f) {
                         p.setStrokeWidth(Math.max(1f, r * 0.25f)); p.setColor(alpha(red, 0.85f));
                         for (int k = -1; k <= 1; k += 2) { float len = r * (0.8f + 2.2f * bleed) * (k < 0 ? 0.7f : 1f); c.drawLine(u + dx * 0.5f * k, v + dy * 0.5f * k, u + dx * 0.5f * k + dropX * len, v + dy * 0.5f * k + dropY * len, p); }
                     }
@@ -1727,7 +1746,10 @@ final class Renderer {
                     if (gore && flesh(b)) { p.setColor(alpha(0xFFb0402a, 0.35f)); c.drawCircle(u - r * 0.2f, v + r * 0.1f, r * 0.35f, p); }
                     break;
                 default:
-                    p.setColor(alpha(metal ? 0xFF1b1d22 : 0xFF5a2a5e, 0.32f)); c.drawCircle(u, v, r, p);
+                    {
+                        int bc = age < 15f ? 0xFF5a2a5e : (age < 40f ? mix(0xFF5a2a5e, 0xFF3a4a7a, (age - 15f) / 25f) : mix(0xFF3a4a7a, 0xFF8a8a3a, Math.min(1f, (age - 40f) / 40f)));
+                        p.setColor(alpha(metal ? 0xFF1b1d22 : bc, 0.32f)); c.drawCircle(u, v, r, p);
+                    }
                     p.setColor(alpha(metal ? 0xFF1b1d22 : 0xFF7a3a2a, 0.18f)); c.drawCircle(u + r * 0.2f, v, r * 0.6f, p);
             }
         }
@@ -2489,6 +2511,14 @@ final class Renderer {
                     p.setStyle(Paint.Style.FILL);
                     p.setColor(alpha(0xFF8e1111, 0.6f)); c.drawCircle(-d * r * 0.1f, -r * 0.3f, r * 0.12f, p);
                 }
+            }
+            // gore V6: a ruined chest or head fills the mouth with blood that runs down the chin
+            if (gore && !z && !rm && !b.gibbed[Person.CHEST] && (b.hp[Person.CHEST] < -15f || dmg > 0.4f || b.soak[Person.HEAD] > 0.5f)) {
+                p.setStyle(Paint.Style.FILL); p.setColor(alpha(0xFF7a0a10, 0.9f));
+                rf.set(d > 0 ? r * 0.28f : -r * 0.78f, r * 0.4f, d > 0 ? r * 0.78f : -r * 0.28f, r * 0.56f); c.drawRoundRect(rf, 2f, 2f, p);
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(Math.max(1.2f, r * 0.12f)); p.setColor(alpha(0xFF8e0f18, 0.9f));
+                c.drawLine(d * r * 0.55f, r * 0.55f, d * r * 0.5f, r * (0.95f + 0.2f * (float) Math.sin(time * 2f + b.id)), p);
+                p.setStyle(Paint.Style.FILL);
             }
             // gore V5: with the skull crushed an eye pops out and dangles on its nerve
             if (gore && dmg > 0.85f && !z && b.frozenT <= 0f) {

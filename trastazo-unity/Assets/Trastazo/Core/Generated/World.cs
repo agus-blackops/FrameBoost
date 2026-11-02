@@ -274,6 +274,20 @@ namespace Trastazo
 
         private void updatePerson(Person p, float dt) {
             if (p.flash > 0f) p.flash -= dt;
+            for (int wi = 0; wi < p.nw; wi++) p.wt[wi] += dt;
+            if (p.dead) p.deadT += dt;
+            if (p.convT > 0f) {
+                p.convT -= dt;
+                // gore V6: death throes - the limbs twitch in bursts that die away
+                if (rnd.nextFloat() < dt * 16f) {
+                    RB cb = p.rb[rnd.nextInt(Person.NPARTS)];
+                    if (cb.invM > 0f) {
+                        float k = Math.min(1f, p.convT / 1.2f);
+                        cb.applyImpulse((rnd.nextFloat() - 0.5f) * 4e5f * k, (rnd.nextFloat() - 0.5f) * 3e5f * k - 0.5e5f * k, cb.x, cb.y);
+                    }
+                }
+            }
+            if (fx.gore && p.fleshy() && !p.dead && p.blood > 20f && p.frozenT <= 0f) bloodPressure(p, dt);
             int whole = 0;
             for (int k = 0; k < Person.NPARTS; k++) { if (p.gibbed[k]) { if (!p.rb[k].frozen) p.rb[k].setFrozen(true); } else whole++; }
             if (whole == 0) { remove(p); return; }     // nothing left of them
@@ -408,6 +422,31 @@ namespace Trastazo
             rumble += 0.4f;
         }
 
+        /** Gore V6: the heart still pushes blood out of an open stump, in jets with each beat, and a ruined chest makes them cough blood. */
+        private void bloodPressure(Person p, float dt) {
+            float beat = (float) Math.sin(time * 9f + p.id);
+            if (beat > 0.6f) {
+                for (int j = 0; j < Person.NJOINTS; j++) {
+                    if (!p.severed[j] || j == Person.NECK || j == Person.WAIST) continue;
+                    int part = stumpParts(j)[0];
+                    if (p.gibbed[part] || p.bleed[part] <= 0f || rnd.nextFloat() > dt * 26f) continue;
+                    Joint jn = p.jt[j];
+                    RB body = p.rb[part];
+                    float ax = jn.a == body ? jn.anchorAX() : jn.anchorBX(), ay = jn.a == body ? jn.anchorAY() : jn.anchorBY();
+                    float ox = ax - body.x, oy = ay - body.y, ol = (float) Math.sqrt(ox * ox + oy * oy) + 1e-3f;
+                    float jet = Math.min(1f, p.bleed[part] / 9f);
+                    bloodStyle(p);
+                    fx.blood(ax, ay, ox / ol, oy / ol - 0.1f, 2 + (int) (jet * 4f));
+                }
+            }
+            if (p.hp[Person.CHEST] < -15f && !p.gibbed[Person.HEAD] && rnd.nextFloat() < dt * 1.6f) {
+                RB h = p.rb[Person.HEAD];
+                bloodStyle(p);
+                fx.blood(h.x + p.dir * 10f * p.scale, h.y + 8f * p.scale, p.dir * 0.8f, 0.1f, 2);
+                p.soak[Person.HEAD] = Math.min(1f, p.soak[Person.HEAD] + 0.04f);
+            }
+        }
+
         /** Gore V5 on the floor: bleeding bodies lying down make a growing pool, and feet that step in blood leave prints. */
         private void goreFloor(Person p, float dt) {
             bloodStyle(p);
@@ -440,6 +479,8 @@ namespace Trastazo
             p.dead = true;
             p.blood = 0f;
             p.tone = 0f;
+            p.deadT = 0f;
+            p.convT = p.fleshy() ? 1.6f : 0f;       // gore V6: the body convulses for a moment after death
             stats.kills++;
         }
 
@@ -472,7 +513,7 @@ namespace Trastazo
                 case Person.RUSTMAN: fx.bloodA = unchecked((int)0xFFb5481aU); fx.bloodB = unchecked((int)0xFF6e2a0cU); break;
                 case Person.ROBOT: fx.bloodA = unchecked((int)0xFF2b2b2fU); fx.bloodB = unchecked((int)0xFF4a4a52U); break;
                 case Person.SKELETON: fx.bloodA = unchecked((int)0xFFe9e5d3U); fx.bloodB = unchecked((int)0xFFc9c4adU); break;
-                default: fx.bloodA = unchecked((int)0xFFc0121bU); fx.bloodB = unchecked((int)0xFF7d0a10U); break;
+                default: fx.bloodA = unchecked((int)0xFFa80f18U); fx.bloodB = unchecked((int)0xFF5e0a0fU); break;
             }
         }
 
@@ -486,6 +527,7 @@ namespace Trastazo
             else if (p.kind == Person.SKELETON) fx.debris(x, y, 2, unchecked((int)0xFFf0ead6U), 160f);
             else if (dmg > 3f) {
                 fx.blood(x, y, dx, dy, (int) Math.min(10, 2 + dmg * 0.25f));
+                if (dmg > 12f && fx.gore && p.fleshy()) for (int mk = 0; mk < 8; mk++) fx.add(Fx.BLOOD, x, y, dx * 120f + fx.rr_(220f), dy * 120f - fx.rf() * 200f, 0.6f, 1.1f, fx.bloodA);   // a fine mist
                 if (p.fleshy()) {
                     p.soak[part] = Math.min(1f, p.soak[part] + dmg * 0.012f);
                     // a hard hit sprays the wall behind
@@ -585,7 +627,7 @@ namespace Trastazo
                 return;
             }
             if (j.tag == Machines.IMPALE_TAG) {             // pulled off the spikes
-                fx.bloodA = unchecked((int)0xFFc0121bU); fx.bloodB = unchecked((int)0xFF7d0a10U);
+                fx.bloodA = unchecked((int)0xFFa80f18U); fx.bloodB = unchecked((int)0xFF5e0a0fU);
                 fx.blood(j.anchorBX(), j.anchorBY(), 0f, -0.5f, 8);
                 if (sfx != null) sfx.splat();
                 return;
@@ -728,7 +770,7 @@ namespace Trastazo
             int i = p.wNext;
             p.wNext = (p.wNext + 1) % Person.MAXW;
             if (p.nw < Person.MAXW) p.nw++;
-            p.wpart[i] = (byte) part; p.wkind[i] = (byte) kind;
+            p.wpart[i] = (byte) part; p.wkind[i] = (byte) kind; p.wt[i] = 0f;
             p.wu[i] = u; p.wv[i] = v; p.ws[i] = size * p.scale;
             // cuts follow the blow direction, in the shape frame
             p.wa[i] = (float) Math.atan2(-dx * s.ay + dy * s.ax, dx * s.ax + dy * s.ay) + (rnd.nextFloat() - 0.5f) * 0.6f;
@@ -930,7 +972,7 @@ namespace Trastazo
             if (a.removed || dmg <= 0f) return;
             a.hp -= dmg;
             a.flash = 0.12f;
-            fx.bloodA = unchecked((int)0xFFc0121bU); fx.bloodB = unchecked((int)0xFF7d0a10U);
+            fx.bloodA = unchecked((int)0xFFa80f18U); fx.bloodB = unchecked((int)0xFF5e0a0fU);
             if (dmg > 3f) fx.blood(x, y, dx, dy, (int) Math.min(8, 2 + dmg * 0.2f));
             int k = a.type - Items.DOG;
             if (!a.dead && dmg > 4f && a.barkT <= 0f) { a.barkT = 0.5f; if (sfx != null) sfx.call(Fauna.PITCH[k] * 1.35f); }
@@ -960,7 +1002,7 @@ namespace Trastazo
                 add(c);
                 keepChunk(c);
             }
-            fx.bloodA = unchecked((int)0xFFc0121bU); fx.bloodB = unchecked((int)0xFF7d0a10U);
+            fx.bloodA = unchecked((int)0xFFa80f18U); fx.bloodB = unchecked((int)0xFF5e0a0fU);
             fx.blood(bx, by, 0f, -0.4f, 24);
             if (sfx != null) { sfx.splat(); sfx.crunch(); }
             rumble += 0.25f;

@@ -306,7 +306,7 @@ final class Screens {
         "Hombre óxido y barra de óxido",
         "Modelo de humanos V3 renovado",
         "Sangre V3: charcos, huellas, manchas",
-        "Gore V5: costillas, corazón, arterias",
+        "Gore V6: realista: coágulos, palidez, espasmos",
         "Trampas de SAW: cepo, péndulo, Billy...",
         "Destruction Engine 1.5: cristal y colapsos",
         "5 construcciones: castillo, pirámide, dominó...",
@@ -385,7 +385,7 @@ final class Screens {
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false, IC_GEAR);
         // what's new: one line at the bottom, so the cover scene stays clear
         {
-            String news = "Novedades: Hombre óxido · modelo V3 · Gore V5 · trampas de SAW · 10 construcciones";
+            String news = "Novedades: Gore V6 realista · Hombre óxido · modelo V3 · trampas de SAW";
             p.setTextSize(11 * d);
             float nw = p.measureText(news), maxN = sw - colX - 24 * d;
             float ns = nw > maxN ? 11 * d * maxN / nw : 11 * d;

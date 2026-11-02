@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 2.0
+# Trastazo Playground para Unity — 2.1
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -10,6 +10,28 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
 
+## Novedades de Trastazo Playground Unity 2.1
+
+* **Gore V6 (más realista):**
+  * **Sangre real:** rojo más oscuro y menos saturado (arterial vs. venosa), y una **fina niebla de gotitas**
+    cuando el golpe es fuerte.
+  * **Palidez:** quien pierde sangre se queda **pálido** (hasta un 50 %); los muertos se ponen **gris
+    azulados** con los minutos.
+  * **Heridas que se coagulan:** una herida fresca es roja, húmeda y brillante; en ~45 s se **seca y se
+    oscurece**, y deja de gotear. Los cortes muestran la **piel doblada** en los bordes y los agujeros de bala
+    un **anillo oscuro** de abrasión. Los **moratones** cambian de color con el tiempo: morado → azul → verde
+    amarillento.
+  * **Espasmos de agonía:** al morir, el cuerpo se **convulsiona** ~1,5 s y se queda quieto.
+  * **Muñones a presión:** un miembro arrancado a alguien vivo **escupe chorros al ritmo del corazón**.
+  * **Sangre en la boca:** un pecho destrozado hace **toser sangre**, que mancha la cara y gotea por la barbilla.
+  * **Trozos más creíbles:** fibras musculares y borde de grasa en la carne, y **médula** roja en los extremos de
+    los huesos.
+  * Con el gore apagado, nada de esto aparece (salvo la palidez).
+* **Hombre óxido:** ya no ataca a los infectados (se unirán a él) y la infección por zarpazo sube al 70 %.
+
+![Realismo](docs/gore6-realismo.png)
+![Tos con sangre](docs/gore6-tos.png)
+
 ## Novedades de Trastazo Playground Unity 2.0
 
 * **Hombre óxido y Barra de óxido:**
@@ -19,7 +41,7 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
   * **Hombre óxido** (categoría *Gente*, también se puede colocar directamente): piel de metal corroído, cresta
     de pinchos, púas en los hombros, placa remachada con grietas incandescentes, ojos encendidos y **garras de
     acero**. Caza a todo el que esté vivo (zombis incluidos): cada zarpazo hace cortes profundos y a veces
-    arranca un miembro; **mata o infecta de óxido** (60 %), y los infectados se convierten en nuevos Hombres
+    arranca un miembro; **mata o infecta de óxido** (70 %), y los infectados se convierten en nuevos Hombres
     óxido. Sangra naranja y aguanta casi el doble. Se guarda y se carga con la infección en curso.
 * **Modelo de humanos renovado (V3):** torso con hombros y cintura, caderas, cuello, **cabeza con mandíbula**
   (cráneo ancho sobre mandíbula más estrecha), **manos con dedos y pulgar**, hombros con luz y sombra. Las
@@ -200,6 +222,7 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
 | `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test20` (2.1: sangre real, heridas que se coagulan, espasmos, chorros de muñón, tos con sangre) | 10/10 pasan |
 | `Test19` (2.0: barra de óxido, infección, Hombre óxido, cadena de infección, guardado, modelo V3) | 13/13 pasan |
 | `Test18` (1.9: chorros arteriales, charcos, huellas, manchas, salpicaduras, costillas y corazón) | 10/10 pasan |
 | `Test16` (1.6: pirámide, castillo, invernadero, dominó, andamio; derrumbe, guardado) | 13/13 pasan |

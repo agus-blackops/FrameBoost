@@ -49,6 +49,8 @@ namespace Trastazo
         public const int MAXW = 48, W_HOLE = 0, W_CUT = 1, W_BURN = 2, W_BRUISE = 3;
         public float[] wu = new float[MAXW], wv = new float[MAXW], wa = new float[MAXW], ws = new float[MAXW];
         public byte[] wpart = new byte[MAXW], wkind = new byte[MAXW];
+        public float[] wt = new float[MAXW];             // gore V6: age of each wound (clots, bruises change colour)
+        public float deadT, convT;                              // time since death; death convulsions left
         public int nw, wNext;
 
         public int kind, dir = 1, group;

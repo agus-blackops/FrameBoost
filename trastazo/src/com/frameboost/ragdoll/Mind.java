@@ -262,7 +262,7 @@ final class Mind {
             Ent e = w.ents.get(i);
             if (!(e instanceof Person) || e == p) continue;
             Person o = (Person) e;
-            if (o.dead || o.kind == Person.RUSTMAN || o.kind == Person.SKELETON) continue;
+            if (o.dead || o.kind == Person.RUSTMAN || o.kind == Person.SKELETON || o.rustT >= 0f) continue;     // the infected will join him: leave them
             float d = Math.abs(px(o) - px(p)) + Math.abs(py(o) - py(p)) * 0.5f;
             if (d < bd) { bd = d; prey = o; }
         }
@@ -290,7 +290,7 @@ final class Mind {
         int j = Person.PART_JOINT[part];
         if (j >= 0 && j != Person.WAIST && !v.severed[j] && w.rnd.nextFloat() < 0.18f) w.sever(v, j, t.x, t.y);
         if (v.dead) { w.stats.rustKills++; return; }
-        if (w.rnd.nextFloat() < 0.6f && w.infectRust(v)) w.fx.sparks(t.x, t.y, 6, 0xFFff9a3a);
+        if (w.rnd.nextFloat() < 0.7f && w.infectRust(v)) w.fx.sparks(t.x, t.y, 6, 0xFFff9a3a);
     }
 
     private static void bite(World w, Person z, Person v) {

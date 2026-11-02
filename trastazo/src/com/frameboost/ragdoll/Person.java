@@ -45,6 +45,8 @@ final class Person extends Ent {
     static final int MAXW = 48, W_HOLE = 0, W_CUT = 1, W_BURN = 2, W_BRUISE = 3;
     final float[] wu = new float[MAXW], wv = new float[MAXW], wa = new float[MAXW], ws = new float[MAXW];
     final byte[] wpart = new byte[MAXW], wkind = new byte[MAXW];
+    final float[] wt = new float[MAXW];             // gore V6: age of each wound (clots, bruises change colour)
+    float deadT, convT;                              // time since death; death convulsions left
     int nw, wNext;
 
     int kind, dir = 1, group;

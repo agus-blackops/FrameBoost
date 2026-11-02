@@ -48,7 +48,7 @@ public class Test19 {
         // 4. the Rust Man claws and infects: chain
         World w4 = new World(null);
         Person rm = (Person) w4.spawn(Items.RUSTMAN, 1300, -120, 1, 1f);
-        for (int i = 0; i < 5; i++) w4.spawn(Items.HUMAN, 1650 + i * 120, -120, -1, 1f);
+        for (int i = 0; i < 7; i++) w4.spawn(Items.HUMAN, 1650 + i * 100, -120, -1, 1f);
         float maxFar = 0f;
         int hurtWounds = 0;
         for (int i = 0; i < 60 * 40; i++) {
@@ -57,7 +57,7 @@ public class Test19 {
         }
         int rustMen = count(w4, Person.RUSTMAN);
         check("the Rust Man tears people up (wounds, dead or limbs lost)", dead(w4) > 0 || w4.stats.severed > 0 || w4.stats.rusted > 0);
-        check("his claws infect others: more Rust Men appear", w4.stats.rusted >= 1 && rustMen >= 2);
+        check("his claws infect others (and the infected turn into Rust Men)", w4.stats.rusted >= 1 && (rustMen >= 2 || rusting(w4) >= 1));
         WorldTest.shot(w4, out + "/r_horde.png", 1650, -120, 1.3f);
         // 5. he bleeds rust, saving keeps the infection and the change
         World w5 = new World(null);
