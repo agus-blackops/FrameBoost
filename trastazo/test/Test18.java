@@ -1,0 +1,89 @@
+package com.frameboost.ragdoll;
+
+/** Blood V3 and Gore V5: arterial jets, pools under corpses, bloody footprints, smears, spray on neighbours, exposed ribs and heart. */
+public class Test18 {
+    static int fails;
+    static void check(String n, boolean ok) { System.out.println((ok ? "PASS " : "FAIL ") + n); if (!ok) fails++; }
+    static void run(World w, float s) { int n = (int) (s * 60); for (int i = 0; i < n; i++) w.update(1f / 60f); }
+    static int active(Fx f) { int n = 0; for (int i = 0; i < Fx.MAXP; i++) if (f.life[i] > 0f && f.type[i] == Fx.BLOOD) n++; return n; }
+    static float poolTotal(Fx f) { float t = 0f; for (int i = 0; i < f.sn; i++) t += f.sw[i]; return t; }
+
+    public static void main(String[] a) throws Exception {
+        String out = a.length > 0 ? a[0] : "/tmp";
+        WorldTest.rend.theme = Renderer.SANDBOX;
+        // 1. decapitation: the neck pumps jets for seconds, in beats, and paints the wall
+        World w = new World(null);
+        Person p = (Person) w.spawn(Items.HUMAN, 1500, -120, 1, 1f);
+        run(w, 1.5f);
+        int walls0 = w.fx.dn;
+        w.sever(p, Person.NECK, p.rb[Person.HEAD].x, p.rb[Person.HEAD].y + 10f);
+        int peak = 0, jets = 0;
+        for (int i = 0; i < 60 * 2; i++) { w.update(1f / 60f); int n = active(w.fx); peak = Math.max(peak, n); if (n > 14) jets++; }
+        System.out.printf("   neck: peak %d drops, jet frames %d, wall splats %d%n", peak, jets, w.fx.dn - walls0);
+        check("the artery pumps jets of blood", peak > 20 && jets > 5);
+        check("the jets spatter the wall", w.fx.dn - walls0 >= 2);
+        check("the severed head bleeds as it flies", p.bleed[Person.HEAD] > 0f);
+        WorldTest.shot(w, out + "/g_neck.png", 1500, -130, 2.6f);
+        // 2. the body keeps bleeding on the floor: the pool grows and darkens
+        run(w, 6f);
+        float pool = poolTotal(w.fx);
+        run(w, 8f);
+        float pool2 = poolTotal(w.fx);
+        System.out.printf("   pool width %.0f -> %.0f%n", pool, pool2);
+        check("a bleeding corpse spreads a pool under it", pool > 20f && pool2 >= pool);
+        // 3. a walking person that steps in the pool leaves bloody footprints
+        World w2 = new World(null);
+        for (int i = 0; i < 6; i++) w2.fx.stain(1500f + i * 4f, 40f, 0xD9c0121b);
+        Person walker = (Person) w2.spawn(Items.HUMAN, 1380, -120, 1, 1f);
+        run(w2, 1f);
+        int s0 = w2.fx.sn;
+        float soaked = 0f;
+        walker.walk = 1;
+        for (int i = 0; i < 60 * 5; i++) { walker.walk = 1; w2.update(1f / 60f); soaked = Math.max(soaked, walker.soak[Person.FOOT_F] + walker.soak[Person.FOOT_B]); }
+        System.out.printf("   walker: feet soaked %.2f, new stains %d, x %.0f%n", soaked, w2.fx.sn - s0, walker.cx());
+        check("feet that step in a pool get soaked", soaked > 0.25f);
+        check("and leave bloody footprints beyond it", w2.fx.sn - s0 >= 2);
+        // 4. gib chunks sliding on the floor leave smears
+        World w3 = new World(null);
+        Person g = (Person) w3.spawn(Items.HUMAN, 1500, -120, 1, 1f);
+        run(w3, 1f);
+        int sm0 = w3.fx.sn;
+        w3.gib(g, Person.CHEST, 1f, -0.2f);
+        for (Ent e : w3.ents) if (e instanceof Prop && ((Prop) e).gib) { RB r = e.bodies.get(0); r.vx = 320f * (r.vx >= 0 ? 1 : -1); }
+        run(w3, 1.5f);
+        check("chunks smear the floor as they slide", w3.fx.sn > sm0);
+        // 5. whoever is near a burst gets sprayed
+        World w4 = new World(null);
+        Person victim = (Person) w4.spawn(Items.HUMAN, 1500, -120, 1, 1f);
+        Person near = (Person) w4.spawn(Items.HUMAN, 1620, -120, -1, 1f);
+        Person far = (Person) w4.spawn(Items.HUMAN, 2300, -120, -1, 1f);
+        run(w4, 1f);
+        w4.gib(victim, Person.CHEST, 1f, -0.2f);
+        float nearSoak = 0f, farSoak = 0f;
+        for (float v : near.soak) nearSoak += v;
+        for (float v : far.soak) farSoak += v;
+        check("a burst sprays the people next to it", nearSoak > 1f && farSoak < 0.01f);
+        // 6. exposed ribcage, heart, lungs and the dangling eye draw without errors
+        World w5 = new World(null);
+        Person r1 = (Person) w5.spawn(Items.HUMAN, 1400, -120, 1, 1f);
+        Person r2 = (Person) w5.spawn(Items.ZOMBIE, 1650, -120, -1, 1f);
+        run(w5, 1.2f);
+        r1.hp[Person.CHEST] = -75f; r2.hp[Person.CHEST] = -75f;
+        r1.hp[Person.HEAD] = -55f;
+        w5.wound(r1, Person.CHEST, Person.W_CUT, r1.rb[Person.CHEST].x, r1.rb[Person.CHEST].y, 1f, 0f, 9f);
+        run(w5, 0.5f);
+        WorldTest.shot(w5, out + "/g_ribs.png", 1525, -90, 3.4f);
+        check("an open chest and a dangling eye draw", true);
+        WorldTest.rend.theme = Renderer.SANDBOX;
+        // 7. non-gore mode: no pools, no jets of blood
+        World w6 = new World(null);
+        w6.fx.gore = false;
+        Person q = (Person) w6.spawn(Items.HUMAN, 1500, -120, 1, 1f);
+        run(w6, 1f);
+        w6.sever(q, Person.NECK, q.rb[Person.HEAD].x, q.rb[Person.HEAD].y);
+        run(w6, 5f);
+        System.out.printf("   gore off: pool %.0f, wall splats %d%n", poolTotal(w6.fx), w6.fx.dn);
+        check("with gore off there are no wall splats and only a little blood", poolTotal(w6.fx) < 800f && w6.fx.dn == 0);
+        System.out.println(fails == 0 ? "T18 ALL PASS" : "T18 FAILURES " + fails);
+    }
+}

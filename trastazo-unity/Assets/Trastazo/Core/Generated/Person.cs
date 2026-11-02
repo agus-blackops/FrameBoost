@@ -38,6 +38,7 @@ namespace Trastazo
         // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
         public float frozenT;
         public Prop cell;                      // the fridge this person is frozen inside, if any
+        public float printT;                   // gore V5: time to the next bloody footprint
         public float jumpCd, panicT, alarmX;   // AI: hop cooldown, fear (from gore and blasts) and where it came from
         public bool[] fzLimit = new bool[NJOINTS];
         public float[] fzLo = new float[NJOINTS], fzHi = new float[NJOINTS];     // blown to pieces: invisible, frozen sensor

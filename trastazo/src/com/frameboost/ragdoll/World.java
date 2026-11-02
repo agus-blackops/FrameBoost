@@ -306,14 +306,21 @@ final class World implements Sim.Listener, Sim.Hook {
                 int below = i == Person.CHEST ? Person.PELVIS : (i == Person.PELVIS ? Person.THIGH_F : (i == Person.HEAD ? Person.CHEST : -1));
                 if (below >= 0) p.soak[below] = Math.min(1f, p.soak[below] + dt * 0.025f);
                 // an open neck pumps
-                if (i == Person.CHEST && p.severed[Person.NECK] && p.bleed[i] > 4f && rnd.nextFloat() < dt * 9f) {
+                if (i == Person.CHEST && p.severed[Person.NECK] && p.bleed[i] > 1f) {
+                    // gore V5: the artery pumps with the heartbeat, in jets that arc forward and up and hit the wall behind
                     Joint nk = p.jt[Person.NECK];
                     float ux = (float) Math.sin(b.a), uy = (float) -Math.cos(b.a);
-                    fx.blood(nk.anchorAX(), nk.anchorAY(), ux, uy, 3);
+                    float beat = (float) Math.sin(time * 9f + p.id);
+                    if (beat > 0.55f && rnd.nextFloat() < dt * 40f) {
+                        float jet = Math.min(1f, p.bleed[i] / 5f);
+                        fx.blood(nk.anchorAX(), nk.anchorAY(), ux * 0.7f + p.dir * 0.5f, uy * 0.9f - 0.1f, 4 + (int) (jet * 6f));
+                        if (fx.gore && rnd.nextFloat() < 0.25f) fx.wallSplat(nk.anchorAX() + p.dir * (40f + rnd.nextFloat() * 90f), nk.anchorAY() - 20f + fx.rr(40f), 5f + jet * 7f, fx.bloodA);
+                    }
                 }
             } else if (rnd.nextFloat() < dt * 6f) fx.sparks(b.x, b.y, 2, 0xFFffd25a);
         }
         if (!p.dead && p.organic() || p.kind == Person.ZOMBIE) { if (!p.dead) p.blood -= lost * dt * 0.5f; }
+        if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE) && p.frozenT <= 0f) goreFloor(p, dt);
         if (!p.dead && p.blood <= 0f) kill(p);
         // infection / acid / adrenaline
         if (p.dead && p.bitten && p.infected < 0f && p.organic()) p.infected = 3f;
@@ -358,6 +365,33 @@ final class World implements Sim.Listener, Sim.Hook {
             }
         }
         Mind.tick(this, p, dt);
+    }
+
+    /** Gore V5 on the floor: bleeding bodies lying down make a growing pool, and feet that step in blood leave prints. */
+    private void goreFloor(Person p, float dt) {
+        bloodStyle(p);
+        int col = Renderer.alpha(fx.bloodA, 0.85f);
+        // a pool under every bleeding part that rests on the floor
+        for (int i = 0; i < Person.NPARTS; i++) {
+            if (p.bleed[i] <= 0f || p.gibbed[i]) continue;
+            RB b = p.rb[i];
+            if (b.y < sim.floorY - 34f) continue;
+            if (rnd.nextFloat() < dt * 5f) fx.stain(b.x + fx.rr(8f), 3f + Math.min(5f, p.bleed[i] * 0.4f), col);
+        }
+        // feet in a pool get soaked, then print
+        p.printT -= dt;
+        int[] feet = {Person.FOOT_F, Person.FOOT_B};
+        for (int f : feet) {
+            if (p.gibbed[f]) continue;
+            RB b = p.rb[f];
+            if (b.y < sim.floorY - 26f) continue;
+            if (fx.poolAt(b.x) > 12f) p.soak[f] = Math.min(1f, p.soak[f] + dt * 0.9f);
+            if (p.soak[f] > 0.25f && p.printT <= 0f && Math.abs(b.vx) > 25f && !p.dead) {
+                fx.stain(b.x, 4.5f, 0xB08a0a12);
+                p.soak[f] = Math.max(0f, p.soak[f] - 0.05f);
+                p.printT = 0.2f;
+            }
+        }
     }
 
     void kill(Person p) {
@@ -465,6 +499,7 @@ final class World implements Sim.Listener, Sim.Hook {
             fx.blood(x, y, 0f, -0.3f, 18);
             fx.wallSplat(x + fx.rr(25f), y + fx.rr(20f), 9f + fx.rf() * 10f, fx.bloodA);
             for (int part : stumpParts(j)) { p.bleed[part] = Math.max(p.bleed[part], 9f); p.soak[part] = Math.min(1f, p.soak[part] + 0.3f); }
+            for (int part : DETACH[j]) { p.bleed[part] = Math.max(p.bleed[part], 6f); p.soak[part] = Math.min(1f, p.soak[part] + 0.5f); }
             if (!p.dead) p.blood -= 6f;
         } else fx.sparks(x, y, 14, 0xFFffd25a);
         if (sfx != null) sfx.crunch();
@@ -528,6 +563,7 @@ final class World implements Sim.Listener, Sim.Hook {
                 if (p.organic() || p.kind == Person.ZOMBIE) {
                     fx.blood(x, y, 0f, -0.3f, 18);
                     for (int part : stumpParts(idx)) p.bleed[part] = Math.max(p.bleed[part], 9f);
+                    for (int part : DETACH[idx]) p.bleed[part] = Math.max(p.bleed[part], 6f);
                     if (!p.dead) p.blood -= 6f;
                 } else fx.sparks(x, y, 14, 0xFFffd25a);
                 if (sfx != null) sfx.crunch();
@@ -676,6 +712,18 @@ final class World implements Sim.Listener, Sim.Hook {
         for (int k = 0; k < p.nw; k++) if (p.wpart[k] == part) p.ws[k] = 0f;
         stats.gibs++;
         bloodStyle(p);
+        if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) {
+            // gore V5: whoever stands near gets sprayed
+            for (int k = 0; k < ents.size(); k++) {
+                Ent e2 = ents.get(k);
+                if (!(e2 instanceof Person) || e2 == p) continue;
+                Person q2 = (Person) e2;
+                float dd = (float) Math.abs(q2.cx() - bx);
+                if (dd > 260f || !(q2.organic() || q2.kind == Person.ZOMBIE)) continue;
+                float amt = 0.45f * (1f - dd / 260f);
+                for (int pi = 0; pi < Person.NPARTS; pi++) q2.soak[pi] = Math.min(1f, q2.soak[pi] + amt * (pi == Person.CHEST || pi == Person.HEAD || pi == Person.UARM_F ? 1f : 0.5f));
+            }
+        }
         boolean metal = p.kind == Person.ROBOT, bone = p.kind == Person.SKELETON;
         Shape s0 = b.shapes.get(0);
         float size = s0.type == Shape.CIRCLE ? s0.r : (s0.type == Shape.CAPSULE ? s0.r + s0.hl * 0.35f : (s0.hl + s0.hh) * 0.4f);
@@ -1114,6 +1162,8 @@ final class World implements Sim.Listener, Sim.Hook {
         }
         if (q.machine()) Mind.machineThink(this, q, dt);
         if (q.gib && q.bloody && fx.gore) {
+            // gore V5: chunks sliding on the floor leave a smear
+            if (m.y + q.hh >= sim.floorY - 5f && q.lastSp > 90f && rnd.nextFloat() < dt * 16f) fx.stain(m.x, 3f + Math.min(5f, q.lastSp * 0.01f), Renderer.alpha(q.color2, 0.8f));
             if (q.splatT > 0f) q.splatT -= dt;
             if (q.lastSp > 160f && rnd.nextFloat() < dt * 22f)       // a trail of drops while it flies
                 fx.add(Fx.BLOOD, m.x, m.y, m.vx * 0.12f + fx.rr(30f), m.vy * 0.12f + fx.rr(30f), 1.4f, 2f + fx.rf() * 2.2f, q.color2);

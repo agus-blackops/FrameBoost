@@ -1,4 +1,4 @@
-# Trastazo Playground 4.5
+# Trastazo Playground 4.6
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,24 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 1.8:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 1.9:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 4.6
+
+* **Sangre V3 + Gore V5:**
+  * **Arterias:** un cuello cortado bombea **chorros al ritmo del corazón** que salen en arco hacia delante y
+    arriba y **salpican la pared** del fondo; las extremidades arrancadas **sangran mientras vuelan**.
+  * **Charcos bajo los cuerpos:** un cadáver que sigue sangrando extiende un charco (elipse que se
+    engrosa y se oscurece al secarse).
+  * **Huellas de sangre:** quien pisa un charco se empapa los pies y deja **huellas** al andar.
+  * **Manchas:** los trozos de carne que se deslizan por el suelo dejan un rastro.
+  * **Salpicaduras a los vecinos:** un reventón rocía la ropa de quien esté cerca.
+  * **Costillas, pulmones y corazón:** un pecho destrozado enseña las costillas, el esternón, los pulmones, la
+    tráquea, los vasos y un **corazón que late** mientras vive.
+  * **Ojo colgando:** con el cráneo aplastado, un ojo salta y cuelga de su nervio.
 
 ## Novedades de la 4.5
 

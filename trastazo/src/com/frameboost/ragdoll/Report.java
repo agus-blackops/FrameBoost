@@ -14,7 +14,7 @@ import java.util.Date;
 final class Report {
     private Report() { }
 
-    static final String VERSION = "4.5";
+    static final String VERSION = "4.6";
     private static File dir;
     private static String platform = "?";
     /** Set at launch when the previous run ended with an error (shown on the title screen). */

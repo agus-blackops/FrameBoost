@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 1.8
+# Trastazo Playground para Unity — 1.9
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,23 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 1.9
+
+* **Sangre V3 + Gore V5:**
+  * **Arterias:** un cuello cortado bombea **chorros al ritmo del corazón** que salen en arco hacia delante y
+    arriba y **salpican la pared** del fondo; las extremidades arrancadas **sangran mientras vuelan**.
+  * **Charcos bajo los cuerpos:** un cadáver que sigue sangrando extiende un charco (elipse que se
+    engrosa y se oscurece al secarse).
+  * **Huellas de sangre:** quien pisa un charco se empapa los pies y deja **huellas** al andar.
+  * **Manchas:** los trozos de carne que se deslizan por el suelo dejan un rastro.
+  * **Salpicaduras a los vecinos:** un reventón rocía la ropa de quien esté cerca.
+  * **Costillas, pulmones y corazón:** un pecho destrozado enseña las costillas, el esternón, los pulmones, la
+    tráquea, los vasos y un **corazón que late** mientras vive.
+  * **Ojo colgando:** con el cráneo aplastado, un ojo salta y cuelga de su nervio.
+
+![Chorros](docs/gore5-cuello.png)
+![Costillas](docs/gore5-costillas.png)
 
 ## Novedades de Trastazo Playground Unity 1.8
 
@@ -163,6 +180,7 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
 | `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test18` (1.9: chorros arteriales, charcos, huellas, manchas, salpicaduras, costillas y corazón) | 10/10 pasan |
 | `Test16` (1.6: pirámide, castillo, invernadero, dominó, andamio; derrumbe, guardado) | 13/13 pasan |
 | `Test15` (1.5: cristal, esquirlas, astillas, quemaduras, colapso en cadena, guardado) | 8/8 pasan |
 | `Test13` (1.3: cepo, péndulo, trampa invertida, Billy, grietas y roturas, charcos, ropa empapada, gore, ropa V2, menú) | 25/25 pasan |

@@ -305,8 +305,8 @@ namespace Trastazo
         public static readonly string[] NEWS = {
             "Menú principal nuevo",
             "Modelos V2: ropa, caras y peinados",
-            "Sangre V3: charcos y salpicaduras",
-            "Gore V4: músculo, hueso y muñones",
+            "Sangre V3: charcos, huellas, manchas",
+            "Gore V5: costillas, corazón, arterias",
             "Trampas de SAW: cepo, péndulo, Billy...",
             "Destruction Engine 1.5: cristal y colapsos",
             "5 construcciones: castillo, pirámide, dominó...",
@@ -385,7 +385,7 @@ namespace Trastazo
             button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false, IC_GEAR);
             // what's new: one line at the bottom, so the cover scene stays clear
             {
-                string news = "Novedades: Destruction Engine 1.5 · trampas de SAW · sangre V3 · gore V4 · 10 construcciones";
+                string news = "Novedades: Sangre V3 · Gore V5 · Destruction Engine 1.5 · trampas de SAW · 10 construcciones";
                 p.setTextSize(11 * d);
                 float nw = p.measureText(news), maxN = sw - colX - 24 * d;
                 float ns = nw > maxN ? 11 * d * maxN / nw : 11 * d;

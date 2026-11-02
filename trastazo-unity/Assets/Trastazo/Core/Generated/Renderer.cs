@@ -1760,6 +1760,60 @@ namespace Trastazo
             c.restore();
         }
 
+        /** Gore V5: a chest torn open shows the ribs, the lungs and a beating heart with its vessels. */
+        private void ribcage(Draw2D c, Person b) {
+            if (!gore || !flesh(b) || b.gibbed[Person.CHEST] || !detail || b.frozenT > 0f) return;
+            float dmg = -b.hp[Person.CHEST] / Person.maxHp(b, Person.CHEST);
+            if (dmg < 0.4f) return;
+            float k = Math.min(1f, (dmg - 0.4f) * 2.2f), s = b.scale;
+            bool z = b.kind == Person.ZOMBIE;
+            RB ch = b.rb[Person.CHEST];
+            int d = b.dir;
+            float hl = 22f * s, hw = 11.5f * s;
+            local(c, ch.x, ch.y, ch.a);
+            p.setStyle(Paint.Style.FILL);
+            // the open cavity: dark red, fading in
+            p.setColor(alpha(z ? unchecked((int)0xFF22350fU) : unchecked((int)0xFF3a0509U), 0.55f + 0.4f * k));
+            rf.set(-hw * 0.85f, -hl * 0.8f, hw * 0.85f, hl * 0.45f); c.drawRoundRect(rf, hw * 0.4f, hw * 0.4f, p);
+            // lungs
+            p.setColor(z ? unchecked((int)0xFF7f9a58U) : unchecked((int)0xFFd98a98U));
+            rf.set(-hw * 0.78f, -hl * 0.72f, -hw * 0.05f, hl * 0.2f); c.drawOval(rf, p);
+            rf.set(hw * 0.05f, -hl * 0.72f, hw * 0.78f, hl * 0.2f); c.drawOval(rf, p);
+            p.setColor(alpha(unchecked((int)0xFFffffffU), 0.2f));
+            rf.set(-hw * 0.6f, -hl * 0.65f, -hw * 0.35f, -hl * 0.25f); c.drawOval(rf, p);
+            rf.set(hw * 0.25f, -hl * 0.65f, hw * 0.5f, -hl * 0.25f); c.drawOval(rf, p);
+            // the windpipe and the big vessels
+            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2.2f * s); p.setColor(unchecked((int)0xFFe9d9c4U));
+            c.drawLine(0, -hl * 0.95f, 0, -hl * 0.4f, p);
+            p.setStrokeWidth(1.6f * s); p.setColor(z ? unchecked((int)0xFF4a6a22U) : unchecked((int)0xFF8e0f1cU));
+            c.drawLine(d * hw * 0.1f, -hl * 0.45f, d * hw * 0.05f, -hl * 0.78f, p);
+            p.setColor(z ? unchecked((int)0xFF55713aU) : unchecked((int)0xFF3a5a9aU));
+            c.drawLine(-d * hw * 0.1f, -hl * 0.4f, -d * hw * 0.12f, -hl * 0.75f, p);
+            // the heart, beating while they live
+            float pulse = b.dead ? 1f : 1f + 0.16f * Math.max(0f, (float) Math.sin(time * 9f + b.id));
+            float hx = d * hw * 0.12f, hy = -hl * 0.12f, hr = hw * 0.3f * pulse;
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(z ? unchecked((int)0xFF4a6a22U) : unchecked((int)0xFF7a0f1aU)); c.drawCircle(hx, hy, hr + 1.2f * s, p);
+            p.setColor(z ? unchecked((int)0xFF6f9038U) : unchecked((int)0xFFc2202fU)); c.drawCircle(hx, hy, hr, p);
+            poly[0] = hx - hr * 0.9f; poly[1] = hy + hr * 0.4f; poly[2] = hx + hr * 0.9f; poly[3] = hy + hr * 0.4f; poly[4] = hx; poly[5] = hy + hr * 1.5f;
+            c.drawPoly(poly, 3, p);
+            p.setColor(alpha(unchecked((int)0xFFffffffU), 0.3f)); c.drawCircle(hx - hr * 0.35f, hy - hr * 0.35f, hr * 0.28f, p);
+            // ribs curving over everything, and the breastbone
+            p.setStyle(Paint.Style.STROKE); p.setStrokeCap(Paint.Cap.BUTT);
+            for (int i = 0; i < 4; i++) {
+                float y = -hl * 0.62f + i * hl * 0.26f;
+                p.setStrokeWidth(2.6f * s); p.setColor(unchecked((int)0xFF8d8774U));
+                rf.set(-hw * 0.95f, y - hl * 0.2f, hw * 0.95f, y + hl * 0.12f); c.drawArc(rf, 10f, 160f, false, p);
+                p.setStrokeWidth(1.7f * s); p.setColor(unchecked((int)0xFFefe9d6U));
+                c.drawArc(rf, 12f, 156f, false, p);
+            }
+            p.setStrokeWidth(3f * s); p.setColor(unchecked((int)0xFFd9d3bfU));
+            c.drawLine(0, -hl * 0.8f, 0, hl * 0.3f, p);
+            p.setStrokeCap(Paint.Cap.ROUND);
+            p.setStyle(Paint.Style.FILL);
+            c.restore();
+        }
+
         /** Gore V4: a torn-open belly spills the intestines, which swing as the body moves. */
         private void intestines(Draw2D c, Person b) {
             if (!gore || !flesh(b) || b.gibbed[Person.PELVIS] || !detail || b.frozenT > 0f) return;
@@ -1859,6 +1913,7 @@ namespace Trastazo
             part(c, b, Person.PELVIS, b.pants);
             part(c, b, Person.CHEST, b.shirt);
             torsoDetail(c, b);
+            ribcage(c, b);
             intestines(c, b);
             // head
             drawHead(c, b);
@@ -2206,6 +2261,19 @@ namespace Trastazo
                         p.setStyle(Paint.Style.FILL);
                         p.setColor(alpha(unchecked((int)0xFF8e1111U), 0.6f)); c.drawCircle(-d * r * 0.1f, -r * 0.3f, r * 0.12f, p);
                     }
+                }
+                // gore V5: with the skull crushed an eye pops out and dangles on its nerve
+                if (gore && dmg > 0.85f && !z && b.frozenT <= 0f) {
+                    float ex2 = d * r * 0.5f, ey2 = -r * 0.12f;
+                    float sway = (float) Math.sin(time * 3f + b.id) * r * 0.08f;
+                    float bx2 = ex2 + d * r * 0.25f + sway, by2 = ey2 + r * 0.85f;
+                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(Math.max(1f, r * 0.1f)); p.setColor(unchecked((int)0xFFa5202cU));
+                    c.drawLine(ex2, ey2, bx2, by2 - r * 0.15f, p);
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(unchecked((int)0xFF5a0a10U)); c.drawCircle(ex2, ey2, r * 0.22f, p);
+                    p.setColor(unchecked((int)0xFFf4f4eeU)); c.drawCircle(bx2, by2, r * 0.26f, p);
+                    p.setColor(unchecked((int)0xFF1b1b1bU)); c.drawCircle(bx2 + d * r * 0.05f, by2 + r * 0.04f, r * 0.11f, p);
+                    p.setColor(alpha(unchecked((int)0xFFffffffU), 0.6f)); c.drawCircle(bx2 - r * 0.08f, by2 - r * 0.08f, r * 0.05f, p);
                 }
                 hat(c, b, r);
             }

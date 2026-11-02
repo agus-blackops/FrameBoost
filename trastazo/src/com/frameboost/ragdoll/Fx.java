@@ -100,6 +100,7 @@ final class Fx {
 
     /** A drop lands on the floor: it joins a pool it falls into (pools spread) or starts a new stain. */
     void stain(float px, float w, int col) {
+        if (!gore) w *= 0.3f;                       // gore off: only small spots
         for (int k = 0; k < sn; k++) {
             if (Math.abs(sx[k] - px) < sw[k] * 0.45f && sw[k] < 150f && (sc[k] & 0xFFFFFF) == (col & 0xFFFFFF)) {
                 sw[k] += w * 0.22f;
@@ -111,6 +112,13 @@ final class Fx {
         sNext = (sNext + 1) % MAXS;
         sx[i] = px; sw[i] = w; sc[i] = col; sa[i] = 0f;
         if (sn < MAXS) sn++;
+    }
+
+    /** Width of a fresh pool of blood under x (0 = none): feet that step in it get soaked. */
+    float poolAt(float px) {
+        float best = 0f;
+        for (int k = 0; k < sn; k++) if (Math.abs(sx[k] - px) < sw[k] * 0.5f && sa[k] < 45f && sw[k] > best) best = sw[k];
+        return best;
     }
 
     /** A splat on the back wall (gore that sprays behind, traps, blasts). */
@@ -254,10 +262,13 @@ final class Fx {
                 continue;
             }
             p.setColor(Renderer.alpha(col, 0.9f));
-            c.drawRect(sx[i] - w * 0.5f, floorY - 1f, sx[i] + w * 0.5f, floorY + 2.2f, p);
             if (w > 14f) {
-                c.drawCircle(sx[i] - w * 0.5f, floorY + 0.6f, 1.6f, p);
-                c.drawCircle(sx[i] + w * 0.5f, floorY + 0.6f, 1.6f, p);
+                // a pool seen from the side: a flat ellipse that gets thicker as it grows
+                float hh = Math.min(7f, 1.5f + w * 0.035f);
+                sr.set(sx[i] - w * 0.5f, floorY + 1.4f - hh * 0.5f, sx[i] + w * 0.5f, floorY + 1.4f + hh * 0.5f);
+                c.drawOval(sr, p);
+            } else c.drawRect(sx[i] - w * 0.5f, floorY - 1f, sx[i] + w * 0.5f, floorY + 2.2f, p);
+            if (w > 14f) {
                 p.setColor(Renderer.alpha(0xFFffffff, 0.16f * Math.max(0f, 1f - sa[i] / 25f)));
                 c.drawRect(sx[i] - w * 0.3f, floorY - 0.6f, sx[i] + w * 0.15f, floorY + 0.2f, p);
             }

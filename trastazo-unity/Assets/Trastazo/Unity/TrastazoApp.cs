@@ -65,7 +65,7 @@ namespace TrastazoUnity
 
             Trastazo.Game.desktop = !Application.isMobilePlatform;
             Trastazo.Game.lighting = true;
-            Trastazo.Game.edition = "Unity 1.8";
+            Trastazo.Game.edition = "Unity 1.9";
             Trastazo.File cache = new Trastazo.File(dataDir, "cache");
             cache.mkdirs();
 
