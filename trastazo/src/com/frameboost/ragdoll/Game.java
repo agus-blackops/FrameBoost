@@ -1202,7 +1202,7 @@ final class Game {
                 world.toggleFridge(q);
                 ui.toast(q.on ? (q.meal != null ? "¡Hay alguien congelado dentro!" : "Refrigerador abierto") : "Refrigerador cerrado");
                 break;
-            case Items.SAW: case Items.FAN: case Items.CRUSHER: case Items.TESLA:
+            case Items.SAW: case Items.FAN: case Items.CRUSHER: case Items.TESLA: case Items.RUSTBAR:
                 q.on = !q.on;
                 ui.toast(Items.find(q.type).name + (q.on ? ": encendida" : ": apagada"));
                 break;

@@ -6,7 +6,7 @@ package com.frameboost.ragdoll;
  * pushes on whatever touches the ground) while two-link IK sets the leg and arm joint targets.
  */
 final class Person extends Ent {
-    static final int HUMAN = 0, ROBOT = 1, ZOMBIE = 2, SKELETON = 3, SOLDIER = 4, MEDIC = 5, FIREFIGHTER = 6, THUG = 7;
+    static final int HUMAN = 0, ROBOT = 1, ZOMBIE = 2, SKELETON = 3, SOLDIER = 4, MEDIC = 5, FIREFIGHTER = 6, THUG = 7, RUSTMAN = 8;
 
     static final int PELVIS = 0, CHEST = 1, HEAD = 2, UARM_F = 3, FARM_F = 4, UARM_B = 5, FARM_B = 6,
             THIGH_F = 7, SHIN_F = 8, FOOT_F = 9, THIGH_B = 10, SHIN_B = 11, FOOT_B = 12, NPARTS = 13;
@@ -34,6 +34,8 @@ final class Person extends Ent {
     // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
     float frozenT;
     Prop cell;                      // the fridge this person is frozen inside, if any
+    /** Rust infection: seconds left until they turn into a Rust Man (-1 = not infected). */
+    float rustT = -1f;
     float printT;                   // gore V5: time to the next bloody footprint
     float jumpCd, panicT, alarmX;   // AI: hop cooldown, fear (from gore and blasts) and where it came from
     final boolean[] fzLimit = new boolean[NJOINTS];
@@ -94,8 +96,10 @@ final class Person extends Ent {
 
     /** Whole enough to be brought back (head on, torso and pelvis in one piece). */
     boolean intact() { return !severed[NECK] && !severed[WAIST] && !gibbed[HEAD] && !gibbed[CHEST] && !gibbed[PELVIS]; }
-    boolean organic() { return kind != ROBOT && kind != SKELETON && kind != ZOMBIE; }
-    boolean hostile() { return !dead && (kind == ZOMBIE || kind == THUG); }
+    boolean organic() { return kind != ROBOT && kind != SKELETON && kind != ZOMBIE && kind != RUSTMAN; }
+    /** Bleeds and can be gored: flesh of any kind. */
+    boolean fleshy() { return kind != ROBOT && kind != SKELETON; }
+    boolean hostile() { return !dead && (kind == ZOMBIE || kind == THUG || kind == RUSTMAN); }
     float h(float v) { return v * scale; }
 
     // ------------------------------------------------------------------------------- build ----
@@ -117,6 +121,7 @@ final class Person extends Ent {
             case SOLDIER: p.shirt = 0xFF55663a; p.pants = 0xFF4a5232; p.blood = 130f; p.strength = 1.1f; hpMul = 1.3f; break;
             case MEDIC: p.shirt = 0xFFf4f6f8; p.pants = 0xFF3f8f9a; break;
             case FIREFIGHTER: p.shirt = 0xFFb8402c; p.pants = 0xFF2d2f36; p.flammable = false; p.blood = 120f; hpMul = 1.2f; break;
+            case RUSTMAN: p.skin = 0xFFa8551f; p.shirt = 0xFF4a3220; p.pants = 0xFF2f2218; p.hair = 0xFF3a2410; p.flammable = false; p.blood = 230f; p.strength = 1.3f; p.speed = 0.85f; dens = 1.05f; hpMul = 1.8f; break;
             case THUG: p.shirt = 0xFF26282e; p.pants = 0xFF3a4a6a; p.hair = 0xFF111111; p.blood = 125f; p.strength = 1.1f; hpMul = 1.2f; break;
             default: break;
         }

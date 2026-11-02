@@ -24,6 +24,7 @@ namespace Trastazo
                 case Items.FAN: fan(w, q, dt); break;
                 case Items.CRUSHER: crusher(w, q, dt); break;
                 case Items.TESLA: tesla(w, q, dt); break;
+                case Items.RUSTBAR: rustBar(w, q, dt); break;
                 default: break;
             }
         }
@@ -200,6 +201,32 @@ namespace Trastazo
             return resisted;
         }
 
+        // -------------------------------------------------------------------------- rust bar ---
+
+        /** A corroded steel bar: whoever touches it starts to rust, and a few seconds later becomes a Rust Man. */
+        private static void rustBar(World w, Prop q, float dt) {
+            if (!q.on) return;
+            Shape bar = q.main().shapes.get(0);
+            if (w.rnd.nextFloat() < dt * 5f) w.fx.add(Fx.DEBRIS, bar.cx + w.fx.rr_(bar.hl), bar.cy + w.fx.rr_(bar.hh), w.fx.rr_(30f), -10f - w.fx.rf() * 40f, 0.8f, 1.6f, unchecked((int)0xFFb5651dU));
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent e = w.ents.get(i);
+                if (!(e is Person) || e.removed) continue;
+                Person p = (Person) e;
+                if (p.dead || p.rustT >= 0f || p.kind == Person.RUSTMAN || p.kind == Person.SKELETON) continue;
+                if (Math.abs(p.cx() - bar.cx) > 140f) continue;
+                for (int k = 0; k < Person.NPARTS; k++) {
+                    if (p.gibbed[k]) continue;
+                    Shape s = p.rb[k].shapes.get(0);
+                    if (s.maxX < bar.minX - 3f || s.minX > bar.maxX + 3f || s.maxY < bar.minY - 3f || s.minY > bar.maxY + 3f) continue;
+                    if (w.infectRust(p)) {
+                        w.fx.sparks(s.cx, s.cy, 6, unchecked((int)0xFFff9a3aU));
+                        if (w.sfx != null) w.sfx.crunch();
+                    }
+                    break;
+                }
+            }
+        }
+
         // ----------------------------------------------------------------------------- tesla ---
 
         private static void tesla(World w, Prop q, float dt) {
@@ -280,7 +307,7 @@ namespace Trastazo
             w.stats.impaled++;
             w.wound(p, part, Person.W_HOLE, x, y, 0f, 1f, 5f);
             w.hurt(p, part, 22f, x, y, 0f, 1f);
-            if (p.organic() || p.kind == Person.ZOMBIE) { w.bloodStyle(p); w.fx.blood(x, y, 0f, -0.5f, 12); p.bleed[part] = Math.max(p.bleed[part], 12f); }
+            if (p.fleshy()) { w.bloodStyle(p); w.fx.blood(x, y, 0f, -0.5f, 12); p.bleed[part] = Math.max(p.bleed[part], 12f); }
             if (w.sfx != null) w.sfx.splat();
         }
 

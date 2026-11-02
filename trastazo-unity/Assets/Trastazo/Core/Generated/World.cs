@@ -9,7 +9,7 @@ namespace Trastazo
         public const int MAX_BODIES = 900;
 
         public sealed class Stats {
-            public int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats, glass, collapses;
+            public int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats, glass, collapses, rusted, rustKills;
             public float recentT;
         }
 
@@ -103,6 +103,7 @@ namespace Trastazo
                 case Person.MEDIC: return Items.MEDIC;
                 case Person.FIREFIGHTER: return Items.FIREFIGHTER;
                 case Person.THUG: return Items.THUG;
+                case Person.RUSTMAN: return Items.RUSTMAN;
                 default: return scale > 1.4f ? Items.GIANT : (scale < 0.8f ? Items.KID : Items.HUMAN);
             }
         }
@@ -126,6 +127,7 @@ namespace Trastazo
                 case Items.MEDIC: e = newPerson(x, y, 1f, dir, Person.MEDIC); break;
                 case Items.FIREFIGHTER: e = newPerson(x, y, 1f, dir, Person.FIREFIGHTER); break;
                 case Items.THUG: e = newPerson(x, y, 1.08f, dir, Person.THUG); break;
+                case Items.RUSTMAN: e = newPerson(x, y, 1.1f, dir, Person.RUSTMAN); break;
                 case Items.CROWD:
                     for (int i = 0; i < 5; i++) {
                         float hx = Math.max(sim.wallL + 70, Math.min(sim.wallR - 70, x + (i - 2) * 75f));
@@ -159,7 +161,7 @@ namespace Trastazo
                         }
                         case Items.POOP: ry = Math.min(y, fl - 9f); break;
                         case Items.FRIDGE: ry = Math.min(y, fl - 101f); break;
-                        case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: ry = Math.min(y + 40f, fl); break;
+                        case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: case Items.RUSTBAR: ry = Math.min(y + 40f, fl); break;
                         case Items.BEARTRAP: ry = fl; break;
                         case Items.PENDULUM: ry = Math.max(sim.ceilY + 30f, Math.min(y, fl - 60f) - 240f); break;
                         case Items.BILLY: ry = Math.min(y, fl - 40f); break;
@@ -285,6 +287,11 @@ namespace Trastazo
                 if (p.burning) { p.burning = false; Machines.thaw(this, p); }
                 else { p.frozenT -= dt; if (p.frozenT <= 0f) Machines.thaw(this, p); }
             }
+            if (p.rustT >= 0f && !p.dead) {
+                p.rustT -= dt;
+                if (rnd.nextFloat() < dt * 6f) { RB rb = p.rb[rnd.nextInt(Person.NPARTS)]; fx.add(Fx.DEBRIS, rb.x, rb.y, fx.rr_(40f), -30f - fx.rf() * 50f, 0.6f, 1.8f, unchecked((int)0xFFb5651dU)); }
+                if (p.rustT < 0f) rustify(p);
+            }
             if (p.punchT > 0f) { p.punchT -= dt; if (p.punchT <= 0f) p.punch = false; }
             if (p.shotCd > 0f) p.shotCd -= dt;
             if (p.reloadT > 0f) { p.reloadT -= dt; if (p.reloadT <= 0f) p.ammo = 12; }
@@ -300,7 +307,7 @@ namespace Trastazo
                 p.bleed[i] -= dt;
                 RB b = p.rb[i];
                 lost += 2.2f;
-                if (p.organic() || p.kind == Person.ZOMBIE) {
+                if (p.fleshy()) {
                     if (rnd.nextFloat() < dt * 22f) fx.blood(b.x, b.y, 0f, 0.4f, 1);
                     // blood soaks the clothes and runs down the body
                     p.soak[i] = Math.min(1f, p.soak[i] + dt * 0.05f);
@@ -320,8 +327,8 @@ namespace Trastazo
                     }
                 } else if (rnd.nextFloat() < dt * 6f) fx.sparks(b.x, b.y, 2, unchecked((int)0xFFffd25aU));
             }
-            if (!p.dead && p.organic() || p.kind == Person.ZOMBIE) { if (!p.dead) p.blood -= lost * dt * 0.5f; }
-            if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE) && p.frozenT <= 0f) goreFloor(p, dt);
+            if (!p.dead && p.fleshy()) { if (!p.dead) p.blood -= lost * dt * 0.5f; }
+            if (fx.gore && p.fleshy() && p.frozenT <= 0f) goreFloor(p, dt);
             if (!p.dead && p.blood <= 0f) kill(p);
             // infection / acid / adrenaline
             if (p.dead && p.bitten && p.infected < 0f && p.organic()) p.infected = 3f;
@@ -366,6 +373,39 @@ namespace Trastazo
                 }
             }
             Mind.tick(this, p, dt);
+        }
+
+        /** Starts the rust infection (the rust bar and the Rust Man's claws do this). Returns true if it took. */
+        public bool infectRust(Person p) {
+            if (p.dead || p.rustT >= 0f || p.kind == Person.RUSTMAN || p.kind == Person.SKELETON || p.removed) return false;
+            p.rustT = 7f;
+            fx.add(Fx.SMOKE, p.cx(), p.cy(), fx.rr_(20f), -30f, 1f, 8f, unchecked((int)0x88b5651dU));
+            stats.rusted++;
+            return true;
+        }
+
+        /** The rust takes over: the person becomes a Rust Man. */
+        public void rustify(Person p) {
+            if (p.dead || p.kind == Person.RUSTMAN) { p.rustT = -1f; return; }
+            p.kind = Person.RUSTMAN;
+            p.item = Items.RUSTMAN;
+            p.rustT = -1f;
+            p.skin = unchecked((int)0xFFa8551fU); p.shirt = Renderer.mix(p.shirt, unchecked((int)0xFF4a3220U), 0.7f); p.pants = Renderer.mix(p.pants, unchecked((int)0xFF2f2218U), 0.7f); p.hair = unchecked((int)0xFF3a2410U);
+            p.flammable = false;
+            p.hpMul = 1.8f;
+            p.baseStrength = 1.3f; p.strength = 1.3f; p.speed = 0.85f;
+            p.maxBlood = Math.max(p.maxBlood, 230f); p.blood = p.maxBlood;
+            p.infected = -1f; p.bitten = false; p.ko = 0f; p.tone = 0f;
+            for (int i = 0; i < Person.NPARTS; i++) { p.hp[i] = Person.maxHp(p, i); p.broken[i] = false; p.bleed[i] = 0f; p.soak[i] = 0f; }
+            recolor(p);
+            RB c = p.rb[Person.CHEST];
+            for (int i = 0; i < 18; i++) fx.add(Fx.DEBRIS, c.x + fx.rr_(24f), c.y + fx.rr_(40f), fx.rr_(300f), -fx.rf() * 320f, 1.1f, 2f + fx.rf() * 3f, i % 2 == 0 ? unchecked((int)0xFFb5651dU) : unchecked((int)0xFF7a3a14U));
+            for (int i = 0; i < 6; i++) fx.add(Fx.SMOKE, c.x + fx.rr_(20f), c.y + fx.rr_(30f), fx.rr_(60f), -40f - fx.rf() * 60f, 1.4f, 8f, unchecked((int)0x99a05a20U));
+            fx.sparks(c.x, c.y, 16, unchecked((int)0xFFff9a3aU));
+            fx.flash = Math.min(1f, fx.flash + 0.25f);
+            if (sfx != null) { sfx.crunch(); sfx.zap(); }
+            alarm(c.x, c.y, 900f, 8f);
+            rumble += 0.4f;
         }
 
         /** Gore V5 on the floor: bleeding bodies lying down make a growing pool, and feet that step in blood leave prints. */
@@ -429,6 +469,7 @@ namespace Trastazo
         public void bloodStyle(Person p) {
             switch (p.kind) {
                 case Person.ZOMBIE: fx.bloodA = unchecked((int)0xFF5aa02aU); fx.bloodB = unchecked((int)0xFF3b6e1aU); break;
+                case Person.RUSTMAN: fx.bloodA = unchecked((int)0xFFb5481aU); fx.bloodB = unchecked((int)0xFF6e2a0cU); break;
                 case Person.ROBOT: fx.bloodA = unchecked((int)0xFF2b2b2fU); fx.bloodB = unchecked((int)0xFF4a4a52U); break;
                 case Person.SKELETON: fx.bloodA = unchecked((int)0xFFe9e5d3U); fx.bloodB = unchecked((int)0xFFc9c4adU); break;
                 default: fx.bloodA = unchecked((int)0xFFc0121bU); fx.bloodB = unchecked((int)0xFF7d0a10U); break;
@@ -445,7 +486,7 @@ namespace Trastazo
             else if (p.kind == Person.SKELETON) fx.debris(x, y, 2, unchecked((int)0xFFf0ead6U), 160f);
             else if (dmg > 3f) {
                 fx.blood(x, y, dx, dy, (int) Math.min(10, 2 + dmg * 0.25f));
-                if (p.organic() || p.kind == Person.ZOMBIE) {
+                if (p.fleshy()) {
                     p.soak[part] = Math.min(1f, p.soak[part] + dmg * 0.012f);
                     // a hard hit sprays the wall behind
                     if (dmg > 14f && fx.gore && rnd.nextFloat() < 0.5f) { fx.wallSplat(x + dx * 30f + fx.rr_(20f), y + dy * 20f + fx.rr_(20f), 6f + Math.min(18f, dmg * 0.25f), fx.bloodA); stats.splats++; }
@@ -496,7 +537,7 @@ namespace Trastazo
             int g = ++Person.groupSeq;
             foreach (int part in DETACH[j]) foreach (Shape s in p.rb[part].shapes) s.group = g;
             bloodStyle(p);
-            if (p.organic() || p.kind == Person.ZOMBIE) {
+            if (p.fleshy()) {
                 fx.blood(x, y, 0f, -0.3f, 18);
                 fx.wallSplat(x + fx.rr_(25f), y + fx.rr_(20f), 9f + fx.rf() * 10f, fx.bloodA);
                 foreach (int part in stumpParts(j)) { p.bleed[part] = Math.max(p.bleed[part], 9f); p.soak[part] = Math.min(1f, p.soak[part] + 0.3f); }
@@ -561,7 +602,7 @@ namespace Trastazo
                     foreach (int part in DETACH[idx]) foreach (Shape s in p.rb[part].shapes) s.group = g;
                     bloodStyle(p);
                     float x = j.anchorBX(), y = j.anchorBY();
-                    if (p.organic() || p.kind == Person.ZOMBIE) {
+                    if (p.fleshy()) {
                         fx.blood(x, y, 0f, -0.3f, 18);
                         foreach (int part in stumpParts(idx)) p.bleed[part] = Math.max(p.bleed[part], 9f);
                         foreach (int part in DETACH[idx]) p.bleed[part] = Math.max(p.bleed[part], 6f);
@@ -713,14 +754,14 @@ namespace Trastazo
             for (int k = 0; k < p.nw; k++) if (p.wpart[k] == part) p.ws[k] = 0f;
             stats.gibs++;
             bloodStyle(p);
-            if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) {
+            if (fx.gore && p.fleshy()) {
                 // gore V5: whoever stands near gets sprayed
                 for (int k = 0; k < ents.size(); k++) {
                     Ent e2 = ents.get(k);
                     if (!(e2 is Person) || e2 == p) continue;
                     Person q2 = (Person) e2;
                     float dd = (float) Math.abs(q2.cx() - bx);
-                    if (dd > 260f || !(q2.organic() || q2.kind == Person.ZOMBIE)) continue;
+                    if (dd > 260f || !q2.fleshy()) continue;
                     float amt = 0.45f * (1f - dd / 260f);
                     for (int pi = 0; pi < Person.NPARTS; pi++) q2.soak[pi] = Math.min(1f, q2.soak[pi] + amt * (pi == Person.CHEST || pi == Person.HEAD || pi == Person.UARM_F ? 1f : 0.5f));
                 }
@@ -735,7 +776,7 @@ namespace Trastazo
             else if (bone) fx.debris(bx, by, 12, unchecked((int)0xFFf0ead6U), 320f);
             else {
                 // a mist of blood in every direction, a heavier spray along the blow, and a few droplets that hang
-                if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) {
+                if (fx.gore && p.fleshy()) {
                     for (int k = 0; k < 3; k++) fx.wallSplat(bx + dx * 30f + fx.rr_(60f), by + dy * 20f + fx.rr_(45f), 14f + fx.rf() * 20f, k == 0 ? fx.bloodA : fx.bloodB);
                     stats.splats += 3;
                 }
@@ -934,7 +975,7 @@ namespace Trastazo
         }
 
         private static int dark(int c, float t) { return Renderer.dark(c, t); }
-        private static bool flesh(Person p) { return p.organic() || p.kind == Person.ZOMBIE; }
+        private static bool flesh(Person p) { return p.fleshy(); }
 
         public void keepChunk(Prop c) {
             chunks.add(c);

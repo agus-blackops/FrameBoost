@@ -120,7 +120,7 @@ final class Fauna {
     }
 
     static boolean edible(Person p) {
-        return p.dead && !p.removed && (p.organic() || p.kind == Person.ZOMBIE);
+        return p.dead && !p.removed && p.fleshy();
     }
 
     /** Picks (or keeps) a corpse and the piece of it nearest to the mouth. */

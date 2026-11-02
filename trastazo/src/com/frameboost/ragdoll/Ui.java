@@ -660,6 +660,18 @@ final class Ui {
                 line(c, cx, cy - s * 0.3f, cx + s * 0.55f, cy - s * 0.32f, w, 0xFF7fa65a);
                 disc(c, cx + s * 0.07f, cy - s * 0.62f, s * 0.05f, 0xFFd62020);
                 break;
+            case Items.RUSTMAN:
+                person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFF4a3220, 0xFFa8551f, 0xFF2f2218, 1.15f);
+                for (int k = -1; k <= 1; k++) line(c, cx + s * 0.3f, cy - s * 0.05f, cx + s * 0.62f, cy - s * 0.2f + k * s * 0.14f, Math.max(1f, w * 0.35f), 0xFFd9d3c4);
+                disc(c, cx + s * 0.07f, cy - s * 0.62f, s * 0.05f, 0xFFffb04a);
+                break;
+            case Items.RUSTBAR:
+                box(c, cx - s * 0.18f, cy - s * 0.85f, cx + s * 0.18f, cy + s * 0.7f, 0xFF8a4a1f, s * 0.04f);
+                box(c, cx - s * 0.5f, cy + s * 0.6f, cx + s * 0.5f, cy + s * 0.78f, 0xFF4a4f57, s * 0.04f);
+                disc(c, cx - s * 0.05f, cy - s * 0.4f, s * 0.12f, 0xFFc9772a);
+                disc(c, cx + s * 0.06f, cy + s * 0.1f, s * 0.1f, 0xFF5a2a0c);
+                disc(c, cx - s * 0.04f, cy + s * 0.4f, s * 0.09f, 0xFFc9772a);
+                break;
             case Items.SKELETON:
                 person(c, cx, cy + s * 0.1f, s * 0.9f, 0xFFe9e5d3, 0xFFe9e5d3, 0xFFe3dfcc, 0.55f);
                 disc(c, cx + s * 0.06f, cy - s * 0.62f, s * 0.05f, 0xFF2a2820);

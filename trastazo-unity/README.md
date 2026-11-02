@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 1.9
+# Trastazo Playground para Unity — 2.0
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,26 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 2.0
+
+* **Hombre óxido y Barra de óxido:**
+  * **Barra de óxido** (categoría *Máquinas*): una barra corroída. **Quien la toque se infecta**: el óxido se
+    extiende por su cuerpo en manchas naranjas durante 7 s y, **al completarse, se convierte en Hombre óxido**
+    (reaparece con la vida llena). *Activar* la apaga. Los esqueletos y los muertos son inmunes.
+  * **Hombre óxido** (categoría *Gente*, también se puede colocar directamente): piel de metal corroído, cresta
+    de pinchos, púas en los hombros, placa remachada con grietas incandescentes, ojos encendidos y **garras de
+    acero**. Caza a todo el que esté vivo (zombis incluidos): cada zarpazo hace cortes profundos y a veces
+    arranca un miembro; **mata o infecta de óxido** (60 %), y los infectados se convierten en nuevos Hombres
+    óxido. Sangra naranja y aguanta casi el doble. Se guarda y se carga con la infección en curso.
+* **Modelo de humanos renovado (V3):** torso con hombros y cintura, caderas, cuello, **cabeza con mandíbula**
+  (cráneo ancho sobre mandíbula más estrecha), **manos con dedos y pulgar**, hombros con luz y sombra. Las
+  heridas y la sangre se siguen viendo encima.
+
+![Barra](docs/rust-barra.png)
+![Infectado](docs/rust-infectado.png)
+![Horda](docs/rust-horda.png)
+![Modelos](docs/rust-modelos.png)
 
 ## Novedades de Trastazo Playground Unity 1.9
 
@@ -180,6 +200,7 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
 | `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test19` (2.0: barra de óxido, infección, Hombre óxido, cadena de infección, guardado, modelo V3) | 13/13 pasan |
 | `Test18` (1.9: chorros arteriales, charcos, huellas, manchas, salpicaduras, costillas y corazón) | 10/10 pasan |
 | `Test16` (1.6: pirámide, castillo, invernadero, dominó, andamio; derrumbe, guardado) | 13/13 pasan |
 | `Test15` (1.5: cristal, esquirlas, astillas, quemaduras, colapso en cadena, guardado) | 8/8 pasan |

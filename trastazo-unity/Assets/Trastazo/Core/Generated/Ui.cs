@@ -660,6 +660,18 @@ namespace Trastazo
                     line(c, cx, cy - s * 0.3f, cx + s * 0.55f, cy - s * 0.32f, w, unchecked((int)0xFF7fa65aU));
                     disc(c, cx + s * 0.07f, cy - s * 0.62f, s * 0.05f, unchecked((int)0xFFd62020U));
                     break;
+                case Items.RUSTMAN:
+                    person(c, cx, cy + s * 0.1f, s * 0.9f, unchecked((int)0xFF4a3220U), unchecked((int)0xFFa8551fU), unchecked((int)0xFF2f2218U), 1.15f);
+                    for (int k = -1; k <= 1; k++) line(c, cx + s * 0.3f, cy - s * 0.05f, cx + s * 0.62f, cy - s * 0.2f + k * s * 0.14f, Math.max(1f, w * 0.35f), unchecked((int)0xFFd9d3c4U));
+                    disc(c, cx + s * 0.07f, cy - s * 0.62f, s * 0.05f, unchecked((int)0xFFffb04aU));
+                    break;
+                case Items.RUSTBAR:
+                    box(c, cx - s * 0.18f, cy - s * 0.85f, cx + s * 0.18f, cy + s * 0.7f, unchecked((int)0xFF8a4a1fU), s * 0.04f);
+                    box(c, cx - s * 0.5f, cy + s * 0.6f, cx + s * 0.5f, cy + s * 0.78f, unchecked((int)0xFF4a4f57U), s * 0.04f);
+                    disc(c, cx - s * 0.05f, cy - s * 0.4f, s * 0.12f, unchecked((int)0xFFc9772aU));
+                    disc(c, cx + s * 0.06f, cy + s * 0.1f, s * 0.1f, unchecked((int)0xFF5a2a0cU));
+                    disc(c, cx - s * 0.04f, cy + s * 0.4f, s * 0.09f, unchecked((int)0xFFc9772aU));
+                    break;
                 case Items.SKELETON:
                     person(c, cx, cy + s * 0.1f, s * 0.9f, unchecked((int)0xFFe9e5d3U), unchecked((int)0xFFe9e5d3U), unchecked((int)0xFFe3dfccU), 0.55f);
                     disc(c, cx + s * 0.06f, cy - s * 0.62f, s * 0.05f, unchecked((int)0xFF2a2820U));

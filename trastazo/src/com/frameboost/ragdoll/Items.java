@@ -5,7 +5,7 @@ final class Items {
     private Items() { }
 
     static final int HAND = 0, DELETE = 1, FREEZE = 2, CUT = 3, INSPECT = 4, ROPE = 5, WELD = 6, HINGE = 7, ACTIVATE = 8,
-            HUMAN = 10, GIANT = 11, KID = 12, CROWD = 13, ROBOT = 14, ZOMBIE = 15, SKELETON = 16, SOLDIER = 17, MEDIC = 18, FIREFIGHTER = 19, THUG = 20,
+            HUMAN = 10, GIANT = 11, KID = 12, CROWD = 13, ROBOT = 14, ZOMBIE = 15, SKELETON = 16, SOLDIER = 17, MEDIC = 18, FIREFIGHTER = 19, THUG = 20, RUSTMAN = 21,
             CRATE = 30, BIGCRATE = 31, PLANK = 32, BARREL = 33, BALL = 34, BALLOON = 35, WHEEL = 36, MOTOR = 37, THRUSTER = 38, BOWLING = 39,
             MELON = 40, STEEL = 41, PLATFORM = 42,
             GRENADE = 50, DYNAMITE = 51, TNT = 52, XBARREL = 53, C4 = 54, DETONATE = 55, NUKE = 56,
@@ -13,7 +13,7 @@ final class Items {
             FIRE = 80, LIGHTNING = 81, PUSH = 82,
             SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
             ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, PYRAMID = 115, CASTLE = 116, GREENHOUSE = 117, DOMINOES = 118, SCAFFOLD = 119, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
-            GLASS = 154, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+            GLASS = 154, RUSTBAR = 155, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
     static final class Item {
         final int id;
@@ -50,6 +50,7 @@ final class Items {
             new Item(MEDIC, "Médico", PLACE + " · IA: cura heridos y reanima a los muertos"),
             new Item(FIREFIGHTER, "Bombero", PLACE + " · IA: apaga lo que arde"),
             new Item(THUG, "Matón", PLACE + " · IA: busca pelea con quien pille"),
+            new Item(RUSTMAN, "Hombre óxido", PLACE + " · garras de acero: mata o infecta de óxido a quien alcanza"),
         },
         {
             new Item(CRATE, "Caja", PLACE),
@@ -131,6 +132,7 @@ final class Items {
             new Item(FAN, "Ventilador", PLACE + " · Activar: encender/apagar · empuja hacia donde mira"),
             new Item(CRUSHER, "Prensa hidráulica", PLACE + " · Activar: encender/apagar · aplasta lo que hay debajo"),
             new Item(TESLA, "Bobina Tesla", PLACE + " · Activar: encender/apagar · electrocuta lo que se acerca"),
+            new Item(RUSTBAR, "Barra de óxido", PLACE + " · quien la toque se infecta y en segundos se convierte en Hombre óxido"),
         },
         {
             new Item(BEARTRAP, "Cepo", PLACE + " en el suelo · atrapa el pie que lo pisa · Activar: volver a armarlo"),
@@ -163,7 +165,7 @@ final class Items {
 
     static boolean isBuild(int id) { return id >= HOUSE && id <= SCAFFOLD; }
     static boolean isAnimal(int id) { return id >= DOG && id <= RAT; }
-    static boolean isMachine(int id) { return id >= SAW && id <= TESLA; }
+    static boolean isMachine(int id) { return (id >= SAW && id <= TESLA) || id == RUSTBAR; }
     static boolean isTrap(int id) { return id >= BEARTRAP && id <= BILLY; }
 
     static boolean isSpawn(int id) {
@@ -176,10 +178,10 @@ final class Items {
 
     static final String[] KEYS = {"human", "giant", "kid", "robot", "zombie", "skeleton", "soldier", "medic", "firefighter", "thug", "crate", "bigcrate",
             "plank", "barrel", "ball", "balloon", "steel", "wheel", "motor", "thruster", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel",
-            "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop", "saw", "spikes", "fan", "crusher", "tesla", "bat", "hammer", "fridge", "beartrap", "pendulum", "reversetrap", "billy", "glass"};
+            "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop", "saw", "spikes", "fan", "crusher", "tesla", "bat", "hammer", "fridge", "beartrap", "pendulum", "reversetrap", "billy", "glass", "rustman", "rustbar"};
     static final int[] KEY_IDS = {HUMAN, GIANT, KID, ROBOT, ZOMBIE, SKELETON, SOLDIER, MEDIC, FIREFIGHTER, THUG, CRATE, BIGCRATE,
             PLANK, BARREL, BALL, BALLOON, STEEL, WHEEL, MOTOR, THRUSTER, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL,
-            KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP, SAW, SPIKES, FAN, CRUSHER, TESLA, BAT, HAMMER, FRIDGE, BEARTRAP, PENDULUM, REVTRAP, BILLY, GLASS};
+            KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP, SAW, SPIKES, FAN, CRUSHER, TESLA, BAT, HAMMER, FRIDGE, BEARTRAP, PENDULUM, REVTRAP, BILLY, GLASS, RUSTMAN, RUSTBAR};
 
     static int keyId(String k) {
         for (int i = 0; i < KEYS.length; i++) if (KEYS[i].equals(k)) return KEY_IDS[i];

@@ -8,7 +8,7 @@ final class World implements Sim.Listener, Sim.Hook {
     static final int MAX_BODIES = 900;
 
     static final class Stats {
-        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats, glass, collapses;
+        int explosions, headshots, kills, severed, infections, melons, thrusts, links, revives, heals, fires, machinesDown, aiKills, recentBooms, hits, destroyed, gibs, broken, eaten, poops, shocks, impaled, shattered, fridges, trapped, trapsSprung, trapsEscaped, splats, glass, collapses, rusted, rustKills;
         float recentT;
     }
 
@@ -102,6 +102,7 @@ final class World implements Sim.Listener, Sim.Hook {
             case Person.MEDIC: return Items.MEDIC;
             case Person.FIREFIGHTER: return Items.FIREFIGHTER;
             case Person.THUG: return Items.THUG;
+            case Person.RUSTMAN: return Items.RUSTMAN;
             default: return scale > 1.4f ? Items.GIANT : (scale < 0.8f ? Items.KID : Items.HUMAN);
         }
     }
@@ -125,6 +126,7 @@ final class World implements Sim.Listener, Sim.Hook {
             case Items.MEDIC: e = newPerson(x, y, 1f, dir, Person.MEDIC); break;
             case Items.FIREFIGHTER: e = newPerson(x, y, 1f, dir, Person.FIREFIGHTER); break;
             case Items.THUG: e = newPerson(x, y, 1.08f, dir, Person.THUG); break;
+            case Items.RUSTMAN: e = newPerson(x, y, 1.1f, dir, Person.RUSTMAN); break;
             case Items.CROWD:
                 for (int i = 0; i < 5; i++) {
                     float hx = Math.max(sim.wallL + 70, Math.min(sim.wallR - 70, x + (i - 2) * 75f));
@@ -158,7 +160,7 @@ final class World implements Sim.Listener, Sim.Hook {
                     }
                     case Items.POOP: ry = Math.min(y, fl - 9f); break;
                     case Items.FRIDGE: ry = Math.min(y, fl - 101f); break;
-                    case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: ry = Math.min(y + 40f, fl); break;
+                    case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: case Items.RUSTBAR: ry = Math.min(y + 40f, fl); break;
                     case Items.BEARTRAP: ry = fl; break;
                     case Items.PENDULUM: ry = Math.max(sim.ceilY + 30f, Math.min(y, fl - 60f) - 240f); break;
                     case Items.BILLY: ry = Math.min(y, fl - 40f); break;
@@ -284,6 +286,11 @@ final class World implements Sim.Listener, Sim.Hook {
             if (p.burning) { p.burning = false; Machines.thaw(this, p); }
             else { p.frozenT -= dt; if (p.frozenT <= 0f) Machines.thaw(this, p); }
         }
+        if (p.rustT >= 0f && !p.dead) {
+            p.rustT -= dt;
+            if (rnd.nextFloat() < dt * 6f) { RB rb = p.rb[rnd.nextInt(Person.NPARTS)]; fx.add(Fx.DEBRIS, rb.x, rb.y, fx.rr(40f), -30f - fx.rf() * 50f, 0.6f, 1.8f, 0xFFb5651d); }
+            if (p.rustT < 0f) rustify(p);
+        }
         if (p.punchT > 0f) { p.punchT -= dt; if (p.punchT <= 0f) p.punch = false; }
         if (p.shotCd > 0f) p.shotCd -= dt;
         if (p.reloadT > 0f) { p.reloadT -= dt; if (p.reloadT <= 0f) p.ammo = 12; }
@@ -299,7 +306,7 @@ final class World implements Sim.Listener, Sim.Hook {
             p.bleed[i] -= dt;
             RB b = p.rb[i];
             lost += 2.2f;
-            if (p.organic() || p.kind == Person.ZOMBIE) {
+            if (p.fleshy()) {
                 if (rnd.nextFloat() < dt * 22f) fx.blood(b.x, b.y, 0f, 0.4f, 1);
                 // blood soaks the clothes and runs down the body
                 p.soak[i] = Math.min(1f, p.soak[i] + dt * 0.05f);
@@ -319,8 +326,8 @@ final class World implements Sim.Listener, Sim.Hook {
                 }
             } else if (rnd.nextFloat() < dt * 6f) fx.sparks(b.x, b.y, 2, 0xFFffd25a);
         }
-        if (!p.dead && p.organic() || p.kind == Person.ZOMBIE) { if (!p.dead) p.blood -= lost * dt * 0.5f; }
-        if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE) && p.frozenT <= 0f) goreFloor(p, dt);
+        if (!p.dead && p.fleshy()) { if (!p.dead) p.blood -= lost * dt * 0.5f; }
+        if (fx.gore && p.fleshy() && p.frozenT <= 0f) goreFloor(p, dt);
         if (!p.dead && p.blood <= 0f) kill(p);
         // infection / acid / adrenaline
         if (p.dead && p.bitten && p.infected < 0f && p.organic()) p.infected = 3f;
@@ -365,6 +372,39 @@ final class World implements Sim.Listener, Sim.Hook {
             }
         }
         Mind.tick(this, p, dt);
+    }
+
+    /** Starts the rust infection (the rust bar and the Rust Man's claws do this). Returns true if it took. */
+    boolean infectRust(Person p) {
+        if (p.dead || p.rustT >= 0f || p.kind == Person.RUSTMAN || p.kind == Person.SKELETON || p.removed) return false;
+        p.rustT = 7f;
+        fx.add(Fx.SMOKE, p.cx(), p.cy(), fx.rr(20f), -30f, 1f, 8f, 0x88b5651d);
+        stats.rusted++;
+        return true;
+    }
+
+    /** The rust takes over: the person becomes a Rust Man. */
+    void rustify(Person p) {
+        if (p.dead || p.kind == Person.RUSTMAN) { p.rustT = -1f; return; }
+        p.kind = Person.RUSTMAN;
+        p.item = Items.RUSTMAN;
+        p.rustT = -1f;
+        p.skin = 0xFFa8551f; p.shirt = Renderer.mix(p.shirt, 0xFF4a3220, 0.7f); p.pants = Renderer.mix(p.pants, 0xFF2f2218, 0.7f); p.hair = 0xFF3a2410;
+        p.flammable = false;
+        p.hpMul = 1.8f;
+        p.baseStrength = 1.3f; p.strength = 1.3f; p.speed = 0.85f;
+        p.maxBlood = Math.max(p.maxBlood, 230f); p.blood = p.maxBlood;
+        p.infected = -1f; p.bitten = false; p.ko = 0f; p.tone = 0f;
+        for (int i = 0; i < Person.NPARTS; i++) { p.hp[i] = Person.maxHp(p, i); p.broken[i] = false; p.bleed[i] = 0f; p.soak[i] = 0f; }
+        recolor(p);
+        RB c = p.rb[Person.CHEST];
+        for (int i = 0; i < 18; i++) fx.add(Fx.DEBRIS, c.x + fx.rr(24f), c.y + fx.rr(40f), fx.rr(300f), -fx.rf() * 320f, 1.1f, 2f + fx.rf() * 3f, i % 2 == 0 ? 0xFFb5651d : 0xFF7a3a14);
+        for (int i = 0; i < 6; i++) fx.add(Fx.SMOKE, c.x + fx.rr(20f), c.y + fx.rr(30f), fx.rr(60f), -40f - fx.rf() * 60f, 1.4f, 8f, 0x99a05a20);
+        fx.sparks(c.x, c.y, 16, 0xFFff9a3a);
+        fx.flash = Math.min(1f, fx.flash + 0.25f);
+        if (sfx != null) { sfx.crunch(); sfx.zap(); }
+        alarm(c.x, c.y, 900f, 8f);
+        rumble += 0.4f;
     }
 
     /** Gore V5 on the floor: bleeding bodies lying down make a growing pool, and feet that step in blood leave prints. */
@@ -428,6 +468,7 @@ final class World implements Sim.Listener, Sim.Hook {
     void bloodStyle(Person p) {
         switch (p.kind) {
             case Person.ZOMBIE: fx.bloodA = 0xFF5aa02a; fx.bloodB = 0xFF3b6e1a; break;
+            case Person.RUSTMAN: fx.bloodA = 0xFFb5481a; fx.bloodB = 0xFF6e2a0c; break;
             case Person.ROBOT: fx.bloodA = 0xFF2b2b2f; fx.bloodB = 0xFF4a4a52; break;
             case Person.SKELETON: fx.bloodA = 0xFFe9e5d3; fx.bloodB = 0xFFc9c4ad; break;
             default: fx.bloodA = 0xFFc0121b; fx.bloodB = 0xFF7d0a10; break;
@@ -444,7 +485,7 @@ final class World implements Sim.Listener, Sim.Hook {
         else if (p.kind == Person.SKELETON) fx.debris(x, y, 2, 0xFFf0ead6, 160f);
         else if (dmg > 3f) {
             fx.blood(x, y, dx, dy, (int) Math.min(10, 2 + dmg * 0.25f));
-            if (p.organic() || p.kind == Person.ZOMBIE) {
+            if (p.fleshy()) {
                 p.soak[part] = Math.min(1f, p.soak[part] + dmg * 0.012f);
                 // a hard hit sprays the wall behind
                 if (dmg > 14f && fx.gore && rnd.nextFloat() < 0.5f) { fx.wallSplat(x + dx * 30f + fx.rr(20f), y + dy * 20f + fx.rr(20f), 6f + Math.min(18f, dmg * 0.25f), fx.bloodA); stats.splats++; }
@@ -495,7 +536,7 @@ final class World implements Sim.Listener, Sim.Hook {
         int g = ++Person.groupSeq;
         for (int part : DETACH[j]) for (Shape s : p.rb[part].shapes) s.group = g;
         bloodStyle(p);
-        if (p.organic() || p.kind == Person.ZOMBIE) {
+        if (p.fleshy()) {
             fx.blood(x, y, 0f, -0.3f, 18);
             fx.wallSplat(x + fx.rr(25f), y + fx.rr(20f), 9f + fx.rf() * 10f, fx.bloodA);
             for (int part : stumpParts(j)) { p.bleed[part] = Math.max(p.bleed[part], 9f); p.soak[part] = Math.min(1f, p.soak[part] + 0.3f); }
@@ -560,7 +601,7 @@ final class World implements Sim.Listener, Sim.Hook {
                 for (int part : DETACH[idx]) for (Shape s : p.rb[part].shapes) s.group = g;
                 bloodStyle(p);
                 float x = j.anchorBX(), y = j.anchorBY();
-                if (p.organic() || p.kind == Person.ZOMBIE) {
+                if (p.fleshy()) {
                     fx.blood(x, y, 0f, -0.3f, 18);
                     for (int part : stumpParts(idx)) p.bleed[part] = Math.max(p.bleed[part], 9f);
                     for (int part : DETACH[idx]) p.bleed[part] = Math.max(p.bleed[part], 6f);
@@ -712,14 +753,14 @@ final class World implements Sim.Listener, Sim.Hook {
         for (int k = 0; k < p.nw; k++) if (p.wpart[k] == part) p.ws[k] = 0f;
         stats.gibs++;
         bloodStyle(p);
-        if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) {
+        if (fx.gore && p.fleshy()) {
             // gore V5: whoever stands near gets sprayed
             for (int k = 0; k < ents.size(); k++) {
                 Ent e2 = ents.get(k);
                 if (!(e2 instanceof Person) || e2 == p) continue;
                 Person q2 = (Person) e2;
                 float dd = (float) Math.abs(q2.cx() - bx);
-                if (dd > 260f || !(q2.organic() || q2.kind == Person.ZOMBIE)) continue;
+                if (dd > 260f || !q2.fleshy()) continue;
                 float amt = 0.45f * (1f - dd / 260f);
                 for (int pi = 0; pi < Person.NPARTS; pi++) q2.soak[pi] = Math.min(1f, q2.soak[pi] + amt * (pi == Person.CHEST || pi == Person.HEAD || pi == Person.UARM_F ? 1f : 0.5f));
             }
@@ -734,7 +775,7 @@ final class World implements Sim.Listener, Sim.Hook {
         else if (bone) fx.debris(bx, by, 12, 0xFFf0ead6, 320f);
         else {
             // a mist of blood in every direction, a heavier spray along the blow, and a few droplets that hang
-            if (fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) {
+            if (fx.gore && p.fleshy()) {
                 for (int k = 0; k < 3; k++) fx.wallSplat(bx + dx * 30f + fx.rr(60f), by + dy * 20f + fx.rr(45f), 14f + fx.rf() * 20f, k == 0 ? fx.bloodA : fx.bloodB);
                 stats.splats += 3;
             }
@@ -933,7 +974,7 @@ final class World implements Sim.Listener, Sim.Hook {
     }
 
     private static int dark(int c, float t) { return Renderer.dark(c, t); }
-    private static boolean flesh(Person p) { return p.organic() || p.kind == Person.ZOMBIE; }
+    private static boolean flesh(Person p) { return p.fleshy(); }
 
     void keepChunk(Prop c) {
         chunks.add(c);

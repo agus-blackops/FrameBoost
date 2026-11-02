@@ -17,9 +17,9 @@ namespace Trastazo
             foreach (Ent e in list) {
                 if (e is Person) {
                     Person p = (Person) e;
-                    o.println(Fmt.format("P %d %d %.3f %d %d %d %d %.2f %d %d %.2f %.2f %.2f %d %d %.1f",
+                    o.println(Fmt.format("P %d %d %.3f %d %d %d %d %.2f %d %d %.2f %.2f %.2f %d %d %.1f %.2f",
                             p.item, p.dir, p.scale, p.skin, p.shirt, p.pants, p.hair, p.blood, p.dead ? 1 : 0, p.burning ? 1 : 0, p.burnT, p.charT,
-                            p.ko, p.bitten ? 1 : 0, p.kind, Math.min(p.frozenT, 99999f)));
+                            p.ko, p.bitten ? 1 : 0, p.kind, Math.min(p.frozenT, 99999f), p.rustT));
                     StringBuilder sb = new StringBuilder("S");
                     for (int i = 0; i < Person.NJOINTS; i++) sb.append(p.severed[i] ? '1' : '0');
                     sb.append(' ');
@@ -83,6 +83,7 @@ namespace Trastazo
                                 p.burning = t[10].equals("1"); p.burnT = Float.parseFloat(t[11]); p.charT = Float.parseFloat(t[12]);
                                 p.ko = Float.parseFloat(t[13]); p.bitten = t[14].equals("1");
                                 if (t.Length > 16) p.frozenT = Float.parseFloat(t[16]);
+                                if (t.Length > 17) p.rustT = Float.parseFloat(t[17]);
                                 w.recolor(p);
                             }
                             made.add(cur);

@@ -10,7 +10,7 @@ namespace Trastazo
      * pushes on whatever touches the ground) while two-link IK sets the leg and arm joint targets.
      */
     public sealed class Person : Ent {
-        public const int HUMAN = 0, ROBOT = 1, ZOMBIE = 2, SKELETON = 3, SOLDIER = 4, MEDIC = 5, FIREFIGHTER = 6, THUG = 7;
+        public const int HUMAN = 0, ROBOT = 1, ZOMBIE = 2, SKELETON = 3, SOLDIER = 4, MEDIC = 5, FIREFIGHTER = 6, THUG = 7, RUSTMAN = 8;
 
         public const int PELVIS = 0, CHEST = 1, HEAD = 2, UARM_F = 3, FARM_F = 4, UARM_B = 5, FARM_B = 6,
                 THIGH_F = 7, SHIN_F = 8, FOOT_F = 9, THIGH_B = 10, SHIN_B = 11, FOOT_B = 12, NPARTS = 13;
@@ -38,6 +38,8 @@ namespace Trastazo
         // liquid nitrogen: seconds left frozen, and the joint limits to give back when it melts
         public float frozenT;
         public Prop cell;                      // the fridge this person is frozen inside, if any
+        /** Rust infection: seconds left until they turn into a Rust Man (-1 = not infected). */
+        public float rustT = -1f;
         public float printT;                   // gore V5: time to the next bloody footprint
         public float jumpCd, panicT, alarmX;   // AI: hop cooldown, fear (from gore and blasts) and where it came from
         public bool[] fzLimit = new bool[NJOINTS];
@@ -98,8 +100,10 @@ namespace Trastazo
 
         /** Whole enough to be brought back (head on, torso and pelvis in one piece). */
         public bool intact() { return !severed[NECK] && !severed[WAIST] && !gibbed[HEAD] && !gibbed[CHEST] && !gibbed[PELVIS]; }
-        public bool organic() { return kind != ROBOT && kind != SKELETON && kind != ZOMBIE; }
-        public bool hostile() { return !dead && (kind == ZOMBIE || kind == THUG); }
+        public bool organic() { return kind != ROBOT && kind != SKELETON && kind != ZOMBIE && kind != RUSTMAN; }
+        /** Bleeds and can be gored: flesh of any kind. */
+        public bool fleshy() { return kind != ROBOT && kind != SKELETON; }
+        public bool hostile() { return !dead && (kind == ZOMBIE || kind == THUG || kind == RUSTMAN); }
         public float h(float v) { return v * scale; }
 
         // ------------------------------------------------------------------------------- build ----
@@ -121,6 +125,7 @@ namespace Trastazo
                 case SOLDIER: p.shirt = unchecked((int)0xFF55663aU); p.pants = unchecked((int)0xFF4a5232U); p.blood = 130f; p.strength = 1.1f; hpMul = 1.3f; break;
                 case MEDIC: p.shirt = unchecked((int)0xFFf4f6f8U); p.pants = unchecked((int)0xFF3f8f9aU); break;
                 case FIREFIGHTER: p.shirt = unchecked((int)0xFFb8402cU); p.pants = unchecked((int)0xFF2d2f36U); p.flammable = false; p.blood = 120f; hpMul = 1.2f; break;
+                case RUSTMAN: p.skin = unchecked((int)0xFFa8551fU); p.shirt = unchecked((int)0xFF4a3220U); p.pants = unchecked((int)0xFF2f2218U); p.hair = unchecked((int)0xFF3a2410U); p.flammable = false; p.blood = 230f; p.strength = 1.3f; p.speed = 0.85f; dens = 1.05f; hpMul = 1.8f; break;
                 case THUG: p.shirt = unchecked((int)0xFF26282eU); p.pants = unchecked((int)0xFF3a4a6aU); p.hair = unchecked((int)0xFF111111U); p.blood = 125f; p.strength = 1.1f; hpMul = 1.2f; break;
                 default: break;
             }

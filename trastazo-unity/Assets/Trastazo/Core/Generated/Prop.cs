@@ -241,6 +241,11 @@ namespace Trastazo
                     b.user = p; p.bodies.add(b);
                     break;
                 }
+                case Items.RUSTBAR: {
+                    p.color = unchecked((int)0xFF8a4a1fU); p.hw = 7f; p.hh = 70f; p.on = true;
+                    b = box(p, x, y - 70f, 7f, 70f, 3f, 0.9f, 0f);
+                    break;
+                }
                 case Items.SPIKES: {
                     p.sharp = true; p.color = unchecked((int)0xFF6f7782U); p.hw = 70f; p.hh = 9f;
                     b = box(p, x, y - 9f, 70f, 9f, 3f, 0.9f, 0f);

@@ -303,8 +303,8 @@ final class Screens {
 
     /** What is new, on the title screen's card. */
     static final String[] NEWS = {
-        "Menú principal nuevo",
-        "Modelos V2: ropa, caras y peinados",
+        "Hombre óxido y barra de óxido",
+        "Modelo de humanos V3 renovado",
         "Sangre V3: charcos, huellas, manchas",
         "Gore V5: costillas, corazón, arterias",
         "Trampas de SAW: cepo, péndulo, Billy...",
@@ -385,7 +385,7 @@ final class Screens {
         button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false, IC_GEAR);
         // what's new: one line at the bottom, so the cover scene stays clear
         {
-            String news = "Novedades: Sangre V3 · Gore V5 · Destruction Engine 1.5 · trampas de SAW · 10 construcciones";
+            String news = "Novedades: Hombre óxido · modelo V3 · Gore V5 · trampas de SAW · 10 construcciones";
             p.setTextSize(11 * d);
             float nw = p.measureText(news), maxN = sw - colX - 24 * d;
             float ns = nw > maxN ? 11 * d * maxN / nw : 11 * d;

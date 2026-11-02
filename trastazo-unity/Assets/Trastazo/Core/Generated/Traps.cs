@@ -181,7 +181,7 @@ namespace Trastazo
                         float cx = blade.cx + ux * u, cy = blade.cy + uy * u;
                         float tx = ux * Math.signum(omega), ty = uy * Math.signum(omega);
                         p.hitCd[k] = 0.22f;
-                        if (p.organic() || p.kind == Person.ZOMBIE) q.wear = Math.min(1f, q.wear + 0.2f);
+                        if (p.fleshy()) q.wear = Math.min(1f, q.wear + 0.2f);
                         w.wound(p, k, Person.W_CUT, cx, cy, tx, ty, 9f);
                         w.hurt(p, k, 20f + speed * 0.02f, cx, cy, tx, ty);
                         RB b = p.rb[k];
@@ -189,7 +189,7 @@ namespace Trastazo
                         int j = Person.PART_JOINT[k];
                         if (j >= 0 && j != Person.WAIST && !p.severed[j] && w.rnd.nextFloat() < 0.45f) w.sever(p, j, cx, cy);
                         else if (k == Person.CHEST && w.rnd.nextFloat() < 0.15f) w.gib(p, k, tx, ty);
-                        if (w.fx.gore && (p.organic() || p.kind == Person.ZOMBIE)) w.fx.wallSplat(cx + tx * 40f, cy - 20f, 14f + w.fx.rf() * 14f, w.fx.bloodA);
+                        if (w.fx.gore && p.fleshy()) w.fx.wallSplat(cx + tx * 40f, cy - 20f, 14f + w.fx.rf() * 14f, w.fx.bloodA);
                         if (w.sfx != null) w.sfx.crunch();
                         w.stats.hits++;
                     }

@@ -599,7 +599,7 @@ final class Renderer {
             case Items.DOG: case Items.PIG: case Items.RAT: drawAnimal(c, q, col); break;
             case Items.POOP: drawPoop(c, q, col); break;
             case Items.FRIDGE: drawFridge(c, q); break;
-            case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: drawMachine(c, q); break;
+            case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: case Items.RUSTBAR: drawMachine(c, q); break;
             case Items.BAT: case Items.HAMMER: drawBlunt(c, q, col); break;
             case Items.BEARTRAP: drawBearTrap(c, q); break;
             case Items.PENDULUM: drawPendulum(c, q); break;
@@ -737,6 +737,33 @@ final class Renderer {
                 p.setColor(0xFF3a4048); c.drawCircle(0, 0, r * 0.18f, p);
                 c.restore();
                 if (q.on) { p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(0x33ffffff); c.drawCircle(bl.x, bl.y, r + 1f, p); p.setStyle(Paint.Style.FILL); }
+                break;
+            }
+            case Items.RUSTBAR: {
+                Shape s = m.shapes.get(0);
+                local(c, m.x, m.y, m.a);
+                float hw = s.hl, hh = s.hh;
+                // base plate, the corroded bar with streaks, flaking blotches and orange drips
+                orect(c, -hw * 2.4f, hh - 6f, hw * 2.4f, hh + 5f, 2f, 0xFF4a4f57);
+                orect(c, -hw, -hh, hw, hh, 2f, 0xFF8a4a1f);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(0xFFb5651d); rf.set(-hw + 1.5f, -hh + 2f, -hw * 0.2f, hh - 3f); c.drawRect(rf, p);
+                p.setColor(alpha(0xFF3a1a08, 0.6f)); rf.set(hw * 0.3f, -hh + 4f, hw - 1f, hh - 4f); c.drawRect(rf, p);
+                for (int i = 0; i < 9; i++) {
+                    int h = (q.id * 71 + i * 37) * 2654435;
+                    float by = -hh + 6f + ((h >>> 9) & 255) / 255f * (hh * 2f - 12f), br = 2f + ((h >>> 3) & 7) * 0.5f;
+                    p.setColor(alpha(i % 3 == 0 ? 0xFF3a1a08 : (i % 3 == 1 ? 0xFFd98a3a : 0xFF6a2a0c), 0.8f));
+                    c.drawCircle(((h >>> 17) & 7) / 7f * hw * 1.2f - hw * 0.6f, by, br, p);
+                }
+                p.setColor(0xFFd9a45a);
+                rf.set(-hw, -hh, hw, -hh + 5f); c.drawRoundRect(rf, 2f, 2f, p);
+                if (detail) {
+                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.4f); p.setColor(alpha(0xFFd98a3a, 0.7f));
+                    for (int i = 0; i < 3; i++) { float dx = -hw * 0.6f + i * hw * 0.6f, ph = (time * 0.6f + i * 0.33f) % 1f; c.drawLine(dx, hh - 8f - ph * 40f, dx, hh - 4f - ph * 40f, p); }
+                    p.setStyle(Paint.Style.FILL);
+                }
+                c.restore();
+                if (q.on) c.light(m.x, m.y - hh * 0.2f, 110f, 0xFFff8a2a, 0.35f);
                 break;
             }
             case Items.SPIKES: {
@@ -1509,6 +1536,7 @@ final class Renderer {
     private int bodyColor(Person b, int col) {
         if (b.frozenT > 0f) return tint(b, mix(col, 0xFFbfe6ff, 0.62f), b.flash);
         if (b.dead) col = mix(col, 0xFF9aa0a8, 0.22f);
+        if (b.rustT >= 0f) col = mix(col, 0xFFb5651d, Math.max(0f, Math.min(0.85f, (1f - b.rustT / 7f) * 0.85f)));
         return tint(b, col, b.flash);
     }
 
@@ -1564,14 +1592,15 @@ final class Renderer {
     static int shoeColor(Person b) { return b.kind == Person.HUMAN ? SHOE[(outfit(b) >> 15) % SHOE.length] : 0xFF2b2b30; }
     static boolean beard(Person b) { return b.kind == Person.HUMAN && ((outfit(b) >> 18) & 7) == 0 && b.scale > 0.8f; }
 
-    private boolean flesh(Person b) { return b.organic() || b.kind == Person.ZOMBIE; }
+    private boolean flesh(Person b) { return b.fleshy(); }
 
     private void part(Draw2D c, Person b, int idx, int col) {
         if (b.gibbed[idx]) return;
         Shape s = b.rb[idx].shapes.get(0);
-        if (s.type == Shape.CAPSULE) limb(c, s, hurtColor(b, idx, col));
+        boolean shaped = (idx == Person.CHEST || idx == Person.PELVIS) && humanoid(b) && detail;
+        if (s.type == Shape.CAPSULE) { if (!shaped) limb(c, s, hurtColor(b, idx, col)); }
         else if (s.type == Shape.CIRCLE) circleShape(c, s, hurtColor(b, idx, col));
-        if (detail) { soaked(c, b, idx, s); torn(c, b, idx, s); }
+        if (detail) { soaked(c, b, idx, s); torn(c, b, idx, s); rustPatches(c, b, idx, s); }
         wounds(c, b, idx);
     }
 
@@ -1711,14 +1740,51 @@ final class Renderer {
         RB r = b.rb[idx];
         float hl = r.shapes.get(0).hl, rad = r.shapes.get(0).r;
         float hx = r.localToWorldX(0, hl), hy = r.localToWorldY(0, hl);
+        float ux = -(float) Math.sin(r.a), uy = (float) Math.cos(r.a);       // elbow -> wrist
+        float nx = -uy, ny = ux, sc = b.scale;
         p.setStyle(Paint.Style.FILL);
-        p.setColor(dark(bodyColor(b, b.skin), 0.5f));
+        int skin = bodyColor(b, b.skin);
+        if (b.kind == Person.RUSTMAN) {
+            // claws: three long curved blades, rusty at the base and steel at the tip
+            for (int k = -1; k <= 1; k++) {
+                float bx = hx + nx * k * rad * 0.7f, by = hy + ny * k * rad * 0.7f;
+                float len = (24f - Math.abs(k) * 4f) * sc;
+                float tx = bx + ux * len + nx * k * 3f * sc, ty = by + uy * len + ny * k * 3f * sc;
+                poly[0] = bx + nx * 2.2f * sc; poly[1] = by + ny * 2.2f * sc;
+                poly[2] = tx; poly[3] = ty;
+                poly[4] = bx - nx * 2.2f * sc; poly[5] = by - ny * 2.2f * sc;
+                p.setColor(0xFF2a2018); c.drawPoly(poly, 3, p);
+                poly[0] = bx + nx * 1.3f * sc; poly[1] = by + ny * 1.3f * sc;
+                poly[2] = tx - ux * 1.5f; poly[3] = ty - uy * 1.5f;
+                poly[4] = bx - nx * 1.3f * sc; poly[5] = by - ny * 1.3f * sc;
+                p.setColor(k == 0 ? 0xFFd9d3c4 : 0xFFb9b19c); c.drawPoly(poly, 3, p);
+                p.setColor(alpha(0xFFb5651d, 0.7f));
+                poly[0] = bx + nx * 1.3f * sc; poly[1] = by + ny * 1.3f * sc;
+                poly[2] = bx + ux * len * 0.4f; poly[3] = by + uy * len * 0.4f;
+                poly[4] = bx - nx * 1.3f * sc; poly[5] = by - ny * 1.3f * sc;
+                c.drawPoly(poly, 3, p);
+            }
+        } else if (detail && b.kind != Person.ROBOT && b.kind != Person.SKELETON) {
+            // fingers fan out a little, and the thumb sticks out on the front side
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(Math.max(1.4f, rad * 0.55f));
+            p.setColor(dark(skin, 0.55f));
+            for (int k = -1; k <= 1; k++) c.drawLine(hx, hy, hx + ux * rad * 1.5f + nx * k * rad * 0.45f, hy + uy * rad * 1.5f + ny * k * rad * 0.45f, p);
+            p.setStrokeWidth(Math.max(1f, rad * 0.38f));
+            p.setColor(skin);
+            for (int k = -1; k <= 1; k++) c.drawLine(hx, hy, hx + ux * rad * 1.5f + nx * k * rad * 0.45f, hy + uy * rad * 1.5f + ny * k * rad * 0.45f, p);
+            float side = b.dir * (r.shapes.get(0).ax >= 0f ? 1f : 1f);
+            p.setStrokeWidth(Math.max(1.2f, rad * 0.45f)); p.setColor(skin);
+            c.drawLine(hx, hy, hx + ux * rad * 0.7f + nx * side * rad * 1.15f, hy + uy * rad * 0.7f + ny * side * rad * 1.15f, p);
+            p.setStyle(Paint.Style.FILL);
+        }
+        p.setColor(dark(skin, 0.5f));
         c.drawCircle(hx, hy, rad * 1.15f + 0.9f, p);
-        p.setColor(bodyColor(b, b.skin));
+        p.setColor(skin);
         c.drawCircle(hx, hy, rad * 1.15f, p);
         if (detail && b.kind != Person.ROBOT && b.kind != Person.SKELETON) {
             float tx = r.localToWorldX(b.dir * rad * 0.7f, hl - rad * 0.2f), ty = r.localToWorldY(b.dir * rad * 0.7f, hl - rad * 0.2f);
-            p.setColor(dark(bodyColor(b, b.skin), 0.12f)); c.drawCircle(tx, ty, rad * 0.45f, p);
+            p.setColor(dark(skin, 0.12f)); c.drawCircle(tx, ty, rad * 0.45f, p);
         }
     }
 
@@ -1898,6 +1964,135 @@ final class Renderer {
         }
     }
 
+    private boolean humanoid(Person b) { return b.kind != Person.SKELETON && b.kind != Person.ROBOT; }
+
+    /** Model V3: the neck, a shaped torso with shoulders and a narrower waist, and wider hips, over the plain capsules. */
+    private void bodyShape(Draw2D c, Person b) {
+        if (!humanoid(b) || !detail) return;
+        float s = b.scale;
+        int d = b.dir;
+        neck(c, b);
+        if (!b.gibbed[Person.PELVIS]) hips(c, b);
+        if (!b.gibbed[Person.CHEST]) {
+            RB ch = b.rb[Person.CHEST];
+            float hl = 22f * s, hw = 11.5f * s;
+            local(c, ch.x, ch.y, ch.a);
+            int col = hurtColor(b, Person.CHEST, b.shirt);
+            if (b.kind == Person.RUSTMAN) hw *= 1.12f;
+            float[] px = {-hw * 1.2f, -hw * 0.88f, hw * 0.88f, hw * 1.2f, hw * 1.0f, hw * 0.84f, -hw * 0.84f, -hw * 1.0f};
+            float[] py = {-hl * 0.86f, -hl * 1.06f, -hl * 1.06f, -hl * 0.86f, hl * 0.5f, hl * 1.02f, hl * 1.02f, hl * 0.5f};
+            p.setStyle(Paint.Style.FILL);
+            for (int pass = 0; pass < 2; pass++) {
+                float k = pass == 0 ? 1.08f : 1f;
+                for (int i = 0; i < 8; i++) { poly[i * 2] = px[i] * k; poly[i * 2 + 1] = py[i] * k; }
+                p.setColor(pass == 0 ? dark(col, 0.62f) : col);
+                c.drawPoly(poly, 8, p);
+            }
+            // a lit shoulder and a shaded back
+            p.setColor(alpha(0xFFffffff, 0.13f));
+            rf.set(-hw * 1.05f, -hl * 1.0f, hw * 1.0f, -hl * 0.78f); c.drawRoundRect(rf, 3f * s, 3f * s, p);
+            p.setColor(alpha(0xFF000000, 0.14f));
+            if (d > 0) rf.set(-hw * 1.02f, -hl * 0.8f, -hw * 0.45f, hl * 0.95f); else rf.set(hw * 0.45f, -hl * 0.8f, hw * 1.02f, hl * 0.95f);
+            c.drawRect(rf, p);
+            c.restore();
+        }
+    }
+
+    private void hips(Draw2D c, Person b) {
+        float s = b.scale;
+        {
+            RB pel = b.rb[Person.PELVIS];
+            local(c, pel.x, pel.y, pel.a);
+            int col = hurtColor(b, Person.PELVIS, b.pants);
+            float[] px = {-11.5f, 11.5f, 12.8f, 8f, -8f, -12.8f};
+            float[] py = {-11f, -11f, 3f, 12.5f, 12.5f, 3f};
+            p.setStyle(Paint.Style.FILL);
+            for (int pass = 0; pass < 2; pass++) {
+                float k = pass == 0 ? 1.1f : 1f;
+                for (int i = 0; i < 6; i++) { poly[i * 2] = px[i] * s * k; poly[i * 2 + 1] = py[i] * s * k; }
+                p.setColor(pass == 0 ? dark(col, 0.62f) : col);
+                c.drawPoly(poly, 6, p);
+            }
+            c.restore();
+        }
+    }
+
+    private void neck(Draw2D c, Person b) {
+        if (!humanoid(b) || b.gibbed[Person.CHEST] || b.gibbed[Person.HEAD] || b.severed[Person.NECK]) return;
+        RB ch = b.rb[Person.CHEST];
+        float s = b.scale;
+        local(c, ch.x, ch.y, ch.a);
+        int col = hurtColor(b, Person.HEAD, b.skin);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(dark(col, 0.62f)); rf.set(-4.6f * s, -32f * s, 4.6f * s, -15f * s); c.drawRoundRect(rf, 2f * s, 2f * s, p);
+        p.setColor(dark(col, 0.15f)); rf.set(-3.4f * s, -32f * s, 3.4f * s, -16f * s); c.drawRoundRect(rf, 1.5f * s, 1.5f * s, p);
+        c.restore();
+    }
+
+    private boolean rustLook(Person b) { return b.kind == Person.RUSTMAN || b.rustT >= 0f; }
+
+    /** Rust spreading over the body (blotches that grow with the infection) and the permanent crust of a Rust Man. */
+    private void rustPatches(Draw2D c, Person b, int idx, Shape s) {
+        if (!rustLook(b) || s.type != Shape.CAPSULE) return;
+        float k = b.kind == Person.RUSTMAN ? 1f : Math.max(0f, Math.min(1f, 1f - b.rustT / 7f));
+        if (k < 0.08f) return;
+        int n = 1 + (int) (k * 3f);
+        p.setStyle(Paint.Style.FILL);
+        for (int i = 0; i < n; i++) {
+            int h = (b.id * 197 + idx * 41 + i * 83) * 2654435;
+            float t = ((h >>> 8) & 255) / 255f * 1.6f - 0.8f, off = ((h >>> 17) & 255) / 255f - 0.5f;
+            float r = s.r * (0.3f + 0.45f * k) * (0.7f + ((h >>> 4) & 7) / 20f);
+            float x = s.cx + s.ax * s.hl * t - s.ay * off * s.r * 0.6f, y = s.cy + s.ay * s.hl * t + s.ax * off * s.r * 0.6f;
+            p.setColor(alpha(i % 2 == 0 ? 0xFF8a3a10 : 0xFFc9772a, 0.55f + 0.3f * k));
+            c.drawCircle(x, y, Math.min(r, s.r * 0.9f), p);
+            p.setColor(alpha(0xFF3a1a08, 0.5f));
+            c.drawCircle(x + r * 0.25f, y + r * 0.2f, r * 0.4f, p);
+        }
+        if (b.kind == Person.RUSTMAN) {
+            // rivets along the limb
+            p.setColor(0xFF2a1a10);
+            for (int i = -1; i <= 1; i += 2) c.drawCircle(s.cx + s.ax * s.hl * 0.5f * i, s.cy + s.ay * s.hl * 0.5f * i, Math.max(0.9f, s.r * 0.13f), p);
+        }
+    }
+
+    /** The Rust Man's armour: shoulder spikes, a riveted plate with glowing cracks and a jagged spine. */
+    private void rustPlates(Draw2D c, Person b) {
+        if (b.kind != Person.RUSTMAN || b.gibbed[Person.CHEST]) return;
+        float s = b.scale;
+        int d = b.dir;
+        RB ch = b.rb[Person.CHEST];
+        float hl = 22f * s, hw = 11.5f * s * 1.12f;
+        local(c, ch.x, ch.y, ch.a);
+        p.setStyle(Paint.Style.FILL);
+        // shoulder spikes
+        for (int side = -1; side <= 1; side += 2) {
+            float sx = side * hw * 1.1f;
+            poly[0] = sx - side * 1f * s; poly[1] = -hl * 0.78f; poly[2] = sx + side * 9f * s; poly[3] = -hl * 1.5f; poly[4] = sx - side * 5f * s; poly[5] = -hl * 1.0f;
+            p.setColor(0xFF2a1a10); c.drawPoly(poly, 3, p);
+            poly[0] = sx - side * 0.5f * s; poly[1] = -hl * 0.8f; poly[2] = sx + side * 7f * s; poly[3] = -hl * 1.42f; poly[4] = sx - side * 4f * s; poly[5] = -hl * 1.0f;
+            p.setColor(0xFF8a4a1f); c.drawPoly(poly, 3, p);
+        }
+        // the plate
+        p.setColor(0xFF2a1a10); rf.set(-hw * 0.8f - 1.2f, -hl * 0.6f - 1.2f, hw * 0.8f + 1.2f, hl * 0.4f + 1.2f); c.drawRoundRect(rf, 3f * s, 3f * s, p);
+        p.setColor(0xFF7a3a14); rf.set(-hw * 0.8f, -hl * 0.6f, hw * 0.8f, hl * 0.4f); c.drawRoundRect(rf, 3f * s, 3f * s, p);
+        p.setColor(0xFF9a5524); rf.set(-hw * 0.7f, -hl * 0.55f, hw * 0.1f, -hl * 0.05f); c.drawRoundRect(rf, 2f * s, 2f * s, p);
+        p.setColor(0xFF2a1a10);
+        for (int i = 0; i < 4; i++) c.drawCircle((i & 1) == 0 ? -hw * 0.62f : hw * 0.62f, -hl * 0.45f + (i / 2) * hl * 0.7f, 1.2f * s, p);
+        // glowing cracks
+        c.emissive(!b.dead);
+        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.5f * s); p.setColor(b.dead ? 0xFF5a3a20 : 0xFFff7a1a);
+        c.drawLine(-hw * 0.3f, -hl * 0.5f, 0, -hl * 0.1f, p); c.drawLine(0, -hl * 0.1f, hw * 0.35f, hl * 0.25f, p); c.drawLine(0, -hl * 0.1f, -hw * 0.25f, hl * 0.3f, p);
+        c.emissive(false);
+        // jagged spine on the back
+        p.setStyle(Paint.Style.FILL); p.setColor(0xFF2a1a10);
+        for (int i = 0; i < 4; i++) {
+            float y = -hl * 0.55f + i * hl * 0.4f;
+            poly[0] = -d * hw * 1.0f; poly[1] = y - 3f * s; poly[2] = -d * (hw + 6f * s); poly[3] = y + 1f * s; poly[4] = -d * hw * 1.0f; poly[5] = y + 5f * s;
+            c.drawPoly(poly, 3, p);
+        }
+        c.restore();
+    }
+
     private void drawPerson(Draw2D c, Person b, World w) {
         if (b.cell != null && b.cell.work < 0.5f) return;           // still behind the closed fridge door
         int skin = b.skin;
@@ -1909,9 +2104,11 @@ final class Renderer {
         part(c, b, Person.THIGH_B, b.pants); legDetail(c, b, Person.THIGH_B); part(c, b, Person.SHIN_B, shin); foot(c, b, Person.FOOT_B);
         part(c, b, Person.UARM_B, b.shirt); part(c, b, Person.FARM_B, farm); hand(c, b, Person.FARM_B);
         // torso
+        bodyShape(c, b);
         part(c, b, Person.PELVIS, b.pants);
         part(c, b, Person.CHEST, b.shirt);
         torsoDetail(c, b);
+        rustPlates(c, b);
         ribcage(c, b);
         intestines(c, b);
         // head
@@ -2154,11 +2351,33 @@ final class Renderer {
         p.setStyle(Paint.Style.FILL);
         boolean boxy = b.kind != Person.SKELETON && b.kind != Person.ROBOT;
         p.setColor(dark(col, 0.62f));
-        if (boxy) { rf.set(-r - 1.4f, -r - 1.4f, r + 1.4f, r + 1.4f); c.drawRoundRect(rf, r * 0.5f, r * 0.5f, p); }
+        boolean rm = b.kind == Person.RUSTMAN;
+        if (rm) {
+            // a crest of rusty spikes running back over the skull
+            p.setColor(0xFF2a1a10);
+            for (int i = 0; i < 4; i++) {
+                float x = -d * r * (0.15f + i * 0.28f);
+                poly[0] = x - r * 0.2f; poly[1] = -r * 0.95f; poly[2] = x + r * 0.2f; poly[3] = -r * 0.95f; poly[4] = x - d * r * 0.25f; poly[5] = -r * (1.5f + (i % 2) * 0.25f);
+                c.drawPoly(poly, 3, p);
+            }
+            p.setColor(0xFF8a4a1f);
+            for (int i = 0; i < 4; i++) {
+                float x = -d * r * (0.15f + i * 0.28f);
+                poly[0] = x - r * 0.13f; poly[1] = -r * 0.95f; poly[2] = x + r * 0.13f; poly[3] = -r * 0.95f; poly[4] = x - d * r * 0.22f; poly[5] = -r * (1.42f + (i % 2) * 0.25f);
+                c.drawPoly(poly, 3, p);
+            }
+            p.setColor(dark(col, 0.62f));
+        }
+        if (boxy) {
+            // model V3: a wide cranium over a narrower jaw
+            rf.set(-r - 1.4f, -r - 1.4f, r + 1.4f, r * 0.45f); c.drawRoundRect(rf, r * 0.5f, r * 0.5f, p);
+            rf.set(-r * 0.86f - 1.4f, -r * 0.15f, r * 0.86f + 1.4f, r + 1.4f); c.drawRoundRect(rf, r * 0.38f, r * 0.38f, p);
+        }
         else c.drawCircle(0, 0, r + 1.6f, p);
         p.setColor(col);
         if (boxy) {
-            rf.set(-r, -r, r, r); c.drawRoundRect(rf, r * 0.42f, r * 0.42f, p);
+            rf.set(-r, -r, r, r * 0.45f); c.drawRoundRect(rf, r * 0.46f, r * 0.46f, p);
+            rf.set(-r * 0.86f, -r * 0.15f, r * 0.86f, r); c.drawRoundRect(rf, r * 0.34f, r * 0.34f, p);
             if (detail) {
                 p.setColor(dark(col, 0.14f)); rf.set(-r, r * 0.35f, r, r); c.drawRoundRect(rf, r * 0.42f, r * 0.42f, p);
                 p.setColor(alpha(0xFFffffff, 0.12f)); rf.set(-r * 0.7f, -r * 0.85f, r * 0.5f, -r * 0.45f); c.drawRoundRect(rf, r * 0.2f, r * 0.2f, p);
@@ -2195,7 +2414,7 @@ final class Renderer {
             // ear on the back side of the head
             p.setColor(dark(col, 0.5f)); rf.set(-d * r * 0.25f - r * 0.22f, -r * 0.2f, -d * r * 0.25f + r * 0.22f, r * 0.32f); c.drawRoundRect(rf, r * 0.18f, r * 0.18f, p);
             p.setColor(dark(col, 0.08f)); rf.set(-d * r * 0.25f - r * 0.16f, -r * 0.14f, -d * r * 0.25f + r * 0.16f, r * 0.26f); c.drawRoundRect(rf, r * 0.14f, r * 0.14f, p);
-            if (!z) hair(c, b, r, d);
+            if (!z && !rm) hair(c, b, r, d);
             else { p.setColor(bodyColor(b, b.hair)); rf.set(-r * 1.0f, -r * 1.02f, r * 0.2f, -r * 0.55f); c.drawRoundRect(rf, r * 0.3f, r * 0.25f, p); }
             // nose sticking out at the front
             p.setColor(dark(col, 0.6f)); rf.set(d * r * 0.78f - r * 0.2f, -r * 0.08f, d * r * 0.78f + r * 0.3f, r * 0.3f);
@@ -2226,9 +2445,11 @@ final class Renderer {
             } else {
                 // eye white, pupil looking ahead, eyebrow
                 p.setStyle(Paint.Style.FILL);
-                p.setColor(z ? 0xFFd8d6a0 : 0xFFf4f4f0);
+                p.setColor(z ? 0xFFd8d6a0 : (rm ? 0xFFffb04a : 0xFFf4f4f0));
+                if (rm) c.emissive(!b.dead);
                 rf.set(ex - r * 0.21f, ey - r * 0.17f, ex + r * 0.21f, ey + r * 0.17f); c.drawOval(rf, p);
-                p.setColor(z ? 0xFFd62020 : 0xFF1b1b1b);
+                if (rm) c.emissive(false);
+                p.setColor(z ? 0xFFd62020 : (rm ? 0xFF7a1a00 : 0xFF1b1b1b));
                 float look = scared ? 0f : d * r * 0.07f;
                 c.drawCircle(ex + look, ey + r * 0.02f, r * (scared ? 0.07f : 0.1f), p);
                 p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(Math.max(1.2f, r * 0.11f));
@@ -2237,7 +2458,15 @@ final class Renderer {
                 c.drawLine(ex - d * r * 0.22f, ey - r * 0.3f, ex + d * r * 0.2f, ey - r * 0.3f + inner, p);
                 // mouth: neutral, open in pain or fear, or a zombie's sneer
                 p.setStrokeWidth(1.6f);
-                if (z) { p.setColor(0xFF4a1010); c.drawLine(d * r * 0.25f, r * 0.45f, d * r * 0.75f, r * 0.55f, p); }
+                if (rm) {
+                    // a jagged mouth full of broken teeth
+                    p.setStyle(Paint.Style.FILL); p.setColor(0xFF2a0a04);
+                    rf.set(d > 0 ? r * 0.2f : -r * 0.85f, r * 0.34f, d > 0 ? r * 0.85f : -r * 0.2f, r * 0.68f); c.drawRect(rf, p);
+                    p.setColor(0xFFe0d8b8);
+                    for (int i = 0; i < 4; i++) { float tx = (d > 0 ? r * 0.25f : -r * 0.8f) + i * r * 0.15f; poly[0] = tx; poly[1] = r * 0.34f; poly[2] = tx + r * 0.1f; poly[3] = r * 0.34f; poly[4] = tx + r * 0.05f; poly[5] = r * 0.5f; c.drawPoly(poly, 3, p); }
+                    p.setStyle(Paint.Style.STROKE);
+                }
+                else if (z) { p.setColor(0xFF4a1010); c.drawLine(d * r * 0.25f, r * 0.45f, d * r * 0.75f, r * 0.55f, p); }
                 else if (scared) {
                     p.setStyle(Paint.Style.FILL); p.setColor(0xFF3a0a0e);
                     rf.set(d * r * 0.55f - r * 0.17f, r * 0.34f, d * r * 0.55f + r * 0.17f, r * 0.7f); c.drawOval(rf, p);

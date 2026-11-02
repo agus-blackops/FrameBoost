@@ -132,6 +132,7 @@ namespace Trastazo
                 case Person.FIREFIGHTER: firefighter(w, p); break;
                 case Person.THUG: thug(w, p); break;
                 case Person.ZOMBIE: zombie(w, p); break;
+                case Person.RUSTMAN: rustman(w, p); break;
                 case Person.ROBOT: p.mood = "En espera"; break;
                 default: p.mood = ""; break;
             }
@@ -200,16 +201,16 @@ namespace Trastazo
             RB pel = p.rb[Person.PELVIS], ch = p.rb[Person.CHEST];
             int d = p.walk;
             float s = p.scale;
-            if (p.kind != Person.ZOMBIE) {
+            if (p.kind != Person.ZOMBIE && p.kind != Person.RUSTMAN) {
                 for (int i = 0; i < w.ents.size(); i++) {
                     Ent e = w.ents.get(i);
                     if (!(e is Prop)) continue;
                     Prop q = (Prop) e;
-                    bool hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on) || (q.type == Items.PENDULUM && q.on);
+                    bool hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on) || (q.type == Items.PENDULUM && q.on) || (q.type == Items.RUSTBAR && q.on);
                     if (!hazard || q.removed || Math.abs(q.cy() - pel.y) > 300f) continue;
                     float reach = q.type == Items.TESLA ? 300f : (q.type == Items.SPIKES ? 110f : 170f);
                     float dx = (q.cx() - pel.x) * d;
-                    float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : (q.type == Items.PENDULUM ? 70f : 34f));
+                    float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : (q.type == Items.PENDULUM ? 70f : (q.type == Items.RUSTBAR ? 24f : 34f)));
                     if (dx > -half && dx - half < reach) { p.walk = -d; p.mood = "Evita el peligro"; return; }
                 }
             }
@@ -252,6 +253,46 @@ namespace Trastazo
             float dx = px(prey) - px(p);
             if (Math.abs(dx) > 38f * p.scale) p.walk = dx > 0 ? 1 : -1;
             if (Math.abs(dx) < 80f * p.scale && Math.abs(py(prey) - py(p)) < 130f && p.biteCd <= 0f) bite(w, p, prey);
+        }
+
+        /** The Rust Man hunts anyone alive (zombies too): his claws tear them up, and the rust gets into the wounds. */
+        private static void rustman(World w, Person p) {
+            p.armsForward = true;
+            Person prey = null;
+            float bd = 1800f;
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent e = w.ents.get(i);
+                if (!(e is Person) || e == p) continue;
+                Person o = (Person) e;
+                if (o.dead || o.kind == Person.RUSTMAN || o.kind == Person.SKELETON) continue;
+                float d = Math.abs(px(o) - px(p)) + Math.abs(py(o) - py(p)) * 0.5f;
+                if (d < bd) { bd = d; prey = o; }
+            }
+            p.target = prey;
+            if (prey == null) { p.mood = "Merodeando"; return; }
+            p.mood = "Cazando";
+            float dx = px(prey) - px(p);
+            if (Math.abs(dx) > 40f * p.scale) { p.walk = dx > 0 ? 1 : -1; p.run = Math.abs(dx) > 260f; }
+            if (Math.abs(dx) < 95f * p.scale && Math.abs(py(prey) - py(p)) < 140f && p.biteCd <= 0f) claw(w, p, prey);
+        }
+
+        /** One swipe of the claws: deep cuts, sometimes a limb, and the rust gets in. */
+        private static void claw(World w, Person r, Person v) {
+            r.biteCd = 0.65f;
+            r.punch = true; r.punchT = 0.25f;
+            int[] hits = {Person.CHEST, Person.UARM_F, Person.UARM_B, Person.THIGH_F, Person.HEAD, Person.PELVIS};
+            int part = hits[w.rnd.nextInt(hits.Length)];
+            while (v.gibbed[part]) part = (part + 1) % Person.NPARTS;
+            RB t = v.rb[part];
+            float dir = r.dir;
+            for (int k = 0; k < 3; k++) w.wound(v, part, Person.W_CUT, t.x + w.fx.rr_(6f), t.y + (k - 1) * 5f, dir, -0.3f + k * 0.3f, 6f);
+            w.hurt(v, part, 17f, t.x, t.y, dir, -0.2f);
+            t.applyImpulse(dir * 3.2e5f, -1.4e5f, t.x, t.y);
+            w.fx.sparks(t.x, t.y, 4, unchecked((int)0xFFffd25aU));
+            int j = Person.PART_JOINT[part];
+            if (j >= 0 && j != Person.WAIST && !v.severed[j] && w.rnd.nextFloat() < 0.18f) w.sever(v, j, t.x, t.y);
+            if (v.dead) { w.stats.rustKills++; return; }
+            if (w.rnd.nextFloat() < 0.6f && w.infectRust(v)) w.fx.sparks(t.x, t.y, 6, unchecked((int)0xFFff9a3aU));
         }
 
         private static void bite(World w, Person z, Person v) {
