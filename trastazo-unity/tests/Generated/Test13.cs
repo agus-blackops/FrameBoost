@@ -14,7 +14,7 @@ namespace Trastazo
 
         public static void RunMain(string[] a){
             string out_ = a.Length > 0 ? a[0] : "/tmp";
-            Game.edition = "Unity 2.2";
+            Game.edition = "Unity 2.3";
             // 1. the bear trap snaps on a foot that steps on it; Activate opens it again
             World w = new World(null);
             Prop bear = (Prop) w.spawn(Items.BEARTRAP, 1500, -40, 1, 1f);
@@ -146,7 +146,7 @@ namespace Trastazo
             foreach (Ent e in g.world.ents) if (e is Prop && ((Prop) e).type == Items.BILLY) Traps.say(g.world, (Prop) e);
             Harness.run(g, 0.4f);
             Harness.shot(g, out_ + "/u_traps.png");
-            check("the traps palette has four traps", Items.CATS[Items.CAT_TRAPS].Length == 4);
+            check("the traps palette has eight traps", Items.CATS[Items.CAT_TRAPS].Length == 8);
             Sys.println(fails == 0 ? "T13 ALL PASS" : "T13 FAILURES " + fails);
         }
     }

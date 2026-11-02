@@ -962,6 +962,35 @@ namespace Trastazo
                     disc(c, cx - s * 0.12f, cy - s * 0.45f, s * 0.08f, unchecked((int)0xFFc0121bU));
                     break;
                 }
+                case Items.LANDMINE: {
+                    box(c, cx - s * 0.75f, cy + s * 0.1f, cx + s * 0.75f, cy + s * 0.5f, unchecked((int)0xFF3d4a2bU), s * 0.15f);
+                    box(c, cx - s * 0.4f, cy - s * 0.2f, cx + s * 0.4f, cy + s * 0.15f, unchecked((int)0xFF59683bU), s * 0.15f);
+                    disc(c, cx, cy - s * 0.1f, s * 0.1f, unchecked((int)0xFFff2a1fU));
+                    break;
+                }
+                case Items.GUILLOTINE: {
+                    box(c, cx - s * 0.7f, cy - s * 0.9f, cx - s * 0.5f, cy + s * 0.8f, unchecked((int)0xFF7a5836U), s * 0.04f);
+                    box(c, cx + s * 0.5f, cy - s * 0.9f, cx + s * 0.7f, cy + s * 0.8f, unchecked((int)0xFF7a5836U), s * 0.04f);
+                    box(c, cx - s * 0.8f, cy - s * 1.0f, cx + s * 0.8f, cy - s * 0.78f, unchecked((int)0xFF5d4228U), s * 0.05f);
+                    box(c, cx - s * 0.5f, cy - s * 0.1f, cx + s * 0.5f, cy + s * 0.3f, unchecked((int)0xFFd5dae1U), s * 0.08f);
+                    line(c, cx - s * 0.5f, cy + s * 0.3f, cx + s * 0.5f, cy + s * 0.18f, Math.max(1f, s * 0.07f), unchecked((int)0xFFf6f9fcU));
+                    break;
+                }
+                case Items.FLAMEJET: {
+                    box(c, cx - s * 0.6f, cy + s * 0.35f, cx + s * 0.6f, cy + s * 0.7f, unchecked((int)0xFF3b4047U), s * 0.1f);
+                    box(c, cx - s * 0.2f, cy + s * 0.15f, cx + s * 0.2f, cy + s * 0.4f, unchecked((int)0xFF8a929cU), s * 0.05f);
+                    disc(c, cx, cy - s * 0.15f, s * 0.38f, unchecked((int)0xFFff8a1fU));
+                    disc(c, cx, cy - s * 0.4f, s * 0.24f, unchecked((int)0xFFffb83aU));
+                    disc(c, cx, cy - s * 0.05f, s * 0.2f, unchecked((int)0xFFfff0a0U));
+                    break;
+                }
+                case Items.LASER: {
+                    box(c, cx - s * 0.85f, cy - s * 0.4f, cx - s * 0.6f, cy + s * 0.7f, unchecked((int)0xFF3a4048U), s * 0.04f);
+                    box(c, cx + s * 0.6f, cy - s * 0.4f, cx + s * 0.85f, cy + s * 0.7f, unchecked((int)0xFF3a4048U), s * 0.04f);
+                    line(c, cx - s * 0.6f, cy + s * 0.2f, cx + s * 0.6f, cy + s * 0.2f, Math.max(2f, s * 0.2f), 0x66ff2a1f);
+                    line(c, cx - s * 0.6f, cy + s * 0.2f, cx + s * 0.6f, cy + s * 0.2f, Math.max(1f, s * 0.07f), unchecked((int)0xFFff6a55U));
+                    break;
+                }
                 default:
                     disc(c, cx, cy, s * 0.4f, unchecked((int)0xFFaaaaaaU));
              break; }

@@ -23,6 +23,10 @@ final class Traps {
             case Items.PENDULUM: pendulum(w, q, dt); break;
             case Items.REVTRAP: reverseTrap(w, q, dt); break;
             case Items.BILLY: billy(w, q, dt); break;
+            case Items.LANDMINE: landmine(w, q, dt); break;
+            case Items.GUILLOTINE: guillotine(w, q, dt); break;
+            case Items.FLAMEJET: flamejet(w, q, dt); break;
+            case Items.LASER: laser(w, q, dt); break;
             default: break;
         }
     }
@@ -53,6 +57,21 @@ final class Traps {
                 q.on = !q.on;
                 say(w, q);
                 return q.on ? "Billy pedalea" : "Billy se detiene";
+            case Items.LANDMINE:
+                if (q.ammo == 0) { q.ammo = 1; q.work = 0.05f; }
+                return "¡Mina detonada!";
+            case Items.GUILLOTINE:
+                if (q.ammo != 0) return "La guillotina aún no está lista";
+                q.ammo = 1; q.thinkT = 0f;
+                if (w.sfx != null) w.sfx.click();
+                return "¡Guillotina soltada!";
+            case Items.FLAMEJET:
+                q.on = !q.on; q.work = 0f;
+                return q.on ? "Lanzallamas encendido" : "Lanzallamas apagado";
+            case Items.LASER:
+                q.on = !q.on;
+                if (w.sfx != null) w.sfx.click();
+                return q.on ? "Láser encendido" : "Láser apagado";
             default: return "";
         }
     }
@@ -291,5 +310,213 @@ final class Traps {
         float want = q.face * 70f;
         b.vx += (want - b.vx) * Math.min(1f, dt * 12f);
         q.legPhase += b.vx * dt * 0.08f;                    // pedals and wheels turn as it rolls
+    }
+
+    // ------------------------------------------------------------------------------ landmine ---
+
+    private static void landmine(World w, Prop q, float dt) {
+        RB m = q.main();
+        if (!m.frozen) { m.vx = m.vy = m.w = 0f; m.setFrozen(true); }
+        if (q.ammo == 1) {                                   // triggered: the click, then the blast
+            q.work -= dt;
+            if (q.work <= 0f) {
+                float x = m.x, y = m.y - 6f;
+                w.remove(q);
+                w.explode(x, y, 190f, 1100f, 130f, true);
+            }
+            return;
+        }
+        if (q.thinkT > 0f) { q.thinkT -= dt; return; }       // a moment to arm itself when placed
+        if (!q.on) return;
+        Shape s = m.shapes.get(0);
+        float left = m.x - s.hl - 4f, right = m.x + s.hl + 4f, top = m.y - s.hh - 6f;
+        for (int i = 0; i < w.ents.size(); i++) {
+            Ent e = w.ents.get(i);
+            if (e.removed || Math.abs(e.cx() - m.x) > 240f) continue;
+            boolean hit = false;
+            if (e instanceof Person) {
+                Person p = (Person) e;
+                for (int k = 0; k < Person.NPARTS && !hit; k++) {
+                    if (p.gibbed[k]) continue;
+                    Shape ps = p.rb[k].shapes.get(0);
+                    hit = ps.maxY > top && ps.minY < m.y + s.hh && ps.maxX > left && ps.minX < right;
+                }
+            } else if (e instanceof Prop) {
+                Prop o = (Prop) e;
+                if (o == q || o.bodies.isEmpty() || Items.isTrap(o.type) || o.fixedMachine() || o.main().frozen) continue;
+                Shape ps = o.main().shapes.get(0);
+                hit = o.main().m > 1.2f && ps.maxY > top && ps.minY < m.y && ps.maxX > left && ps.minX < right && o.lastSp > 20f;
+            }
+            if (hit) {
+                q.ammo = 1; q.work = 0.3f;
+                if (w.sfx != null) w.sfx.click();
+                w.fx.sparks(m.x, top, 4, 0xFFffd25a);
+                return;
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------- guillotine ---
+
+    /** Blade centre, in the frame's local y (0 = up at the top of the frame, 1 = down at the bottom). */
+    static float bladeLocalY(Prop q) { return -95f + q.work * 205f; }
+
+    private static void guillotine(World w, Prop q, float dt) {
+        RB m = q.main();
+        if (!m.frozen) { m.vx = m.vy = m.w = 0f; m.setFrozen(true); }
+        if (q.ammo == 0) {                                   // armed: waits for someone under the blade
+            if (q.thinkT > 0f) { q.thinkT -= dt; return; }
+            if (!q.on) return;
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent e = w.ents.get(i);
+                if (!(e instanceof Person) || e.removed || Math.abs(e.cx() - m.x) > 120f) continue;
+                Person p = (Person) e;
+                if (p.gibbed[Person.HEAD] || p.dead) continue;
+                RB h = p.rb[Person.HEAD];
+                if (Math.abs(h.x - m.x) < 26f && h.y > m.y - 120f && h.y < m.y + 140f) { q.ammo = 1; if (w.sfx != null) w.sfx.click(); break; }
+            }
+            return;
+        }
+        if (q.ammo == 1) {                                   // falling
+            float before = q.work;
+            q.work = Math.min(1f, q.work + dt * 7f);
+            chop(w, q, m.y + bladeLocalY(q), m.y + (-95f + before * 205f));
+            if (q.work >= 1f) {
+                q.ammo = 3; q.thinkT = 1.6f;
+                if (w.sfx != null) { w.sfx.snap(); w.sfx.crunch(); }
+                w.fx.sparks(m.x, m.y + 124f, 10, 0xFFffd25a);
+            }
+        } else if (q.ammo == 3) {                            // lying at the bottom
+            q.thinkT -= dt;
+            if (q.thinkT <= 0f) q.ammo = 2;
+        } else {                                             // hoisted back up
+            q.work = Math.max(0f, q.work - dt * 0.45f);
+            if (q.work <= 0f) { q.ammo = 0; q.thinkT = 0.8f; }
+        }
+    }
+
+    /** Whatever lies between the blade's previous and current heights is cut. */
+    private static void chop(World w, Prop q, float by, float prevY) {
+        RB m = q.main();
+        float lo = Math.min(by, prevY) - 14f, hi = Math.max(by, prevY) + 14f;
+        for (int i = 0; i < w.ents.size(); i++) {
+            Ent e = w.ents.get(i);
+            if (e == q || e.removed || Math.abs(e.cx() - m.x) > 160f) continue;
+            if (e instanceof Person) {
+                Person p = (Person) e;
+                for (int k = 0; k < Person.NPARTS; k++) {
+                    if (p.gibbed[k] || p.hitCd[k] > 0f) continue;
+                    Shape s = p.rb[k].shapes.get(0);
+                    float rad = s.type == Shape.CAPSULE ? s.r + s.hl * 0.5f : s.r;
+                    if (Math.abs(s.cx - m.x) > 40f + rad * 0.3f || s.cy + rad < lo || s.cy - rad > hi) continue;
+                    p.hitCd[k] = 0.4f;
+                    if (p.fleshy()) q.wear = Math.min(1f, q.wear + 0.25f);
+                    w.wound(p, k, Person.W_CUT, s.cx, by, 1f, 0f, 11f);
+                    w.hurt(p, k, 70f, s.cx, by, 0f, 1f);
+                    p.rb[k].applyImpulse(0f, p.rb[k].m * 200f, s.cx, s.cy);
+                    int j = Person.PART_JOINT[k];
+                    if (j >= 0 && j != Person.WAIST && !p.severed[j] && (k == Person.HEAD || w.rnd.nextFloat() < 0.7f)) w.sever(p, j, s.cx, by);
+                    else if (k == Person.CHEST && w.rnd.nextFloat() < 0.25f) w.gib(p, k, 0f, 1f);
+                    if (w.fx.gore && p.fleshy()) w.fx.wallSplat(s.cx + w.fx.rr(60f), by - 20f, 16f + w.fx.rf() * 16f, w.fx.bloodA);
+                    if (w.sfx != null) w.sfx.crunch();
+                    w.stats.hits++;
+                }
+            } else if (e instanceof Prop) {
+                Prop o = (Prop) e;
+                if (o.bodies.isEmpty() || o.fixedMachine() || Items.isTrap(o.type)) continue;
+                Shape s = o.main().shapes.get(0);
+                if (Math.abs(s.cx - m.x) > 40f + o.hw || s.cy + o.hh < lo || s.cy - o.hh > hi) continue;
+                if (o.animal()) { if (o.flash <= 0f) { w.hurtAnimal(o, 90f, s.cx, by, 0f, 1f); o.flash = 0.3f; } }
+                else if (World.breakable(o)) { o.impX = s.cx; o.impY = by; w.wear(o, 220f, true); }
+                else if (o.type == Items.MELON) w.smash(o);
+                else if (o.type == Items.BALLOON) w.pop(o);
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------------- flamejet ---
+
+    private static void flamejet(World w, Prop q, float dt) {
+        RB m = q.main();
+        if (!m.frozen) { m.vx = m.vy = m.w = 0f; m.setFrozen(true); }
+        if (!q.on) return;
+        float before = q.work;
+        q.work += dt;
+        if (q.work > 3.8f) q.work = 0f;
+        float nx = m.x, ny = m.y - q.hh - 4f;
+        if (q.work < 2.2f) {                                 // pilot light
+            if (w.rnd.nextFloat() < dt * 24f) w.fx.add(Fx.FLAME, nx + w.fx.rr(2f), ny, w.fx.rr(8f), -50f, 0.25f, 5f, 0xFFffa040);
+            return;
+        }
+        if (before < 2.2f && w.sfx != null) w.sfx.launch();
+        int cnt = (int) (150f * dt + w.rnd.nextFloat());
+        for (int k = 0; k < cnt; k++)
+            w.fx.add(Fx.FLAME, nx + w.fx.rr(6f), ny, w.fx.rr(32f), -(300f + w.rnd.nextFloat() * 160f), 0.4f + w.rnd.nextFloat() * 0.2f, 9f + w.rnd.nextFloat() * 6f, 0xFFffa040);
+        if (w.rnd.nextFloat() < dt * 10f) w.fx.smoke(nx + w.fx.rr(12f), ny - 150f, 8f, 0xFF3c3c3c);
+        float top = ny - 165f;
+        for (int i = 0; i < w.ents.size(); i++) {
+            Ent e = w.ents.get(i);
+            if (e == q || e.removed || Math.abs(e.cx() - nx) > 200f) continue;
+            if (e instanceof Person) {
+                Person p = (Person) e;
+                for (int k = 0; k < Person.NPARTS; k++) {
+                    if (p.gibbed[k]) continue;
+                    RB b = p.rb[k];
+                    if (Math.abs(b.x - nx) > 30f || b.y < top || b.y > ny + 10f) continue;
+                    w.hurt(p, k, 55f * dt, b.x, b.y, 0f, -1f);
+                    if (w.rnd.nextFloat() < dt * 3f) w.wound(p, k, Person.W_BURN, b.x, b.y, 0f, -1f, 6f);
+                    b.vy -= 380f * dt;                         // the blast lifts them a little
+                    w.ignite(p);
+                }
+            } else if (e instanceof Prop) {
+                Prop o = (Prop) e;
+                if (o.bodies.isEmpty() || Items.isTrap(o.type) || o.fixedMachine()) continue;
+                if (Math.abs(o.cx() - nx) > 30f + o.hw || o.cy() < top || o.cy() > ny + 20f) continue;
+                if (o.animal()) { w.hurtAnimal(o, 40f * dt, o.cx(), o.cy(), 0f, -1f); w.ignite(o); }
+                else { w.ignite(o); if (o.explosive && o.fuse < 0f) o.fuse = 0.3f; }
+            }
+        }
+    }
+
+    // --------------------------------------------------------------------------------- laser ---
+
+    private static void laser(World w, Prop q, float dt) {
+        RB m = q.main();
+        if (!m.frozen) { m.vx = m.vy = m.w = 0f; m.setFrozen(true); }
+        if (q.legPhase > 0f) q.legPhase = Math.max(0f, q.legPhase - dt);
+        if (!q.on) return;
+        float by = m.y - 12f, x0 = m.x - 120f, x1 = m.x + 120f;
+        for (int i = 0; i < w.ents.size(); i++) {
+            Ent e = w.ents.get(i);
+            if (e == q || e.removed || Math.abs(e.cx() - m.x) > 190f) continue;
+            if (e instanceof Person) {
+                Person p = (Person) e;
+                for (int k = 0; k < Person.NPARTS; k++) {
+                    if (p.gibbed[k] || p.hitCd[k] > 0f) continue;
+                    Shape s = p.rb[k].shapes.get(0);
+                    if (s.maxY < by || s.minY > by || s.maxX < x0 || s.minX > x1) continue;
+                    p.hitCd[k] = 0.5f;
+                    q.legPhase = 0.3f;
+                    float cx = Math.max(x0, Math.min(x1, s.cx));
+                    w.wound(p, k, Person.W_BURN, cx, by, 1f, 0f, 6f);
+                    w.wound(p, k, Person.W_CUT, cx, by, 1f, 0f, 8f);
+                    w.hurt(p, k, 45f, cx, by, 0f, -1f);
+                    int j = Person.PART_JOINT[k];
+                    if (j >= 0 && j != Person.WAIST && !p.severed[j] && w.rnd.nextFloat() < 0.6f) w.sever(p, j, cx, by);
+                    w.fx.sparks(cx, by, 8, 0xFFff5a40);
+                    if (w.sfx != null) w.sfx.zap();
+                    w.alarm(cx, by, 400f, 3f);
+                    w.stats.hits++;
+                }
+            } else if (e instanceof Prop) {
+                Prop o = (Prop) e;
+                if (o.bodies.isEmpty() || Items.isTrap(o.type) || o.fixedMachine()) continue;
+                Shape s = o.main().shapes.get(0);
+                if (s.maxY < by || s.minY > by || s.maxX < x0 || s.minX > x1) continue;
+                if (o.animal()) { if (o.flash <= 0f) { w.hurtAnimal(o, 35f, o.cx(), by, 0f, -1f); o.flash = 0.3f; q.legPhase = 0.3f; } }
+                else if (o.type == Items.BALLOON) w.pop(o);
+                else if (o.type == Items.MELON) w.smash(o);
+            }
+        }
     }
 }

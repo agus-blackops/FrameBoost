@@ -13,7 +13,7 @@ final class Items {
             FIRE = 80, LIGHTNING = 81, PUSH = 82,
             SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
             ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, PYRAMID = 115, CASTLE = 116, GREENHOUSE = 117, DOMINOES = 118, SCAFFOLD = 119, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
-            GLASS = 154, RUSTBAR = 155, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+            GLASS = 154, RUSTBAR = 155, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
     static final class Item {
         final int id;
@@ -139,6 +139,10 @@ final class Items {
             new Item(PENDULUM, "Péndulo", PLACE + " · una cuchilla gigante que oscila · Activar: parar/arrancar"),
             new Item(REVTRAP, "Trampa invertida", "Tócalo sobre una cabeza · cuenta atrás de 12 s · Activar: liberarlo a tiempo"),
             new Item(BILLY, "Billy", PLACE + " · el muñeco del triciclo · Activar: \"Quiero jugar a un juego\""),
+            new Item(LANDMINE, "Mina", PLACE + " en el suelo · explota poco después de pisarla · Activar: detonar"),
+            new Item(GUILLOTINE, "Guillotina", PLACE + " · la cuchilla cae sobre quien pase debajo · Activar: soltarla"),
+            new Item(FLAMEJET, "Lanzallamas", PLACE + " en el suelo · escupe fuego a ráfagas · Activar: encender/apagar"),
+            new Item(LASER, "Láser", PLACE + " · un rayo a ras de suelo que corta las piernas · Activar: encender/apagar"),
         },
     };
 
@@ -166,7 +170,9 @@ final class Items {
     static boolean isBuild(int id) { return id >= HOUSE && id <= SCAFFOLD; }
     static boolean isAnimal(int id) { return id >= DOG && id <= RAT; }
     static boolean isMachine(int id) { return (id >= SAW && id <= TESLA) || id == RUSTBAR; }
-    static boolean isTrap(int id) { return id >= BEARTRAP && id <= BILLY; }
+    static boolean isTrap(int id) { return (id >= BEARTRAP && id <= BILLY) || (id >= LANDMINE && id <= LASER); }
+    /** Traps bolted to the floor: they are frozen when placed. */
+    static boolean isFixedTrap(int id) { return id == BEARTRAP || id == PENDULUM || (id >= LANDMINE && id <= LASER); }
 
     static boolean isSpawn(int id) {
         return isBuild(id) || (id >= HUMAN && id <= PLATFORM) || (id >= GRENADE && id <= XBARREL) || id == C4 || id == KNIFE || id == SWORD
@@ -178,10 +184,10 @@ final class Items {
 
     static final String[] KEYS = {"human", "giant", "kid", "robot", "zombie", "skeleton", "soldier", "medic", "firefighter", "thug", "crate", "bigcrate",
             "plank", "barrel", "ball", "balloon", "steel", "wheel", "motor", "thruster", "bowling", "melon", "grenade", "dynamite", "tnt", "xbarrel",
-            "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop", "saw", "spikes", "fan", "crusher", "tesla", "bat", "hammer", "fridge", "beartrap", "pendulum", "reversetrap", "billy", "glass", "rustman", "rustbar"};
+            "knife", "sword", "platform", "c4", "pistolgun", "riflegun", "minigun", "turret", "drone", "dog", "pig", "rat", "poop", "saw", "spikes", "fan", "crusher", "tesla", "bat", "hammer", "fridge", "beartrap", "pendulum", "reversetrap", "billy", "glass", "rustman", "rustbar", "landmine", "guillotine", "flamejet", "laser"};
     static final int[] KEY_IDS = {HUMAN, GIANT, KID, ROBOT, ZOMBIE, SKELETON, SOLDIER, MEDIC, FIREFIGHTER, THUG, CRATE, BIGCRATE,
             PLANK, BARREL, BALL, BALLOON, STEEL, WHEEL, MOTOR, THRUSTER, BOWLING, MELON, GRENADE, DYNAMITE, TNT, XBARREL,
-            KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP, SAW, SPIKES, FAN, CRUSHER, TESLA, BAT, HAMMER, FRIDGE, BEARTRAP, PENDULUM, REVTRAP, BILLY, GLASS, RUSTMAN, RUSTBAR};
+            KNIFE, SWORD, PLATFORM, C4, GUN_PISTOL, GUN_RIFLE, GUN_MG, TURRET, DRONE, DOG, PIG, RAT, POOP, SAW, SPIKES, FAN, CRUSHER, TESLA, BAT, HAMMER, FRIDGE, BEARTRAP, PENDULUM, REVTRAP, BILLY, GLASS, RUSTMAN, RUSTBAR, LANDMINE, GUILLOTINE, FLAMEJET, LASER};
 
     static int keyId(String k) {
         for (int i = 0; i < KEYS.length; i++) if (KEYS[i].equals(k)) return KEY_IDS[i];

@@ -10,7 +10,7 @@ public class Test13 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.2";
+        Game.edition = "Unity 2.3";
         // 1. the bear trap snaps on a foot that steps on it; Activate opens it again
         World w = new World(null);
         Prop bear = (Prop) w.spawn(Items.BEARTRAP, 1500, -40, 1, 1f);
@@ -142,7 +142,7 @@ public class Test13 {
         for (Ent e : g.world.ents) if (e instanceof Prop && ((Prop) e).type == Items.BILLY) Traps.say(g.world, (Prop) e);
         Harness.run(g, 0.4f);
         Harness.shot(g, out + "/u_traps.png");
-        check("the traps palette has four traps", Items.CATS[Items.CAT_TRAPS].length == 4);
+        check("the traps palette has eight traps", Items.CATS[Items.CAT_TRAPS].length == 8);
         System.out.println(fails == 0 ? "T13 ALL PASS" : "T13 FAILURES " + fails);
     }
 }

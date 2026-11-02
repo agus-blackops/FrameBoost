@@ -162,7 +162,7 @@ namespace Trastazo
                         case Items.POOP: ry = Math.min(y, fl - 9f); break;
                         case Items.FRIDGE: ry = Math.min(y, fl - 101f); break;
                         case Items.SAW: case Items.SPIKES: case Items.FAN: case Items.CRUSHER: case Items.TESLA: case Items.RUSTBAR: ry = Math.min(y + 40f, fl); break;
-                        case Items.BEARTRAP: ry = fl; break;
+                        case Items.BEARTRAP: case Items.LANDMINE: case Items.GUILLOTINE: case Items.FLAMEJET: case Items.LASER: ry = fl; break;
                         case Items.PENDULUM: ry = Math.max(sim.ceilY + 30f, Math.min(y, fl - 60f) - 240f); break;
                         case Items.BILLY: ry = Math.min(y, fl - 40f); break;
                         default: ry = Math.min(y, fl - 14f); break;
@@ -175,7 +175,7 @@ namespace Trastazo
                     if (p.fuse >= 0f) p.fuse = item == Items.GRENADE ? 3f : 4f;
                     if (item == Items.KNIFE || item == Items.SWORD) { /* sharp bodies are registered by the factory */ }
                     p.register(sim);
-                    if (p.fixedMachine() || p.type == Items.FRIDGE || p.type == Items.BEARTRAP || p.type == Items.PENDULUM) foreach (RB b in p.bodies) b.setFrozen(true);
+                    if (p.fixedMachine() || p.type == Items.FRIDGE || Items.isFixedTrap(p.type)) foreach (RB b in p.bodies) b.setFrozen(true);
                     if (p.type == Items.BILLY) p.face = dir >= 0 ? 1 : -1;
                     e = add(p);
                     if (p.type == Items.REVTRAP) {

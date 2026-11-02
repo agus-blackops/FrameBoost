@@ -1206,7 +1206,7 @@ final class Game {
                 q.on = !q.on;
                 ui.toast(Items.find(q.type).name + (q.on ? ": encendida" : ": apagada"));
                 break;
-            case Items.BEARTRAP: case Items.PENDULUM: case Items.REVTRAP: case Items.BILLY:
+            case Items.BEARTRAP: case Items.PENDULUM: case Items.REVTRAP: case Items.BILLY: case Items.LANDMINE: case Items.GUILLOTINE: case Items.FLAMEJET: case Items.LASER:
                 ui.toast(Traps.activate(world, q));
                 break;
             case Items.TURRET: case Items.DRONE:

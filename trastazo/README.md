@@ -1,4 +1,4 @@
-# Trastazo Playground 4.9
+# Trastazo Playground 5.0
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,27 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 2.2:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 2.3:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 5.0
+
+* **Más trampas** (categoría *Trampas SAW*, ahora 8):
+  * **Mina:** enterrada en el suelo; al pisarla suena un *clic* y, una fracción de segundo después, explota
+    (con cadena a otros explosivos). *Activar* la detona a distancia.
+  * **Guillotina:** un marco de madera con una cuchilla inclinada. Cae sola sobre quien pasa por debajo, le
+    corta lo que pille (la cabeza casi siempre) y se vuelve a izar lentamente. *Activar* la suelta a mano.
+  * **Lanzallamas:** boquilla en el suelo con llama piloto que escupe **ráfagas de fuego** hacia arriba:
+    prende a personas, animales y objetos inflamables. *Activar* la enciende/apaga.
+  * **Láser:** dos postes y un rayo rojo a la altura de las espinillas que **corta las piernas** de quien lo
+    cruza. *Activar* lo enciende/apaga.
+  * La gente con cabeza evita lanzallamas, láseres y guillotinas encendidos.
+
+![Más trampas](../trastazo-unity/docs/trampas2-paleta.png)
+![Guillotina](../trastazo-unity/docs/trampas2-guillotina.png)
+![Láser](../trastazo-unity/docs/trampas2-laser.png)
 
 ## Novedades de la 4.9
 

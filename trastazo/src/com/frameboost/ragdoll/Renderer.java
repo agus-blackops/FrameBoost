@@ -614,6 +614,10 @@ final class Renderer {
             case Items.PENDULUM: drawPendulum(c, q); break;
             case Items.REVTRAP: drawRevTrap(c, q); break;
             case Items.BILLY: drawBilly(c, q); break;
+            case Items.LANDMINE: drawMine(c, q); break;
+            case Items.GUILLOTINE: drawGuillotine(c, q); break;
+            case Items.FLAMEJET: drawFlamejet(c, q); break;
+            case Items.LASER: drawLaser(c, q); break;
             case Items.TURRET: drawTurret(c, q); break;
             case Items.DRONE: drawDrone(c, q); break;
             case Items.ROPE_ITEM: {
@@ -1381,6 +1385,72 @@ final class Renderer {
         // springs at both ends
         p.setColor(0xFF2f343b); rf.set(-36f, -4f, -26f, 4f); c.drawRoundRect(rf, 3f, 3f, p); rf.set(26f, -4f, 36f, 4f); c.drawRoundRect(rf, 3f, 3f, p);
         if (q.wear > 0.05f) { p.setColor(alpha(0xFF6e0a10, 0.5f * q.wear)); c.drawCircle(-6f, -10f * k - 3f, 6f, p); c.drawCircle(7f, -14f * k - 2f, 4f, p); }
+        c.restore();
+    }
+
+    private void drawMine(Draw2D c, Prop q) {
+        RB m = q.main();
+        local(c, m.x, m.y, m.a);
+        orect(c, -16f, -5f, 16f, 5f, 3f, 0xFF3d4a2b);
+        orect(c, -9f, -9f, 9f, -3f, 3f, 0xFF59683b);
+        p.setColor(alpha(0xFFffffff, 0.14f)); rf.set(-14f, -4f, 14f, -2.5f); c.drawRect(rf, p);
+        boolean blink = q.ammo == 1 ? ((int) (time * 18f) & 1) == 0 : (q.thinkT <= 0f && ((int) (time * 1.6f) & 3) == 0);
+        if (blink) { c.emissive(true); p.setColor(0xFFff2a1f); c.drawCircle(0f, -6f, 2.4f, p); p.setColor(alpha(0xFFff2a1f, 0.3f)); c.drawCircle(0f, -6f, 6f, p); c.emissive(false); }
+        else { p.setColor(0xFF5a1410); c.drawCircle(0f, -6f, 2f, p); }
+        c.restore();
+    }
+
+    private void drawGuillotine(Draw2D c, Prop q) {
+        RB m = q.main();
+        float bl = Traps.bladeLocalY(q);
+        local(c, m.x, m.y, m.a);
+        // base, posts and beam
+        orect(c, -54f, 122f, 54f, 130f, 2f, 0xFF4a3524);
+        orect(c, -50f, -128f, -40f, 124f, 2f, 0xFF7a5836);
+        orect(c, 40f, -128f, 50f, 124f, 2f, 0xFF7a5836);
+        orect(c, -54f, -136f, 54f, -122f, 3f, 0xFF5d4228);
+        p.setColor(alpha(0xFF000000, 0.25f)); rf.set(-40f, -122f, -37f, 122f); c.drawRect(rf, p); rf.set(37f, -122f, 40f, 122f); c.drawRect(rf, p);
+        // rope and weight
+        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2f); p.setColor(0xFFc9a066); c.drawLine(0f, -122f, 0f, bl - 30f, p); p.setStyle(Paint.Style.FILL);
+        orect(c, -38f, bl - 34f, 38f, bl - 12f, 3f, 0xFF3a3f46);
+        // the slanted blade
+        poly[0] = -38f; poly[1] = bl - 12f; poly[2] = 38f; poly[3] = bl - 12f; poly[4] = 38f; poly[5] = bl + 22f; poly[6] = -38f; poly[7] = bl + 6f;
+        p.setColor(0xFFd5dae1); c.drawPoly(poly, 4, p);
+        p.setColor(0xFFf6f9fc); poly[0] = -38f; poly[1] = bl + 6f; poly[2] = 38f; poly[3] = bl + 22f; poly[4] = 38f; poly[5] = bl + 18f; poly[6] = -38f; poly[7] = bl + 3f; c.drawPoly(poly, 4, p);
+        if (q.wear > 0.04f) { p.setColor(alpha(0xFF8a0f16, Math.min(0.85f, q.wear))); poly[0] = -34f; poly[1] = bl + 4f; poly[2] = 34f; poly[3] = bl + 18f; poly[4] = 34f; poly[5] = bl + 22f; poly[6] = -34f; poly[7] = bl + 7f; c.drawPoly(poly, 4, p); }
+        c.restore();
+    }
+
+    private void drawFlamejet(Draw2D c, Prop q) {
+        RB m = q.main();
+        local(c, m.x, m.y, m.a);
+        orect(c, -18f, -8f, 18f, 8f, 3f, 0xFF3b4047);
+        orect(c, -7f, -15f, 7f, -7f, 2f, 0xFF8a929c);
+        orect(c, -22f, 3f, -12f, 8f, 1f, 0xFFb3262e);
+        p.setColor(alpha(0xFFffffff, 0.14f)); rf.set(-16f, -7f, 16f, -5.5f); c.drawRect(rf, p);
+        if (q.on && q.work >= 2.2f) { c.emissive(true); p.setColor(0xFFffe27a); c.drawCircle(0f, -17f, 5f, p); c.emissive(false); }
+        c.restore();
+    }
+
+    private void drawLaser(Draw2D c, Prop q) {
+        RB m = q.main();
+        float hot = q.legPhase > 0f ? 1f : 0f;
+        local(c, m.x, m.y, m.a);
+        for (int sd = -1; sd <= 1; sd += 2) {
+            float px = sd * 124f;
+            orect(c, px - 6f, -18f, px + 6f, 18f, 2f, 0xFF3a4048);
+            orect(c, px - 4f, -16f, px + 4f, -8f, 1f, 0xFF59616c);
+            p.setColor(q.on ? 0xFFff2a1f : 0xFF5a1410); c.drawCircle(px - sd * 1f, -12f, 2.6f, p);
+        }
+        if (q.on) {
+            c.emissive(true);
+            p.setStyle(Paint.Style.STROKE);
+            p.setColor(alpha(0xFFff2a1f, 0.22f + 0.2f * hot)); p.setStrokeWidth(7f + 4f * hot); c.drawLine(-118f, -12f, 118f, -12f, p);
+            p.setColor(alpha(0xFFff6a55, 0.9f)); p.setStrokeWidth(2f + hot); c.drawLine(-118f, -12f, 118f, -12f, p);
+            p.setColor(alpha(0xFFffffff, 0.85f)); p.setStrokeWidth(0.9f); c.drawLine(-118f, -12f, 118f, -12f, p);
+            p.setStyle(Paint.Style.FILL);
+            c.emissive(false);
+        }
         c.restore();
     }
 

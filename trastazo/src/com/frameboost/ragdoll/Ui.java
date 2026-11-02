@@ -962,6 +962,35 @@ final class Ui {
                 disc(c, cx - s * 0.12f, cy - s * 0.45f, s * 0.08f, 0xFFc0121b);
                 break;
             }
+            case Items.LANDMINE: {
+                box(c, cx - s * 0.75f, cy + s * 0.1f, cx + s * 0.75f, cy + s * 0.5f, 0xFF3d4a2b, s * 0.15f);
+                box(c, cx - s * 0.4f, cy - s * 0.2f, cx + s * 0.4f, cy + s * 0.15f, 0xFF59683b, s * 0.15f);
+                disc(c, cx, cy - s * 0.1f, s * 0.1f, 0xFFff2a1f);
+                break;
+            }
+            case Items.GUILLOTINE: {
+                box(c, cx - s * 0.7f, cy - s * 0.9f, cx - s * 0.5f, cy + s * 0.8f, 0xFF7a5836, s * 0.04f);
+                box(c, cx + s * 0.5f, cy - s * 0.9f, cx + s * 0.7f, cy + s * 0.8f, 0xFF7a5836, s * 0.04f);
+                box(c, cx - s * 0.8f, cy - s * 1.0f, cx + s * 0.8f, cy - s * 0.78f, 0xFF5d4228, s * 0.05f);
+                box(c, cx - s * 0.5f, cy - s * 0.1f, cx + s * 0.5f, cy + s * 0.3f, 0xFFd5dae1, s * 0.08f);
+                line(c, cx - s * 0.5f, cy + s * 0.3f, cx + s * 0.5f, cy + s * 0.18f, Math.max(1f, s * 0.07f), 0xFFf6f9fc);
+                break;
+            }
+            case Items.FLAMEJET: {
+                box(c, cx - s * 0.6f, cy + s * 0.35f, cx + s * 0.6f, cy + s * 0.7f, 0xFF3b4047, s * 0.1f);
+                box(c, cx - s * 0.2f, cy + s * 0.15f, cx + s * 0.2f, cy + s * 0.4f, 0xFF8a929c, s * 0.05f);
+                disc(c, cx, cy - s * 0.15f, s * 0.38f, 0xFFff8a1f);
+                disc(c, cx, cy - s * 0.4f, s * 0.24f, 0xFFffb83a);
+                disc(c, cx, cy - s * 0.05f, s * 0.2f, 0xFFfff0a0);
+                break;
+            }
+            case Items.LASER: {
+                box(c, cx - s * 0.85f, cy - s * 0.4f, cx - s * 0.6f, cy + s * 0.7f, 0xFF3a4048, s * 0.04f);
+                box(c, cx + s * 0.6f, cy - s * 0.4f, cx + s * 0.85f, cy + s * 0.7f, 0xFF3a4048, s * 0.04f);
+                line(c, cx - s * 0.6f, cy + s * 0.2f, cx + s * 0.6f, cy + s * 0.2f, Math.max(2f, s * 0.2f), 0x66ff2a1f);
+                line(c, cx - s * 0.6f, cy + s * 0.2f, cx + s * 0.6f, cy + s * 0.2f, Math.max(1f, s * 0.07f), 0xFFff6a55);
+                break;
+            }
             default:
                 disc(c, cx, cy, s * 0.4f, 0xFFaaaaaa);
         }

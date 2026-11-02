@@ -335,6 +335,34 @@ namespace Trastazo
                     b.user = p; p.bodies.add(b);
                     break;
                 }
+                case Items.LANDMINE: {
+                    p.color = unchecked((int)0xFF4b5320U); p.hw = 16f; p.hh = 5f; p.on = true; p.thinkT = 1.2f; p.ammo = 0;
+                    b = box(p, x, y - 5f, 16f, 5f, 3f, 0.9f, 0f);
+                    break;
+                }
+                case Items.GUILLOTINE: {
+                    // a frame with a blade that slides down it (drawn and swept by Traps, the body is only the base)
+                    p.color = unchecked((int)0xFF6b4a2fU); p.hw = 50f; p.hh = 130f; p.on = true; p.ammo = 0; p.thinkT = 0.8f;
+                    b = new RB(x, y - 130f, 0);
+                    Shape base_ = Shape.box(50f, 3f).at(0, 127f, 0).mat(3f, 0.9f, 0f).col(unchecked((int)0xFF4a3524U)); base_.user = p; b.add(base_);
+                    b.user = p; p.bodies.add(b);
+                    break;
+                }
+                case Items.FLAMEJET: {
+                    p.color = unchecked((int)0xFF3b4047U); p.hw = 18f; p.hh = 8f; p.on = true;
+                    b = box(p, x, y - 8f, 18f, 8f, 3f, 0.9f, 0f);
+                    break;
+                }
+                case Items.LASER: {
+                    // two posts a beam apart; the ray runs between them at shin height
+                    p.color = unchecked((int)0xFF3a4048U); p.hw = 130f; p.hh = 18f; p.on = true;
+                    b = new RB(x, y - 18f, 0);
+                    Shape l = Shape.box(6f, 18f).at(-124f, 0, 0).mat(3f, 0.9f, 0f).col(p.color); l.user = p;
+                    Shape r = Shape.box(6f, 18f).at(124f, 0, 0).mat(3f, 0.9f, 0f).col(p.color); r.user = p;
+                    b.add(l); b.add(r);
+                    b.user = p; p.bodies.add(b);
+                    break;
+                }
                 case Items.POOP: {
                     p.hw = 10f; p.hh = 7f; p.color = unchecked((int)0xFF6b4423U); p.stinkT = 40f;
                     b = box(p, x, y, 10f, 7f, 1.1f, 0.95f, 0f);

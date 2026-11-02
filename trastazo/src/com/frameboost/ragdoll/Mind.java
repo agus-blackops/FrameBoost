@@ -204,11 +204,11 @@ final class Mind {
                 Ent e = w.ents.get(i);
                 if (!(e instanceof Prop)) continue;
                 Prop q = (Prop) e;
-                boolean hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on) || (q.type == Items.PENDULUM && q.on) || (q.type == Items.RUSTBAR && q.on);
+                boolean hazard = (q.type == Items.SAW && q.on) || q.type == Items.SPIKES || (q.type == Items.CRUSHER && q.on) || (q.type == Items.TESLA && q.on) || (q.type == Items.PENDULUM && q.on) || (q.type == Items.RUSTBAR && q.on) || (q.type == Items.FLAMEJET && q.on) || (q.type == Items.LASER && q.on) || (q.type == Items.GUILLOTINE && q.on);
                 if (!hazard || q.removed || Math.abs(q.cy() - pel.y) > 300f) continue;
                 float reach = q.type == Items.TESLA ? 300f : (q.type == Items.SPIKES ? 110f : 170f);
                 float dx = (q.cx() - pel.x) * d;
-                float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : (q.type == Items.PENDULUM ? 70f : (q.type == Items.RUSTBAR ? 24f : 34f)));
+                float half = q.type == Items.CRUSHER ? q.hw : (q.type == Items.SPIKES ? q.hw : (q.type == Items.PENDULUM ? 70f : (q.type == Items.RUSTBAR ? 24f : (q.type == Items.LASER ? 125f : (q.type == Items.GUILLOTINE ? 50f : 34f)))));
                 if (dx > -half && dx - half < reach) { p.walk = -d; p.mood = "Evita el peligro"; return; }
             }
         }
