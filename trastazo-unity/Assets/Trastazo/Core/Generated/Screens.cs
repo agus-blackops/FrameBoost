@@ -261,7 +261,7 @@ namespace Trastazo
             p.setTextAlign(Paint.Align.CENTER);
             p.setFakeBoldText(true);
             p.setTextSize(Math.min(17 * d, h * 0.42f));
-            c.drawText(label, x + w / 2 + (ic != 0 ? h * 0.4f : 0f), y + h / 2 + p.getTextSize() * 0.36f + o, p);
+            c.drawText(label, x + w / 2 + (ic != 0 ? (w > h * 3.5f ? h * 0.4f : h * 0.5f) : 0f), y + h / 2 + p.getTextSize() * 0.36f + o, p);
             p.setFakeBoldText(false);
         }
 
@@ -304,12 +304,12 @@ namespace Trastazo
         /** What is new, on the title screen's card. */
         public static readonly string[] NEWS = {
             "Menú principal nuevo",
-            "Modelos renovados V2: ropa, caras y peinados",
-            "Sangre V3: charcos, salpicaduras y ropa empapada",
-            "Gore V4: músculo, hueso, muñones y cráneo roto",
-            "Trampas de SAW: cepo, péndulo, trampa invertida y Billy",
-            "Destruction Engine 1.5: cristal, astillas, colapsos y suelo quemado",
-            "5 construcciones nuevas: pirámide, castillo, invernadero, dominó y andamio",
+            "Modelos V2: ropa, caras y peinados",
+            "Sangre V3: charcos y salpicaduras",
+            "Gore V4: músculo, hueso y muñones",
+            "Trampas de SAW: cepo, péndulo, Billy...",
+            "Destruction Engine 1.5: cristal y colapsos",
+            "5 construcciones: castillo, pirámide, dominó...",
             "Texturas nuevas para personas y objetos",
         };
 
@@ -338,7 +338,7 @@ namespace Trastazo
                 c.drawCircle(x, 5 * d, wdt * 1.4f, p);
             }
             float colX = 40 * d, colW = Math.min(sw * 0.4f, 380 * d);
-            float logoY = sh * 0.21f, logoSize = Math.min(70 * d, colW / 5f);
+            float logoY = sh * 0.2f, logoSize = Math.min(70 * d, colW / 5f);
             logo(c, colX + colW / 2, logoY, logoSize);
             {   // edition ribbon: "UNITY 1.3" on the Unity build, "BETA 4.0" elsewhere
                 string tag = Game.edition != null ? Game.edition.toUpperCase() : "BETA " + Report.VERSION;
@@ -351,9 +351,19 @@ namespace Trastazo
                 c.drawRoundRect(r, 8 * d, 8 * d, p);
                 text(c, tag, bx + bw / 2, by + tbh * 0.72f, 12 * d, Game.edition != null ? unchecked((int)0xFFffffffU) : unchecked((int)0xFF1b2029U), Paint.Align.CENTER, true);
             }
-            text(c, "laboratorio de muñecos, trampas y caos", colX + colW / 2, logoY + 30 * d, 14 * d, unchecked((int)0xFFb9c2d0U), Paint.Align.CENTER, false);
+            // "PLAYGROUND" in spaced capitals under the logo, between two red bars
+            float pgY = logoY + logoSize * 0.52f, pgS = Math.max(12 * d, logoSize * 0.27f);
+            p.setTextSize(pgS); p.setFakeBoldText(true);
+            string pg = "P L A Y G R O U N D";
+            float pgW = p.measureText(pg);
+            p.setFakeBoldText(false);
+            text(c, pg, colX + colW / 2, pgY, pgS, unchecked((int)0xFF2fd0b5U), Paint.Align.CENTER, true);
+            p.setColor(unchecked((int)0xFFc0121bU));
+            c.drawRect(colX + colW / 2 - pgW / 2 - 34 * d, pgY - pgS * 0.38f, colX + colW / 2 - pgW / 2 - 10 * d, pgY - pgS * 0.38f + 3 * d, p);
+            c.drawRect(colX + colW / 2 + pgW / 2 + 10 * d, pgY - pgS * 0.38f, colX + colW / 2 + pgW / 2 + 34 * d, pgY - pgS * 0.38f + 3 * d, p);
+            text(c, "laboratorio de muñecos, trampas y caos", colX + colW / 2, pgY + 26 * d, 14 * d, unchecked((int)0xFFb9c2d0U), Paint.Align.CENTER, false);
             if (Report.lastCrash != null) text(c, "La última vez el juego se cerró por un error. Informe: " + Report.lastCrash, colX, sh - 52 * d, 10 * d, unchecked((int)0xFFf2b134U), Paint.Align.LEFT, false);
-            float y = sh * 0.34f, bh = Math.min(54 * d, sh * 0.115f), gap = Math.min(11 * d, sh * 0.022f);
+            float y = sh * 0.37f, bh = Math.min(52 * d, sh * 0.105f), gap = Math.min(11 * d, sh * 0.022f);
             if (g.hasSave()) { button(c, colX, y, colW, bh, "Continuar", A_CONTINUE, true, IC_CONTINUE); y += bh + gap; }
             button(c, colX, y, colW, bh, "Jugar: sandbox libre", A_SANDBOX, !g.hasSave(), IC_PLAY); y += bh + gap;
             button(c, colX, y, colW, bh, "Desafíos   " + g.settings.totalStars() + "/" + Challenges.LIST.Length * 3, A_CHALLENGES, false, IC_STAR); y += bh + gap;
@@ -372,15 +382,19 @@ namespace Trastazo
                 r.set(cx, cy, cx + 6 * d, cy + cardH);
                 c.drawRect(r, p);
                 text(c, "Novedades " + (Game.edition != null ? Game.edition : "v" + Report.VERSION), cx + 20 * d, cy + 30 * d, 16 * d, unchecked((int)0xFFffffffU), Paint.Align.LEFT, true);
+                float ns = 11.5f * d, maxW = 0f;
+                p.setTextSize(ns);
+                foreach (string n in NEWS) maxW = Math.max(maxW, p.measureText(n));
+                if (maxW > cardW - 48 * d) ns *= (cardW - 48 * d) / maxW;
                 for (int i = 0; i < NEWS.Length; i++) {
                     float ly = cy + 54 * d + i * lh;
                     p.setColor(i % 2 == 0 ? unchecked((int)0xFFe0463cU) : unchecked((int)0xFF2fd0b5U));
                     c.drawCircle(cx + 24 * d, ly - 4 * d, 3 * d, p);
-                    text(c, NEWS[i], cx + 34 * d, ly, 11.5f * d, unchecked((int)0xFFd5dbe6U), Paint.Align.LEFT, false);
+                    text(c, NEWS[i], cx + 34 * d, ly, ns, unchecked((int)0xFFd5dbe6U), Paint.Align.LEFT, false);
                 }
             }
             string plat = Game.edition != null ? Game.edition : (Game.desktop ? "versión PC" : "Android");
-            text(c, "Física, arte y música originales · v" + Report.VERSION + " · " + plat, colX, sh - 16 * d, 11 * d, unchecked((int)0x88ffffffU), Paint.Align.LEFT, false);
+            text(c, "Trastazo Playground · física, arte y música originales · v" + Report.VERSION + " · " + plat, colX, sh - 16 * d, 11 * d, unchecked((int)0x88ffffffU), Paint.Align.LEFT, false);
             if (Game.desktop) text(c, "Ratón: arrastra y toca · clic derecho: mover cámara · rueda: zoom · Esc: menú · Espacio: pausa · 1-9: categorías · F11: pantalla completa", colX, sh - 32 * d, 10 * d, unchecked((int)0x88ffffffU), Paint.Align.LEFT, false);
         }
 

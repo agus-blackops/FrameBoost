@@ -24,7 +24,7 @@ namespace Trastazo
             Report.crashed("prueba", new InvalidOperationException("prueba de cierre"));
             File rep = Report.file();
             string txt = rep.readAllText();
-            check("the report has version, platform and error", txt.contains("Trastazo " + Report.VERSION) && txt.contains("Test") && txt.contains("prueba de cierre"));
+            check("the report has version, platform and error", txt.contains("Trastazo Playground " + Report.VERSION) && txt.contains("Test") && txt.contains("prueba de cierre"));
             Report.install(dir, "Test");
             check("the next launch is told about the crash", Report.lastCrash != null);
             Report.install(dir, "Test");

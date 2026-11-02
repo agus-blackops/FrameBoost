@@ -1,4 +1,4 @@
-# Trastazo para Unity — 1.6
+# Trastazo Playground para Unity — 1.7
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,11 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 1.7
+
+* **Nuevo nombre: Trastazo Playground** (menú, nombre del producto en Unity, informe de errores). Los datos
+  guardados siguen siendo compatibles.
 
 ## Novedades de Trastazo Unity 1.6
 

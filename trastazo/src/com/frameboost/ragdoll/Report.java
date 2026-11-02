@@ -14,7 +14,7 @@ import java.util.Date;
 final class Report {
     private Report() { }
 
-    static final String VERSION = "4.3";
+    static final String VERSION = "4.4";
     private static File dir;
     private static String platform = "?";
     /** Set at launch when the previous run ended with an error (shown on the title screen). */
@@ -56,7 +56,7 @@ final class Report {
         try {
             if (f.length() > 200 * 1024) f.delete();
             PrintWriter o = new PrintWriter(new FileWriter(f, true));
-            o.println("=== " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " · Trastazo " + VERSION + " · " + platform);
+            o.println("=== " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " · Trastazo Playground " + VERSION + " · " + platform);
             o.println(title);
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));

@@ -47,7 +47,7 @@ public final class PcMain implements Game.Host {
     private final Game game;
     private final Sfx sfx;
     private final MusicPlayer music;
-    private final JFrame frame = new JFrame("Trastazo");
+    private final JFrame frame = new JFrame("Trastazo Playground");
     private final java.awt.Canvas view = new java.awt.Canvas();
     private volatile boolean running = true;
     private volatile boolean resized = true;
@@ -69,7 +69,7 @@ public final class PcMain implements Game.Host {
             SwingUtilities.invokeAndWait(new Runnable() { @Override public void run() { app[0] = new PcMain(); } });
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "No se pudo iniciar Trastazo:\n" + e, "Trastazo", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "No se pudo iniciar Trastazo Playground:\n" + e, "Trastazo Playground", JOptionPane.ERROR_MESSAGE);
             return;
         }
         app[0].loop();

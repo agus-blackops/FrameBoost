@@ -14,7 +14,7 @@ namespace Trastazo
     public sealed class Music {
         public const int RATE = 32000;
         public const int TITLE = 0, LAB = 1, CHALLENGE = 2, COUNT = 3;
-        public static readonly string[] NAMES = {"Trastazo (tema principal)", "Laboratorio", "Desafío"};
+        public static readonly string[] NAMES = {"Trastazo Playground (tema principal)", "Laboratorio", "Desafío"};
 
         /** A rendered loop. stems[0] always plays; stems[1] (if any) is the "action" layer. */
         public sealed class Track {

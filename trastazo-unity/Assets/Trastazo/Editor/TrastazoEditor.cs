@@ -26,7 +26,7 @@ namespace TrastazoUnityEditor
         [MenuItem("Trastazo/Configurar proyecto")]
         public static void ConfigurePlayerSettings()
         {
-            PlayerSettings.productName = "Trastazo";
+            PlayerSettings.productName = "Trastazo Playground";
             PlayerSettings.companyName = "FrameBoost";
             PlayerSettings.colorSpace = ColorSpace.Gamma;          // the game's colors are plain sRGB values
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;

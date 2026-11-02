@@ -17,7 +17,7 @@ public class Test40 {
         h.uncaughtException(Thread.currentThread(), new IllegalStateException("prueba de cierre"));
         File rep = Report.file();
         String txt = new String(Files.readAllBytes(rep.toPath()), "UTF-8");
-        check("the report has version, platform and stack", txt.contains("Trastazo " + Report.VERSION) && txt.contains("Test") && txt.contains("prueba de cierre") && txt.contains("Test40.main"));
+        check("the report has version, platform and stack", txt.contains("Trastazo Playground " + Report.VERSION) && txt.contains("Test") && txt.contains("prueba de cierre") && txt.contains("Test40.main"));
         Report.install(dir, "Test");
         check("the next launch is told about the crash", Report.lastCrash != null);
         Report.install(dir, "Test");

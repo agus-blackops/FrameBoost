@@ -10,7 +10,7 @@ package com.frameboost.ragdoll;
 final class Music {
     static final int RATE = 32000;
     static final int TITLE = 0, LAB = 1, CHALLENGE = 2, COUNT = 3;
-    static final String[] NAMES = {"Trastazo (tema principal)", "Laboratorio", "Desafío"};
+    static final String[] NAMES = {"Trastazo Playground (tema principal)", "Laboratorio", "Desafío"};
 
     /** A rendered loop. stems[0] always plays; stems[1] (if any) is the "action" layer. */
     static final class Track {

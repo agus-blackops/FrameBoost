@@ -8,7 +8,7 @@ namespace Trastazo
      */
     public static class Report
     {
-        public const string VERSION = "4.3";
+        public const string VERSION = "4.4";
         public static string lastCrash;
         private static File dir;
         private static string platform = "";
@@ -56,7 +56,7 @@ namespace Trastazo
                     if (f.length() > 200000) f.delete();
                     using (System.IO.StreamWriter o = new System.IO.StreamWriter(f.getPath(), true, new System.Text.UTF8Encoding(false)))
                     {
-                        o.WriteLine("=== " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " · Trastazo " + VERSION + " · " + platform);
+                        o.WriteLine("=== " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " · Trastazo Playground " + VERSION + " · " + platform);
                         o.WriteLine(title);
                         o.WriteLine(e == null ? "(sin excepción)" : e.ToString());
                         o.WriteLine();
