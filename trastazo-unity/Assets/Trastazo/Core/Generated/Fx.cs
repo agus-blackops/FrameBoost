@@ -65,6 +65,17 @@ namespace Trastazo
             }
         }
 
+        public static readonly int ARTERIAL = unchecked((int)0xFFd4141fU);
+
+        /** Blood straight from an artery: brighter and faster than the dark blood that oozes from veins. */
+        public void arterial(float px, float py, float dx, float dy, int n) {
+            if (!gore) n = Math.min(n, 2);
+            for (int i = 0; i < n; i++) {
+                float sp = 220f + rf() * 520f;
+                add(BLOOD, px, py, dx * sp * 0.6f + rr_(110), dy * sp * 0.6f - rf() * 160f, 1.7f, 1.8f + rf() * 2.6f, rf() < 0.7f ? ARTERIAL : bloodA);
+            }
+        }
+
         public void flame(float px, float py, float sz) {
             add(FLAME, px + rr_(sz * 0.5f), py + rr_(sz * 0.4f), rr_(30), -50f - rf() * 90f, 0.35f + rf() * 0.35f, sz, unchecked((int)0xFFff9a1fU));
         }
@@ -177,7 +188,14 @@ namespace Trastazo
                         vy[i] += 1700f * dt;
                         x[i] += vx[i] * dt; y[i] += vy[i] * dt;
                         if (y[i] >= floorY) {
-                            if (type[i] == BLOOD) stain(x[i], 2f + size[i] * 1.7f, Renderer.alpha(color[i], 0.85f));
+                            if (type[i] == BLOOD) {
+                                stain(x[i], 2f + size[i] * 1.7f, Renderer.alpha(color[i], 0.85f));
+                                // a fast drop breaks into small satellite droplets that jump back up
+                                if (gore && vy[i] > 520f && size[i] > 2.5f) {
+                                    int ns = 2 + (int) Math.min(2f, vy[i] / 700f);
+                                    for (int k = 0; k < ns; k++) add(BLOOD, x[i], floorY - 1f, rr_(150f) + vx[i] * 0.12f, -vy[i] * (0.12f + rf() * 0.12f), 0.45f, 1.1f + rf() * 0.9f, color[i]);
+                                }
+                            }
                             life[i] = 0;
                         } else if (x[i] < wallL || x[i] > wallR) {
                             if (type[i] == BLOOD && rnd.nextFloat() < 0.5f) wallSplat(x[i] < wallL ? wallL + 6f : wallR - 6f, y[i], 3f + size[i], color[i]);
@@ -233,6 +251,19 @@ namespace Trastazo
                     float rr = r * (0.12f + ((Sys.ushr(h, 21)) & 63) / 63f * 0.22f);
                     c.drawCircle(cx + (float) Math.cos(an) * dd, cy + (float) Math.sin(an) * dd * 0.8f, rr, p);
                 }
+                // blood V6: a splat is not round - thin streaks fly out of it, with tiny droplets at their tips
+                p.setStyle(Paint.Style.STROKE);
+                p.setColor(Renderer.alpha(col, 0.7f));
+                for (int k = 0; k < 6; k++) {
+                    int h = seed * (k + 21) * 40503 + k * 977;
+                    float an = ((Sys.ushr(h, 5)) & 1023) / 1023f * 6.283f, l0 = r * 0.5f, l1 = r * (1.0f + ((Sys.ushr(h, 15)) & 255) / 255f * 1.3f);
+                    p.setStrokeWidth(Math.max(0.8f, r * 0.07f));
+                    c.drawLine(cx + (float) Math.cos(an) * l0, cy + (float) Math.sin(an) * l0, cx + (float) Math.cos(an) * l1, cy + (float) Math.sin(an) * l1, p);
+                    p.setStyle(Paint.Style.FILL);
+                    c.drawCircle(cx + (float) Math.cos(an) * (l1 + r * 0.18f), cy + (float) Math.sin(an) * (l1 + r * 0.18f), Math.max(0.8f, r * 0.07f), p);
+                    p.setStyle(Paint.Style.STROKE);
+                }
+                p.setStyle(Paint.Style.FILL);
                 float run = Math.min(1f, dage[i] / 5f);
                 p.setStyle(Paint.Style.STROKE);
                 for (int k = 0; k < 3; k++) {
@@ -266,6 +297,21 @@ namespace Trastazo
                     float hh = Math.min(7f, 1.5f + w * 0.035f);
                     sr.set(sx[i] - w * 0.5f, floorY + 1.4f - hh * 0.5f, sx[i] + w * 0.5f, floorY + 1.4f + hh * 0.5f);
                     c.drawOval(sr, p);
+                    // the rim dries first (darker line), the middle clots into a dark jelly, an old pool cracks
+                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f);
+                    p.setColor(Renderer.alpha(Renderer.dark(col, 0.5f), 0.55f));
+                    c.drawOval(sr, p);
+                    if (sa[i] > 18f && w > 24f) {
+                        float clot = Math.min(1f, (sa[i] - 18f) / 40f);
+                        p.setStyle(Paint.Style.FILL); p.setColor(Renderer.alpha(unchecked((int)0xFF2a0407U), 0.5f * clot));
+                        sr.set(sx[i] - w * 0.32f, floorY + 1.4f - hh * 0.3f, sx[i] + w * 0.32f, floorY + 1.4f + hh * 0.3f);
+                        c.drawOval(sr, p);
+                    }
+                    if (sa[i] > 70f && w > 30f) {
+                        p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(0.8f); p.setColor(Renderer.alpha(unchecked((int)0xFF6a4a3aU), 0.5f));
+                        for (int ck = -1; ck <= 1; ck++) c.drawLine(sx[i] + ck * w * 0.22f, floorY + 0.4f, sx[i] + ck * w * 0.22f + w * 0.05f, floorY + 2.6f, p);
+                    }
+                    p.setStyle(Paint.Style.FILL);
                 } else c.drawRect(sx[i] - w * 0.5f, floorY - 1f, sx[i] + w * 0.5f, floorY + 2.2f, p);
                 if (w > 14f) {
                     p.setColor(Renderer.alpha(unchecked((int)0xFFffffffU), 0.16f * Math.max(0f, 1f - sa[i] / 25f)));
@@ -292,6 +338,7 @@ namespace Trastazo
                             p.setStyle(Paint.Style.FILL);
                         }
                         c.drawCircle(x[i], y[i], size[i] * 0.55f, p);
+                        if (size[i] > 3f && k > 0.45f) { p.setColor(Renderer.alpha(unchecked((int)0xFFffffffU), 0.4f)); c.drawCircle(x[i] - size[i] * 0.18f, y[i] - size[i] * 0.2f, size[i] * 0.14f, p); }
                         break;
                     }
                     case WATER: p.setColor(Renderer.alpha(color[i], 0.8f)); c.drawCircle(x[i], y[i], size[i], p); break;

@@ -562,6 +562,15 @@ final class Renderer {
                 c.drawPoly(poly, 5, p);
                 p.setColor(0xFFf7f9fc); rf.set(bl0 + 2f, -bw, bl1 - bw * 3f, -bw * 0.35f); c.drawRect(rf, p);
                 p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(0xFFa9b0ba); c.drawLine(bl0 + 2f, 0.5f, bl1 - bw * 3f, 0.5f, p);
+                if (q.wear > 0.02f && gore) {
+                    // blood V6: the blade is wet with blood from the tip back, and drips
+                    float len = (bl1 - bl0) * Math.min(1f, q.wear * 1.6f);
+                    p.setStyle(Paint.Style.FILL); p.setColor(alpha(0xFF8e0f18, 0.55f + 0.35f * Math.min(1f, q.wear)));
+                    poly[0] = bl1 - len; poly[1] = -bw; poly[2] = bl1 - bw * 2.5f; poly[3] = -bw; poly[4] = bl1; poly[5] = 0f; poly[6] = bl1 - bw * 2.5f; poly[7] = bw; poly[8] = bl1 - len; poly[9] = bw;
+                    c.drawPoly(poly, 5, p);
+                    p.setColor(alpha(0xFF5e0a0f, 0.7f)); c.drawCircle(bl1 - len * 0.5f, bw * 0.4f, bw * 0.5f, p);
+                    p.setStyle(Paint.Style.STROKE);
+                }
                 // guard, handle and pommel
                 float gx = bl0 - 1.5f, hl0 = sw ? -52f : -22f;
                 orect(c, gx - 2.5f, sw ? -9f : -6f, gx + 1f, sw ? 9f : 6f, 1.2f, sw ? 0xFFc9a23a : 0xFF3a3d44);

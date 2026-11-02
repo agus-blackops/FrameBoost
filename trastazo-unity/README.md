@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 2.1
+# Trastazo Playground para Unity — 2.2
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,26 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 2.2
+
+* **Sangre V6 (remake, más realista):**
+  * **Sangre arterial vs. venosa:** los chorros del cuello y de los muñones son de un rojo vivo y más rápidos;
+    la que rezuma de heridas normales es oscura y espesa.
+  * **Gotas y salpicaduras:** las gotas brillan al volar y, si caen rápido, **se rompen en gotitas satélite**
+    que rebotan hacia arriba al chocar con el suelo.
+  * **Cuerpos que gotean:** lo que empapa la ropa y la piel **gotea** desde las partes más bajas, gota a gota,
+    hacia los charcos (y el cuerpo se va «secando»).
+  * **Charcos con estructura:** borde que se seca primero (línea oscura), centro que **se coagula** en gelatina
+    oscura y, pasado más de un minuto, **grietas** de sangre seca.
+  * **Pared:** las manchas ya no son redondas: **estrías finas** salen disparadas con gotitas en las puntas,
+    además de los satélites y los chorretones.
+  * **Armas ensangrentadas:** cuchillos y espadas (y la sierra y las trampas) que cortan carne quedan
+    **mojados de sangre** desde la punta hacia atrás.
+
+![Escena](docs/sangre6-escena.png)
+![Pared](docs/sangre6-pared.png)
+![Charcos](docs/sangre6-charcos.png)
 
 ## Novedades de Trastazo Playground Unity 2.1
 
@@ -222,6 +242,7 @@ Todo lo siguiente se ejecuta fuera de Unity, con .NET (`tools/test_all.sh`; 8.0,
 | `MachineTest` (sierra, pinchos, prensa, Tesla...) | pasa; 3 comprobaciones de pinchos son *intermitentes* (también en Java, dependen del azar) |
 | `Test39` | pasa; «los gibs incluyen órganos» falla de vez en cuando (también en Java: a veces la explosión solo revienta brazos y piernas) |
 | `Test40` (informe de errores, guardado seguro, botones en 7 tamaños) | todo pasa |
+| `Test21` (2.2: sangre arterial, salpicaduras satélite, cuerpos que gotean, armas ensangrentadas, charcos) | 7/7 pasan |
 | `Test20` (2.1: sangre real, heridas que se coagulan, espasmos, chorros de muñón, tos con sangre) | 10/10 pasan |
 | `Test19` (2.0: barra de óxido, infección, Hombre óxido, cadena de infección, guardado, modelo V3) | 13/13 pasan |
 | `Test18` (1.9: chorros arteriales, charcos, huellas, manchas, salpicaduras, costillas y corazón) | 10/10 pasan |

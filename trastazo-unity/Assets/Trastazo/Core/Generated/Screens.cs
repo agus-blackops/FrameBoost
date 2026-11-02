@@ -305,7 +305,7 @@ namespace Trastazo
         public static readonly string[] NEWS = {
             "Hombre óxido y barra de óxido",
             "Modelo de humanos V3 renovado",
-            "Sangre V3: charcos, huellas, manchas",
+            "Sangre V6 remake: más real",
             "Gore V6: realista: coágulos, palidez, espasmos",
             "Trampas de SAW: cepo, péndulo, Billy...",
             "Destruction Engine 1.5: cristal y colapsos",
@@ -385,7 +385,7 @@ namespace Trastazo
             button(c, colX + half + gap, y, half, bh, "Ajustes", A_SETTINGS, false, IC_GEAR);
             // what's new: one line at the bottom, so the cover scene stays clear
             {
-                string news = "Novedades: Gore V6 realista · Hombre óxido · modelo V3 · trampas de SAW";
+                string news = "Novedades: Sangre V6 · Gore V6 · Hombre óxido · modelo V3 · trampas de SAW";
                 p.setTextSize(11 * d);
                 float nw = p.measureText(news), maxN = sw - colX - 24 * d;
                 float ns = nw > maxN ? 11 * d * maxN / nw : 11 * d;

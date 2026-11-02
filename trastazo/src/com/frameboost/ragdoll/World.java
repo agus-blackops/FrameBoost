@@ -287,6 +287,7 @@ final class World implements Sim.Listener, Sim.Hook {
             }
         }
         if (fx.gore && p.fleshy() && !p.dead && p.blood > 20f && p.frozenT <= 0f) bloodPressure(p, dt);
+        if (fx.gore && p.fleshy() && p.frozenT <= 0f) dripOff(p, dt);
         int whole = 0;
         for (int k = 0; k < Person.NPARTS; k++) { if (p.gibbed[k]) { if (!p.rb[k].frozen) p.rb[k].setFrozen(true); } else whole++; }
         if (whole == 0) { remove(p); return; }     // nothing left of them
@@ -334,7 +335,7 @@ final class World implements Sim.Listener, Sim.Hook {
                     float beat = (float) Math.sin(time * 9f + p.id);
                     if (beat > 0.55f && rnd.nextFloat() < dt * 40f) {
                         float jet = Math.min(1f, p.bleed[i] / 5f);
-                        fx.blood(nk.anchorAX(), nk.anchorAY(), ux * 0.7f + p.dir * 0.5f, uy * 0.9f - 0.1f, 4 + (int) (jet * 6f));
+                        fx.arterial(nk.anchorAX(), nk.anchorAY(), ux * 0.7f + p.dir * 0.5f, uy * 0.9f - 0.1f, 4 + (int) (jet * 6f));
                         if (fx.gore && rnd.nextFloat() < 0.25f) fx.wallSplat(nk.anchorAX() + p.dir * (40f + rnd.nextFloat() * 90f), nk.anchorAY() - 20f + fx.rr(40f), 5f + jet * 7f, fx.bloodA);
                     }
                 }
@@ -421,6 +422,21 @@ final class World implements Sim.Listener, Sim.Hook {
         rumble += 0.4f;
     }
 
+    /** Blood V6: what soaks a body drips off its lowest parts, drop by drop, and falls into the pools below. */
+    private void dripOff(Person p, float dt) {
+        for (int i = 0; i < Person.NPARTS; i++) {
+            float k = p.soak[i];
+            if (k < 0.3f || p.gibbed[i] || rnd.nextFloat() > dt * k * 2.4f) continue;
+            RB b = p.rb[i];
+            if (b.y > sim.floorY - 6f) continue;
+            Shape sh = b.shapes.get(0);
+            bloodStyle(p);
+            float lowY = sh.type == Shape.CAPSULE ? Math.max(sh.cy + Math.abs(sh.ay) * sh.hl, sh.cy) + sh.r * 0.7f : sh.cy + sh.r * 0.7f;
+            fx.add(Fx.BLOOD, sh.cx + fx.rr(sh.r * 0.5f), lowY, fx.rr(12f) + b.vx * 0.2f, 10f, 1.6f, 2f + fx.rf() * 1.6f, rnd.nextBoolean() ? fx.bloodB : fx.bloodA);
+            p.soak[i] = Math.max(0f, p.soak[i] - 0.012f);
+        }
+    }
+
     /** Gore V6: the heart still pushes blood out of an open stump, in jets with each beat, and a ruined chest makes them cough blood. */
     private void bloodPressure(Person p, float dt) {
         float beat = (float) Math.sin(time * 9f + p.id);
@@ -435,7 +451,7 @@ final class World implements Sim.Listener, Sim.Hook {
                 float ox = ax - body.x, oy = ay - body.y, ol = (float) Math.sqrt(ox * ox + oy * oy) + 1e-3f;
                 float jet = Math.min(1f, p.bleed[part] / 9f);
                 bloodStyle(p);
-                fx.blood(ax, ay, ox / ol, oy / ol - 0.1f, 2 + (int) (jet * 4f));
+                fx.arterial(ax, ay, ox / ol, oy / ol - 0.1f, 2 + (int) (jet * 4f));
             }
         }
         if (p.hp[Person.CHEST] < -15f && !p.gibbed[Person.HEAD] && rnd.nextFloat() < dt * 1.6f) {
@@ -690,7 +706,7 @@ final class World implements Sim.Listener, Sim.Hook {
             if (sharp && dv > 140f) {
                 p.hitCd[part] = 0.18f;
                 Prop blade = (Prop) other.body.user;
-                if (Items.isTrap(blade.type) && flesh(p)) blade.wear = Math.min(1f, blade.wear + 0.15f);
+                if ((Items.isTrap(blade.type) || blade.type == Items.KNIFE || blade.type == Items.SWORD || blade.type == Items.SAW) && flesh(p)) blade.wear = Math.min(1f, blade.wear + 0.15f);
                 boolean glassEdge = ((Prop) other.body.user).color == Build.GLASS;
                 wound(p, part, Person.W_CUT, px, py, dx, dy, (5f + Math.min(9f, dv * 0.01f)) * (glassEdge ? 0.6f : 1f));
                 hurt(p, part, (8f + dv * 0.05f) * (glassEdge ? 0.3f : 1f), px, py, dx, dy);
