@@ -17,6 +17,7 @@ final class Prop extends Ent {
     boolean slab;                   // a floor section: it only overhangs a couple of sections past its last support
     int hops;                       // scratch: sections between this slab and a support
     float relT = -1f;               // >= 0: unsupported, it lets go and falls when this runs out
+    float dustCd;                   // seconds before this piece raises dust again when it hits something
     int mark = 3;                   // scratch for the support search
     java.util.ArrayList<Prop> nbr;  // pieces it touches (what it holds up and what holds it up)
     float hp = 100f, flash, age, trim;

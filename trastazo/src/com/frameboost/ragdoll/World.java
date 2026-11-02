@@ -12,7 +12,7 @@ final class World implements Sim.Listener, Sim.Hook {
         float recentT;
     }
 
-    static final class Rocket { float x, y, vx, vy, life; Ent owner; }
+    static final class Rocket { float x, y, vx, vy, life, size; Ent owner; boolean raid; }
 
     /** Electric arcs (Tesla coil) drawn for a moment: x0 y0 x1 y1 life. */
     final float[][] arcs = new float[12][5];
@@ -273,9 +273,11 @@ final class World implements Sim.Listener, Sim.Hook {
             }
         }
         int freed = 0;
+        float lowest = -1e9f;
+        for (Prop q : all) if (q.mark != 1 && !q.anchor) lowest = Math.max(lowest, q.cy());
         for (Prop q : all) {
             if (q.mark == 1 || q.anchor) continue;
-            q.relT = 0.04f + rnd.nextFloat() * 0.45f;
+            q.relT = 0.04f + rnd.nextFloat() * 0.12f + (lowest - q.cy()) * 0.0006f;   // the lowest pieces go first, the rest follow upwards
             q.mark = 3;
             freed++;
         }
@@ -816,6 +818,10 @@ final class World implements Sim.Listener, Sim.Hook {
             }
             if (q.explosive && q.fuse < 0f && q.type != Items.C4 && dv > 1500f && q.age > 0.8f) q.fuse = 0.05f;
             if (q.machine() && dv > 600f) damageMachine(q, (dv - 600f) * 0.08f);
+            if (q.isStruct && dv > 420f && q.dustCd <= 0f && !q.main().frozen) {        // a falling floor or wall raises dust where it lands
+                q.dustCd = 0.4f;
+                fx.dust(px, py, Math.min(46f, 12f + Math.max(q.hw, q.hh) * 0.3f), 2 + (int) Math.min(4f, dv / 500f));
+            }
             if (breakable(q)) {
                 float th = q.color == Build.GLASS ? 150f : (sharp ? 200f : 650f);
                 // the contact speed is noisy for heavy welded stacks: cap it by how fast things were really moving
@@ -1307,6 +1313,7 @@ final class World implements Sim.Listener, Sim.Hook {
 
     private void updateProp(Prop q, float dt) {
         if (q.flash > 0f) q.flash -= dt;
+        if (q.dustCd > 0f) q.dustCd -= dt;
         if (!q.bodies.isEmpty()) { RB r = q.main(); q.lastSp = (float) Math.hypot(r.vx, r.vy) + Math.abs(r.w) * Math.max(q.hw, q.hh); }
         q.age += dt;
         RB m = q.main();
@@ -1631,6 +1638,16 @@ final class World implements Sim.Listener, Sim.Hook {
         }
     }
 
+    /** A bomb of an air raid: falls faster, with a thick trail, and lands with a crater, fire and a column of smoke. */
+    void launchBomb(float x, float y, float dx, float dy, float size) {
+        if (rockets.size() > 30) return;
+        Rocket r = new Rocket();
+        float l = (float) Math.sqrt(dx * dx + dy * dy);
+        r.x = x; r.y = y; r.vx = dx / l * 1500f; r.vy = dy / l * 1500f; r.life = 5f; r.raid = true; r.size = size;
+        rockets.add(r);
+        if (sfx != null) sfx.launch();
+    }
+
     void launchRocket(float x, float y, float dx, float dy, Ent owner) {
         if (rockets.size() > 8) return;
         Rocket r = new Rocket();
@@ -1655,10 +1672,14 @@ final class World implements Sim.Listener, Sim.Hook {
             }
             float room = sim.rayRoom(r.x, r.y, dx, dy, step + 1f);
             if (room < step) { hx = r.x + dx * room; hy = r.y + dy * room; boom = true; }
-            fx.add(Fx.SMOKE, r.x, r.y, fx.rr(30), fx.rr(30), 0.7f, 7f, 0xFF9a9a9a);
+            fx.add(Fx.SMOKE, r.x, r.y, fx.rr(30), fx.rr(30), r.raid ? 2.2f : 0.7f, r.raid ? 11f : 7f, r.raid ? 0xFFb4b4b4 : 0xFF9a9a9a);
             fx.add(Fx.FLAME, r.x, r.y, fx.rr(40), fx.rr(40), 0.2f, 7f, 0xFFffa040);
             r.x = hx; r.y = hy;
-            if (boom) { rockets.remove(i); explode(hx, hy, 340f, 2300f, 95f, true); }
+            if (boom) {
+                rockets.remove(i);
+                if (r.raid) { explode(hx, hy, r.size, 1800f + r.size * 3f, 70f + r.size * 0.25f, true); Levolution.impact(this, hx, hy, r.size); }
+                else explode(hx, hy, 340f, 2300f, 95f, true);
+            }
         }
     }
 

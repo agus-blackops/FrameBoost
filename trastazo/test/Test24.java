@@ -11,7 +11,7 @@ public class Test24 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.5";
+        Game.edition = "Unity 2.6";
 
         // 0. palette
         check("Levolution has its own tab with four events", Items.CATS[Items.CAT_LEVO].length == 4 && Items.isLevo(Items.LEVO_TORNADO) && !Items.isLevo(Items.BUILDING));
@@ -26,11 +26,11 @@ public class Test24 {
         float top0 = topY(sk), cx0 = crate.cx();
         String msg = Levolution.start(w, Items.LEVO_COLLAPSE, 1500);
         check("the demolition starts with its banner", msg.contains("DERRUMBE") && w.events.size() == 1 && w.bannerT > 0f);
-        run(w, 2f);
+        run(w, 2.6f);
         WorldTest.shot(w, out + "/u_levo_charges.png", 1500, -400, 0.55f);
-        run(w, 1.5f);
+        run(w, 2f);
         WorldTest.shot(w, out + "/u_levo_collapse.png", 1500, -450, 0.5f);
-        run(w, 6f);
+        run(w, 9f);
         float top1 = topY(sk);
         System.out.printf("   demolition: top %.0f -> %.0f, crate moved %.0f, destroyed %d%n", top0, top1, crate.cx() - cx0, w.stats.destroyed);
         check("the tower comes down", top1 > top0 + 600f);
@@ -47,7 +47,7 @@ public class Test24 {
         int stand0 = 0; for (Ent e : bd) if (((Prop) e).main().frozen || ((Prop) e).anchor) stand0++;
         check("the earthquake starts", Levolution.start(w, Items.LEVO_QUAKE, 1500).contains("TERREMOTO") && Levolution.active(w, Levolution.QUAKE));
         float shake = 0f;
-        for (int i = 0; i < 60 * 9; i++) { w.update(1f / 60f); yMin = Math.min(yMin, c2.cy()); shake = Math.max(shake, w.fx.shake); }
+        for (int i = 0; i < 60 * 12; i++) { w.update(1f / 60f); yMin = Math.min(yMin, c2.cy()); shake = Math.max(shake, w.fx.shake); }
         int stand1 = 0; for (Ent e : bd) if (!((Prop) e).removed && (((Prop) e).main().frozen || ((Prop) e).anchor)) stand1++;
         System.out.printf("   quake: crate rose to %.0f, shake %.2f, standing %d -> %d, destroyed %d%n", yMin, shake, stand0, stand1, w.stats.destroyed);
         check("things jump around", yMin < -100f && yMin > -500f);
@@ -64,9 +64,10 @@ public class Test24 {
         check("the air raid starts", Levolution.start(w, Items.LEVO_STRIKE, 1500).contains("BOMBARDEO"));
         run(w, 2f);
         WorldTest.shot(w, out + "/u_levo_strike.png", 1500, -300, 0.8f);
-        run(w, 8f);
+        run(w, 9f);
+        check("the bombs leave craters", w.fx.sn > 3);
         System.out.printf("   air raid: %d explosions%n", w.stats.explosions - booms0);
-        check("many explosions", w.stats.explosions - booms0 >= 6);
+        check("many explosions", w.stats.explosions - booms0 >= 12);
         check("the air raid ends", w.events.isEmpty());
 
         // 4. tornado: lifts things, moves, tears a building, ends

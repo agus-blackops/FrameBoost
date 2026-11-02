@@ -1,4 +1,4 @@
-# Trastazo Playground para Unity — 2.5
+# Trastazo Playground para Unity — 2.6
 
 El juego completo (4.0 beta) llevado a **Unity**: el mismo motor de física, personajes, IA, destrucción,
 máquinas, refrigerador, animales, retos, logros, mods, música y efectos de sonido. Funciona en
@@ -9,6 +9,13 @@ máquinas, refrigerador, animales, retos, logros, mods, música y efectos de son
 > mods) está escrita con la API documentada de Unity y comprobada de tipos contra el código real, pero **no se
 > ha podido abrir en un Editor de Unity** en el entorno donde se hizo. Es la primera vez que se compila dentro
 > de Unity: si algo falla al abrir, el informe de errores o la consola de Unity dirán dónde.
+
+## Novedades de Trastazo Playground Unity 2.6
+
+* **Levolution V2:** derrumbe en tortita con polvo y neblina, terremoto con onda lateral, grietas y réplica, bombardeo con
+  cráteres y columnas de humo, tornado en forma de cuerda con nube. Test24 actualizado.
+
+![Tornado V2](docs/levo2-tornado.png)
 
 ## Novedades de Trastazo Playground Unity 2.5
 

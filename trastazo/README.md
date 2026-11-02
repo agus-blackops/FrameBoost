@@ -1,4 +1,4 @@
-# Trastazo Playground 5.2
+# Trastazo Playground 5.3
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -6,10 +6,28 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **PC (Windows, Linux, macOS):** [`dist/trastazo-pc.zip`](dist/trastazo-pc.zip) — descomprimir y abrir `Trastazo.bat` (o `java -jar Trastazo.jar`). Necesita Java 8 o superior ([adoptium.net](https://adoptium.net)).
 
-**Unity 2.5:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 2.6:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 5.3
+
+* **Levolution V2 (más realista):**
+  * **Derrumbe:** 2 s de aviso en los que el edificio cruje, suelta polvo y se agrieta; luego explotan las cargas de dos
+    en dos, algo descompasadas. Los pisos caen **de abajo arriba** (como un derrumbe «en tortita»), cada suelo o muro
+    que golpea algo **levanta polvo**, y al final sale una **columna de polvo**, la ola por el suelo y una **neblina** que se queda
+    varios segundos mientras tiembla el suelo.
+  * **Terremoto:** ahora el suelo **se desliza de lado a lado** (onda S), con **grietas en el suelo** que echan polvo, personas
+    que **pierden el equilibrio**, 8 s de sacudida principal y una **réplica**.
+  * **Bombardeo:** bombas con **trayectoria inclinada y estela de humo**, de varios tamaños (alguna pesada), **cráteres**
+    quemados en el suelo, llamas, tierra lanzada y **columnas de humo negro** que tardan en disiparse.
+  * **Tornado:** embudo en forma de **cuerda** que se ensancha, se **balancea**, con **nube oscura** arriba, anillo de tierra en la base,
+    escombros lanzados y fuerza distinta cada vez.
+
+![Derrumbe V2](../trastazo-unity/docs/levo2-derrumbe.png)
+![Bombardeo V2](../trastazo-unity/docs/levo2-bombardeo.png)
+![Tornado V2](../trastazo-unity/docs/levo2-tornado.png)
 
 ## Novedades de la 5.2
 

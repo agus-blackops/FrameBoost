@@ -19,6 +19,7 @@ namespace Trastazo
         public bool slab;                   // a floor section: it only overhangs a couple of sections past its last support
         public int hops;                       // scratch: sections between this slab and a support
         public float relT = -1f;               // >= 0: unsupported, it lets go and falls when this runs out
+        public float dustCd;                   // seconds before this piece raises dust again when it hits something
         public int mark = 3;                   // scratch for the support search
         public JList<Prop> nbr;  // pieces it touches (what it holds up and what holds it up)
         public float hp = 100f, flash, age, trim;

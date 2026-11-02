@@ -15,7 +15,7 @@ namespace Trastazo
 
         public static void RunMain(string[] a){
             string out_ = a.Length > 0 ? a[0] : "/tmp";
-            Game.edition = "Unity 2.5";
+            Game.edition = "Unity 2.6";
 
             // 1. both stand on their own
             foreach (int it in new int[]{Items.BUILDING, Items.SKYSCRAPER}) {
