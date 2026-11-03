@@ -41,6 +41,9 @@ final class Fx {
     /** Live blood particles (used by tests). */
     int activeBlood() { int n = 0; for (int i = 0; i < MAXP; i++) if (life[i] > 0f && type[i] == BLOOD) n++; return n; }
 
+    /** Live particles of any kind (used by tests). */
+    int active() { int n = 0; for (int i = 0; i < MAXP; i++) if (life[i] > 0f) n++; return n; }
+
     float rf() { return rnd.nextFloat(); }
     float rr(float m) { return (rnd.nextFloat() - 0.5f) * 2f * m; }
 

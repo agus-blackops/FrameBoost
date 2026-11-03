@@ -878,6 +878,13 @@ final class Ui {
                 line(c, cx - s * 0.15f, cy + s * 0.4f, cx + s * 0.1f, cy + s * 0.4f, Math.max(2f, s * 0.14f), 0xFFffe27a);
                 line(c, cx + s * 0.1f, cy + s * 0.4f, cx - s * 0.1f, cy + s * 0.85f, Math.max(2f, s * 0.14f), 0xFFffe27a);
                 break;
+            case Items.CRANE:
+                box(c, cx - s * 0.1f, cy - s * 0.9f, cx + s * 0.1f, cy + s * 0.85f, 0xFFd9a420, s * 0.02f);
+                box(c, cx - s * 0.1f, cy - s * 0.9f, cx + s * 0.95f, cy - s * 0.75f, 0xFFd9a420, s * 0.02f);
+                line(c, cx + s * 0.8f, cy - s * 0.75f, cx + s * 0.45f, cy + s * 0.25f, Math.max(1f, s * 0.06f), 0xFF8d96a3);
+                disc(c, cx + s * 0.4f, cy + s * 0.42f, s * 0.27f, 0xFF2a2d33);
+                box(c, cx - s * 0.5f, cy + s * 0.75f, cx + s * 0.5f, cy + s * 0.9f, 0xFF8d96a3, s * 0.02f);
+                break;
             case Items.BUILDING:
                 box(c, cx - s * 0.7f, cy - s * 0.85f, cx + s * 0.7f, cy + s * 0.8f, 0xFFb9b4ac, s * 0.03f);
                 for (int r = 0; r < 4; r++) for (int k = 0; k < 3; k++)

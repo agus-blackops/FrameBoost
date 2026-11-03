@@ -13,7 +13,7 @@ namespace Trastazo
 
         public static void RunMain(string[] a){
             string out_ = a.Length > 0 ? a[0] : "/tmp";
-            Game.edition = "Unity 2.7";
+            Game.edition = "Unity 2.8";
 
             // 0. palette
             check("Levolution has its own tab with seven events", Items.CATS[Items.CAT_LEVO].Length == 7 && Items.isLevo(Items.LEVO_TORNADO) && !Items.isLevo(Items.BUILDING));

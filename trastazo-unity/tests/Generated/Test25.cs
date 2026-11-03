@@ -12,7 +12,7 @@ namespace Trastazo
 
         public static void RunMain(string[] a){
             string out_ = a.Length > 0 ? a[0] : "/tmp";
-            Game.edition = "Unity 2.7";
+            Game.edition = "Unity 2.8";
 
             // 1. flood: the water rises, wood floats, metal sinks, a person under water drowns, then it drains
             World w = new World(null);

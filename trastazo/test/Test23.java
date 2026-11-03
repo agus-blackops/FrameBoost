@@ -13,7 +13,7 @@ public class Test23 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.7";
+        Game.edition = "Unity 2.8";
 
         // 1. both stand on their own
         for (int it : new int[]{Items.BUILDING, Items.SKYSCRAPER}) {

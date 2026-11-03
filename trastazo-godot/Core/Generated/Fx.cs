@@ -40,6 +40,9 @@ namespace Trastazo
         /** Live blood particles (used by tests). */
         public int activeBlood() { int n = 0; for (int i = 0; i < MAXP; i++) if (life[i] > 0f && type[i] == BLOOD) n++; return n; }
 
+        /** Live particles of any kind (used by tests). */
+        public int active() { int n = 0; for (int i = 0; i < MAXP; i++) if (life[i] > 0f) n++; return n; }
+
         public float rf() { return rnd.nextFloat(); }
         public float rr_(float m) { return (rnd.nextFloat() - 0.5f) * 2f * m; }
 

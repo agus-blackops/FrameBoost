@@ -11,7 +11,7 @@ public class Test24 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.7";
+        Game.edition = "Unity 2.8";
 
         // 0. palette
         check("Levolution has its own tab with seven events", Items.CATS[Items.CAT_LEVO].length == 7 && Items.isLevo(Items.LEVO_TORNADO) && !Items.isLevo(Items.BUILDING));

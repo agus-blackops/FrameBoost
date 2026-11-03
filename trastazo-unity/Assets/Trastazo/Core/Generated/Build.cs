@@ -39,6 +39,7 @@ namespace Trastazo
                 case Items.SCAFFOLD: scaffold(w, out_, x, f); break;
                 case Items.BUILDING: building(w, out_, x, f); break;
                 case Items.SKYSCRAPER: skyscraper(w, out_, x, f); break;
+                case Items.CRANE: crane(w, out_, x, f); break;
                 default: break;
             }
             return out_;
@@ -285,6 +286,43 @@ namespace Trastazo
             }
             frame(w, out_, x, f - 10f - n * H - 52f, 3, 52, STEEL, 0.5f, false);
             w.linkStruct();
+        }
+
+        /** A demolition crane: a static mast and jib with a steel ball on a cable, started swinging. */
+        private static void crane(World w, JList<Ent> out_, float x, float f) {
+            Prop base_ = piece(w, out_, x, f - 10f, 46, 10, STEEL, DENS_STEEL, true);
+            Prop mast = piece(w, out_, x, f - 170f, 10, 150, STEEL, DENS_STEEL, true);
+            Prop jib = piece(w, out_, x + 120f, f - 330f, 130, 8, STEEL, DENS_STEEL, true);
+            base_.isStruct = false; mast.isStruct = false; jib.isStruct = false;
+            base_.color = mast.color = jib.color = unchecked((int)0xFFd9a420U);
+            float ax = x + 235f, ay = f - 322f;                  // the end of the jib, where the cable hangs
+            float len = 230f, ang = -0.95f;                      // the ball is pulled back to the left and let go
+            float bx = ax + (float) Math.sin(ang) * len, by = ay + (float) Math.cos(ang) * len;
+            Prop ball = Prop.wreckBall(bx, by);
+            ball.register(w.sim);
+            w.add(ball);
+            out_.add(ball);
+            Prop hook = piece(w, out_, ax, ay + 4f, 6, 4, STEEL, DENS_STEEL, true);
+            hook.isStruct = false; hook.color = unchecked((int)0xFF2a2d33U);
+            // a cable of a few long links (a long chain of tiny ones is too soft for a ball this heavy)
+            int n = 4;
+            float dx = bx - ax, dy = by - (ay + 4f);
+            Prop cable = w.ropeShell(n, ax, ay + 4f, bx, by);
+            RB prev = hook.main();
+            float px = ax, py = ay + 4f;
+            for (int i = 0; i < n; i++) {
+                Joint j = Joint.pin(prev, cable.bodies.get(i), px, py);
+                j.breakForce = 1e11f;
+                cable.joint(j);
+                w.sim.add(j);
+                px = ax + dx * (i + 1) / n; py = ay + 4f + dy * (i + 1) / n;
+                prev = cable.bodies.get(i);
+            }
+            Joint last = Joint.pin(prev, ball.main(), bx, by);
+            last.breakForce = 1e11f;
+            cable.joint(last);
+            w.sim.add(last);
+            out_.add(cable);
         }
     }
 }

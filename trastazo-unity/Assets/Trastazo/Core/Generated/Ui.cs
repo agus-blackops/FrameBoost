@@ -878,6 +878,13 @@ namespace Trastazo
                     line(c, cx - s * 0.15f, cy + s * 0.4f, cx + s * 0.1f, cy + s * 0.4f, Math.max(2f, s * 0.14f), unchecked((int)0xFFffe27aU));
                     line(c, cx + s * 0.1f, cy + s * 0.4f, cx - s * 0.1f, cy + s * 0.85f, Math.max(2f, s * 0.14f), unchecked((int)0xFFffe27aU));
                     break;
+                case Items.CRANE:
+                    box(c, cx - s * 0.1f, cy - s * 0.9f, cx + s * 0.1f, cy + s * 0.85f, unchecked((int)0xFFd9a420U), s * 0.02f);
+                    box(c, cx - s * 0.1f, cy - s * 0.9f, cx + s * 0.95f, cy - s * 0.75f, unchecked((int)0xFFd9a420U), s * 0.02f);
+                    line(c, cx + s * 0.8f, cy - s * 0.75f, cx + s * 0.45f, cy + s * 0.25f, Math.max(1f, s * 0.06f), unchecked((int)0xFF8d96a3U));
+                    disc(c, cx + s * 0.4f, cy + s * 0.42f, s * 0.27f, unchecked((int)0xFF2a2d33U));
+                    box(c, cx - s * 0.5f, cy + s * 0.75f, cx + s * 0.5f, cy + s * 0.9f, unchecked((int)0xFF8d96a3U), s * 0.02f);
+                    break;
                 case Items.BUILDING:
                     box(c, cx - s * 0.7f, cy - s * 0.85f, cx + s * 0.7f, cy + s * 0.8f, unchecked((int)0xFFb9b4acU), s * 0.03f);
                     for (int r = 0; r < 4; r++) for (int k = 0; k < 3; k++)

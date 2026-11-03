@@ -13,6 +13,7 @@ final class Prop extends Ent {
     boolean thrust;                 // thruster
     float fireCd, shotCd, reloadT, thinkT, work, aimA;
     int ammo = 12;
+    boolean rebar;                  // a broken chunk of concrete: steel rods stick out of it
     boolean isStruct, anchor;         // part of a construction: blasts carve it, its breaking raises dust; anchor = foundation
     boolean slab;                   // a floor section: it only overhangs a couple of sections past its last support
     int hops;                       // scratch: sections between this slab and a support
@@ -85,6 +86,14 @@ final class Prop extends Ent {
         Prop p = of(Items.BLOCK);
         p.color = color; p.hw = hw; p.hh = hh; p.dens = dens; p.flammable = flammable;
         box(p, x, y, hw, hh, dens, 0.7f, 0.05f);
+        return p;
+    }
+
+    /** The steel ball of a demolition crane: very heavy. */
+    static Prop wreckBall(float x, float y) {
+        Prop p = of(Items.BOWLING);
+        p.param = 34f; p.color = 0xFF2a2d33; p.hw = p.hh = 34f;
+        circle(p, x, y, 34f, 3.2f, 0.5f, 0.1f);
         return p;
     }
 

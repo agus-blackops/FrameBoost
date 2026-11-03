@@ -1133,6 +1133,14 @@ namespace Trastazo
                 if (hw >= hh) for (float y = -hh + 5f; y < hh - 2f; y += 6f) c.drawLine(-hw + 3f, y, hw - 3f, y + 1f, p);
                 else for (float x = -hw + 5f; x < hw - 2f; x += 6f) c.drawLine(x, -hh + 3f, x + 1f, hh - 3f, p);
             }
+            if (q.rebar) {                                  // reinforcing rods sticking out of a broken chunk of concrete
+                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1.8f); p.setColor(unchecked((int)0xFF6b3a22U));
+                for (int rr = 0; rr < 3; rr++) {
+                    float t = (((q.id * 31 + rr * 17) & 15) / 15f - 0.5f) * 1.5f;
+                    if (hw >= hh) c.drawLine(-hw * 0.6f + t * hw * 0.3f, -hh + (rr * 2 + 1) * hh / 3f, hw + 5f + rr * 1.5f, -hh + (rr * 2 + 1) * hh / 3f + t * 3f, p);
+                    else c.drawLine(-hw + (rr * 2 + 1) * hw / 3f, -hh * 0.6f, -hw + (rr * 2 + 1) * hw / 3f + t * 3f, hh + 5f + rr * 1.5f, p);
+                }
+            }
             if (q.ncr > 0) { p.setStrokeCap(Paint.Cap.ROUND); c.restore(); cracks(c, q); return; }
             if (q.frag || q.wear > 0f) {
                 // cracks grow with the damage taken
@@ -1312,6 +1320,18 @@ namespace Trastazo
             for (int i = 0; i < q.ncr; i++) {
                 float u = q.crU[i], v = q.crV[i], k = Math.min(1.4f, q.crS[i]);
                 int seed = (int) (u * 13f + v * 7f) * 31 + i * 977 + q.id * 7919;
+                if (q.crS[i] >= 2f) {                       // a bullet hole: dark pit, chipped rim, a few short cracks
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(alpha(unchecked((int)0xFF000000U), 0.35f)); c.drawCircle(u, v, 4.2f, p);
+                    p.setColor(unchecked((int)0xFF0d0b09U)); c.drawCircle(u, v, 2.4f, p);
+                    p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(1f); p.setColor(alpha(metal ? unchecked((int)0xFFdfe4eaU) : unchecked((int)0xFFe8d8c8U), 0.5f));
+                    for (int sct = 0; sct < 4; sct++) {
+                        int shs = sct * 3;
+                        float an = (((Sys.ushr(seed, shs)) & 63) / 63f + sct) * 1.57f;
+                        c.drawLine(u + (float) Math.cos(an) * 2.6f, v + (float) Math.sin(an) * 2.6f, u + (float) Math.cos(an) * 6.5f, v + (float) Math.sin(an) * 6.5f, p);
+                    }
+                    continue;
+                }
                 if (metal) {
                     float r = 3f + k * 7f;
                     p.setStyle(Paint.Style.FILL);

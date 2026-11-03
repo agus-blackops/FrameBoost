@@ -827,6 +827,8 @@ namespace Trastazo
                 }
                 if (breakable(q)) {
                     float th = q.color == Build.GLASS ? 150f : (sharp ? 200f : 650f);
+                    bool wreck = other != null && other.body.invM > 0f && other.body.m > 5000f;     // a wrecking ball breaks what a crate would only dent
+                    if (wreck) th = 180f;
                     // the contact speed is noisy for heavy welded stacks: cap it by how fast things were really moving
                     float osp = other == null ? 0f : (other.body.user is Prop ? ((Prop) other.body.user).lastSp : (float) Math.hypot(other.body.vx, other.body.vy));
                     dv = Math.min(dv, q.lastSp + osp);
@@ -834,7 +836,7 @@ namespace Trastazo
                         float heavy = 1f;
                         if (other != null) {
                             float om = other.body.invM > 0f ? other.body.m : 20000f;
-                            heavy = Math.max(0.3f, Math.min(2.5f, (float) Math.sqrt(om / Math.max(1f, s.body.m))));
+                            heavy = Math.max(0.3f, Math.min(wreck ? 7f : 2.5f, (float) Math.sqrt(om / Math.max(1f, s.body.m))));
                         }
                         float dmg = (dv - th) * 0.04f * heavy * (sharp ? 2f : 1f);
                         crack(q, px, py, dmg / Math.max(20f, toughness(q)));
@@ -1151,9 +1153,27 @@ namespace Trastazo
         public void wear(Prop q, float dmg, bool deferred) {
             if (q.removed || dmg <= 0f || !breakable(q)) return;
             q.wear += dmg;
-            if (q.wear < toughness(q)) return;
+            if (q.wear < toughness(q)) {
+                if (dmg > 6f) {                                   // chips fly off the damaged spot
+                    float cx0 = Float.isNaN(q.impX) ? q.cx() : q.impX, cy0 = Float.isNaN(q.impY) ? q.cy() : q.impY;
+                    fx.debris(cx0, cy0, 1 + (int) Math.min(4f, dmg / 25f), q.color == Build.GLASS ? unchecked((int)0xFFd8efffU) : q.color, 110f + dmg);
+                    if (q.isStruct && dmg > 20f) fx.dust(cx0, cy0, 10f, 1);
+                }
+                return;
+            }
             if (deferred) { if (!breakQ.contains(q)) breakQ.add(q); }
             else fracture(q, q.cx(), q.cy());
+        }
+
+        /** A bullet hole: a dark pit with chipped edges (stored as a crack of strength 2). */
+        public void punch(Prop q, float wx, float wy, float dx, float dy) {
+            if (q.bodies.isEmpty() || q.color == Build.GLASS) return;
+            RB b = q.main();
+            float ex = wx - b.x, ey = wy - b.y;
+            float u = Math.max(-q.hw * 0.9f, Math.min(q.hw * 0.9f, ex * b.c + ey * b.s)), v = Math.max(-q.hh * 0.9f, Math.min(q.hh * 0.9f, -ex * b.s + ey * b.c));
+            int slot = q.ncr < Prop.MAXCRACK ? q.ncr++ : rnd.nextInt(Prop.MAXCRACK);
+            q.crU[slot] = u; q.crV[slot] = v; q.crS[slot] = 2f;
+            fx.add(Fx.SMOKE, wx, wy, dx * 40f, dy * 40f - 10f, 0.5f, 5f, unchecked((int)0xFFb3a595U));
         }
 
         /** Destruction engine: a crack (or a dent on metal) where something hit, in the thing's own frame. */
@@ -1213,7 +1233,8 @@ namespace Trastazo
             float[][] pc = new float[10][];
             int n = 1;
             pc[0] = new float[]{-hw, -hh, hw, hh};
-            int cuts = Math.min(7, 2 + (int) ((hw + hh) / 26f));
+            int cuts = Math.min(7, 2 + (int) ((hw + hh) / 26f) + (col == Build.CONCRETE ? 2 : 0));
+            if (steel) cuts = Math.min(cuts, 2);                  // metal bends and tears into a few pieces, it does not crumble
             for (int c = 0; c < cuts && n < pc.Length; c++) {
                 // cut the piece that holds the impact point most of the time, otherwise the biggest one
                 int pick = 0;
@@ -1248,6 +1269,7 @@ namespace Trastazo
                 float jw = pw * (0.9f + rnd.nextFloat() * 0.08f), jh = ph * (0.9f + rnd.nextFloat() * 0.08f);
                 Prop f = Prop.block(wx, wy, jw, jh, col, q.type == Items.BLOCK ? q.dens : 0.7f, q.flammable);
                 f.frag = true;
+                f.rebar = col == Build.CONCRETE;
                 f.register(sim);
                 RB rb = f.main();
                 rb.setAngle(a + (rnd.nextFloat() - 0.5f) * 0.25f);
@@ -1430,6 +1452,7 @@ namespace Trastazo
             fx.explosion(x, y, R);
             rumble += Math.min(1.2f, R / 450f);
             stats.explosions++;
+            if (R >= 110f && y > sim.floorY - R) fx.dust(x, sim.floorY - 8f, R * 0.5f, 3 + (int) (R / 90f));
             stats.recentBooms++;
             stats.recentT = 2f;
             if (sfx != null) sfx.boom(Math.min(1f, R / 600f));
@@ -1605,7 +1628,7 @@ namespace Trastazo
                 b.applyImpulse(dx * J, dy * J, hx, hy);
                 fx.sparks(hx, hy, 5, q.type == Items.CRATE || q.type == Items.PLANK ? unchecked((int)0xFFe8c48aU) : unchecked((int)0xFFffe08aU));
                 if (q.type == Items.CRATE || q.type == Items.PLANK) fx.debris(hx, hy, 2, q.color, 180f);
-                if (breakable(q)) { fx.debris(hx, hy, 2, q.color, 160f); crack(q, hx, hy, dmg * 1.3f / Math.max(20f, toughness(q))); wear(q, dmg * 1.3f, false); }
+                if (breakable(q)) { fx.debris(hx, hy, 2, q.color, 160f); punch(q, hx, hy, dx, dy); crack(q, hx, hy, dmg * 1.3f / Math.max(20f, toughness(q))); wear(q, dmg * 1.3f, false); }
                 else if (q.type == Items.BARREL || q.type == Items.XBARREL || q.type == Items.STEEL || q.type == Items.FRIDGE) crack(q, hx, hy, 0.35f);
             } else if (u is Person) {
                 Person p = (Person) u;

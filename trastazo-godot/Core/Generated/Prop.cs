@@ -15,6 +15,7 @@ namespace Trastazo
         public bool thrust;                 // thruster
         public float fireCd, shotCd, reloadT, thinkT, work, aimA;
         public int ammo = 12;
+        public bool rebar;                  // a broken chunk of concrete: steel rods stick out of it
         public bool isStruct, anchor;         // part of a construction: blasts carve it, its breaking raises dust; anchor = foundation
         public bool slab;                   // a floor section: it only overhangs a couple of sections past its last support
         public int hops;                       // scratch: sections between this slab and a support
@@ -87,6 +88,14 @@ namespace Trastazo
             Prop p = of(Items.BLOCK);
             p.color = color; p.hw = hw; p.hh = hh; p.dens = dens; p.flammable = flammable;
             box(p, x, y, hw, hh, dens, 0.7f, 0.05f);
+            return p;
+        }
+
+        /** The steel ball of a demolition crane: very heavy. */
+        public static Prop wreckBall(float x, float y) {
+            Prop p = of(Items.BOWLING);
+            p.param = 34f; p.color = unchecked((int)0xFF2a2d33U); p.hw = p.hh = 34f;
+            circle(p, x, y, 34f, 3.2f, 0.5f, 0.1f);
             return p;
         }
 

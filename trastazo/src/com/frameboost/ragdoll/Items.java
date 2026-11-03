@@ -13,7 +13,7 @@ final class Items {
             FIRE = 80, LIGHTNING = 81, PUSH = 82,
             SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
             ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, PYRAMID = 115, CASTLE = 116, GREENHOUSE = 117, DOMINOES = 118, SCAFFOLD = 119, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
-            GLASS = 154, RUSTBAR = 155, LEVO_COLLAPSE = 170, LEVO_QUAKE = 171, LEVO_STRIKE = 172, LEVO_TORNADO = 173, LEVO_FLOOD = 174, LEVO_METEOR = 175, LEVO_STORM = 176, BUILDING = 160, SKYSCRAPER = 161, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+            GLASS = 154, RUSTBAR = 155, CRANE = 162, LEVO_COLLAPSE = 170, LEVO_QUAKE = 171, LEVO_STRIKE = 172, LEVO_TORNADO = 173, LEVO_FLOOD = 174, LEVO_METEOR = 175, LEVO_STORM = 176, BUILDING = 160, SKYSCRAPER = 161, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
     static final class Item {
         final int id;
@@ -120,6 +120,7 @@ final class Items {
             new Item(DOMINOES, "Dominó", PLACE + " · 14 fichas en fila; empuja la primera"),
             new Item(SCAFFOLD, "Andamio", PLACE + " · postes de acero y tablones en dos pisos"),
             new Item(BUILDING, "Edificio", PLACE + " · 5 plantas con pisos, ventanas y tabiques; vuélalo por partes"),
+            new Item(CRANE, "Grúa de demolición", PLACE + " · una bola de acero colgada de una grúa: empújala y destroza lo que toque"),
             new Item(SKYSCRAPER, "Rascacielos", PLACE + " · 10 plantas con estructura de acero y fachada de cristal; derríbalo desde la base"),
         },
         {
@@ -178,7 +179,7 @@ final class Items {
         return HAND_ITEM;
     }
 
-    static boolean isBuild(int id) { return (id >= HOUSE && id <= SCAFFOLD) || id == BUILDING || id == SKYSCRAPER; }
+    static boolean isBuild(int id) { return (id >= HOUSE && id <= SCAFFOLD) || id == BUILDING || id == SKYSCRAPER || id == CRANE; }
     static boolean isAnimal(int id) { return id >= DOG && id <= RAT; }
     static boolean isMachine(int id) { return (id >= SAW && id <= TESLA) || id == RUSTBAR; }
     static boolean isLevo(int id) { return id >= LEVO_COLLAPSE && id <= LEVO_STORM; }
