@@ -11,8 +11,8 @@ namespace Trastazo
     public sealed class Levolution {
         private Levolution() { }
 
-        public const int COLLAPSE = 0, QUAKE = 1, STRIKE = 2, TORNADO = 3;
-        public const float QUAKE_TIME = 11.5f, TORNADO_TIME = 16f, STRIKE_TIME = 6.5f;
+        public const int COLLAPSE = 0, QUAKE = 1, STRIKE = 2, TORNADO = 3, FLOOD = 4, METEOR = 5, STORM = 6;
+        public const float QUAKE_TIME = 11.5f, TORNADO_TIME = 16f, STRIKE_TIME = 6.5f, FLOOD_TIME = 24f, METEOR_TIME = 8f, STORM_TIME = 18f;
 
         public sealed class Event {
             public int type, n;
@@ -21,6 +21,9 @@ namespace Trastazo
         }
 
         public static int typeOf(int item) { return item - Items.LEVO_COLLAPSE; }
+
+        /** Enhanced Fujita category (1 to 5) of a tornado of strength s. */
+        public static int efOf(float s) { return 1 + Math.min(4, (int) ((s - 0.8f) / 0.9f * 5f)); }
 
         public static bool active(World w, int type) {
             for (int i = 0; i < w.events.size(); i++) if (w.events.get(i).type == type) return true;
@@ -69,6 +72,7 @@ namespace Trastazo
                 }
                 case QUAKE:
                     if (active(w, QUAKE)) return "Ya está temblando";
+                    e.a = x;                                     // the epicentre: it shakes less the farther away
                     for (int f = 0; f < 3; f++) {                // fissures open in the floor
                         float fx0 = w.sim.wallL + 150f + w.rnd.nextFloat() * (w.sim.wallR - w.sim.wallL - 300f);
                         for (int j = 0; j < 14; j++) w.fx.stain(fx0 + j * 13f + w.fx.rr_(4f), 5f + w.rnd.nextFloat() * 5f, unchecked((int)0xF00d0a08U));
@@ -81,8 +85,22 @@ namespace Trastazo
                     w.alarm(x, w.floorY(), 2200f, 8f);
                     break;
                 default:
-                    e.a = x; e.b = w.rnd.nextBoolean() ? 1f : -1f; e.s = 0.85f + w.rnd.nextFloat() * 0.45f;
-                    w.banner = "LEVOLUTION · TORNADO"; w.bannerT = 3.5f;
+                    e.a = x; e.b = w.rnd.nextBoolean() ? 1f : -1f; e.s = 0.8f + w.rnd.nextFloat() * 0.9f;
+                    w.banner = "LEVOLUTION · TORNADO EF" + efOf(e.s); w.bannerT = 3.5f;
+                    break;
+                case FLOOD:
+                    if (active(w, FLOOD)) return "Ya está inundado";
+                    e.a = w.floorY() - 230f;                     // the level the water reaches
+                    w.banner = "LEVOLUTION · INUNDACIÓN"; w.bannerT = 3.5f;
+                    break;
+                case METEOR:
+                    e.a = x;
+                    w.banner = "LEVOLUTION · METEORITOS"; w.bannerT = 3.5f;
+                    w.alarm(x, w.floorY(), 2400f, 8f);
+                    break;
+                case STORM:
+                    if (active(w, STORM)) return "Ya hay tormenta";
+                    w.banner = "LEVOLUTION · TORMENTA"; w.bannerT = 3.5f;
                     break;
             }
             w.events.add(e);
@@ -91,6 +109,7 @@ namespace Trastazo
 
         public static void update(World w, float dt) {
             if (w.bannerT > 0f) w.bannerT -= dt;
+            w.storm = 0f;
             for (int i = w.events.size() - 1; i >= 0; i--) {
                 Event e = w.events.get(i);
                 e.t += dt;
@@ -99,6 +118,9 @@ namespace Trastazo
                     case COLLAPSE: done = collapse(w, e, dt); break;
                     case QUAKE: done = quake(w, e, dt); break;
                     case STRIKE: done = strike(w, e, dt); break;
+                    case FLOOD: done = flood(w, e, dt); break;
+                    case METEOR: done = meteor(w, e, dt); break;
+                    case STORM: done = storm(w, e, dt); break;
                     default: done = tornado(w, e, dt); break;
                 }
                 if (done) w.events.remove(i);
@@ -168,6 +190,12 @@ namespace Trastazo
                 w.alarm(e.a, floor, 1600f, 6f);
                 if (w.sfx != null) w.sfx.boom(1f);
             }
+            if (e.c > 0f && e.s < 3f && since > 1.6f + e.s * 0.9f) {   // gas mains and wiring go off in the rubble
+                e.s += 1f;
+                float gx = e.a + w.fx.rr_(e.b);
+                w.explode(gx, floor - 30f, 120f + w.rnd.nextFloat() * 60f, 1100f, 40f, false);
+                burn(w, gx, floor - 30f, 160f);
+            }
             if (e.c > 0f) {                                      // while it falls: shaking ground and a haze that lingers
                 w.fx.shake = Math.max(w.fx.shake, 0.35f * Math.max(0f, 1f - (since - 1.2f) / 3f));
                 if (w.rnd.nextFloat() < dt * 12f) w.fx.add(Fx.SMOKE, e.a + w.fx.rr_(e.b * 1.6f), floor - 16f, w.fx.rr_(40f), -20f - w.rnd.nextFloat() * 40f, 5f + w.rnd.nextFloat() * 3f, 36f + w.rnd.nextFloat() * 30f, unchecked((int)0xFFa39a8eU));
@@ -190,10 +218,11 @@ namespace Trastazo
             for (int i = 0; i < w.sim.bodies.size(); i++) {
                 RB b = w.sim.bodies.get(i);
                 if (b.invM == 0f || b.y < floor - 420f) continue;
-                b.vx += swing * dt;
-                if (b.vy > -90f && w.rnd.nextFloat() < dt * 2.2f * k) {
-                    b.vy -= 300f + w.rnd.nextFloat() * 380f * k;
-                    b.w += (w.rnd.nextFloat() - 0.5f) * 3f * k;
+                float near = Math.max(0.2f, 1f - Math.abs(b.x - e.a) / 1700f);     // strongest at the epicentre
+                b.vx += swing * near * dt;
+                if (b.vy > -90f && w.rnd.nextFloat() < dt * 2.2f * k * near) {
+                    b.vy -= 300f + w.rnd.nextFloat() * 380f * k * near;
+                    b.w += (w.rnd.nextFloat() - 0.5f) * 3f * k * near;
                 }
             }
             e.b += dt;
@@ -211,7 +240,7 @@ namespace Trastazo
                     Prop q = (Prop) o;
                     if (!q.isStruct || q.removed || q.anchor || q.bodies.isEmpty() || !World.breakable(q)) continue;
                     w.crack(q, q.cx() + w.fx.rr_(q.hw * 0.6f), q.cy() + w.fx.rr_(q.hh * 0.6f), 0.25f * k);
-                    w.wear(q, World.toughness(q) * 0.2f * k, true);
+                    w.wear(q, World.toughness(q) * 0.3f * k * Math.max(0.2f, 1f - Math.abs(q.cx() - e.a) / 1700f), true);
                     if (w.rnd.nextFloat() < 0.5f) w.fx.dust(q.cx(), q.cy(), 14f, 1);
                     hit++;
                 }
@@ -285,7 +314,7 @@ namespace Trastazo
                 float h = w.rnd.nextFloat() * 300f, th = w.rnd.nextFloat() * 6.283f;
                 w.fx.add(Fx.DEBRIS, cx + (float) Math.sin(th) * 30f, floor - h, (float) Math.cos(th) * 700f, -300f - w.rnd.nextFloat() * 400f, 1.3f, 3f + w.rnd.nextFloat() * 3f, w.rnd.nextBoolean() ? unchecked((int)0xFF8a7a68U) : unchecked((int)0xFF5b4a3aU));
             }
-            float reach = 470f * e.s;
+            float reach = 430f * e.s;
             for (int i = 0; i < w.sim.bodies.size(); i++) {
                 RB b = w.sim.bodies.get(i);
                 if (b.invM == 0f) continue;
@@ -316,6 +345,113 @@ namespace Trastazo
             if (w.rnd.nextFloat() < dt * 3f && w.sfx != null) w.sfx.launch();
             w.fx.shake = Math.max(w.fx.shake, 0.12f * str);
             return e.t >= TORNADO_TIME;
+        }
+
+        // ------------------------------------------------------------------------------- fire ---
+
+        /** Sets alight everything flammable around a point (meteorites, secondary blasts). */
+        public static void burn(World w, float x, float y, float R) {
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent o = w.ents.get(i);
+                if (o.removed || !o.flammable) continue;
+                float dx = o.cx() - x, dy = o.cy() - y;
+                if (dx * dx + dy * dy < R * R) w.ignite(o);
+            }
+        }
+
+        // ------------------------------------------------------------------------------- flood ---
+
+        private static bool flood(World w, Event e, float dt) {
+            float floor = w.floorY();
+            float t = e.t;
+            float k = t < 12f ? t / 12f : (t < 17f ? 1f : Math.max(0f, 1f - (t - 17f) / 7f));
+            k = k * k * (3f - 2f * k);                           // eased
+            w.waterY = floor - (floor - e.a) * k;
+            if (k <= 0.001f && t > 1f) { w.waterY = 1e9f; return true; }
+            float g = w.sim.gravity;
+            for (int i = 0; i < w.sim.bodies.size(); i++) {
+                RB b = w.sim.bodies.get(i);
+                if (b.invM == 0f || b.y < w.waterY) continue;
+                float depth = Math.min(1f, (b.y - w.waterY) / 26f);
+                bool sinks = false;
+                if (b.user is Prop) {
+                    int ty = ((Prop) b.user).type;
+                    sinks = ty == Items.STEEL || ty == Items.FRIDGE || ty == Items.MOTOR || ty == Items.BOWLING || ty == Items.WHEEL;
+                }
+                float up = sinks ? 0.55f : 1.45f;                 // wood and balloons float; metal sinks
+                if (b.user is Person) up = ((Person) b.user).dead ? 1.3f : 0.9f;   // the living sink slowly and drown, the dead float up
+                b.vy -= g * up * depth * dt;
+                b.vx *= 1f - Math.min(0.9f, 1.8f * depth * dt);
+                b.vy *= 1f - Math.min(0.9f, 2.5f * depth * dt);
+                b.w *= 1f - Math.min(0.9f, 1.5f * depth * dt);
+            }
+            for (int i = 0; i < w.ents.size(); i++) {
+                Ent o = w.ents.get(i);
+                if (o.removed || o.bodies.isEmpty()) continue;
+                if (o.burning && o.cy() > w.waterY) o.burning = false;           // the water puts fires out
+                if (!(o is Person)) continue;
+                Person p = (Person) o;
+                if (p.dead || p.kind == Person.ROBOT || p.kind == Person.SKELETON) continue;
+                if (p.rb[Person.HEAD].y > w.waterY) {            // head under water: they hold their breath, then drown
+                    p.drownT += dt;
+                    p.panicT = Math.max(p.panicT, 1f);
+                    if (p.drownT > 3f) { p.ko = Math.max(p.ko, 0.6f); p.tone = 0f; }
+                    if (p.drownT > 5f) p.blood -= 16f * dt;
+                    if (w.rnd.nextFloat() < dt * 5f) w.fx.add(Fx.WATER, p.rb[Person.HEAD].x + w.fx.rr_(6f), p.rb[Person.HEAD].y - 6f, w.fx.rr_(20f), -90f, 0.8f, 3f, unchecked((int)0xFFd8f0ffU));
+                    if (p.blood <= 0f) w.kill(p);
+                } else p.drownT = Math.max(0f, p.drownT - dt * 2f);
+            }
+            if (w.rnd.nextFloat() < dt * 8f) {                    // foam and spray at the surface
+                float sx = w.sim.wallL + w.rnd.nextFloat() * (w.sim.wallR - w.sim.wallL);
+                w.fx.add(Fx.WATER, sx, w.waterY, w.fx.rr_(40f), -60f - w.rnd.nextFloat() * 80f, 0.6f, 2.6f, unchecked((int)0xFFd8f0ffU));
+            }
+            w.fx.shake = Math.max(w.fx.shake, 0.06f);
+            return t >= FLOOD_TIME;
+        }
+
+        // ------------------------------------------------------------------------------ meteors ---
+
+        private static bool meteor(World w, Event e, float dt) {
+            int due = Math.min(12, (int) (e.t / 0.6f) + 1);
+            while (e.n < due) {
+                e.n++;
+                float px = e.a + (w.rnd.nextFloat() - 0.5f) * 1700f;
+                px = Math.max(w.sim.wallL + 80f, Math.min(w.sim.wallR - 80f, px));
+                float lean = (w.rnd.nextBoolean() ? 1f : -1f) * (0.25f + w.rnd.nextFloat() * 0.35f);
+                w.launchMeteor(px - lean * 1900f, w.sim.ceilY + 60f, lean, 1f, 300f + w.rnd.nextFloat() * 200f);
+            }
+            w.fx.shake = Math.max(w.fx.shake, 0.1f);
+            return e.t >= METEOR_TIME;
+        }
+
+        // ------------------------------------------------------------------------------- storm ---
+
+        private static bool storm(World w, Event e, float dt) {
+            float t = e.t;
+            float k = Math.min(1f, Math.min(t / 2.5f, (STORM_TIME - t) / 3f));
+            if (k < 0f) k = 0f;
+            w.storm = k;
+            e.b -= dt;
+            if (e.b <= 0f && k > 0.4f) {                         // a lightning bolt on the highest thing in a random stretch
+                e.b = 0.7f + w.rnd.nextFloat() * 1.3f;
+                float cx = w.sim.wallL + 150f + w.rnd.nextFloat() * (w.sim.wallR - w.sim.wallL - 300f);
+                float topY = w.floorY(), tx = cx;
+                for (int i = 0; i < w.ents.size(); i++) {
+                    Ent o = w.ents.get(i);
+                    if (o.removed || o.bodies.isEmpty() || Math.abs(o.cx() - cx) > 260f) continue;
+                    if (o.cy() < topY) { topY = o.cy(); tx = o.cx(); }
+                }
+                w.lightning(tx, topY);
+                w.fx.flash = Math.min(1f, w.fx.flash + 0.6f);
+                e.n++;
+                if (w.sfx != null) w.sfx.boom(0.4f);
+                burn(w, tx, topY, 60f);
+            }
+            for (int i = 0; i < w.ents.size(); i++) {             // the rain puts fires out
+                Ent o = w.ents.get(i);
+                if (o.burning && w.rnd.nextFloat() < dt * 0.5f * k) o.burning = false;
+            }
+            return t >= STORM_TIME;
         }
     }
 }

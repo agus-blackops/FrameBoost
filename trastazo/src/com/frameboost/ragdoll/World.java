@@ -12,7 +12,7 @@ final class World implements Sim.Listener, Sim.Hook {
         float recentT;
     }
 
-    static final class Rocket { float x, y, vx, vy, life, size; Ent owner; boolean raid; }
+    static final class Rocket { float x, y, vx, vy, life, size; Ent owner; boolean raid, meteor; }
 
     /** Electric arcs (Tesla coil) drawn for a moment: x0 y0 x1 y1 life. */
     final float[][] arcs = new float[12][5];
@@ -78,7 +78,7 @@ final class World implements Sim.Listener, Sim.Hook {
         ents.clear();
         sim.clear();
         rockets.clear();
-        events.clear(); bannerT = 0f;
+        events.clear(); bannerT = 0f; waterY = 1e9f; storm = 0f;
         fx.clear();
         for (int i = 0; i < 8; i++) trT[i] = 0f;
     }
@@ -222,6 +222,8 @@ final class World implements Sim.Listener, Sim.Hook {
     boolean integrityDirty;
     final java.util.ArrayList<Levolution.Event> events = new java.util.ArrayList<Levolution.Event>();
     String banner = "";
+    float waterY = 1e9f;           // surface of the flood (1e9 = no water)
+    float storm;                   // 0..1: rain and darkness
     float bannerT;
 
     /** Works out which pieces of the standing constructions touch each other (by their boxes). */
@@ -1648,6 +1650,16 @@ final class World implements Sim.Listener, Sim.Hook {
         if (sfx != null) sfx.launch();
     }
 
+    /** A meteorite: a huge fireball that falls steeply and burns everything where it lands. */
+    void launchMeteor(float x, float y, float dx, float dy, float size) {
+        if (rockets.size() > 30) return;
+        Rocket r = new Rocket();
+        float l = (float) Math.sqrt(dx * dx + dy * dy);
+        r.x = x; r.y = y; r.vx = dx / l * 1900f; r.vy = dy / l * 1900f; r.life = 5f; r.raid = true; r.meteor = true; r.size = size;
+        rockets.add(r);
+        if (sfx != null) sfx.launch();
+    }
+
     void launchRocket(float x, float y, float dx, float dy, Ent owner) {
         if (rockets.size() > 8) return;
         Rocket r = new Rocket();
@@ -1672,12 +1684,17 @@ final class World implements Sim.Listener, Sim.Hook {
             }
             float room = sim.rayRoom(r.x, r.y, dx, dy, step + 1f);
             if (room < step) { hx = r.x + dx * room; hy = r.y + dy * room; boom = true; }
+            if (r.meteor) {
+                for (int k = 0; k < 3; k++) fx.add(Fx.FLAME, r.x + fx.rr(10f), r.y + fx.rr(10f), fx.rr(60f) - r.vx * 0.05f, fx.rr(60f) - r.vy * 0.05f, 0.5f, 16f + fx.rf() * 10f, 0xFFff6a1f);
+                fx.add(Fx.GLOW, r.x, r.y, 0, 0, 0.12f, 46f, 0xFFfff0b0);
+            }
             fx.add(Fx.SMOKE, r.x, r.y, fx.rr(30), fx.rr(30), r.raid ? 2.2f : 0.7f, r.raid ? 11f : 7f, r.raid ? 0xFFb4b4b4 : 0xFF9a9a9a);
             fx.add(Fx.FLAME, r.x, r.y, fx.rr(40), fx.rr(40), 0.2f, 7f, 0xFFffa040);
             r.x = hx; r.y = hy;
             if (boom) {
                 rockets.remove(i);
-                if (r.raid) { explode(hx, hy, r.size, 1800f + r.size * 3f, 70f + r.size * 0.25f, true); Levolution.impact(this, hx, hy, r.size); }
+                if (r.meteor) { explode(hx, hy, r.size, 3200f, 150f, true); Levolution.impact(this, hx, hy, r.size); Levolution.burn(this, hx, hy, r.size * 1.3f); }
+                else if (r.raid) { explode(hx, hy, r.size, 1800f + r.size * 3f, 70f + r.size * 0.25f, true); Levolution.impact(this, hx, hy, r.size); }
                 else explode(hx, hy, 340f, 2300f, 95f, true);
             }
         }

@@ -303,6 +303,7 @@ final class Screens {
 
     /** What is new, on the title screen's card. */
     static final String[] NEWS = {
+        "Levolution V5: inundación, meteoritos, tormenta",
         "Levolution V2: más realista",
         "Levolution: derrumbe, terremoto, bombardeo, tornado",
         "Edificio y rascacielos + destrucción tipo The Finals",

@@ -11,7 +11,7 @@ namespace TrastazoGodot
      */
     public partial class TrastazoApp : Node2D, Trastazo.Game.Host
     {
-        public const string Edition = "Godot 1.0";
+        public const string Edition = "Godot 1.1";
 
         private Trastazo.Game game;
         private Trastazo.Driver driver;

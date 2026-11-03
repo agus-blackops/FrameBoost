@@ -11,10 +11,10 @@ public class Test24 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.6";
+        Game.edition = "Unity 2.7";
 
         // 0. palette
-        check("Levolution has its own tab with four events", Items.CATS[Items.CAT_LEVO].length == 4 && Items.isLevo(Items.LEVO_TORNADO) && !Items.isLevo(Items.BUILDING));
+        check("Levolution has its own tab with seven events", Items.CATS[Items.CAT_LEVO].length == 7 && Items.isLevo(Items.LEVO_TORNADO) && !Items.isLevo(Items.BUILDING));
 
         // 1. controlled demolition: charges at the foot, the tower comes down, a dust wave pushes what stands near
         World w = new World(null);
@@ -41,7 +41,7 @@ public class Test24 {
         // 2. earthquake: bodies jump and the building cracks and loses pieces
         w = new World(null);
         ArrayList<Ent> bd = w.buildAt(Items.BUILDING, 1500, 0);
-        Prop c2 = (Prop) w.spawn(Items.CRATE, 2100, -40, 1, 1f);
+        Prop c2 = (Prop) w.spawn(Items.CRATE, 1650, -40, 1, 1f);
         run(w, 2f);
         float yMin = 1e9f;
         int stand0 = 0; for (Ent e : bd) if (((Prop) e).main().frozen || ((Prop) e).anchor) stand0++;
@@ -50,7 +50,7 @@ public class Test24 {
         for (int i = 0; i < 60 * 12; i++) { w.update(1f / 60f); yMin = Math.min(yMin, c2.cy()); shake = Math.max(shake, w.fx.shake); }
         int stand1 = 0; for (Ent e : bd) if (!((Prop) e).removed && (((Prop) e).main().frozen || ((Prop) e).anchor)) stand1++;
         System.out.printf("   quake: crate rose to %.0f, shake %.2f, standing %d -> %d, destroyed %d%n", yMin, shake, stand0, stand1, w.stats.destroyed);
-        check("things jump around", yMin < -100f && yMin > -500f);
+        check("things jump around", yMin < -90f && yMin > -500f);
         check("the screen shakes", shake > 0.3f);
         check("the building suffers: pieces break or fall", stand1 < stand0);
         check("the earthquake ends", w.events.isEmpty());

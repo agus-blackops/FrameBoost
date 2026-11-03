@@ -856,6 +856,28 @@ namespace Trastazo
                     line(c, cx - s * 0.25f, cy + s * 0.35f, cx + s * 0.25f, cy + s * 0.35f, Math.max(2f, s * 0.14f), unchecked((int)0xFF5a5f66U));
                     line(c, cx - s * 0.1f, cy + s * 0.7f, cx + s * 0.1f, cy + s * 0.7f, Math.max(2f, s * 0.14f), unchecked((int)0xFF77706aU));
                     break;
+                case Items.LEVO_FLOOD:
+                    box(c, cx - s * 0.9f, cy + s * 0.05f, cx + s * 0.9f, cy + s * 0.85f, unchecked((int)0xAA2f7fbfU), s * 0.04f);
+                    line(c, cx - s * 0.9f, cy + s * 0.05f, cx - s * 0.45f, cy - s * 0.08f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFd8f0ffU));
+                    line(c, cx - s * 0.45f, cy - s * 0.08f, cx, cy + s * 0.08f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFd8f0ffU));
+                    line(c, cx, cy + s * 0.08f, cx + s * 0.45f, cy - s * 0.08f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFd8f0ffU));
+                    line(c, cx + s * 0.45f, cy - s * 0.08f, cx + s * 0.9f, cy + s * 0.05f, Math.max(1.5f, s * 0.1f), unchecked((int)0xFFd8f0ffU));
+                    box(c, cx - s * 0.3f, cy - s * 0.6f, cx + s * 0.3f, cy - s * 0.05f, unchecked((int)0xFFc9a066U), s * 0.03f);
+                    break;
+                case Items.LEVO_METEOR:
+                    line(c, cx + s * 0.8f, cy - s * 0.9f, cx - s * 0.1f, cy + s * 0.1f, Math.max(3f, s * 0.3f), unchecked((int)0x88ff6a1fU));
+                    disc(c, cx - s * 0.2f, cy + s * 0.2f, s * 0.38f, unchecked((int)0xFFff6a1fU));
+                    disc(c, cx - s * 0.2f, cy + s * 0.2f, s * 0.22f, unchecked((int)0xFFffd25aU));
+                    box(c, cx - s * 0.9f, cy + s * 0.75f, cx + s * 0.9f, cy + s * 0.9f, unchecked((int)0xFF3a2f26U), s * 0.03f);
+                    break;
+                case Items.LEVO_STORM:
+                    disc(c, cx - s * 0.35f, cy - s * 0.35f, s * 0.38f, unchecked((int)0xFF59616cU));
+                    disc(c, cx + s * 0.2f, cy - s * 0.45f, s * 0.45f, unchecked((int)0xFF6b7380U));
+                    disc(c, cx + s * 0.6f, cy - s * 0.25f, s * 0.3f, unchecked((int)0xFF59616cU));
+                    line(c, cx + s * 0.05f, cy + s * 0.0f, cx - s * 0.15f, cy + s * 0.4f, Math.max(2f, s * 0.14f), unchecked((int)0xFFffe27aU));
+                    line(c, cx - s * 0.15f, cy + s * 0.4f, cx + s * 0.1f, cy + s * 0.4f, Math.max(2f, s * 0.14f), unchecked((int)0xFFffe27aU));
+                    line(c, cx + s * 0.1f, cy + s * 0.4f, cx - s * 0.1f, cy + s * 0.85f, Math.max(2f, s * 0.14f), unchecked((int)0xFFffe27aU));
+                    break;
                 case Items.BUILDING:
                     box(c, cx - s * 0.7f, cy - s * 0.85f, cx + s * 0.7f, cy + s * 0.8f, unchecked((int)0xFFb9b4acU), s * 0.03f);
                     for (int r = 0; r < 4; r++) for (int k = 0; k < 3; k++)

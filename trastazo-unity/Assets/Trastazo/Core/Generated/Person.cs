@@ -59,6 +59,7 @@ namespace Trastazo
         public float mass;
         public float blood = 100f, maxBlood = 100f;
         public bool dead;
+        public float drownT;                   // seconds with the head under water
         public float ko, tone;
         public float strength = 1f, speed = 1f;
         public float flash;

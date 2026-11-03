@@ -856,6 +856,28 @@ final class Ui {
                 line(c, cx - s * 0.25f, cy + s * 0.35f, cx + s * 0.25f, cy + s * 0.35f, Math.max(2f, s * 0.14f), 0xFF5a5f66);
                 line(c, cx - s * 0.1f, cy + s * 0.7f, cx + s * 0.1f, cy + s * 0.7f, Math.max(2f, s * 0.14f), 0xFF77706a);
                 break;
+            case Items.LEVO_FLOOD:
+                box(c, cx - s * 0.9f, cy + s * 0.05f, cx + s * 0.9f, cy + s * 0.85f, 0xAA2f7fbf, s * 0.04f);
+                line(c, cx - s * 0.9f, cy + s * 0.05f, cx - s * 0.45f, cy - s * 0.08f, Math.max(1.5f, s * 0.1f), 0xFFd8f0ff);
+                line(c, cx - s * 0.45f, cy - s * 0.08f, cx, cy + s * 0.08f, Math.max(1.5f, s * 0.1f), 0xFFd8f0ff);
+                line(c, cx, cy + s * 0.08f, cx + s * 0.45f, cy - s * 0.08f, Math.max(1.5f, s * 0.1f), 0xFFd8f0ff);
+                line(c, cx + s * 0.45f, cy - s * 0.08f, cx + s * 0.9f, cy + s * 0.05f, Math.max(1.5f, s * 0.1f), 0xFFd8f0ff);
+                box(c, cx - s * 0.3f, cy - s * 0.6f, cx + s * 0.3f, cy - s * 0.05f, 0xFFc9a066, s * 0.03f);
+                break;
+            case Items.LEVO_METEOR:
+                line(c, cx + s * 0.8f, cy - s * 0.9f, cx - s * 0.1f, cy + s * 0.1f, Math.max(3f, s * 0.3f), 0x88ff6a1f);
+                disc(c, cx - s * 0.2f, cy + s * 0.2f, s * 0.38f, 0xFFff6a1f);
+                disc(c, cx - s * 0.2f, cy + s * 0.2f, s * 0.22f, 0xFFffd25a);
+                box(c, cx - s * 0.9f, cy + s * 0.75f, cx + s * 0.9f, cy + s * 0.9f, 0xFF3a2f26, s * 0.03f);
+                break;
+            case Items.LEVO_STORM:
+                disc(c, cx - s * 0.35f, cy - s * 0.35f, s * 0.38f, 0xFF59616c);
+                disc(c, cx + s * 0.2f, cy - s * 0.45f, s * 0.45f, 0xFF6b7380);
+                disc(c, cx + s * 0.6f, cy - s * 0.25f, s * 0.3f, 0xFF59616c);
+                line(c, cx + s * 0.05f, cy + s * 0.0f, cx - s * 0.15f, cy + s * 0.4f, Math.max(2f, s * 0.14f), 0xFFffe27a);
+                line(c, cx - s * 0.15f, cy + s * 0.4f, cx + s * 0.1f, cy + s * 0.4f, Math.max(2f, s * 0.14f), 0xFFffe27a);
+                line(c, cx + s * 0.1f, cy + s * 0.4f, cx - s * 0.1f, cy + s * 0.85f, Math.max(2f, s * 0.14f), 0xFFffe27a);
+                break;
             case Items.BUILDING:
                 box(c, cx - s * 0.7f, cy - s * 0.85f, cx + s * 0.7f, cy + s * 0.8f, 0xFFb9b4ac, s * 0.03f);
                 for (int r = 0; r < 4; r++) for (int k = 0; k < 3; k++)

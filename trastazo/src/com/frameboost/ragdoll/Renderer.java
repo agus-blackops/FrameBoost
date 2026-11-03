@@ -197,6 +197,8 @@ final class Renderer {
         drawPins(c, w);
         drawArcs(c, w);
         w.fx.draw(c, p);
+        if (w.waterY < w.sim.floorY) drawWater(c, w, x0, x1);
+        if (w.storm > 0.01f) drawStorm(c, w.storm, x0, x1, y0, y1);
         // tracers and rockets
         p.setStyle(Paint.Style.STROKE);
         c.emissive(true);
@@ -628,6 +630,45 @@ final class Renderer {
         }
         if (q.ncr > 0 && q.type != Items.BLOCK && q.type != Items.GLASS && detail) cracks(c, q);
         if (m.frozen && !Items.isTrap(q.type) && !q.isStruct) pin(c, m.x, m.y);
+    }
+
+    /** The flood: a translucent body of water with a wavy surface, in front of everything that is in it. */
+    private void drawWater(Draw2D c, World w, float x0, float x1) {
+        float top = w.waterY, bot = w.sim.floorY + 8f;
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(alpha(0xFF2f7fbf, 0.38f));
+        c.drawRect(x0 - 40f, top + 6f, x1 + 40f, bot, p);
+        p.setColor(alpha(0xFF0f3f73, 0.22f));
+        c.drawRect(x0 - 40f, Math.min(bot - 2f, top + 90f), x1 + 40f, bot, p);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(3f);
+        p.setColor(alpha(0xFFd8f0ff, 0.75f));
+        float step = 40f, px = x0 - 40f;
+        float py = top + (float) Math.sin(px * 0.03f + time * 2.2f) * 3.5f;
+        for (float x = px + step; x <= x1 + 40f; x += step) {
+            float y = top + (float) Math.sin(x * 0.03f + time * 2.2f) * 3.5f;
+            c.drawLine(px, py, x, y, p);
+            px = x; py = y;
+        }
+        p.setStyle(Paint.Style.FILL);
+    }
+
+    /** The storm: the scene darkens and the rain comes down slanted. */
+    private void drawStorm(Draw2D c, float k, float x0, float x1, float y0, float y1) {
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(alpha(0xFF0a1020, 0.4f * k));
+        c.drawRect(x0 - 50f, y0 - 50f, x1 + 50f, y1 + 50f, p);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(1.6f);
+        p.setColor(alpha(0xFFbcd6ff, 0.5f * k));
+        float vw = x1 - x0, vh = y1 - y0;
+        for (int i = 0; i < 170; i++) {
+            double h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12345.678;
+            float rx = x0 + (float) (h1 - Math.floor(h1)) * vw;
+            float ry = y0 + (float) ((h2 - Math.floor(h2)) + time * 1.6f) % 1f * vh;
+            c.drawLine(rx, ry, rx - 12f, ry + 34f, p);
+        }
+        p.setStyle(Paint.Style.FILL);
     }
 
     private void limbLine(Draw2D c, float x0, float y0, float x1, float y1, float wdt, int col) {

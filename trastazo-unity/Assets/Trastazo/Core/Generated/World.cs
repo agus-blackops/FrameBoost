@@ -13,7 +13,7 @@ namespace Trastazo
             public float recentT;
         }
 
-        public sealed class Rocket { public float x, y, vx, vy, life, size; public Ent owner; public bool raid; }
+        public sealed class Rocket { public float x, y, vx, vy, life, size; public Ent owner; public bool raid, meteor; }
 
         /** Electric arcs (Tesla coil) drawn for a moment: x0 y0 x1 y1 life. */
         public float[][] arcs = JArr.make<float>(12, 5);
@@ -79,7 +79,7 @@ namespace Trastazo
             ents.clear();
             sim.clear();
             rockets.clear();
-            events.clear(); bannerT = 0f;
+            events.clear(); bannerT = 0f; waterY = 1e9f; storm = 0f;
             fx.clear();
             for (int i = 0; i < 8; i++) trT[i] = 0f;
         }
@@ -223,6 +223,8 @@ namespace Trastazo
         public bool integrityDirty;
         public JList<Levolution.Event> events = new JList<Levolution.Event>();
         public string banner = "";
+        public float waterY = 1e9f;           // surface of the flood (1e9 = no water)
+        public float storm;                   // 0..1: rain and darkness
         public float bannerT;
 
         /** Works out which pieces of the standing constructions touch each other (by their boxes). */
@@ -1649,6 +1651,16 @@ namespace Trastazo
             if (sfx != null) sfx.launch();
         }
 
+        /** A meteorite: a huge fireball that falls steeply and burns everything where it lands. */
+        public void launchMeteor(float x, float y, float dx, float dy, float size) {
+            if (rockets.size() > 30) return;
+            Rocket r = new Rocket();
+            float l = (float) Math.sqrt(dx * dx + dy * dy);
+            r.x = x; r.y = y; r.vx = dx / l * 1900f; r.vy = dy / l * 1900f; r.life = 5f; r.raid = true; r.meteor = true; r.size = size;
+            rockets.add(r);
+            if (sfx != null) sfx.launch();
+        }
+
         public void launchRocket(float x, float y, float dx, float dy, Ent owner) {
             if (rockets.size() > 8) return;
             Rocket r = new Rocket();
@@ -1673,12 +1685,17 @@ namespace Trastazo
                 }
                 float room = sim.rayRoom(r.x, r.y, dx, dy, step + 1f);
                 if (room < step) { hx = r.x + dx * room; hy = r.y + dy * room; boom = true; }
+                if (r.meteor) {
+                    for (int k = 0; k < 3; k++) fx.add(Fx.FLAME, r.x + fx.rr_(10f), r.y + fx.rr_(10f), fx.rr_(60f) - r.vx * 0.05f, fx.rr_(60f) - r.vy * 0.05f, 0.5f, 16f + fx.rf() * 10f, unchecked((int)0xFFff6a1fU));
+                    fx.add(Fx.GLOW, r.x, r.y, 0, 0, 0.12f, 46f, unchecked((int)0xFFfff0b0U));
+                }
                 fx.add(Fx.SMOKE, r.x, r.y, fx.rr_(30), fx.rr_(30), r.raid ? 2.2f : 0.7f, r.raid ? 11f : 7f, r.raid ? unchecked((int)0xFFb4b4b4U) : unchecked((int)0xFF9a9a9aU));
                 fx.add(Fx.FLAME, r.x, r.y, fx.rr_(40), fx.rr_(40), 0.2f, 7f, unchecked((int)0xFFffa040U));
                 r.x = hx; r.y = hy;
                 if (boom) {
                     rockets.remove(i);
-                    if (r.raid) { explode(hx, hy, r.size, 1800f + r.size * 3f, 70f + r.size * 0.25f, true); Levolution.impact(this, hx, hy, r.size); }
+                    if (r.meteor) { explode(hx, hy, r.size, 3200f, 150f, true); Levolution.impact(this, hx, hy, r.size); Levolution.burn(this, hx, hy, r.size * 1.3f); }
+                    else if (r.raid) { explode(hx, hy, r.size, 1800f + r.size * 3f, 70f + r.size * 0.25f, true); Levolution.impact(this, hx, hy, r.size); }
                     else explode(hx, hy, 340f, 2300f, 95f, true);
                 }
             }

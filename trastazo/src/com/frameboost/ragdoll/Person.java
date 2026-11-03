@@ -55,6 +55,7 @@ final class Person extends Ent {
     float mass;
     float blood = 100f, maxBlood = 100f;
     boolean dead;
+    float drownT;                   // seconds with the head under water
     float ko, tone;
     float strength = 1f, speed = 1f;
     float flash;

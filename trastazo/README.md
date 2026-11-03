@@ -1,4 +1,4 @@
-# Trastazo Playground 5.3
+# Trastazo Playground 5.4
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -8,10 +8,28 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **Godot 1.0:** el mismo juego como proyecto de Godot 4.3 .NET en [`../trastazo-godot`](../trastazo-godot/README.md) (Android, Windows, Linux, macOS). Mismo núcleo que Unity, capa de Godot nueva.
 
-**Unity 2.6:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 2.7:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 5.4
+
+* **Levolution V5:** ahora hay **7 eventos** (antes 4):
+  * **Inundación (nuevo):** el agua sube por toda la sala en 12 s, se mantiene y se retira. La madera y los globos **flotan**, el metal
+    **se hunde**, el agua **apaga los fuegos** y quien se queda con la cabeza bajo el agua **se desmaya y se ahoga**
+    (los muertos suben a la superficie).
+  * **Meteoritos (nuevo):** 12 bolas de fuego con estela que caen en diagonal, abren **cráteres**, explotan con onda de choque y
+    **prenden fuego** a todo lo inflamable alrededor.
+  * **Tormenta (nuevo):** el cielo se oscurece, llueve en diagonal y caen **rayos sobre lo más alto** de cada zona; la lluvia apaga
+    fuegos.
+  * **Tornado:** ahora tiene **categoría EF1 a EF5** (se muestra en el título); cuanto mayor, más ancho y más fuerte.
+  * **Terremoto:** tiene **epicentro** (donde tocas): sacude más cerca de él y menos lejos.
+  * **Derrumbe:** tras caer, **explosiones secundarias** (gas y cableado) entre los escombros, con fuego.
+
+![Inundación](../trastazo-unity/docs/levo5-inundacion.png)
+![Meteoritos](../trastazo-unity/docs/levo5-meteoritos.png)
+![Tormenta](../trastazo-unity/docs/levo5-tormenta.png)
 
 ## Novedades de la 5.3
 

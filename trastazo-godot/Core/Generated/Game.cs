@@ -717,7 +717,7 @@ namespace Trastazo
                 case Items.DETONATE: world.explode(wx, wy, 330f, 1900f, 95f, true); break;
                 case Items.NUKE: world.explode(wx, Math.min(wy, floorY() - 60), 1400f, 4200f, 420f, true); break;
                 case Items.PUSH: world.push(wx, wy); break;
-                case Items.LEVO_COLLAPSE: case Items.LEVO_QUAKE: case Items.LEVO_STRIKE: case Items.LEVO_TORNADO:
+                case Items.LEVO_COLLAPSE: case Items.LEVO_QUAKE: case Items.LEVO_STRIKE: case Items.LEVO_TORNADO: case Items.LEVO_FLOOD: case Items.LEVO_METEOR: case Items.LEVO_STORM:
                     ui.toast_(Levolution.start(world, tool, wx)); break;
                 default:
                     if (Items.isSyringe(tool)) {

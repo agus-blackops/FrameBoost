@@ -13,7 +13,7 @@ final class Items {
             FIRE = 80, LIGHTNING = 81, PUSH = 82,
             SYR_HEAL = 90, SYR_ADRENALINE = 91, SYR_LIFE = 92, SYR_ZOMBIE = 93, SYR_ACID = 94, SYR_SEDATIVE = 95, SYR_FREEZE = 96,
             ROPE_ITEM = 100, ANCHOR_ITEM = 101, HOUSE = 110, BRIDGE = 111, TOWER = 112, WALL = 113, CAR = 114, PYRAMID = 115, CASTLE = 116, GREENHOUSE = 117, DOMINOES = 118, SCAFFOLD = 119, DOG = 120, PIG = 121, RAT = 122, POOP = 123, BLOCK = 130, SAW = 140, SPIKES = 141, FAN = 142, CRUSHER = 143, TESLA = 144, BAT = 145, HAMMER = 146, FRIDGE = 147,
-            GLASS = 154, RUSTBAR = 155, LEVO_COLLAPSE = 170, LEVO_QUAKE = 171, LEVO_STRIKE = 172, LEVO_TORNADO = 173, BUILDING = 160, SKYSCRAPER = 161, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
+            GLASS = 154, RUSTBAR = 155, LEVO_COLLAPSE = 170, LEVO_QUAKE = 171, LEVO_STRIKE = 172, LEVO_TORNADO = 173, LEVO_FLOOD = 174, LEVO_METEOR = 175, LEVO_STORM = 176, BUILDING = 160, SKYSCRAPER = 161, LANDMINE = 156, GUILLOTINE = 157, FLAMEJET = 158, LASER = 159, BEARTRAP = 150, PENDULUM = 151, REVTRAP = 152, BILLY = 153, MOD_CREATE = 999, MOD_BASE = 1000, STYLE_BASE = 2000;
 
     static final class Item {
         final int id;
@@ -150,7 +150,10 @@ final class Items {
             new Item(LEVO_COLLAPSE, "Derrumbe", "Toca junto a un edificio: cargas en la planta baja y cae entero con una ola de polvo"),
             new Item(LEVO_QUAKE, "Terremoto", "Toca: el suelo tiembla 8 s, todo salta y los edificios se agrietan"),
             new Item(LEVO_STRIKE, "Bombardeo", "Toca: una lluvia de misiles cae sobre la zona"),
-            new Item(LEVO_TORNADO, "Tornado", "Toca: un tornado recorre la sala 16 s, lo arranca y lo lanza todo"),
+            new Item(LEVO_TORNADO, "Tornado", "Toca: un tornado de categoría EF1 a EF5 recorre la sala, lo arranca y lo lanza todo"),
+            new Item(LEVO_FLOOD, "Inundación", "Toca: el agua sube por toda la sala; lo ligero flota y quien se queda bajo el agua se ahoga"),
+            new Item(LEVO_METEOR, "Meteoritos", "Toca: bolas de fuego caen del cielo, abren cráteres y lo incendian todo"),
+            new Item(LEVO_STORM, "Tormenta", "Toca: lluvia, oscuridad y rayos que caen sobre lo más alto"),
         },
     };
 
@@ -178,7 +181,7 @@ final class Items {
     static boolean isBuild(int id) { return (id >= HOUSE && id <= SCAFFOLD) || id == BUILDING || id == SKYSCRAPER; }
     static boolean isAnimal(int id) { return id >= DOG && id <= RAT; }
     static boolean isMachine(int id) { return (id >= SAW && id <= TESLA) || id == RUSTBAR; }
-    static boolean isLevo(int id) { return id >= LEVO_COLLAPSE && id <= LEVO_TORNADO; }
+    static boolean isLevo(int id) { return id >= LEVO_COLLAPSE && id <= LEVO_STORM; }
     static boolean isTrap(int id) { return (id >= BEARTRAP && id <= BILLY) || (id >= LANDMINE && id <= LASER); }
     /** Traps bolted to the floor: they are frozen when placed. */
     static boolean isFixedTrap(int id) { return id == BEARTRAP || id == PENDULUM || (id >= LANDMINE && id <= LASER); }
