@@ -10,7 +10,7 @@ public class Test26 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.8";
+        Game.edition = "Unity 2.9";
 
         // 1. bullet holes
         World w = new World(null);

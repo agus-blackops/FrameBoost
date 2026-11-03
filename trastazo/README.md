@@ -1,4 +1,4 @@
-# Trastazo Playground 5.5
+# Trastazo Playground 5.6
 
 **Trastazo Playground** (antes *Trastazo*): laboratorio de muñecos, trampas y caos para Android. La 3.3 es un juego nuevo: el motor de física, los personajes,
 la IA y el mundo se han escrito otra vez desde una hoja en blanco. Sigue siendo código propio en Java, sin
@@ -8,10 +8,22 @@ motores ni assets externos (el APK pesa ~200 KB).
 
 **Godot 1.0:** el mismo juego como proyecto de Godot 4.3 .NET en [`../trastazo-godot`](../trastazo-godot/README.md) (Android, Windows, Linux, macOS). Mismo núcleo que Unity, capa de Godot nueva.
 
-**Unity 2.8:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
+**Unity 2.9:** el mismo juego como proyecto de Unity (Android, Windows, Linux, macOS) en [`../trastazo-unity`](../trastazo-unity/README.md), con menú nuevo, trampas de SAW, sangre V3, gore V4 y motor de destrucción (lo mismo que trae el APK 4.3).
 
 APK listo para instalar: [`dist/trastazo.apk`](dist/trastazo.apk) (Android 5.0+, pantalla horizontal; se instala
 encima de las versiones anteriores).
+
+## Novedades de la 5.6
+
+* **Mejor destrucción:**
+  * **El fuego derriba la madera:** las cajas, tablones y casas de madera que arden **se consumen y se rompen** en unos segundos
+    (una casa en llamas se viene abajo; la integridad estructural hace el resto).
+  * **Trozos rotos de verdad:** los fragmentos ya no son rectángulos: cada esquina está **astillada** de forma distinta.
+  * **Muros castigados:** las piezas de un edificio que han aguantado muchos golpes **pierden mordiscos** en los bordes antes de ceder.
+  * **Polvo al caer:** los cascotes de un edificio **dejan estela de polvo** mientras ruedan, y se conservan **más escombros** en el suelo (150).
+
+![Casa ardiendo](../trastazo-unity/docs/dest4-casa.png)
+![Muro castigado](../trastazo-unity/docs/dest4-muro.png)
 
 ## Novedades de la 5.5
 

@@ -58,6 +58,7 @@ final class World implements Sim.Listener, Sim.Hook {
     void remove(Ent e) {
         if (e == null || e.removed) return;
         e.removed = true;
+        e.burning = false;                                    // what burned away is no longer on fire
         if (e instanceof Prop && ((Prop) e).isStruct) integrityDirty = true;
         for (RB b : e.bodies) sim.remove(b);
         for (Joint j : e.joints) sim.remove(j);
@@ -343,7 +344,7 @@ final class World implements Sim.Listener, Sim.Hook {
     private final ArrayList<Integer> gibQP = new ArrayList<>();
     /** gib chunks and fragments, oldest first: the oldest go away past the cap */
     private final ArrayList<Prop> chunks = new ArrayList<>();
-    static final int MAX_CHUNKS = 90;
+    static final int MAX_CHUNKS = 150;
 
     // ------------------------------------------------------------------------------- persons ---
 
@@ -1269,6 +1270,7 @@ final class World implements Sim.Listener, Sim.Hook {
             Prop f = Prop.block(wx, wy, jw, jh, col, q.type == Items.BLOCK ? q.dens : 0.7f, q.flammable);
             f.frag = true;
             f.rebar = col == Build.CONCRETE;
+            f.trail = q.isStruct;
             f.register(sim);
             RB rb = f.main();
             rb.setAngle(a + (rnd.nextFloat() - 0.5f) * 0.25f);
@@ -1338,6 +1340,7 @@ final class World implements Sim.Listener, Sim.Hook {
     private void updateProp(Prop q, float dt) {
         if (q.flash > 0f) q.flash -= dt;
         if (q.dustCd > 0f) q.dustCd -= dt;
+        if (q.trail && q.lastSp > 260f && rnd.nextFloat() < dt * 9f) fx.dust(q.cx(), q.cy(), 5f + Math.max(q.hw, q.hh) * 0.2f, 1);
         if (!q.bodies.isEmpty()) { RB r = q.main(); q.lastSp = (float) Math.hypot(r.vx, r.vy) + Math.abs(r.w) * Math.max(q.hw, q.hh); }
         q.age += dt;
         RB m = q.main();
@@ -1549,6 +1552,10 @@ final class World implements Sim.Listener, Sim.Hook {
             Prop a = (Prop) e;
             a.hp -= 6f * dt;
             if (!a.dead && a.hp <= 0f) { a.dead = true; a.mood = "Muerto"; }
+        }
+        if (e instanceof Prop) {                               // wood burns through: crates and planks fall apart, houses collapse
+            Prop bq = (Prop) e;
+            if (bq.flammable && breakable(bq) && !bq.removed) wear(bq, toughness(bq) * 0.17f * dt, true);
         }
         if (e.burnT <= 0f) e.burning = false;
     }

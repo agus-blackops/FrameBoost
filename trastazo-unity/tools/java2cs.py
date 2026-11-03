@@ -531,7 +531,7 @@ def field_names(rest):
     return names
 
 
-TEST_FILES = ["Test26", "Test25", "Test24", "Test23", "Test22", "Test21", "Test20", "Test19", "Test18", "Test16", "Test15", "Test13", "PhysTest", "PersonTest", "WorldTest", "AiTest", "InputTest", "BuildTest", "DestroyTest", "AnimalTest",
+TEST_FILES = ["Test27", "Test26", "Test25", "Test24", "Test23", "Test22", "Test21", "Test20", "Test19", "Test18", "Test16", "Test15", "Test13", "PhysTest", "PersonTest", "WorldTest", "AiTest", "InputTest", "BuildTest", "DestroyTest", "AnimalTest",
               "MachineTest", "Test39", "SoakTest", "MonkeyTest"]
 TESTS = False
 

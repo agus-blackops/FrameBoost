@@ -59,6 +59,7 @@ namespace Trastazo
         public void remove(Ent e) {
             if (e == null || e.removed) return;
             e.removed = true;
+            e.burning = false;                                    // what burned away is no longer on fire
             if (e is Prop && ((Prop) e).isStruct) integrityDirty = true;
             foreach (RB b in e.bodies) sim.remove(b);
             foreach (Joint j in e.joints) sim.remove(j);
@@ -344,7 +345,7 @@ namespace Trastazo
         private JList<int> gibQP = new JList<int>();
         /** gib chunks and fragments, oldest first: the oldest go away past the cap */
         private JList<Prop> chunks = new JList<Prop>();
-        public const int MAX_CHUNKS = 90;
+        public const int MAX_CHUNKS = 150;
 
         // ------------------------------------------------------------------------------- persons ---
 
@@ -1270,6 +1271,7 @@ namespace Trastazo
                 Prop f = Prop.block(wx, wy, jw, jh, col, q.type == Items.BLOCK ? q.dens : 0.7f, q.flammable);
                 f.frag = true;
                 f.rebar = col == Build.CONCRETE;
+                f.trail = q.isStruct;
                 f.register(sim);
                 RB rb = f.main();
                 rb.setAngle(a + (rnd.nextFloat() - 0.5f) * 0.25f);
@@ -1339,6 +1341,7 @@ namespace Trastazo
         private void updateProp(Prop q, float dt) {
             if (q.flash > 0f) q.flash -= dt;
             if (q.dustCd > 0f) q.dustCd -= dt;
+            if (q.trail && q.lastSp > 260f && rnd.nextFloat() < dt * 9f) fx.dust(q.cx(), q.cy(), 5f + Math.max(q.hw, q.hh) * 0.2f, 1);
             if (!q.bodies.isEmpty()) { RB r = q.main(); q.lastSp = (float) Math.hypot(r.vx, r.vy) + Math.abs(r.w) * Math.max(q.hw, q.hh); }
             q.age += dt;
             RB m = q.main();
@@ -1550,6 +1553,10 @@ namespace Trastazo
                 Prop a = (Prop) e;
                 a.hp -= 6f * dt;
                 if (!a.dead && a.hp <= 0f) { a.dead = true; a.mood = "Muerto"; }
+            }
+            if (e is Prop) {                               // wood burns through: crates and planks fall apart, houses collapse
+                Prop bq = (Prop) e;
+                if (bq.flammable && breakable(bq) && !bq.removed) wear(bq, toughness(bq) * 0.17f * dt, true);
             }
             if (e.burnT <= 0f) e.burning = false;
         }

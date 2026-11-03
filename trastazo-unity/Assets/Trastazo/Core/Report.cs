@@ -8,7 +8,7 @@ namespace Trastazo
      */
     public static class Report
     {
-        public const string VERSION = "5.5";
+        public const string VERSION = "5.6";
         public static string lastCrash;
         private static File dir;
         private static string platform = "";

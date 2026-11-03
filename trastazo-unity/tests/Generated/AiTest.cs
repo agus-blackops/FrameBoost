@@ -59,7 +59,7 @@ namespace Trastazo
             // 4. firefighter
             w = world();
             Person ff = person(w, 500, 1, Items.FIREFIGHTER);
-            Ent crate = w.spawn(Items.CRATE, 1300, -40, 1, 1f);
+            Ent crate = w.spawn(Items.CRATE, 760, -40, 1, 1f);
             run(w, 1.5f);
             w.ignite(crate); crate.burnT = 30f;
             run(w, 3.5f);

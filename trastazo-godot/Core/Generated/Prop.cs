@@ -15,6 +15,7 @@ namespace Trastazo
         public bool thrust;                 // thruster
         public float fireCd, shotCd, reloadT, thinkT, work, aimA;
         public int ammo = 12;
+        public bool trail;                  // a chunk of a construction: raises a little dust while it tumbles
         public bool rebar;                  // a broken chunk of concrete: steel rods stick out of it
         public bool isStruct, anchor;         // part of a construction: blasts carve it, its breaking raises dust; anchor = foundation
         public bool slab;                   // a floor section: it only overhangs a couple of sections past its last support

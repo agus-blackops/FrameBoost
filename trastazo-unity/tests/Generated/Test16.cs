@@ -49,7 +49,7 @@ namespace Trastazo
             Sys.printf("   greenhouse: %d panes -> %d sharp shards%n", glass, sharp);
             check("the greenhouse has glass panes that shatter into shards", glass == 4 && sharp > 10);
             // all of them fit in the palette and in a saved scene
-            check("seven new entries in Construir", Items.CATS[Items.CAT_BUILD].Length == 12);
+            check("eight new entries in Construir", Items.CATS[Items.CAT_BUILD].Length == 13);
             Game g = Harness.newGame();
             g.world.buildAt(Items.CASTLE, 1300, 0);
             g.world.buildAt(Items.PYRAMID, 1800, 0);

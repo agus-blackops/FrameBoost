@@ -13,7 +13,7 @@ namespace Trastazo
 
         public static void RunMain(string[] a){
             string out_ = a.Length > 0 ? a[0] : "/tmp";
-            Game.edition = "Unity 2.8";
+            Game.edition = "Unity 2.9";
 
             // 1. landmine: clicks when stepped on, then blows the walker apart; Activate detonates
             World w = new World(null);

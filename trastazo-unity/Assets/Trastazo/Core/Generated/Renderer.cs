@@ -281,6 +281,50 @@ namespace Trastazo
             c.drawPoly(poly, 4, p);
         }
 
+        /** A broken chunk: the box with each corner chipped off by a different amount (still convex). */
+        private void jagged(Draw2D c, Shape s, Prop q, int col) {
+            float ux = s.ax, uy = s.ay, vx = -s.ay, vy = s.ax;
+            for (int pass = 0; pass < 2; pass++) {
+                float g = pass == 0 ? 1.6f : 0f;
+                float hl = s.hl + g, hh = s.hh + g;
+                int n = 0;
+                for (int k = 0; k < 4; k++) {
+                    float sx = (k == 0 || k == 3) ? -1f : 1f, sy = k < 2 ? -1f : 1f;
+                    int h = q.id * 2654435 + k * 40503 + 977;
+                    float cx = ((Sys.ushr(h, 5)) & 31) / 31f * 0.42f * s.hl, cy = ((Sys.ushr(h, 11)) & 31) / 31f * 0.42f * s.hh;
+                    float ax = sx * (hl - cx), ay = sy * hh, bx = sx * hl, by = sy * (hh - cy);
+                    if (sx * sy < 0f) { float tx = ax, ty = ay; ax = bx; ay = by; bx = tx; by = ty; }
+                    poly[n++] = s.cx + ux * ax + vx * ay; poly[n++] = s.cy + uy * ax + vy * ay;
+                    poly[n++] = s.cx + ux * bx + vx * by; poly[n++] = s.cy + uy * bx + vy * by;
+                }
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(pass == 0 ? dark(col, 0.55f) : col);
+                c.drawPoly(poly, 8, p);
+            }
+        }
+
+        /** Damaged pieces of a construction lose bites out of their edges. */
+        private void bites(Draw2D c, Prop q, RB m) {
+            local(c, m.x, m.y, m.a);
+            float k = Math.min(1f, q.wear / World.toughness(q));
+            int n = 1 + (int) (k * 3f);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(alpha(unchecked((int)0xFF14100cU), 0.8f));
+            for (int i = 0; i < n; i++) {
+                int h = q.id * 7919 + i * 104729;
+                bool horiz = q.hw >= q.hh;
+                float t = (((Sys.ushr(h, 4)) & 255) / 255f - 0.5f) * 1.8f;
+                float d = Math.min(q.hw, q.hh) * (0.35f + 0.5f * k);
+                float cx = horiz ? t * q.hw : (i % 2 == 0 ? -q.hw : q.hw), cy = horiz ? (i % 2 == 0 ? -q.hh : q.hh) : t * q.hh;
+                float sx = horiz ? 1f : (i % 2 == 0 ? 1f : -1f), sy = horiz ? (i % 2 == 0 ? 1f : -1f) : 1f;
+                poly[0] = cx - d * (horiz ? 1f : 0f); poly[1] = cy - d * (horiz ? 0f : 1f);
+                poly[2] = cx + d * (horiz ? 1f : 0f); poly[3] = cy + d * (horiz ? 0f : 1f);
+                poly[4] = cx + sx * (horiz ? 0f : d * 0.9f); poly[5] = cy + sy * (horiz ? d * 0.9f : 0f);
+                c.drawPoly(poly, 3, p);
+            }
+            c.restore();
+        }
+
         private void circleShape(Draw2D c, Shape s, int col) {
             p.setStyle(Paint.Style.FILL);
             p.setColor(dark(col, 0.55f));
@@ -1097,7 +1141,9 @@ namespace Trastazo
                 if (q.ncr > 0) cracks(c, q);
                 return;
             }
-            boxShape(c, s, col, true);
+            if (q.frag && !q.gib && q.hw > 5f && q.hh > 5f) jagged(c, s, q, col);          // broken chunks have broken corners
+            else boxShape(c, s, col, true);
+            if (q.isStruct && !q.frag && q.wear > World.toughness(q) * 0.45f) bites(c, q, m);
             local(c, m.x, m.y, m.a);
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeCap(Paint.Cap.BUTT);

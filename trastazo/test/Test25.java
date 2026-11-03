@@ -8,7 +8,7 @@ public class Test25 {
 
     public static void main(String[] a) throws Exception {
         String out = a.length > 0 ? a[0] : "/tmp";
-        Game.edition = "Unity 2.8";
+        Game.edition = "Unity 2.9";
 
         // 1. flood: the water rises, wood floats, metal sinks, a person under water drowns, then it drains
         World w = new World(null);
