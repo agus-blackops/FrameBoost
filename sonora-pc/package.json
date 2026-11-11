@@ -1,0 +1,15 @@
+{
+  "name": "sonora-pc",
+  "version": "1.6.2",
+  "description": "Sonora para PC: reproductor de música, radios y podcasts (servidor local + interfaz web)",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js --open",
+    "test": "node test/run.js"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.50.0"
+  }
+}

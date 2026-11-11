@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sonora</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='22' fill='%231DB954'/%3E%3Cpath fill='%23121212' d='M24 14v14.5a5 5 0 1 0 3 4.5V19h6v-5z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="nav">
+    <a class="logo" href="#/"><span class="logo-dot">♪</span> Sonora</a>
+    <nav id="navlinks"></nav>
+    <div class="nav-title">Tus playlists</div>
+    <div id="navlists"></div>
+  </aside>
+  <main id="view" tabindex="-1"></main>
+  <aside id="side" hidden>
+    <div class="side-tabs">
+      <button data-tab="queue" class="on">Cola</button>
+      <button data-tab="lyrics">Letra</button>
+      <button id="side-close" aria-label="Cerrar panel">✕</button>
+    </div>
+    <div id="side-body"></div>
+  </aside>
+  <footer id="bar">
+    <div class="bar-track" id="bar-track"></div>
+    <div class="bar-center">
+      <div class="bar-buttons">
+        <button id="b-shuffle" title="Aleatorio (S)" aria-label="Aleatorio">⤮</button>
+        <button id="b-prev" title="Anterior (Shift+←)" aria-label="Anterior">⏮</button>
+        <button id="b-play" class="big" title="Reproducir / pausa (Espacio)" aria-label="Reproducir">▶</button>
+        <button id="b-next" title="Siguiente (Shift+→)" aria-label="Siguiente">⏭</button>
+        <button id="b-repeat" title="Repetir (R)" aria-label="Repetir">🔁</button>
+      </div>
+      <div class="bar-seek">
+        <span id="t-now">0:00</span>
+        <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Posición">
+        <span id="t-total">0:00</span>
+      </div>
+    </div>
+    <div class="bar-extra">
+      <button id="b-skipback" class="txt" hidden title="Atrás 15 s">−15</button>
+      <button id="b-skipfwd" class="txt" hidden title="Adelante 30 s">+30</button>
+      <button id="b-sleep" class="txt" title="Temporizador de apagado">⏲</button>
+      <button id="b-speed" class="txt" title="Velocidad">1×</button>
+      <button id="b-lyrics" class="txt" title="Letra (L)">Letra</button>
+      <button id="b-queue" class="txt" title="Cola (Q)">Cola</button>
+      <button id="b-mute" title="Silenciar (M)" aria-label="Silenciar">🔊</button>
+      <input id="vol" type="range" min="0" max="100" value="80" aria-label="Volumen">
+    </div>
+  </footer>
+</div>
+<div id="menu" hidden></div>
+<div id="modal" hidden></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

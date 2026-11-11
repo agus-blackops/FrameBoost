@@ -10,6 +10,8 @@ APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6.1, Android 5
 
 Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
 
+**Versión para computadora (Windows / macOS / Linux): [`../sonora-pc`](../sonora-pc/README.md).**
+
 ## Novedades de la 1.6.1
 - **Fandoms y gaming**: estante de artistas de música de internet y de inspiración en videojuegos (The Living Tombstone, CG5, Black Gryph0n, Baasik, NateWantsToBattle, DAGames, TryHardNinja, Rockit Gaming, Miracle Of Sound, Random Encounters, Dan Bull, Griffinilla, Jonathan Young, Jack Stauber) y un estante propio de **The Living Tombstone**. Cada artista se busca por nombre exacto en el catálogo de Deezer; los que no estén se omiten. Se oyen como el resto del catálogo: **vistas previas de 30 s** (la app no incluye archivos de audio). Cualquier otro artista se encuentra con Buscar.
 
