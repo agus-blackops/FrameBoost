@@ -1,6 +1,6 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6.1, Android 5.0+, ~115 KB).
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.7, Android 5.0+, ~330 KB).
 
 | Inicio | Podcasts | Un podcast | Álbum | Episodio |
 |---|---|---|---|---|
@@ -11,6 +11,12 @@ APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.6.1, Android 5
 Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
 
 **Versión para computadora (Windows / macOS / Linux): [`../sonora-pc`](../sonora-pc/README.md).**
+
+## Novedades de la 1.7
+- **Icono nuevo**: una corchea con dos ondas de sonido sobre verde. Es **adaptable** (se ve bien en círculo, cuadrado o squircle según el teléfono), tiene capa **monocroma** para los iconos temáticos de Android 13+ y PNG clásicos para Android 5–7.
+- El icono lo **dibuja un programa en Rust** ([`crates/sonora-icon`](../crates/sonora-icon)) sin dependencias: formas por campos de distancia con bordes suavizados y su propio codificador PNG/ICO. Para regenerarlo: `cargo run -p sonora-icon --release -- .` desde la raíz del repositorio.
+
+![Icono en distintos lanzadores](docs/icon-preview.png)
 
 ## Novedades de la 1.6.1
 - **Fandoms y gaming**: estante de artistas de música de internet y de inspiración en videojuegos (The Living Tombstone, CG5, Black Gryph0n, Baasik, NateWantsToBattle, DAGames, TryHardNinja, Rockit Gaming, Miracle Of Sound, Random Encounters, Dan Bull, Griffinilla, Jonathan Young, Jack Stauber) y un estante propio de **The Living Tombstone**. Cada artista se busca por nombre exacto en el catálogo de Deezer; los que no estén se omiten. Se oyen como el resto del catálogo: **vistas previas de 30 s** (la app no incluye archivos de audio). Cualquier otro artista se encuentra con Buscar.

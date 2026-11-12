@@ -1,6 +1,6 @@
 {
   "name": "sonora-pc",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Sonora para PC: reproductor de música, radios y podcasts (servidor local + interfaz web)",
   "private": true,
   "license": "MIT",

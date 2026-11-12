@@ -14,6 +14,8 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 | 1.1 | Música en línea (Deezer, vistas previas de 30 s) y radios en vivo |
 | 1.5 | Letras sincronizadas, ecualizador, temporizador, velocidad, cola, retomar sesión, historial |
 | 1.6 | Podcasts (episodios completos), álbumes/artistas/playlists/géneros, más radios y estantes |
+| 1.6.1 / 1.6.2 | Fandoms y gaming (The Living Tombstone y más); versión para PC |
+| 1.7 | Icono nuevo (adaptable y temático) generado en Rust |
 
 **Probado** (39 pruebas automáticas en un simulador, con respuestas de ejemplo): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia y casos sin conexión.
 
@@ -39,7 +41,7 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 
 ---
 
-## 3. Ahora — v1.7 "Cimientos" (prioridad máxima)
+## 3. Ahora — v1.8 "Cimientos" (prioridad máxima)
 
 Objetivo: que lo que ya existe sea confiable. Sin funciones nuevas grandes.
 
@@ -55,7 +57,7 @@ Criterio de salida: instalación limpia en 3 teléfonos distintos, 1 hora de uso
 
 ---
 
-## 4. Siguiente — v1.8 "Música completa"
+## 4. Siguiente — v1.9 "Música completa"
 
 Objetivo: resolver el límite de 30 segundos con fuentes **legales y gratuitas**.
 
@@ -109,16 +111,16 @@ Decisión pendiente (ver sección 7): ¿Jamendo y Archive bastan, o se quiere in
 
 1. **¿Quieres publicar en Google Play o distribuir el APK a mano?** Publicar exige AAB, firma segura, política de privacidad y revisar licencias de cada fuente.
 2. **¿Música libre (Jamendo/Archive) es suficiente para "música completa"**, o prefieres integrar un servicio con cuenta?
-3. **¿Idiomas?** Hoy solo español; ¿añadimos inglés y portugués en 1.7?
-4. **¿Prioridad: estabilidad (1.7) antes de funciones nuevas?** Mi recomendación es sí: nunca corrió en un teléfono real.
+3. **¿Idiomas?** Hoy solo español; ¿añadimos inglés y portugués en 1.8?
+4. **¿Prioridad: estabilidad (1.8) antes de funciones nuevas?** Mi recomendación es sí: nunca corrió en un teléfono real.
 5. **¿Nombre y marca definitivos?** "Sonora" es provisional; conviene revisar que no choque con marcas existentes antes de publicar.
 
 ---
 
 ## 8. Orden recomendado
 
-1. **1.7 Cimientos** → confiabilidad y pruebas reales.
-2. **1.8 Música completa** → fuentes legales completas + descargas de podcasts.
+1. **1.8 Cimientos** → confiabilidad y pruebas reales.
+2. **1.9 Música completa** → fuentes legales completas + descargas de podcasts.
 3. **2.0** en el orden que dicte el uso real: primero Media3 (gapless/crossfade), luego descubrimiento, luego plataformas (Auto/widget).
 
-*Última revisión: v1.6.*
+*Última revisión: v1.7.*

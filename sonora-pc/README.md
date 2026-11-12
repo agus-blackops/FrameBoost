@@ -1,4 +1,4 @@
-# Sonora para PC · v1.6.2
+# Sonora para PC · v1.7
 
 La versión de escritorio de Sonora: el mismo reproductor, con estantes de música, radios en vivo, podcasts, letras, cola y playlists, más **tu carpeta de música del PC**. Funciona en **Windows, macOS y Linux** con solo [Node.js 18+](https://nodejs.org) (sin instalar paquetes).
 
@@ -7,6 +7,8 @@ La versión de escritorio de Sonora: el mismo reproductor, con estantes de músi
 | ![](docs/inicio.png) | ![](docs/letra.png) | ![](docs/cola.png) | ![](docs/podcast.png) |
 
 *(Capturas con datos de ejemplo.)*
+
+Novedad de la 1.7: icono nuevo (favicon `.ico` con 6 tamaños y PNG), generado en Rust por [`crates/sonora-icon`](../crates/sonora-icon).
 
 ## Cómo se usa
 

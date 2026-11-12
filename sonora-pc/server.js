@@ -95,7 +95,7 @@ async function fetchLimited(urlStr, { maxBytes = 8 * 1024 * 1024, checkPublic = 
     const res = await fetch(url, {
       redirect: 'manual',
       signal: AbortSignal.timeout(15000),
-      headers: Object.assign({ 'User-Agent': 'Sonora-PC/1.6.2', 'Accept-Language': 'es,en;q=0.8' }, headers),
+      headers: Object.assign({ 'User-Agent': 'Sonora-PC/1.7', 'Accept-Language': 'es,en;q=0.8' }, headers),
     });
     if (res.status >= 300 && res.status < 400 && res.headers.get('location')) {
       url = new URL(res.headers.get('location'), url).toString();
@@ -339,7 +339,7 @@ function openBrowser(url) {
 if (require.main === module) {
   server.listen(PORT, '127.0.0.1', () => {
     const url = `http://localhost:${PORT}`;
-    console.log(`Sonora para PC 1.6.2 → ${url}`);
+    console.log(`Sonora para PC 1.7 → ${url}`);
     console.log(`Tu música: ${MUSIC_DIR}`);
     if (args.includes('--open')) openBrowser(url);
   });

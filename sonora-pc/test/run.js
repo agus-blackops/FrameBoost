@@ -154,6 +154,12 @@ async function main() {
     assert(!l.includes('/deezer/genre') && !l.includes('appletop'), 'los estantes no destacados no se piden al inicio');
     assert(l.includes('q=artist%3A%22The%20Living%20Tombstone%22') || l.includes('q=artist%3A%22The+Living+Tombstone%22'), 'búsqueda exacta por artista');
     assert.strictEqual(await page.locator('.tile').count() >= 4, true);
+    // icono nuevo (generado por crates/sonora-icon)
+    assert.strictEqual(await page.locator('.logo-img').evaluate((img) => img.complete && img.naturalWidth), 192, 'logo cargado');
+    const ico = await rawRequest(port, { path: '/favicon.ico' });
+    assert.strictEqual(ico.status, 200);
+    assert.deepStrictEqual([...ico.body.subarray(0, 6)], [0, 0, 1, 0, 6, 0], 'ICO con 6 tamaños');
+    assert.strictEqual(await page.evaluate(() => document.querySelector('link[rel="icon"]').getAttribute('href')), 'favicon.ico');
     noErrors(page);
     await page.ctxt.close();
   });

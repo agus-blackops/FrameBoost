@@ -4,6 +4,7 @@ members = [
     "crates/frameboost-core",
     "crates/frameboost-gpu",
     "crates/frameboost-sim",
+    "crates/sonora-icon",
 ]
 
 [workspace.package]

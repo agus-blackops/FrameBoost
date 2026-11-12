@@ -1,0 +1,12 @@
+[package]
+name = "sonora-icon"
+description = "Genera el icono de Sonora (Android y PC) sin dependencias: dibujo vectorial por campos de distancia y codificador PNG/ICO propio."
+version = "1.7.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "sonora-icon"
+path = "src/main.rs"
