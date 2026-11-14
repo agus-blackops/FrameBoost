@@ -441,7 +441,8 @@ public class BigUpdateTest {
         settle();
         SmokeTest.layout(root);
         results = SmokeTest.findList(root);
-        results.performItemClick(results.getAdapter().getView(0, null, results), 0, 0);
+        int firstSong = results.getHeaderViewsCount(); // artists, albums… come first (2.0)
+        results.performItemClick(results.getAdapter().getView(firstSong, null, results), firstSong, firstSong);
         settle();
         assertEquals("despacito", lib.searchHistory().get(0));
         input.setText("");
