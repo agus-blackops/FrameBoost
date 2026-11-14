@@ -95,9 +95,10 @@ final class TrackAdapter extends BaseAdapter {
         Track now = PlayerEngine.get(ctx).current();
         h.title.setText(t.title);
         h.title.setTextColor(now != null && now.key.equals(t.key) ? Ui.GREEN : Ui.TEXT);
-        h.sub.setText(t.isLive() ? "Radio en vivo · " + t.artist
+        String sub = t.isLive() ? "Radio en vivo · " + t.artist
                 : t.isEpisode() ? Ui.episodeInfo(ctx, t)
-                : t.kind == Track.FULL ? "Completa · " + t.artist : t.artist);
+                : t.kind == Track.FULL ? "Completa · " + t.artist : t.artist;
+        h.sub.setText(downloadLabel(Downloads.get(ctx), t) + sub);
         h.liked.setVisibility(Library.get(ctx).isLiked(t) ? View.VISIBLE : View.GONE);
         Covers.load(ctx, t, h.cover, Ui.dp(ctx, 48));
         h.more.setOnClickListener(new View.OnClickListener() {
@@ -107,5 +108,23 @@ final class TrackAdapter extends BaseAdapter {
             }
         });
         return convertView;
+    }
+
+    /** "Descargada · ", "Descargando 40 % · "… for songs and episodes kept for offline listening. */
+    static String downloadLabel(Downloads d, Track t) {
+        switch (d.state(t)) {
+            case Downloads.DONE:
+                return "Descargada · ";
+            case Downloads.RUNNING:
+                return "Descargando " + d.percent(t) + " % · ";
+            case Downloads.QUEUED:
+                return "En cola · ";
+            case Downloads.WAITING_WIFI:
+                return "Esperando Wi-Fi · ";
+            case Downloads.FAILED:
+                return "No se pudo descargar · ";
+            default:
+                return "";
+        }
     }
 }

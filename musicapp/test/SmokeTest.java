@@ -41,7 +41,7 @@ public class SmokeTest {
 
     @Before
     public void reset() throws Exception {
-        for (Class<?> k : new Class<?>[]{Library.class, PlayerEngine.class}) {
+        for (Class<?> k : new Class<?>[]{Library.class, PlayerEngine.class, Downloads.class}) {
             java.lang.reflect.Field f = k.getDeclaredField("sInstance");
             f.setAccessible(true);
             f.set(null, null);

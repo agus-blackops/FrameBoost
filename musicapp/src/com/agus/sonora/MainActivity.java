@@ -47,12 +47,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class MainActivity extends Activity implements PlayerEngine.Listener, Library.Listener {
+public final class MainActivity extends Activity implements PlayerEngine.Listener, Library.Listener, Downloads.Listener {
 
     private static final int REQ_PERMS = 1;
 
     private Library lib;
     private PlayerEngine player;
+    private Downloads downloads;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private FrameLayout content;
@@ -84,6 +85,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         super.onCreate(state);
         lib = Library.get(this);
         player = PlayerEngine.get(this);
+        downloads = Downloads.get(this);
 
         LinearLayout root = Ui.column(this);
         root.setBackgroundColor(Ui.BG);
@@ -96,6 +98,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         player.restoreSession(); // paused where the user left off
         lib.addListener(this);
         player.addListener(this);
+        downloads.addListener(this);
+        downloads.resume(); // a queue left from last time
         selectTab(0);
         onPlayerChanged();
         askPermissions();
@@ -122,6 +126,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     protected void onDestroy() {
         lib.removeListener(this);
         player.removeListener(this);
+        downloads.removeListener(this);
         super.onDestroy();
     }
 
@@ -182,6 +187,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         Screen s = stack.peek();
         if (s != null) s.onLibraryChanged();
         updateMini();
+    }
+
+    @Override
+    public void onDownloadsChanged() {
+        onLibraryChanged();
     }
 
     @Override
@@ -376,6 +386,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     private static final int C_HISTORY = 7;
     private static final int C_ITEM = 8;
     private static final int C_RESUME = 9;
+    private static final int C_DOWNLOADS = 10;
 
     /** Something that resolves to a list of tracks: a playlist, an artist, an album… */
     private final class Collection {
@@ -430,6 +441,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return "Escuchado recientemente";
                 case C_RESUME:
                     return "Seguir escuchando";
+                case C_DOWNLOADS:
+                    return "Descargas";
                 default:
                     return name;
             }
@@ -447,6 +460,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return section() != null && section().radio ? "Emisoras" : "Playlist";
                 case C_RESUME:
                     return "Podcasts";
+                case C_DOWNLOADS:
+                    return "Sin conexión";
                 case C_ITEM:
                     switch (item.kind) {
                         case Library.Item.ALBUM:
@@ -481,6 +496,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     return lib.recentlyPlayed(50);
                 case C_RESUME:
                     return lib.inProgress(30);
+                case C_DOWNLOADS: { // finished first, then the ones still on their way
+                    List<Track> out = downloads.tracks();
+                    out.addAll(downloads.pending());
+                    return out;
+                }
                 case C_ITEM:
                     return lib.itemTracks(item);
                 case C_PLAYLIST:
@@ -536,10 +556,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         else if (tracks != null && !tracks.isEmpty()) Covers.load(this, tracks.get(0), img, Ui.dp(this, sizeDp));
         else img.setImageBitmap(col.cover(Ui.dp(this, sizeDp)));
         f.addView(img, new FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH));
-        if (col.kind == C_LIKED || col.kind == C_DEVICE || col.kind == C_HISTORY
+        if (col.kind == C_LIKED || col.kind == C_DEVICE || col.kind == C_HISTORY || col.kind == C_DOWNLOADS
                 || (col.kind == C_ONLINE && tracks == null && !remoteArt)) {
             int res = col.kind == C_LIKED ? R.drawable.ic_heart
                     : col.kind == C_HISTORY ? R.drawable.ic_history
+                    : col.kind == C_DOWNLOADS ? R.drawable.ic_download
                     : col.kind == C_DEVICE ? R.drawable.ic_library : R.drawable.ic_note;
             ImageView glyph = Ui.icon(this, res, Math.max(24, sizeDp / 2), Ui.TEXT);
             if (col.kind != C_LIKED) img.setImageBitmap(Covers.generated(col.title(), Ui.dp(this, sizeDp), false));
@@ -578,6 +599,12 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         if (!t.remote) m.add(0, 5, 0, "Ir al álbum");
 
         if (from != null && from.kind == C_PLAYLIST) m.add(0, 6, 0, "Quitar de esta playlist");
+        if (Downloads.canDownload(t)) {
+            int st = downloads.state(t);
+            if (st == Downloads.NONE || st == Downloads.FAILED) m.add(0, 7, 0, "Descargar");
+            else if (st == Downloads.DONE) m.add(0, 8, 0, "Quitar descarga");
+            else m.add(0, 8, 0, "Cancelar descarga");
+        }
         pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -600,6 +627,14 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                         break;
                     case 6:
                         lib.removeFromPlaylist(from.name, t);
+                        break;
+                    case 7:
+                        downloads.download(t);
+                        Toast.makeText(MainActivity.this, downloads.state(t) == Downloads.WAITING_WIFI
+                                ? "Se descargará cuando haya Wi-Fi" : "Descargando…", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 8:
+                        downloads.remove(t);
                         break;
                     default:
                         return false;
@@ -955,6 +990,17 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         return box;
     }
 
+    private View settingsButton() {
+        ImageView b = Ui.iconButton(this, R.drawable.ic_settings, 48, Ui.TEXT, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            }
+        });
+        b.setContentDescription("Ajustes");
+        return b;
+    }
+
     /** Home: what is free and complete, and the switch that hides the 30-second previews. */
     private View freeCard() {
         LinearLayout card = Ui.column(this);
@@ -972,9 +1018,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         only.setTextColor(Ui.TEXT);
         only.setTextSize(15);
         only.setChecked(lib.fullOnly());
-        int[][] states = {{android.R.attr.state_checked}, {}};
-        only.setThumbTintList(new android.content.res.ColorStateList(states, new int[]{Ui.GREEN, 0xFFB3B3B3}));
-        only.setTrackTintList(new android.content.res.ColorStateList(states, new int[]{0x8822C55E, 0x55FFFFFF}));
+        Ui.tintSwitch(only);
         only.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(android.widget.CompoundButton b, boolean on) {
@@ -1046,7 +1090,10 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             String greet = h < 5 ? "Buenas noches" : h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches";
             TextView g = Ui.text(MainActivity.this, greet, 26, Ui.TEXT, true);
             g.setPadding(Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 16), 0, Ui.dp(MainActivity.this, 12));
-            col.addView(g);
+            LinearLayout greetRow = Ui.row(MainActivity.this);
+            greetRow.addView(g, Ui.weight(1));
+            greetRow.addView(settingsButton());
+            col.addView(greetRow);
 
             if (!Library.hasAudioPermission(MainActivity.this)) col.addView(permissionCard());
 
@@ -1531,6 +1578,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             LinearLayout header = Ui.row(MainActivity.this);
             header.setPadding(Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 24), Ui.dp(MainActivity.this, 8), Ui.dp(MainActivity.this, 8));
             header.addView(Ui.text(MainActivity.this, "Tu biblioteca", 24, Ui.TEXT, true), Ui.weight(1));
+            header.addView(settingsButton());
             header.addView(Ui.iconButton(MainActivity.this, R.drawable.ic_add, 44, Ui.TEXT, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -1571,6 +1619,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             final List<Collection> items = new ArrayList<>();
             if (filter == 0) {
                 items.add(new Collection(C_LIKED, null));
+                if (!downloads.tracks().isEmpty() || !downloads.pending().isEmpty()) items.add(new Collection(C_DOWNLOADS, null));
                 items.add(new Collection(C_DEVICE, null));
                 if (!lib.recentlyPlayed(1).isEmpty()) items.add(new Collection(C_HISTORY, null));
                 items.add(new Collection(C_ONLINE, lib.fullOnly() ? "full-trending" : "top"));
@@ -1694,6 +1743,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         View emptyView;
         ImageView playBtn;
         ImageView shuffleBtn;
+        /** "Download all": shown when the page has complete songs or episodes; green when all are saved. */
+        ImageView downloadBtn;
 
         boolean shownEmpty;
         TextView followBtn;
@@ -1775,6 +1826,19 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
             LinearLayout actions = Ui.row(MainActivity.this);
             actions.setPadding(Ui.dp(MainActivity.this, 8), Ui.dp(MainActivity.this, 8), Ui.dp(MainActivity.this, 16), Ui.dp(MainActivity.this, 8));
+            downloadBtn = Ui.iconButton(MainActivity.this, R.drawable.ic_download, 48, Ui.SUB, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int n = downloads.downloadAll(adapter.tracks());
+                    String msg = n == 0 ? "Ya está todo descargado"
+                            : downloads.wifiOnly() && Downloads.metered.now(MainActivity.this)
+                            ? "Se descargarán cuando haya Wi-Fi (" + Ui.songs(n) + ")"
+                            : "Descargando " + Ui.songs(n);
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                }
+            });
+            downloadBtn.setContentDescription("Descargar todo");
+            actions.addView(downloadBtn);
             actions.addView(new View(MainActivity.this), new LinearLayout.LayoutParams(0, 1, 1));
             shuffleBtn = Ui.iconButton(MainActivity.this, R.drawable.ic_shuffle, 48, Ui.SUB, new View.OnClickListener() {
                 @Override
@@ -1871,6 +1935,17 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             return col.title().equals(player.queueName()) && player.current() != null;
         }
 
+        void updateDownloadButton(List<Track> tracks) {
+            int can = 0, done = 0;
+            for (Track t : tracks) {
+                if (!Downloads.canDownload(t)) continue;
+                can++;
+                if (downloads.state(t) == Downloads.DONE) done++;
+            }
+            downloadBtn.setVisibility(can > 0 && col.kind != C_DOWNLOADS ? View.VISIBLE : View.GONE);
+            downloadBtn.setColorFilter(can > 0 && done == can ? Ui.GREEN : Ui.SUB);
+        }
+
         @Override
         void onLibraryChanged() {
             if (adapter == null) return;
@@ -1881,6 +1956,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 return;
             }
             updateFollow();
+            updateDownloadButton(tracks);
             adapter.setTracks(tracks);
             String len = col.kind == C_ITEM && col.item.kind == Library.Item.PODCAST ? "" : Ui.totalLength(tracks);
             subtitle.setText(col.type() + " · " + col.count(tracks.size()) + (len.isEmpty() ? "" : " · " + len));

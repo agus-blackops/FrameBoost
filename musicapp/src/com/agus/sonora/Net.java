@@ -31,7 +31,7 @@ final class Net {
                 c.setConnectTimeout(10000);
                 c.setReadTimeout(15000);
                 c.setInstanceFollowRedirects(true);
-                c.setRequestProperty("User-Agent", "Sonora/1.6 (Android)");
+                c.setRequestProperty("User-Agent", "Sonora/2.0 (Android)");
                 c.setRequestProperty("Accept-Language", java.util.Locale.getDefault().toLanguageTag());
                 try {
                     int code = c.getResponseCode();
@@ -75,7 +75,7 @@ final class Net {
                 c.setConnectTimeout(10000);
                 c.setReadTimeout(15000);
                 c.setInstanceFollowRedirects(false);
-                c.setRequestProperty("User-Agent", "Sonora/1.6 (Android)");
+                c.setRequestProperty("User-Agent", "Sonora/2.0 (Android)");
                 c.setRequestProperty("Range", "bytes=0-0");
                 try {
                     int code = c.getResponseCode();
@@ -100,6 +100,72 @@ final class Net {
     static String resolve(String url) throws IOException {
         return resolver.resolve(url);
     }
+
+    /** Saves a whole file (songs, episodes) to disk; pluggable so tests don't hit the network. */
+    interface Saver {
+        /** Downloads {@code url} into {@code out}; returns its size. Reports 0..100 when the size is known. */
+        long save(String url, java.io.File out, Progress progress) throws IOException;
+    }
+
+    interface Progress {
+        /** Return false to stop the download. */
+        boolean onProgress(int percent);
+    }
+
+    static final Saver FILES = new Saver() {
+        @Override
+        public long save(String url, java.io.File out, Progress progress) throws IOException {
+            for (int redirects = 0; redirects < 8; redirects++) {
+                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                c.setConnectTimeout(15000);
+                c.setReadTimeout(30000);
+                c.setInstanceFollowRedirects(false);
+                c.setRequestProperty("User-Agent", "Sonora/2.0 (Android)");
+                try {
+                    int code = c.getResponseCode();
+                    if (code / 100 == 3) {
+                        String loc = c.getHeaderField("Location");
+                        if (loc == null) throw new IOException("HTTP " + code);
+                        url = new URL(new URL(url), loc).toString();
+                        continue;
+                    }
+                    if (code / 100 != 2) throw new IOException("HTTP " + code);
+                    long total = c.getContentLengthLong();
+                    java.io.File tmp = new java.io.File(out.getPath() + ".part");
+                    long done = 0;
+                    int last = -1;
+                    try (InputStream in = c.getInputStream();
+                         java.io.FileOutputStream fo = new java.io.FileOutputStream(tmp)) {
+                        byte[] buf = new byte[65536];
+                        int n;
+                        while ((n = in.read(buf)) > 0) {
+                            fo.write(buf, 0, n);
+                            done += n;
+                            int pct = total > 0 ? (int) (done * 100 / total) : 0;
+                            if (pct != last) {
+                                last = pct;
+                                if (!progress.onProgress(pct)) throw new IOException("cancelada");
+                            }
+                        }
+                    } catch (IOException e) {
+                        tmp.delete();
+                        throw e;
+                    }
+                    if (total > 0 && done < total) {
+                        tmp.delete();
+                        throw new IOException("descarga incompleta");
+                    }
+                    if (!tmp.renameTo(out)) throw new IOException("no se pudo guardar el archivo");
+                    return done;
+                } finally {
+                    c.disconnect();
+                }
+            }
+            throw new IOException("demasiadas redirecciones");
+        }
+    };
+
+    static volatile Saver saver = FILES;
 
     static final ExecutorService POOL = Executors.newFixedThreadPool(4);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());

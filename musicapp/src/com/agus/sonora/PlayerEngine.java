@@ -605,8 +605,9 @@ public final class PlayerEngine implements Audio.Events {
         open(t);
     }
 
-    private static boolean needsLink(Track t) {
-        return t.kind == Track.PREVIEW || t.kind == Track.EPISODE;
+    /** Previews need a fresh link and episodes their redirects followed, unless they are downloaded. */
+    private boolean needsLink(Track t) {
+        return (t.kind == Track.PREVIEW || t.kind == Track.EPISODE) && Downloads.get(app).file(t) == null;
     }
 
     /** Background thread: makes sure {@code t} has a playable link. */
@@ -619,7 +620,10 @@ public final class PlayerEngine implements Audio.Events {
         }
     }
 
-    private static String uriOf(Track t) {
+    /** What the player opens: the downloaded file when there is one (plays without internet). */
+    private String uriOf(Track t) {
+        java.io.File f = Downloads.get(app).file(t);
+        if (f != null) return android.net.Uri.fromFile(f).toString();
         return t.remote ? t.playUrl() : t.key;
     }
 

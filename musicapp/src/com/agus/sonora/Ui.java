@@ -78,6 +78,13 @@ final class Ui {
         return d;
     }
 
+    /** Green when on, grey when off. */
+    static void tintSwitch(android.widget.Switch sw) {
+        int[][] states = {{android.R.attr.state_checked}, {}};
+        sw.setThumbTintList(new ColorStateList(states, new int[]{GREEN, 0xFFB3B3B3}));
+        sw.setTrackTintList(new ColorStateList(states, new int[]{(GREEN & 0x00FFFFFF) | 0x88000000, 0x55FFFFFF}));
+    }
+
     static GradientDrawable oval(int color) {
         GradientDrawable d = new GradientDrawable();
         d.setShape(GradientDrawable.OVAL);

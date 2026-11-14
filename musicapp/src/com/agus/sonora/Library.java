@@ -1313,7 +1313,7 @@ public final class Library {
     }
 
     /** Makes online tracks findable by key (for likes/playlists), keeping already-known objects. */
-    private void register(List<Track> tracks) {
+    void register(List<Track> tracks) {
         for (int i = 0; i < tracks.size(); i++) {
             Track t = tracks.get(i);
             Track known = byKey.get(t.key);

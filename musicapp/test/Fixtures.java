@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Canned Deezer / radio-browser responses shaped like the real APIs. */
-public final class Fixtures implements Net.Fetcher, Net.Resolver {
+public final class Fixtures implements Net.Fetcher, Net.Resolver, Net.Saver {
 
     static final String[][] SONGS = {
             {"Monaco", "Bad Bunny", "Nadie Sabe Lo Que Va a Pasar Mañana"},
@@ -271,6 +271,39 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver {
     }
 
     public final AtomicInteger audiusCalls = new AtomicInteger();
+    public final List<String> saved = Collections.synchronizedList(new ArrayList<String>());
+    /** When set, downloads wait for it after the first half (to test cancelling midway). */
+    public volatile java.util.concurrent.CountDownLatch holdDownloads;
+
+    /** Downloads: 300 KB of "audio", reported in three steps. */
+    @Override
+    public long save(String url, java.io.File out, Net.Progress progress) throws IOException {
+        if (offline) throw new IOException("offline");
+        if (url.contains("roto")) throw new IOException("HTTP 404");
+        saved.add(url);
+        byte[] chunk = new byte[150 * 1024];
+        java.io.File tmp = new java.io.File(out.getPath() + ".part");
+        try (java.io.FileOutputStream fo = new java.io.FileOutputStream(tmp)) {
+            if (!progress.onProgress(0)) throw new IOException("cancelada");
+            fo.write(chunk);
+            if (!progress.onProgress(50)) throw new IOException("cancelada");
+            java.util.concurrent.CountDownLatch hold = holdDownloads;
+            if (hold != null) {
+                try {
+                    hold.await(5, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            if (!progress.onProgress(75)) throw new IOException("cancelada");
+            fo.write(chunk);
+            progress.onProgress(100);
+        } catch (IOException e) {
+            tmp.delete();
+            throw e;
+        }
+        if (!tmp.renameTo(out)) throw new IOException("rename");
+        return 300 * 1024;
+    }
 
     /**
      * Related artists: four new ones (ids 9xx, different for each seed artist) and one you
