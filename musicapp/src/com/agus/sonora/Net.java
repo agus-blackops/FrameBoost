@@ -145,4 +145,15 @@ final class Net {
             return s;
         }
     }
+
+    /** Encodes a URL path (file names with spaces, accents, '#'…) keeping its slashes. */
+    static String encPath(String path) {
+        StringBuilder b = new StringBuilder();
+        String[] parts = path.split("/", -1);
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) b.append('/');
+            b.append(enc(parts[i]).replace("+", "%20"));
+        }
+        return b.toString();
+    }
 }

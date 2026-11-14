@@ -1,19 +1,9 @@
 package com.agus.sonora;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.content.SharedPreferences;
-import android.media.PlaybackParams;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -26,13 +16,13 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * The single music player of the app: owns the MediaPlayer, the play queue, shuffle and
- * repeat, and audio focus. UI and the playback service observe it through {@link Listener}.
- * All methods must be called on the main thread.
+ * The single music player of the app: owns the play queue, shuffle and repeat, the sleep timer and
+ * the saved session, and drives an {@link Audio} (Media3's ExoPlayer in the app). Near the end of
+ * each song it preloads the next one so that songs follow each other without a gap. UI and the
+ * playback service observe it through {@link Listener}. All methods must be called on the main
+ * thread.
  */
-public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
-        AudioManager.OnAudioFocusChangeListener {
+public final class PlayerEngine implements Audio.Events {
 
     public interface Listener {
         void onPlayerChanged();
@@ -42,6 +32,12 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     public static final int REPEAT_ALL = 1;
     public static final int REPEAT_ONE = 2;
 
+    /** How long before the end of a song the next one is fetched and preloaded. */
+    static final int PRELOAD_BEFORE_END_MS = 12000;
+
+    /** Which audio player to use; tests replace it with a simulator. */
+    static Audio.Factory audioFactory = ExoAudio.FACTORY;
+
     private static PlayerEngine sInstance;
 
     public static synchronized PlayerEngine get(Context context) {
@@ -50,16 +46,19 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     private final Context app;
-    private final AudioManager audio;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final Random random = new Random();
 
-    private MediaPlayer mp;
-    private boolean prepared;
+    /** Created on first use, then kept for the life of the app (one audio session for the effects). */
+    private Audio audio;
+    /** The current track is loaded in {@link #audio}. */
+    private boolean opened;
+    /** ... and ready to play (duration known). */
+    private boolean ready;
+    /** Fetching the current track's link before it can be opened. */
     private boolean preparing;
     private boolean playWhenReady;
-    private boolean resumeOnFocusGain;
     private int consecutiveErrors;
     /** Bumped on every load so late async results for an old track are ignored. */
     private int loadToken;
@@ -74,12 +73,17 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
     private final SharedPreferences prefs;
     private float speed = 1f;
-    /** Where to start the current track once it is prepared (restored sessions, seeks before load). */
+    /** Where to start the current track once it is opened (restored sessions, seeks before load). */
     private int pendingSeek;
     private boolean saveScheduled;
-    /** The track the current MediaPlayer was opened for (to remember podcast progress). */
+    /** The track the audio was opened for (to remember podcast progress). */
     private Track openTrack;
     private boolean progressTicking;
+    /** The track preloaded (or being fetched) to follow the current one without a gap. */
+    private Track plannedNext;
+    private boolean ticking;
+    /** How many times the next song took over without a gap (for tests and diagnostics). */
+    int gaplessTransitions;
 
     public static final int SLEEP_OFF = 0;
     public static final int SLEEP_TIMED = 1;
@@ -92,14 +96,18 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         this.app = app;
         this.prefs = app.getSharedPreferences("player", Context.MODE_PRIVATE);
         this.speed = prefs.getFloat("speed", 1f);
-        this.audio = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
-        // Pause when headphones are unplugged / bluetooth disconnects.
-        app.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (isPlaying()) pause();
+        // Media3 itself pauses for calls and when headphones or bluetooth disconnect.
+    }
+
+    private Audio audio() {
+        if (audio == null) {
+            audio = audioFactory.create(app, this);
+            try {
+                Effects.get(app).attach(audio.audioSessionId());
+            } catch (Throwable ignored) {
             }
-        }, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+        }
+        return audio;
     }
 
     // ---------------------------------------------------------------- queries
@@ -110,37 +118,36 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     public boolean isPlaying() {
-        return mp != null && prepared && mp.isPlaying();
+        return opened && audio.isPlaying();
     }
 
     /** True while the user wants sound: playing, or buffering towards playing. */
     public boolean isActive() {
-        return isPlaying() || (preparing && playWhenReady);
+        return isPlaying() || (isBuffering() && playWhenReady);
     }
 
     public boolean isBuffering() {
-        return preparing;
+        return preparing || (opened && (!ready || audio.isBuffering()));
     }
 
     public int position() {
-        if (mp == null || !prepared) return pendingSeek;
-        try {
-            return mp.getCurrentPosition();
-        } catch (IllegalStateException e) {
-            return 0;
-        }
+        if (!opened || !ready) return pendingSeek;
+        return (int) audio.position();
     }
 
     public int duration() {
-        if (mp != null && prepared) {
-            try {
-                int d = mp.getDuration();
-                if (d > 0) return d;
-            } catch (IllegalStateException ignored) {
-            }
+        if (opened && ready) {
+            long d = audio.duration();
+            if (d > 0) return (int) d;
         }
         Track t = current();
         return t == null ? 0 : (int) t.durationMs;
+    }
+
+    /** The song a radio is playing right now, when the station tells (null otherwise). */
+    public String liveTitle() {
+        Track t = current();
+        return opened && t != null && t.isLive() ? audio.liveTitle() : null;
     }
 
     public boolean isShuffle() {
@@ -243,6 +250,18 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         }
     }
 
+    /**
+     * Swaps {@code was} (the current track) for {@code with} in the queue and plays it, e.g. the
+     * complete version of a 30-second preview.
+     */
+    public void replaceCurrent(Track was, Track with) {
+        Track t = current();
+        if (t == null || !t.equals(was) || with == null) return;
+        queue.set(order.get(pos), with);
+        consecutiveErrors = 0;
+        load(true);
+    }
+
     /** Drops everything after the current track. */
     public void clearUpcoming() {
         if (pos < 0) return;
@@ -258,27 +277,16 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     public void setSpeed(float s) {
         speed = Math.max(0.5f, Math.min(2f, s));
         prefs.edit().putFloat("speed", speed).apply();
-        if (isPlaying()) applySpeed(mp); // paused players pick it up on the next start
+        if (audio != null) audio.setSpeed(speed); // radios always play at 1x
         notifyChanged();
     }
 
-    private void applySpeed(MediaPlayer p) {
-        Track t = current();
-        if (Build.VERSION.SDK_INT < 23 || p == null || speed == 1f || (t != null && t.isLive())) return;
-        try {
-            PlaybackParams pp = new PlaybackParams();
-            pp.setSpeed(speed);
-            p.setPlaybackParams(pp);
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void startPlayer(MediaPlayer p) {
-        p.start();
-        applySpeed(p);
+    /** Sound starts (or resumes) for the current track. */
+    private void started() {
         Track t = current();
         if (t != null) Library.get(app).recordPlayed(t);
         if (t != null && t.isEpisode()) startProgressTicker();
+        startTicker();
     }
 
     /** Saves the position of a playing podcast episode every 15 seconds. */
@@ -299,9 +307,9 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     private void rememberEpisode() {
-        if (openTrack == null || !openTrack.isEpisode() || mp == null || !prepared) return;
+        if (openTrack == null || !openTrack.isEpisode() || !opened || !ready) return;
         try {
-            Library.get(app).saveProgress(openTrack, mp.getCurrentPosition(), mp.getDuration());
+            Library.get(app).saveProgress(openTrack, audio.position(), audio.duration());
         } catch (Exception ignored) {
         }
     }
@@ -358,21 +366,14 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
             @Override
             public void run() {
-                if (token != loadToken || mp == null) return;
+                if (token != loadToken || !opened) return;
                 i++;
-                try {
-                    float v = Math.max(0f, 1f - (float) i / steps);
-                    mp.setVolume(v, v);
-                } catch (Exception ignored) {
-                }
+                audio.setVolume(Math.max(0f, 1f - (float) i / steps));
                 if (i < steps) {
                     main.postDelayed(this, 300);
                 } else {
                     pause();
-                    try {
-                        mp.setVolume(1f, 1f);
-                    } catch (Exception ignored) {
-                    }
+                    audio.setVolume(1f);
                 }
             }
         });
@@ -446,7 +447,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
 
     public void play() {
         if (current() == null) return;
-        if (mp == null) {
+        if (!opened) {
             if (preparing) { // still fetching the link; start as soon as it arrives
                 playWhenReady = true;
                 notifyChanged();
@@ -456,17 +457,15 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
             return;
         }
         playWhenReady = true;
-        if (prepared && requestFocus()) {
-            startPlayer(mp);
-        }
+        audio.setPlayWhenReady(true);
+        if (ready) started();
         PlaybackService.ensureStarted(app);
         notifyChanged();
     }
 
     public void pause() {
         playWhenReady = false;
-        resumeOnFocusGain = false;
-        if (mp != null && prepared && mp.isPlaying()) mp.pause();
+        if (opened) audio.setPlayWhenReady(false);
         rememberEpisode();
         notifyChanged();
     }
@@ -490,10 +489,11 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     public void seekTo(int ms) {
         Track t = current();
         if (t != null && t.isLive()) return;
-        if (mp != null && prepared) {
-            mp.seekTo(Math.max(0, ms));
+        if (opened) {
+            audio.seekTo(Math.max(0, ms)); // Media3 also takes seeks while the song is still loading
+            if (!ready) pendingSeek = Math.max(0, ms);
             notifyChanged();
-        } else if (mp == null && !preparing && t != null) {
+        } else if (!preparing && t != null) {
             pendingSeek = Math.max(0, ms); // restored session: applied when playback starts
             notifyChanged();
         }
@@ -525,7 +525,6 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         loadToken++;
         playWhenReady = false;
         releasePlayer();
-        abandonFocus();
         queue.clear();
         order.clear();
         pos = -1;
@@ -583,20 +582,14 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         if (seekMs == 0 && t.isEpisode()) pendingSeek = (int) Library.get(app).progress(t); // resume where it was left
         playWhenReady = autoplay;
         if (autoplay) PlaybackService.ensureStarted(app);
-        if (t.kind == Track.PREVIEW || t.kind == Track.EPISODE) {
+        if (needsLink(t)) {
             // Online song: get a fresh preview link first (they expire); episodes: follow redirects.
             preparing = true;
             notifyChanged();
             Net.POOL.execute(new Runnable() {
                 @Override
                 public void run() {
-                    Exception err = null;
-                    try {
-                        Library.ensureStream(t);
-                    } catch (Exception e) {
-                        err = e;
-                    }
-                    final boolean ok = err == null && t.streamUrl != null;
+                    final boolean ok = fetchLink(t);
                     main.post(new Runnable() {
                         @Override
                         public void run() {
@@ -612,74 +605,158 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         open(t);
     }
 
-    /** Creates the MediaPlayer for {@code t} and starts preparing it. */
-    private void open(Track t) {
-        mp = new MediaPlayer();
+    private static boolean needsLink(Track t) {
+        return t.kind == Track.PREVIEW || t.kind == Track.EPISODE;
+    }
+
+    /** Background thread: makes sure {@code t} has a playable link. */
+    private static boolean fetchLink(Track t) {
         try {
-            Effects.get(app).attach(mp.getAudioSessionId());
-        } catch (Throwable ignored) {
-        }
-        mp.setAudioAttributes(new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build());
-        mp.setWakeMode(app, PowerManager.PARTIAL_WAKE_LOCK);
-        mp.setOnPreparedListener(this);
-        mp.setOnCompletionListener(this);
-        mp.setOnErrorListener(this);
-        try {
-            openTrack = t;
-            mp.setDataSource(app, Uri.parse(t.remote ? t.playUrl() : t.key));
-            preparing = true;
-            mp.prepareAsync();
+            Library.ensureStream(t);
+            return t.streamUrl != null;
         } catch (Exception e) {
-            preparing = false;
-            final MediaPlayer failed = mp;
-            main.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mp == failed) fail();
-                }
-            });
+            return false;
         }
+    }
+
+    private static String uriOf(Track t) {
+        return t.remote ? t.playUrl() : t.key;
+    }
+
+    /** Loads {@code t} into the audio player. */
+    private void open(Track t) {
+        preparing = false;
+        openTrack = t;
+        opened = true;
+        ready = false;
+        plannedNext = null;
+        Audio a = audio();
+        a.open(uriOf(t), t.isLive() ? 0 : pendingSeek, t.isLive());
+        a.setSpeed(speed);
+        a.setVolume(1f);
+        a.setPlayWhenReady(playWhenReady);
         notifyChanged();
     }
 
     private void releasePlayer() {
         rememberEpisode();
         openTrack = null;
-        prepared = false;
         preparing = false;
-        Effects.get(app).detach();
-        if (mp != null) {
-            try {
-                mp.reset();
-                mp.release();
-            } catch (Exception ignored) {
-            }
-            mp = null;
+        plannedNext = null;
+        if (opened) {
+            opened = false;
+            ready = false;
+            audio.stop();
         }
     }
 
+    // ---------------------------------------------------------------- gapless: the next song
+
+    /** The track that will play after the current one finishes on its own, if it can be preloaded. */
+    private Track nextToPreload() {
+        Track t = current();
+        if (t == null || t.isLive() || repeat == REPEAT_ONE || sleepAtTrackEnd) return null;
+        int n;
+        if (pos + 1 < order.size()) n = pos + 1;
+        else if (repeat == REPEAT_ALL && !shuffle && order.size() > 1) n = 0;
+        else return null;
+        Track next = queue.get(order.get(n));
+        // episodes resume from where they were left and radios never end: those load normally
+        if (next.isEpisode() || next.isLive()) return null;
+        return next;
+    }
+
+    /** Runs every second while sound plays: preloads the next song shortly before the end. */
+    private void startTicker() {
+        if (ticking) return;
+        ticking = true;
+        main.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isActive()) {
+                    ticking = false;
+                    return;
+                }
+                maybePreloadNext();
+                main.postDelayed(this, 1000);
+            }
+        }, 1000);
+    }
+
+    private void maybePreloadNext() {
+        if (!opened || !ready || plannedNext != null) return;
+        long dur = audio.duration();
+        if (dur <= 0 || dur - audio.position() > PRELOAD_BEFORE_END_MS) return;
+        final Track next = nextToPreload();
+        if (next == null) return;
+        plannedNext = next;
+        final int token = loadToken;
+        if (!needsLink(next)) {
+            audio.setNext(uriOf(next), false);
+            return;
+        }
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                final boolean ok = fetchLink(next);
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (token != loadToken || plannedNext != next || !opened) return;
+                        if (ok) audio.setNext(uriOf(next), false);
+                        else plannedNext = null; // it will be tried (and reported) when its turn comes
+                    }
+                });
+            }
+        });
+    }
+
+    /** After any change to the queue or the modes: forget a preloaded song that no longer follows. */
+    private void checkPlannedNext() {
+        if (plannedNext != null && plannedNext != nextToPreload()) {
+            plannedNext = null;
+            if (opened) audio.setNext(null, false);
+        }
+    }
+
+    // ---------------------------------------------------------------- Audio.Events
+
     @Override
-    public void onPrepared(MediaPlayer player) {
-        if (player != mp) return;
-        prepared = true;
-        preparing = false;
+    public void onReady() {
+        if (!opened) return;
+        ready = true;
         consecutiveErrors = 0;
         Track t = current();
-        if (t != null && player.getDuration() > 0) t.durationMs = player.getDuration();
-        if (pendingSeek > 0 && !(t != null && t.isLive())) {
-            player.seekTo(pendingSeek);
-            pendingSeek = 0;
-        }
-        if (playWhenReady && requestFocus()) startPlayer(player);
+        long d = audio.duration();
+        if (t != null && d > 0) t.durationMs = d;
+        pendingSeek = 0;
+        if (playWhenReady) started();
+        maybePreloadNext(); // short songs are already inside the preload window
         notifyChanged();
     }
 
     @Override
-    public void onCompletion(MediaPlayer player) {
-        if (player != mp) return;
+    public void onAdvanced() {
+        // the preloaded song is already playing: just catch up with it
+        gaplessTransitions++;
+        rememberEpisode();
+        if (pos + 1 < order.size()) pos++;
+        else pos = 0;
+        plannedNext = null;
+        Track t = current();
+        openTrack = t;
+        ready = true;
+        consecutiveErrors = 0;
+        long d = audio.duration();
+        if (t != null && d > 0) t.durationMs = d;
+        if (t != null) Library.get(app).recordPlayed(t);
+        maybePreloadNext();
+        notifyChanged();
+    }
+
+    @Override
+    public void onEnded() {
+        if (!opened) return;
         if (sleepAtTrackEnd) {
             // "Stop after this song": line up the next one, paused.
             sleepAtTrackEnd = false;
@@ -689,8 +766,8 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
             return;
         }
         if (repeat == REPEAT_ONE) {
-            player.seekTo(0);
-            player.start();
+            audio.seekTo(0);
+            audio.setPlayWhenReady(true);
             notifyChanged();
             return;
         }
@@ -698,9 +775,16 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     @Override
-    public boolean onError(MediaPlayer player, int what, int extra) {
-        if (player == mp) fail();
-        return true;
+    public void onError(String reason) {
+        if (opened) fail();
+    }
+
+    @Override
+    public void onStateChanged() {
+        // another app may have taken the audio focus for good (a call, a video): follow the player
+        if (opened && ready && !audio.playWhenReady()) playWhenReady = false;
+        if (isActive()) startTicker();
+        notifyChanged();
     }
 
     /** The current track can't be played: tell the user and move on to the next one. */
@@ -722,46 +806,6 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
         }
     }
 
-    // ---------------------------------------------------------------- audio focus
-
-    @SuppressWarnings("deprecation")
-    private boolean requestFocus() {
-        return audio.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-                == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
-    }
-
-    @SuppressWarnings("deprecation")
-    private void abandonFocus() {
-        audio.abandonAudioFocus(this);
-    }
-
-    @Override
-    public void onAudioFocusChange(int change) {
-        switch (change) {
-            case AudioManager.AUDIOFOCUS_LOSS:
-                pause();
-                abandonFocus();
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                boolean was = isPlaying();
-                pause();
-                resumeOnFocusGain = was;
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                if (mp != null) mp.setVolume(0.2f, 0.2f);
-                break;
-            case AudioManager.AUDIOFOCUS_GAIN:
-                if (mp != null) mp.setVolume(1f, 1f);
-                if (resumeOnFocusGain) {
-                    resumeOnFocusGain = false;
-                    play();
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
     // ---------------------------------------------------------------- listeners
 
     public void addListener(Listener l) {
@@ -773,6 +817,7 @@ public final class PlayerEngine implements MediaPlayer.OnPreparedListener,
     }
 
     private void notifyChanged() {
+        checkPlannedNext();
         if (pos >= 0) scheduleSave();
         for (Listener l : listeners) l.onPlayerChanged();
     }

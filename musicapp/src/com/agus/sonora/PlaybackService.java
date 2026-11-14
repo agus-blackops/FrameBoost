@@ -171,12 +171,18 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
         return art;
     }
 
+    /** The artist, or for a radio the song on air when the station announces it. */
+    private String subtitle(Track t) {
+        String onAir = engine.liveTitle();
+        return onAir != null ? onAir : t.artist;
+    }
+
     private void updateSession() {
         Track t = engine.current();
         if (t == null) return;
         session.setMetadata(new MediaMetadata.Builder()
                 .putString(MediaMetadata.METADATA_KEY_TITLE, t.title)
-                .putString(MediaMetadata.METADATA_KEY_ARTIST, t.artist)
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, subtitle(t))
                 .putString(MediaMetadata.METADATA_KEY_ALBUM, t.album)
                 .putLong(MediaMetadata.METADATA_KEY_DURATION, engine.duration())
                 .putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, artFor(t))
@@ -214,7 +220,7 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
         }
         boolean active = engine.isActive();
         b.setContentTitle(t.title)
-                .setContentText(t.artist)
+                .setContentText(subtitle(t))
                 .setSubText(engine.queueName())
                 .setLargeIcon(artFor(t))
                 .addAction(R.drawable.ic_prev, "Anterior",

@@ -96,7 +96,8 @@ final class TrackAdapter extends BaseAdapter {
         h.title.setText(t.title);
         h.title.setTextColor(now != null && now.key.equals(t.key) ? Ui.GREEN : Ui.TEXT);
         h.sub.setText(t.isLive() ? "Radio en vivo · " + t.artist
-                : t.isEpisode() ? Ui.episodeInfo(ctx, t) : t.artist);
+                : t.isEpisode() ? Ui.episodeInfo(ctx, t)
+                : t.kind == Track.FULL ? "Completa · " + t.artist : t.artist);
         h.liked.setVisibility(Library.get(ctx).isLiked(t) ? View.VISIBLE : View.GONE);
         Covers.load(ctx, t, h.cover, Ui.dp(ctx, 48));
         h.more.setOnClickListener(new View.OnClickListener() {

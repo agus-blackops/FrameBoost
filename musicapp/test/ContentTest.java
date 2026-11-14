@@ -19,8 +19,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowMediaPlayer;
-import org.robolectric.shadows.util.DataSource;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -51,12 +49,12 @@ public class ContentTest {
         Net.resolver = net;
         app = RuntimeEnvironment.getApplication();
         shadowOf(app).grantPermissions(Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.POST_NOTIFICATIONS);
-        ShadowMediaPlayer.setMediaInfoProvider(new ShadowMediaPlayer.MediaInfoProvider() {
+        PlayerEngine.audioFactory = SimAudio.factory(new SimAudio.Durations() {
             @Override
-            public ShadowMediaPlayer.MediaInfo get(DataSource ds) {
-                return new ShadowMediaPlayer.MediaInfo(2530000, 50);
+            public long of(String uri) {
+                return 2530000;
             }
-        });
+        }, new ArrayList<String>());
     }
 
     static void forget(Class<?> k) throws Exception {

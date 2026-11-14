@@ -37,6 +37,9 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     private TextView title;
     private TextView artist;
     private TextView badge;
+    /** For a 30-second preview: the same song, complete and free, when Audius has it. */
+    private TextView fullButton;
+    private String fullCheckedFor;
     private ImageView like;
     private SeekBar seek;
     private TextView elapsed;
@@ -146,6 +149,13 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         badge.setLetterSpacing(0.08f);
         badge.setPadding(0, Ui.dp(this, 4), 0, 0);
         texts.addView(badge);
+        fullButton = Ui.text(this, "", 13, 0xFF000000, true);
+        fullButton.setBackground(Ui.ripple(Ui.rounded(Ui.GREEN, Ui.dp(this, 16))));
+        fullButton.setPadding(Ui.dp(this, 14), Ui.dp(this, 6), Ui.dp(this, 14), Ui.dp(this, 6));
+        fullButton.setVisibility(View.GONE);
+        LinearLayout.LayoutParams flp = Ui.lp(Ui.WRAP, Ui.WRAP);
+        flp.topMargin = Ui.dp(this, 8);
+        texts.addView(fullButton, flp);
         info.addView(texts, Ui.weight(1));
         like = Ui.iconButton(this, R.drawable.ic_heart_outline, 48, Ui.TEXT, new View.OnClickListener() {
             @Override
@@ -568,6 +578,29 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         onPlayerChanged();
     }
 
+    /** While a preview plays, looks for the complete song on Audius and offers to switch to it. */
+    private void offerFullVersion(final Track t) {
+        if (t.key.equals(fullCheckedFor)) return;
+        fullCheckedFor = t.key;
+        fullButton.setVisibility(View.GONE);
+        if (t.kind != Track.PREVIEW) return;
+        lib.findFullVersion(t, new Library.FullVersion() {
+            @Override
+            public void onFound(final Track full) {
+                Track now = player.current();
+                if (full == null || now == null || !now.key.equals(t.key) || isFinishing()) return;
+                fullButton.setText("▶  Escuchar completa · gratis en " + full.sourceName());
+                fullButton.setVisibility(View.VISIBLE);
+                fullButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        player.replaceCurrent(t, full);
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public void onPlayerChanged() {
         Track t = player.current();
@@ -578,14 +611,18 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         if (!t.key.equals(shownKey)) {
             shownKey = t.key;
             title.setText(t.title);
-            artist.setText(t.artist);
             Covers.load(this, t, cover, Math.min(1024, getResources().getDisplayMetrics().widthPixels));
             root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                     new int[]{MainActivity.darken(Covers.accent(t)), Ui.BG, Ui.BG}));
         }
+        String onAir = player.liveTitle(); // radios that announce the song on air
+        artist.setText(onAir != null ? "Ahora suena: " + onAir : t.artist);
         source.setText(player.queueName().isEmpty() ? t.album : player.queueName());
         badge.setVisibility(t.remote ? View.VISIBLE : View.GONE);
-        badge.setText(t.isLive() ? "● EN VIVO" : t.isEpisode() ? "PODCAST · EPISODIO COMPLETO" : "VISTA PREVIA · 30 s");
+        badge.setText(t.isLive() ? "● EN VIVO" : t.isEpisode() ? "PODCAST · EPISODIO COMPLETO"
+                : t.kind == Track.FULL ? "CANCIÓN COMPLETA · " + t.sourceName().toUpperCase(java.util.Locale.ROOT)
+                : "VISTA PREVIA · 30 s");
+        offerFullVersion(t);
         boolean episode = t.isEpisode();
         skipBack.setVisibility(episode ? View.VISIBLE : View.GONE);
         skipFwd.setVisibility(episode ? View.VISIBLE : View.GONE);

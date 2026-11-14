@@ -175,6 +175,13 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver {
             Thread.sleep(5);
         } catch (InterruptedException ignored) {
         }
+        if (url.startsWith("https://api.audius.co/v1/")) {
+            audiusCalls.incrementAndGet();
+            if (!url.contains("app_name=Sonora")) throw new IOException("HTTP 400 missing app_name");
+            return audius(url).getBytes("UTF-8");
+        }
+        if (url.startsWith("https://archive.org/advancedsearch.php")) return archiveSearch().getBytes("UTF-8");
+        if (url.startsWith("https://archive.org/metadata/")) return archiveMetadata(url).getBytes("UTF-8");
         if (url.contains("radio-browser")) {
             if (radioMirrorDown && url.startsWith("https://de1.")) throw new IOException("mirror down");
             return radios().getBytes("UTF-8");
@@ -252,6 +259,8 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver {
                     + "\"syncedLyrics\":\"[ar:Someone]\\n[00:00.50] Primera línea\\n[00:04.00] Segunda línea\\n[00:08.25] Tercera línea\\n[00:12.00] \\n[00:16.5] Última línea\"}").getBytes("UTF-8");
         }
         if (url.contains("api.deezer.com/chart")) return deezerList(50, 0).getBytes("UTF-8");
+        if (url.contains("api.deezer.com/artist/") && url.contains("/related")) return related(url).getBytes("UTF-8");
+        if (url.matches("https://api\\.deezer\\.com/artist/9\\d\\d/top.*")) return newArtistTop(url).getBytes("UTF-8");
         if (url.contains("api.deezer.com/artist/")) return deezerList(12, 3).getBytes("UTF-8");
         if (url.contains("api.deezer.com/search")) {
             int off = Math.abs(url.hashCode()) % SONGS.length;
@@ -259,6 +268,118 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver {
         }
         if (images != null) return images.make(url);
         return new byte[]{1, 2, 3};
+    }
+
+    public final AtomicInteger audiusCalls = new AtomicInteger();
+
+    /**
+     * Related artists: four new ones (ids 9xx, different for each seed artist) and one you
+     * already know (Shakira), which the discovery mix must skip.
+     */
+    static String related(String url) {
+        String id = url.replaceAll(".*/artist/(\\d+)/related.*", "$1");
+        int base = 900 + (Integer.parseInt(id) % 10) * 10;
+        StringBuilder b = new StringBuilder("{\"data\":[");
+        for (int i = 0; i < 4; i++) {
+            b.append(i > 0 ? "," : "").append("{\"id\":").append(base + i).append(",\"name\":\"Nuevo Artista ")
+                    .append(base + i).append("\",\"picture_big\":\"https://e-cdns-images.dzcdn.net/images/artist/n/500.jpg\",\"type\":\"artist\"}");
+        }
+        b.append(",{\"id\":51,\"name\":\"Shakira\",\"type\":\"artist\"}");
+        return b.append("],\"total\":5}").toString();
+    }
+
+    /** Top songs of a "new" artist (ids 9xx). */
+    static String newArtistTop(String url) {
+        int id = Integer.parseInt(url.replaceAll(".*/artist/(\\d+)/top.*", "$1"));
+        StringBuilder b = new StringBuilder("{\"data\":[");
+        for (int i = 0; i < 4; i++) {
+            long tid = id * 100L + i;
+            b.append(i > 0 ? "," : "").append("{\"id\":").append(tid).append(",\"readable\":true,\"title\":\"Descubrimiento ")
+                    .append(tid).append("\",\"title_short\":\"Descubrimiento ").append(tid).append("\",\"duration\":200")
+                    .append(",\"preview\":\"https://cdnt-preview.dzcdn.net/api/1/1/n/").append(tid).append(".mp3?hdnea=old\"")
+                    .append(",\"artist\":{\"id\":").append(id).append(",\"name\":\"Nuevo Artista ").append(id).append("\"}")
+                    .append(",\"album\":{\"id\":").append(id).append(",\"title\":\"Disco ").append(id)
+                    .append("\",\"cover_big\":\"https://e-cdns-images.dzcdn.net/images/cover/n/500.jpg\"},\"type\":\"track\"}");
+        }
+        return b.append("]}").toString();
+    }
+
+    static String audiusTrack(String id, String title, String artist, String genre, int seconds, boolean streamable, boolean gated) {
+        return "{\"id\":\"" + id + "\",\"title\":\"" + esc(title) + "\",\"duration\":" + seconds
+                + ",\"genre\":\"" + genre + "\",\"is_streamable\":" + streamable
+                + ",\"stream_conditions\":" + (gated ? "{\"usdc_purchase\":{\"price\":100}}" : "null")
+                + ",\"play_count\":12345,\"permalink\":\"/x/" + id + "\""
+                + ",\"user\":{\"id\":\"u" + id + "\",\"name\":\"" + esc(artist) + "\",\"handle\":\"h" + id + "\"}"
+                + ",\"artwork\":{\"150x150\":\"https://audius.example/" + id + "/150.jpg\",\"480x480\":\"https://audius.example/"
+                + id + "/480.jpg\",\"1000x1000\":\"https://audius.example/" + id + "/1000.jpg\"}}";
+    }
+
+    /** Audius: trending (by genre too) and search, shaped like api.audius.co/v1. */
+    static String audius(String url) {
+        String dec;
+        try {
+            dec = java.net.URLDecoder.decode(url, "UTF-8");
+        } catch (Exception e) {
+            dec = url;
+        }
+        List<String> l = new ArrayList<>();
+        if (dec.contains("/tracks/search")) {
+            if (dec.contains("Queen Bohemian Rhapsody")) {
+                l.add(audiusTrack("qbr1", "Bohemian Rhapsody (Piano Cover)", "Queen Fan Club", "Classical", 300, true, false));
+                l.add(audiusTrack("qbr2", "Bohemian Rhapsody - Remastered 2011", "Queen", "Rock", 355, true, false));
+            } else if (dec.contains("Miley Cyrus Flowers")) {
+                l.add(audiusTrack("mf1", "Flowers (Cover)", "Random Singer", "Pop", 200, true, false));
+                l.add(audiusTrack("mf2", "Flowers", "Miley Cyrus Fan", "Pop", 200, true, false));
+            } else if (!dec.contains("zzzz")) {
+                for (int i = 0; i < 5; i++) l.add(audiusTrack("s" + i, "Canción libre " + (i + 1), "Artista Libre", "Electronic", 200 + i, true, false));
+            }
+        } else {
+            String genre = dec.contains("genre=") ? dec.substring(dec.indexOf("genre=") + 6).split("&")[0] : "Electronic";
+            for (int i = 0; i < 12; i++) {
+                String id = dec.contains("genre=") ? "g" + Math.abs(genre.hashCode()) + "x" + i : "t" + i; // ids are unique per song
+                l.add(audiusTrack(id, "Tema completo " + (i + 1), "Productora " + (i % 4 + 1), genre, 150 + i * 10, true, false));
+            }
+            l.add(audiusTrack("gated", "Solo para seguidores", "Productora 1", genre, 180, true, true));
+            l.add(audiusTrack("nostream", "Borrador", "Productora 2", genre, 180, false, false));
+        }
+        StringBuilder b = new StringBuilder("{\"data\":[");
+        for (int i = 0; i < l.size(); i++) b.append(i > 0 ? "," : "").append(l.get(i));
+        return b.append("]}").toString();
+    }
+
+    /** Internet Archive advanced search: most downloaded netlabel releases. */
+    static String archiveSearch() {
+        StringBuilder b = new StringBuilder("{\"responseHeader\":{\"status\":0},\"response\":{\"numFound\":4,\"start\":0,\"docs\":[");
+        String[][] docs = {
+                {"jamendo-001", "Noches de Verano", "[\"Colectivo Sur\"]"},
+                {"netlabel-chill-02", "Lluvia Lenta", "\"Bruma\""},
+                {"live-1999-05-01", "En vivo en Rosario", "[\"La Banda\",\"Invitados\"]"},
+                {"empty-item", "Sin audio", "\"Nadie\""},
+        };
+        for (int i = 0; i < docs.length; i++) {
+            b.append(i > 0 ? "," : "").append("{\"identifier\":\"").append(docs[i][0]).append("\",\"title\":\"")
+                    .append(docs[i][1]).append("\",\"creator\":").append(docs[i][2]).append('}');
+        }
+        return b.append("]}}").toString();
+    }
+
+    /** Internet Archive item metadata: originals plus derived formats, out of order. */
+    static String archiveMetadata(String url) {
+        if (url.endsWith("/empty-item")) {
+            return "{\"metadata\":{\"identifier\":\"empty-item\",\"title\":\"Sin audio\"},\"files\":[{\"name\":\"notas.txt\",\"format\":\"Text\"}]}";
+        }
+        String id = url.substring(url.lastIndexOf('/') + 1);
+        return "{\"metadata\":{\"identifier\":\"" + id + "\",\"title\":\"Noches de Verano\",\"creator\":\"Colectivo Sur\"},"
+                + "\"files\":["
+                + "{\"name\":\"02 - Mar Abierto.flac\",\"source\":\"original\",\"format\":\"Flac\",\"track\":\"02\",\"title\":\"Mar Abierto\",\"length\":\"241.20\"},"
+                + "{\"name\":\"02 - Mar Abierto.mp3\",\"source\":\"derivative\",\"format\":\"VBR MP3\",\"track\":\"02\",\"title\":\"Mar Abierto\",\"length\":\"241.20\"},"
+                + "{\"name\":\"02 - Mar Abierto_64kb.mp3\",\"source\":\"derivative\",\"format\":\"64Kbps MP3\",\"length\":\"241.20\"},"
+                + "{\"name\":\"01 Intro #1.mp3\",\"source\":\"derivative\",\"format\":\"VBR MP3\",\"track\":\"1/3\",\"length\":\"1:05\"},"
+                + "{\"name\":\"03 - Despedida.mp3\",\"source\":\"derivative\",\"format\":\"VBR MP3\",\"track\":\"3\",\"title\":\"Despedida\",\"creator\":\"Colectivo Sur y amigos\",\"length\":\"300\"},"
+                + "{\"name\":\"02 - Mar Abierto.ogg\",\"source\":\"derivative\",\"format\":\"Ogg Vorbis\"},"
+                + "{\"name\":\"cover.jpg\",\"source\":\"original\",\"format\":\"JPEG\"},"
+                + "{\"name\":\"" + id + "_meta.xml\",\"source\":\"original\",\"format\":\"Metadata\"}"
+                + "]}";
     }
 
     static byte[] bytes(ByteArrayOutputStream o) {

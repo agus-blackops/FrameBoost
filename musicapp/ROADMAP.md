@@ -1,6 +1,6 @@
 # Roadmap de Sonora
 
-Estado: **v1.6** · Android 5.0+ · Java sin dependencias · ~115 KB
+Estado: **v1.9** · Android 8.0+ · Java + Media3 (compilado desde su código) · ~2,3 MB
 
 Este documento separa lo que **está hecho y probado**, lo que **está hecho pero sin verificar en un teléfono real**, y lo que **falta**. Los tamaños son de esfuerzo relativo (S = días, M = 1–2 semanas, L = más), no fechas: no hay equipo ni calendario detrás.
 
@@ -16,28 +16,32 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 | 1.6 | Podcasts (episodios completos), álbumes/artistas/playlists/géneros, más radios y estantes |
 | 1.6.1 / 1.6.2 | Fandoms y gaming (The Living Tombstone y más); versión para PC |
 | 1.7 | Icono nuevo (adaptable y temático) generado en Rust |
+| 1.9 | Música completa gratis (Audius, Internet Archive), modo "Solo canciones completas", "Escuchar completa", Mezcla de descubrimiento, motor Media3 (sin pausas entre canciones, radios HLS, "ahora suena") |
 
-**Probado** (39 pruebas automáticas en un simulador, con respuestas de ejemplo): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia y casos sin conexión.
+**Probado** (59 pruebas automáticas en un simulador, con respuestas de ejemplo; se repiten con `./test/run-tests.sh`): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia, casos sin conexión, fuentes completas, mezcla, y el **reproductor Media3 real** con archivos WAV.
 
 **Sin verificar en un dispositivo real** (el entorno donde se construyó no tiene emulador ni acceso a las APIs):
 - Que las APIs reales (Deezer, Apple Podcasts, radio-browser, LRCLIB) respondan como las respuestas de ejemplo.
 - El sonido real del ecualizador, refuerzo de graves y sonido envolvente.
 - Cambio de velocidad, audio en segundo plano y botones de auriculares/Bluetooth en distintas marcas.
 - Episodios con enlaces que redirigen o servidores lentos.
+- Las APIs reales de **Audius** y del **Internet Archive** (1.9) y el streaming real con Media3.
 
 ---
 
 ## 2. Límites conocidos (la deuda honesta)
 
-1. **Deezer solo da 30 segundos por canción.** Es el mayor límite del producto: para "música real" completa solo sirven tu música local y las radios.
+1. **Deezer solo da 30 segundos por canción.** Desde la 1.9 hay música completa gratis (Audius, Internet Archive) y el modo "Solo canciones completas", pero los éxitos comerciales siguen siendo vistas previas: no hay forma legal de tenerlos completos sin suscripción.
 2. **Nunca se corrió en un teléfono real.** Todo lo anterior puede esconder fallos de compatibilidad.
 3. **La clave de firma está en el repositorio con contraseña conocida.** Sirve para instalar el APK, no para publicar.
-4. **Las pruebas no se pueden correr desde el repositorio.** Viven en `test/`, pero el entorno que las ejecuta (Robolectric + librerías) solo existía en la sesión de trabajo. Hoy no hay integración continua.
+4. ~~Las pruebas no se pueden correr desde el repositorio.~~ Resuelto en la 1.9: `./test/run-tests.sh`. Falta conectarlo a una integración continua.
 5. **La interfaz está armada en código** (`MainActivity` ~1.850 líneas, `Library` ~1.200): funciona, pero es difícil de mantener.
 6. **Datos en SharedPreferences como JSON.** Aguanta cientos de elementos, no miles.
 7. **Textos en español escritos en el código**, sin `strings.xml` ni otros idiomas.
 8. **Sin descripciones de accesibilidad** (TalkBack) en los iconos.
 9. **No hay APK de 64 bits explícito ni AAB**, necesarios para Google Play.
+10. **Desde la 1.9 pide Android 8.0** (antes 5.0): Media3 usa funciones de Java 8 que, sin D8 (el compilador de Google, que el entorno de construcción no permite), solo funcionan desde Android 8. Compilar con D8 devolvería Android 5–7.
+11. **Media3 se compila desde su código** en el primer `build.sh` (necesita GitHub y Maven Central), porque sus paquetes solo están en el repositorio de Google.
 
 ---
 
@@ -57,23 +61,26 @@ Criterio de salida: instalación limpia en 3 teléfonos distintos, 1 hora de uso
 
 ---
 
-## 4. Siguiente — v1.9 "Música completa"
+## 4. ✅ Hecho en la 1.9 — "Música completa" (y lo que quedó pendiente)
 
 Objetivo: resolver el límite de 30 segundos con fuentes **legales y gratuitas**.
 
-- **Jamendo** (música con licencia Creative Commons, canciones completas, API gratuita con clave propia). Estantes, búsqueda y páginas de artista/álbum como las de Deezer. *(M)*
-- **Internet Archive / Free Music Archive** como fuentes extra de música libre. *(M)*
-- **Descargas sin conexión**, empezando por **episodios de podcast** (lo más simple y sin problemas de licencias) y música libre. Gestor de descargas con espacio usado y borrado. *(M–L)*
-- Marcar claramente en cada canción de qué fuente viene y si es completa o vista previa. *(S)*
+- ✅ **Audius** (en lugar de Jamendo: no necesita clave): tendencias, géneros y búsqueda, canciones completas.
+- ✅ **Internet Archive**: álbumes libres de netlabels y conciertos en vivo.
+- ✅ Cada canción dice si es **completa** y de qué fuente; modo **"Solo canciones completas"**; **"Escuchar completa"** sobre una vista previa cuando Audius tiene la misma canción.
+- ✅ **Mezcla de descubrimiento** (adelantada de la 2.0) y **Media3** con paso sin pausas entre canciones y radios HLS (adelantado de la 2.0).
+- Pendiente: **Jamendo** (necesita una clave propia de desarrollador). *(S)*
+- Pendiente: **descargas sin conexión** (episodios de podcast y música libre), con gestor de espacio. *(M–L)*
+- Pendiente: **fundido entre canciones** (crossfade), que Media3 no trae. *(M)*
 
-Decisión pendiente (ver sección 7): ¿Jamendo y Archive bastan, o se quiere integrar un servicio con cuenta (p. ej. Spotify con su SDK, que exige Premium)?
+La v1.8 "Cimientos" (sección 3) sigue pendiente: la 1.9 se adelantó a pedido. De ella ya está hecho que las pruebas se puedan repetir desde el repositorio.
 
 ---
 
 ## 5. Después — v2.0 "Pulido y plataforma"
 
 **Reproducción**
-- Migrar de `MediaPlayer` a **Media3/ExoPlayer**: mejor streaming, caché, reproducción sin pausas entre canciones (gapless), fundido cruzado (crossfade), radios HLS. *(L)*
+- ✅ ~~Migrar a Media3/ExoPlayer~~ (1.9). Falta: caché de audio y fundido cruzado (crossfade). *(M)*
 - Normalización de volumen y "saltar silencios" en podcasts. *(M)*
 
 **Podcasts**
@@ -81,7 +88,7 @@ Decisión pendiente (ver sección 7): ¿Jamendo y Archive bastan, o se quiere in
 - Importar/exportar suscripciones (OPML). *(S)*
 
 **Descubrimiento**
-- "Mezclas" generadas a partir de tu historial y tus "me gusta". *(M)*
+- ✅ ~~Mezcla de descubrimiento~~ (1.9). Siguiente: más mezclas (por estado de ánimo o por género) y "radio" a partir de una canción. *(M)*
 - Búsqueda unificada: canciones, álbumes, artistas, podcasts y radios en una sola pantalla. *(M)*
 
 **Datos**
@@ -123,4 +130,4 @@ Decisión pendiente (ver sección 7): ¿Jamendo y Archive bastan, o se quiere in
 2. **1.9 Música completa** → fuentes legales completas + descargas de podcasts.
 3. **2.0** en el orden que dicte el uso real: primero Media3 (gapless/crossfade), luego descubrimiento, luego plataformas (Auto/widget).
 
-*Última revisión: v1.7.*
+*Última revisión: v1.9.*

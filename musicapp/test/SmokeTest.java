@@ -26,9 +26,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
-import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowToast;
-import org.robolectric.shadows.util.DataSource;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -51,13 +49,12 @@ public class SmokeTest {
         PlaybackService.running = false;
         net = new Fixtures();
         Net.fetcher = net;
-        ShadowMediaPlayer.setMediaInfoProvider(new ShadowMediaPlayer.MediaInfoProvider() {
+        PlayerEngine.audioFactory = SimAudio.factory(new SimAudio.Durations() {
             @Override
-            public ShadowMediaPlayer.MediaInfo get(DataSource ds) {
-                opened.add(ds.toString());
-                return new ShadowMediaPlayer.MediaInfo(30000, 50);
+            public long of(String uri) {
+                return 30000;
             }
-        });
+        }, opened);
     }
 
     static void idle() {
@@ -94,6 +91,33 @@ public class SmokeTest {
         collect(root, all);
         for (View v : all) {
             if (v instanceof TextView && text.equals(((TextView) v).getText().toString()) && v.isShown()) return (TextView) v;
+        }
+        return null;
+    }
+
+    /**
+     * A text inside a Home shelf, found by the shelf's title: in its header (offset 0) or in the
+     * row right below it (offset 1), so tests don't depend on the order of the shelves.
+     */
+    static TextView inShelf(View root, String shelfTitle, String text, int offset) {
+        List<View> everything = new ArrayList<>();
+        collect(root, everything);
+        for (View start : everything) {
+            if (!(start instanceof TextView) || !shelfTitle.equals(((TextView) start).getText().toString())) continue;
+            View v = start; // the quick-access tile has the same title: try every match
+            while (v.getParent() instanceof ViewGroup) {
+                ViewGroup parent = (ViewGroup) v.getParent();
+                int i = parent.indexOfChild(v) + offset;
+                if (parent.getChildCount() > 4 && i < parent.getChildCount()) { // the shelves' column
+                    List<View> all = new ArrayList<>();
+                    collect(parent.getChildAt(i), all);
+                    for (View c : all) {
+                        if (c instanceof TextView && text.equals(((TextView) c).getText().toString())) return (TextView) c;
+                    }
+                    break;
+                }
+                v = parent;
+            }
         }
         return null;
     }
@@ -283,12 +307,9 @@ public class SmokeTest {
         a.onBackPressed();
         idle();
         layout(root);
-        List<View> vt = new ArrayList<>();
-        collect(root, vt);
-        List<TextView> verTodos = new ArrayList<>();
-        for (View v : vt) if (v instanceof TextView && "Ver todo".equals(((TextView) v).getText().toString())) verTodos.add((TextView) v);
-        assertTrue(verTodos.size() >= 2);
-        verTodos.get(1).performClick(); // 0 is "Escuchado recientemente", 1 is the Top 50
+        TextView verTodo = inShelf(root, "Top 50 mundial", "Ver todo", 0);
+        assertNotNull(verTodo);
+        verTodo.performClick();
         settle();
         layout(root);
         ListView lv = findList(root);
@@ -323,7 +344,9 @@ public class SmokeTest {
         assertNotNull(findText(root, "Sin conexión"));
         assertNotNull(findText(root, "Escucha tu propia música")); // no permission card
         net.offline = false;
-        clickText(root, "Reintentar");
+        TextView retry = inShelf(root, "Top 50 mundial", "Reintentar", 1);
+        assertNotNull(retry);
+        retry.performClick();
         settle();
         assertEquals(Library.READY, lib.section("top").state);
 

@@ -84,13 +84,18 @@ public final class Library {
         public static final int PLAYLIST = 2;
         public static final int GENRE = 3;
         public static final int PODCAST = 4;
+        /** An Internet Archive item (usually a free album); {@link #feed} holds its identifier. */
+        public static final int ARCHIVE = 5;
 
         public final int kind;
         public final long id;
         public final String title;
         public final String subtitle;
         public final String art;
-        /** Podcasts: the RSS feed; known after a lookup when the listing doesn't carry it. */
+        /**
+         * Podcasts: the RSS feed; known after a lookup when the listing doesn't carry it.
+         * Internet Archive items: the item identifier.
+         */
         public volatile String feed;
 
         public Item(int kind, long id, String title, String subtitle, String art, String feed) {
@@ -148,6 +153,8 @@ public final class Library {
         public List<Track> tracks = new ArrayList<>();
         public List<Item> items = new ArrayList<>();
         public int state = IDLE;
+        /** Where the shelf comes from: {@link #SRC_DEEZER} (previews), Audius or the Internet Archive. */
+        public int source = SRC_DEEZER;
 
         Section(String id, String title, String subtitle, String path, boolean radio) {
             this(id, title, subtitle, path, radio, -1);
@@ -177,6 +184,16 @@ public final class Library {
             return this;
         }
 
+        Section from(int src) {
+            source = src;
+            return this;
+        }
+
+        /** Complete songs, radios and podcasts; false for shelves of 30-second Deezer previews. */
+        public boolean complete() {
+            return source != SRC_DEEZER || radio || itemKind == Item.PODCAST;
+        }
+
         public boolean hasItems() {
             return itemKind >= 0;
         }
@@ -188,6 +205,26 @@ public final class Library {
     public static final int FAILED = 3;
 
     static final String DEEZER = "https://api.deezer.com";
+    /** Audius: artists upload their whole songs; free to stream, no account needed. */
+    static final String AUDIUS = "https://api.audius.co/v1";
+    static final String AUDIUS_APP = "app_name=Sonora";
+    static final String ARCHIVE = "https://archive.org";
+
+    public static final int SRC_DEEZER = 0;
+    public static final int SRC_AUDIUS = 1;
+    public static final int SRC_ARCHIVE = 2;
+    /** The discovery mix, built from your likes and history. */
+    public static final int SRC_MIX = 3;
+
+    private static String audius(String path) {
+        return path + (path.contains("?") ? "&" : "?") + AUDIUS_APP;
+    }
+
+    /** Most downloaded audio items of an Internet Archive collection. */
+    private static String archive(String collection) {
+        return "/advancedsearch.php?q=" + Net.enc("collection:(" + collection + ") AND mediatype:audio")
+                + "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=creator&sort%5B%5D=downloads+desc&rows=30&output=json";
+    }
     static final String[] RADIO_SERVERS = {
             "https://de1.api.radio-browser.info", "https://de2.api.radio-browser.info",
             "https://fi1.api.radio-browser.info", "https://nl1.api.radio-browser.info",
@@ -215,10 +252,17 @@ public final class Library {
         String radioPath = country.length() == 2
                 ? "/json/stations/search?countrycode=" + country + RADIO_QUERY
                 : "/json/stations/search?language=spanish" + RADIO_QUERY;
+        addSection(new Section(MIX, "Mezcla de descubrimiento",
+                "Artistas nuevos para ti, según lo que te gusta · cambia cada día", null, false).from(SRC_MIX).featured());
+        // complete songs, free and without an account
+        addSection(new Section("full-trending", "Canciones completas", "Tendencias en Audius, gratis y enteras",
+                audius("/tracks/trending?limit=40"), false).from(SRC_AUDIUS).featured());
         addSection(new Section("top", "Top 50 mundial", "Lo más escuchado ahora en Deezer",
                 "/chart/0/tracks?limit=50", false).featured());
         addSection(new Section("radio", "Radios en vivo", "Emisoras reales, canciones completas",
                 radioPath, true).featured());
+        addSection(new Section("archive", "Álbumes libres", "Del Internet Archive: discos completos con licencia libre",
+                archive("netlabels"), false, Item.ARCHIVE).from(SRC_ARCHIVE).featured());
         addSection(new Section("releases", "Nuevos lanzamientos", "Álbumes recién salidos",
                 "/editorial/0/releases?limit=25", false, Item.ALBUM).featured());
         addSection(new Section("artists", "Artistas populares", "Los más escuchados",
@@ -267,6 +311,38 @@ public final class Library {
                 "/json/stations/search?tag=jazz" + RADIO_QUERY, true));
         addSection(new Section("radio-electronic", "Radios electrónicas", "Beats sin pausa",
                 "/json/stations/search?tag=electronic" + RADIO_QUERY, true));
+        String[][] fullGenres = {
+                {"full-electronic", "Electrónica completa", "Electronic"}, {"full-hiphop", "Hip hop completo", "Hip-Hop/Rap"},
+                {"full-lofi", "Lo-fi completo", "Lo-Fi"}, {"full-latin", "Latina completa", "Latin"},
+                {"full-pop", "Pop completo", "Pop"}, {"full-rock", "Rock completo", "Rock"},
+                {"full-ambient", "Ambient completo", "Ambient"},
+        };
+        for (String[] g : fullGenres) {
+            addSection(new Section(g[0], g[1], "Canciones enteras en Audius",
+                    audius("/tracks/trending?limit=40&genre=" + Net.enc(g[2])), false).from(SRC_AUDIUS));
+        }
+        addSection(new Section("archive-live", "Conciertos en vivo", "Grabaciones de conciertos del Internet Archive",
+                archive("etree"), false, Item.ARCHIVE).from(SRC_ARCHIVE));
+    }
+
+    // ---------------------------------------------------------------- only complete songs
+
+    /** "Solo canciones completas": hides the 30-second previews everywhere. */
+    public boolean fullOnly() {
+        return prefs.getBoolean("fullOnly", false);
+    }
+
+    public void setFullOnly(boolean on) {
+        prefs.edit().putBoolean("fullOnly", on).apply();
+        notifyChanged();
+    }
+
+    /** The shelves to show, respecting {@link #fullOnly()}. */
+    public List<Section> visibleSections() {
+        List<Section> out = new ArrayList<>();
+        boolean only = fullOnly();
+        for (Section s : sections.values()) if (!only || s.complete()) out.add(s);
+        return out;
     }
 
     private void addSection(Section s) {
@@ -283,6 +359,8 @@ public final class Library {
 
     /** Loads the featured shelves that aren't loaded yet (or failed); the others load when opened. */
     public void loadOnline() {
+        Section mix = sections.get(MIX);
+        if (mix.state == READY && mixDay != today()) mix.state = IDLE; // a new mix every day
         for (Section s : sections.values()) {
             if (s.featured && s.state != READY && s.state != LOADING) loadSection(s);
         }
@@ -294,6 +372,10 @@ public final class Library {
         notifyChanged();
         if (s.hasItems()) {
             loadItemsSection(s);
+            return;
+        }
+        if (s.source == SRC_MIX) {
+            loadMix(s);
             return;
         }
         Net.POOL.execute(new Runnable() {
@@ -309,6 +391,8 @@ public final class Library {
                                 if (!found.contains(t)) found.add(t);
                             }
                         }
+                    } else if (s.source == SRC_AUDIUS) {
+                        found = parseAudius(Net.getString(AUDIUS + s.path));
                     } else {
                         found = parseDeezer(Net.getString(DEEZER + s.path));
                     }
@@ -340,6 +424,8 @@ public final class Library {
                 try {
                     if (s.names != null) {
                         found = artistsByName(s.names);
+                    } else if (s.source == SRC_ARCHIVE) {
+                        found = parseArchiveItems(Net.getString(ARCHIVE + s.path));
                     } else {
                         String body = s.itemKind == Item.PODCAST ? topPodcastsBody() : Net.getString(DEEZER + s.path);
                         found = parseItems(s.itemKind, body);
@@ -504,6 +590,9 @@ public final class Library {
                             break;
                         case Item.ARTIST:
                             found = parseDeezer(Net.getString(DEEZER + "/artist/" + it.id + "/top?limit=50"));
+                            break;
+                        case Item.ARCHIVE:
+                            found = parseArchiveTracks(Net.getString(ARCHIVE + "/metadata/" + Net.enc(it.feed)), it);
                             break;
                         default:
                             if (it.feed == null) {
@@ -732,8 +821,15 @@ public final class Library {
             public void run() {
                 final List<Track> out = new ArrayList<>();
                 boolean ok = false;
-                try {
-                    out.addAll(parseDeezer(Net.getString(DEEZER + "/search?limit=40&q=" + Net.enc(query))));
+                if (!fullOnly()) {
+                    try {
+                        out.addAll(parseDeezer(Net.getString(DEEZER + "/search?limit=40&q=" + Net.enc(query))));
+                        ok = true;
+                    } catch (Exception ignored) {
+                    }
+                }
+                try { // complete songs
+                    out.addAll(parseAudius(Net.getString(AUDIUS + audius("/tracks/search?limit=20&query=" + Net.enc(query)))));
                     ok = true;
                 } catch (Exception ignored) {
                 }
@@ -819,6 +915,372 @@ public final class Library {
             if (!out.contains(t)) out.add(t);
         }
         return out;
+    }
+
+    static List<Track> parseAudius(String body) throws Exception {
+        JSONObject root = new JSONObject(body);
+        JSONArray data = root.optJSONArray("data");
+        if (data == null) throw new Exception("Respuesta de Audius sin datos");
+        List<Track> out = new ArrayList<>();
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject o = data.optJSONObject(i);
+            Track t = o == null ? null : Track.fromAudius(o, AUDIUS, AUDIUS_APP);
+            if (t != null && !out.contains(t)) out.add(t);
+        }
+        return out;
+    }
+
+    static List<Item> parseArchiveItems(String body) throws Exception {
+        JSONObject resp = new JSONObject(body).optJSONObject("response");
+        JSONArray docs = resp == null ? null : resp.optJSONArray("docs");
+        if (docs == null) throw new Exception("Respuesta del Internet Archive sin datos");
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject o = docs.optJSONObject(i);
+            if (o == null) continue;
+            String id = o.optString("identifier", "");
+            if (id.isEmpty()) continue;
+            Item it = new Item(Item.ARCHIVE, archiveId(id), firstString(o, "title"), firstString(o, "creator"),
+                    ARCHIVE + "/services/img/" + id, id);
+            if (!out.contains(it)) out.add(it);
+        }
+        return out;
+    }
+
+    /** A stable positive number for an Internet Archive identifier (items are keyed by kind + id). */
+    static long archiveId(String identifier) {
+        return (identifier.hashCode() & 0x7fffffffL) + 1;
+    }
+
+    /** Archive fields can be a string or a list of strings. */
+    private static String firstString(JSONObject o, String name) {
+        JSONArray a = o.optJSONArray(name);
+        if (a != null) return a.length() > 0 ? a.optString(0) : "";
+        return o.optString(name, "");
+    }
+
+    /** Audio formats the Archive derives, best first for streaming on a phone. */
+    static final String[] ARCHIVE_FORMATS = {"VBR MP3", "128Kbps MP3", "MP3", "64Kbps MP3", "Ogg Vorbis"};
+
+    /** The songs of an Internet Archive item, in one format (each song exists in several). */
+    static List<Track> parseArchiveTracks(String body, Item item) throws Exception {
+        JSONObject root = new JSONObject(body);
+        JSONArray files = root.optJSONArray("files");
+        if (files == null) throw new Exception("Item del Internet Archive sin archivos");
+        JSONObject meta = root.optJSONObject("metadata");
+        String album = meta != null && !firstString(meta, "title").isEmpty() ? firstString(meta, "title") : item.title;
+        String creator = meta != null && !firstString(meta, "creator").isEmpty() ? firstString(meta, "creator") : item.subtitle;
+        String format = null;
+        for (String f : ARCHIVE_FORMATS) {
+            for (int i = 0; i < files.length() && format == null; i++) {
+                JSONObject o = files.optJSONObject(i);
+                if (o != null && f.equals(o.optString("format"))) format = f;
+            }
+            if (format != null) break;
+        }
+        final List<Object[]> picked = new ArrayList<>();
+        if (format != null) {
+            for (int i = 0; i < files.length(); i++) {
+                JSONObject o = files.optJSONObject(i);
+                if (o == null || !format.equals(o.optString("format"))) continue;
+                String name = o.optString("name");
+                String title = o.optString("title", "");
+                if (title.isEmpty()) {
+                    title = name.replaceAll("\\.[A-Za-z0-9]+$", "").replace('_', ' ');
+                    int slash = title.lastIndexOf('/');
+                    if (slash >= 0) title = title.substring(slash + 1);
+                }
+                String artist = o.optString("creator", o.optString("artist", ""));
+                int number = leadingInt(o.optString("track", ""));
+                Track t = Track.full("ia:" + item.feed + "/" + name, title, artist.isEmpty() ? creator : artist, album,
+                        (long) (parseLength(o.optString("length", "")) * 1000), item.art, item.art,
+                        ARCHIVE + "/download/" + Net.encPath(item.feed) + "/" + Net.encPath(name));
+                picked.add(new Object[]{number, name, t});
+            }
+        }
+        Collections.sort(picked, new Comparator<Object[]>() {
+            @Override
+            public int compare(Object[] a, Object[] b) {
+                int na = (Integer) a[0], nb = (Integer) b[0];
+                if (na != nb) return na == 0 ? 1 : nb == 0 ? -1 : Integer.compare(na, nb);
+                return ((String) a[1]).compareToIgnoreCase((String) b[1]);
+            }
+        });
+        List<Track> out = new ArrayList<>();
+        for (Object[] p : picked) out.add((Track) p[2]);
+        return out;
+    }
+
+    private static int leadingInt(String s) {
+        int n = 0, i = 0;
+        while (i < s.length() && Character.isDigit(s.charAt(i))) n = n * 10 + (s.charAt(i++) - '0');
+        return n;
+    }
+
+    /** "245.62" seconds or "4:05" / "1:02:03". */
+    static double parseLength(String s) {
+        try {
+            if (!s.contains(":")) return s.isEmpty() ? 0 : Double.parseDouble(s);
+            double total = 0;
+            for (String part : s.split(":")) total = total * 60 + Double.parseDouble(part);
+            return total;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    // ---------------------------------------------------------------- discovery mix
+
+    public static final String MIX = "discovery";
+    static final int MIX_SIZE = 30;
+    private long mixDay = -1;
+    /** True when the last mix was built from your taste (false: a starter mix of what's trending). */
+    private boolean mixPersonal;
+
+    static long today() {
+        return (System.currentTimeMillis() + java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis())) / 86400000L;
+    }
+
+    public boolean mixIsPersonal() {
+        return mixPersonal;
+    }
+
+    private void loadMix(final Section s) {
+        // snapshot on the main thread; the network work happens in the background
+        final List<Track> likes = likedTracks();
+        final List<Track> played = recentlyPlayed(HISTORY_MAX);
+        final boolean only = fullOnly();
+        final long day = today();
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Track> found = null;
+                boolean personal = false;
+                try {
+                    personal = !mixSeeds(likes, played).isEmpty();
+                    found = discoveryMix(likes, played, only, day);
+                } catch (Exception ignored) {
+                }
+                final List<Track> result = found;
+                final boolean fromTaste = personal;
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result == null || result.isEmpty()) {
+                            s.state = FAILED;
+                        } else {
+                            register(result);
+                            s.tracks = result;
+                            s.state = READY;
+                            mixDay = day;
+                            mixPersonal = fromTaste;
+                        }
+                        notifyChanged();
+                    }
+                });
+            }
+        });
+    }
+
+    /** An artist you listen to: weight 3 per like, 1 per play. */
+    static final class Seed {
+        final String name;
+        long deezerId;
+        int weight;
+
+        Seed(String name) {
+            this.name = name;
+        }
+    }
+
+    /** Your artists, most listened first (local files, previews and complete songs alike). */
+    static List<Seed> mixSeeds(List<Track> likes, List<Track> played) {
+        LinkedHashMap<String, Seed> seeds = new LinkedHashMap<>();
+        for (int pass = 0; pass < 2; pass++) {
+            for (Track t : pass == 0 ? likes : played) {
+                if (t.isLive() || t.isEpisode() || "Artista desconocido".equals(t.artist)) continue;
+                String k = fold(t.artist).trim();
+                Seed sd = seeds.get(k);
+                if (sd == null) seeds.put(k, sd = new Seed(t.artist));
+                sd.weight += pass == 0 ? 3 : 1;
+                if (sd.deezerId <= 0 && t.key.startsWith("dz:") && t.artistId > 0) sd.deezerId = t.artistId;
+            }
+        }
+        List<Seed> out = new ArrayList<>(seeds.values());
+        Collections.sort(out, new Comparator<Seed>() {
+            @Override
+            public int compare(Seed a, Seed b) {
+                return b.weight - a.weight;
+            }
+        });
+        return out;
+    }
+
+    /**
+     * Songs by artists you don't know yet, close to the ones you do: Deezer's related artists and
+     * their top songs, plus complete songs from Audius in the genres you play there. Nothing you
+     * already liked or heard. The order is shuffled with the day as seed: same mix all day, a new
+     * one tomorrow. Without likes or history it is a starter mix of what's trending.
+     * Background thread.
+     */
+    static List<Track> discoveryMix(List<Track> likes, List<Track> played, boolean fullOnly, long day) throws Exception {
+        java.util.Set<String> known = new java.util.HashSet<>();
+        for (Track t : likes) known.add(t.key);
+        for (Track t : played) known.add(t.key);
+        List<Seed> seeds = mixSeeds(likes, played);
+        java.util.Set<String> seedNames = new java.util.HashSet<>();
+        for (Seed sd : seeds) seedNames.add(fold(sd.name).trim());
+
+        List<Track> catalog = new ArrayList<>(); // previews of related artists
+        List<Track> free = new ArrayList<>();    // complete songs
+        int calls = 0, failures = 0;
+        Exception last = null;
+
+        if (!fullOnly) {
+            if (seeds.isEmpty()) {
+                calls++;
+                try {
+                    catalog.addAll(parseDeezer(Net.getString(DEEZER + "/chart/0/tracks?limit=30")));
+                } catch (Exception e) {
+                    failures++;
+                    last = e;
+                }
+            }
+            java.util.Set<Long> usedRelated = new java.util.HashSet<>();
+            for (int i = 0; i < Math.min(4, seeds.size()); i++) {
+                Seed sd = seeds.get(i);
+                calls++;
+                try {
+                    long id = sd.deezerId;
+                    if (id <= 0) {
+                        Item a = findArtist(sd.name);
+                        if (a == null) continue;
+                        id = a.id;
+                    }
+                    List<Item> related = parseItems(Item.ARTIST, Net.getString(DEEZER + "/artist/" + id + "/related?limit=8"));
+                    int taken = 0;
+                    for (Item r : related) {
+                        if (taken >= 3) break;
+                        if (seedNames.contains(fold(r.title).trim()) || !usedRelated.add(r.id)) continue;
+                        taken++;
+                        int perArtist = 0;
+                        for (Track t : parseDeezer(Net.getString(DEEZER + "/artist/" + r.id + "/top?limit=5"))) {
+                            if (perArtist >= 2) break;
+                            if (known.contains(t.key) || catalog.contains(t)) continue;
+                            catalog.add(t);
+                            perArtist++;
+                        }
+                    }
+                } catch (Exception e) {
+                    failures++;
+                    last = e;
+                }
+            }
+        }
+
+        // complete songs: the Audius genres you play, or what's trending there
+        List<String> genres = new ArrayList<>();
+        for (List<Track> l : java.util.Arrays.asList(likes, played)) {
+            for (Track t : l) {
+                if (t.key.startsWith("au:") && !genres.contains(t.album) && !"Audius".equals(t.album)) genres.add(t.album);
+            }
+        }
+        if (genres.isEmpty()) genres.add(null);
+        for (int i = 0; i < Math.min(2, genres.size()); i++) {
+            String g = genres.get(i);
+            calls++;
+            try {
+                java.util.Map<String, Integer> perArtist = new HashMap<>();
+                for (Track t : parseAudius(Net.getString(AUDIUS + audius("/tracks/trending?limit=30"
+                        + (g == null ? "" : "&genre=" + Net.enc(g)))))) {
+                    String a = fold(t.artist).trim();
+                    Integer n = perArtist.get(a);
+                    if (known.contains(t.key) || seedNames.contains(a) || free.contains(t) || (n != null && n >= 2)) continue;
+                    perArtist.put(a, n == null ? 1 : n + 1);
+                    free.add(t);
+                }
+            } catch (Exception e) {
+                failures++;
+                last = e;
+            }
+        }
+        if (calls > 0 && failures == calls && last != null) throw last;
+
+        java.util.Random r = new java.util.Random(day * 31 + seeds.size());
+        Collections.shuffle(catalog, r);
+        Collections.shuffle(free, r);
+        // alternate: a new artist from the catalog, a complete free song, …
+        List<Track> mix = new ArrayList<>();
+        for (int i = 0; mix.size() < MIX_SIZE && (i < catalog.size() || i < free.size()); i++) {
+            if (i < catalog.size()) mix.add(catalog.get(i));
+            if (i < free.size() && mix.size() < MIX_SIZE) mix.add(free.get(i));
+        }
+        return mix;
+    }
+
+    // ---------------------------------------------------------------- full version of a preview
+
+    public interface FullVersion {
+        /** Called on the main thread with the complete song, or null if there is none. */
+        void onFound(Track full);
+    }
+
+    private final Map<String, Track> fullVersions = new HashMap<>();
+    private final java.util.Set<String> noFullVersion = new java.util.HashSet<>();
+
+    /** Song title without the "(feat. …)", "[Remastered]" or " - Radio Edit" decorations. */
+    static String baseTitle(String title) {
+        String t = title.replaceAll("\\s*[\\(\\[][^\\)\\]]*[\\)\\]]", "");
+        int dash = t.indexOf(" - ");
+        if (dash > 0) t = t.substring(0, dash);
+        return fold(t).trim();
+    }
+
+    /**
+     * Looks for the same song, complete and free, on Audius: same title and same artist name, so
+     * a cover or a different song with that name is never offered.
+     */
+    public void findFullVersion(final Track preview, final FullVersion cb) {
+        if (preview.isComplete()) return;
+        Track known = fullVersions.get(preview.key);
+        if (known != null || noFullVersion.contains(preview.key)) {
+            cb.onFound(known);
+            return;
+        }
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                Track match = null;
+                boolean answered = false;
+                try {
+                    List<Track> found = parseAudius(Net.getString(AUDIUS + audius("/tracks/search?limit=10&query="
+                            + Net.enc(preview.artist + " " + preview.title))));
+                    answered = true;
+                    String title = baseTitle(preview.title), artist = fold(preview.artist).trim();
+                    for (Track t : found) {
+                        if (baseTitle(t.title).equals(title) && fold(t.artist).trim().equals(artist)) {
+                            match = t;
+                            break;
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+                final Track result = match;
+                final boolean definitive = answered;
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result != null) {
+                            register(java.util.Collections.singletonList(result));
+                            fullVersions.put(preview.key, result);
+                        } else if (definitive) {
+                            noFullVersion.add(preview.key);
+                        }
+                        cb.onFound(result);
+                    }
+                });
+            }
+        });
     }
 
     static List<Track> parseRadios(String body) throws Exception {

@@ -4,7 +4,8 @@ import org.json.JSONObject;
 
 /**
  * One playable item: a file on the device, a 30-second preview of a real song from the
- * Deezer catalog, or a live radio station.
+ * Deezer catalog, a complete song from a free source (Audius, Internet Archive), a podcast
+ * episode, or a live radio station.
  */
 public final class Track {
 
@@ -12,8 +13,13 @@ public final class Track {
     public static final int PREVIEW = 1;
     public static final int RADIO = 2;
     public static final int EPISODE = 3;
+    /** A complete song, free and without an account: Audius or the Internet Archive. */
+    public static final int FULL = 4;
 
-    /** Stable identity used for likes and playlists: a content:// uri, "dz:<id>" or "radio:<uuid>". */
+    /**
+     * Stable identity used for likes and playlists: a content:// uri, "dz:<id>" (Deezer),
+     * "au:<id>" (Audius), "ia:<item>/<file>" (Internet Archive) or "radio:<uuid>".
+     */
     public final String key;
     public final String title;
     public final String artist;
@@ -73,6 +79,44 @@ public final class Track {
 
     public boolean isEpisode() {
         return kind == EPISODE;
+    }
+
+    /** The whole song (local files, free sources, episodes), as opposed to a 30-second preview. */
+    public boolean isComplete() {
+        return kind != PREVIEW;
+    }
+
+    /** Where an online song comes from, for labels. */
+    public String sourceName() {
+        if (key.startsWith("au:")) return "Audius";
+        if (key.startsWith("ia:")) return "Internet Archive";
+        if (key.startsWith("dz:")) return "Deezer";
+        return "";
+    }
+
+    /** A complete song from a free source; {@code url} streams it as is. */
+    static Track full(String key, String title, String artist, String album, long durationMs,
+                      String art, String artSmall, String url) {
+        return new Track(key, FULL, title, artist, album, 0, durationMs, 0, art, artSmall, 0, 0, url);
+    }
+
+    /**
+     * Builds a song from an Audius API track object (null when it can't be streamed freely:
+     * some tracks are reserved to the artist's followers or sold).
+     */
+    static Track fromAudius(JSONObject o, String api, String app) {
+        String id = o.optString("id", "");
+        if (id.isEmpty() || !o.optBoolean("is_streamable", true)) return null;
+        Object gate = o.opt("stream_conditions");
+        if (gate != null && gate != JSONObject.NULL) return null;
+        JSONObject user = o.optJSONObject("user");
+        JSONObject art = o.optJSONObject("artwork");
+        String big = art == null ? null : art.optString("1000x1000", art.optString("480x480", ""));
+        String small = art == null ? null : art.optString("480x480", art.optString("150x150", ""));
+        String genre = o.optString("genre", "");
+        return full("au:" + id, o.optString("title"), user == null ? null : user.optString("name"),
+                genre.isEmpty() ? "Audius" : genre, o.optLong("duration") * 1000L, big, small,
+                api + "/tracks/" + id + "/stream?" + app);
     }
 
     /** The link handed to the media player. */

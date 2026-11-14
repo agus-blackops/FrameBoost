@@ -23,8 +23,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
-import org.robolectric.shadows.ShadowMediaPlayer;
-import org.robolectric.shadows.util.DataSource;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -52,12 +50,12 @@ public class BigUpdateTest {
         Net.fetcher = net;
         app = RuntimeEnvironment.getApplication();
         shadowOf(app).grantPermissions(Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.POST_NOTIFICATIONS);
-        ShadowMediaPlayer.setMediaInfoProvider(new ShadowMediaPlayer.MediaInfoProvider() {
+        PlayerEngine.audioFactory = SimAudio.factory(new SimAudio.Durations() {
             @Override
-            public ShadowMediaPlayer.MediaInfo get(DataSource ds) {
-                return new ShadowMediaPlayer.MediaInfo(30000, 50);
+            public long of(String uri) {
+                return 30000;
             }
-        });
+        }, new ArrayList<String>());
     }
 
     static void forget(Class<?> k) throws Exception {
@@ -85,12 +83,12 @@ public class BigUpdateTest {
 
     @Test
     public void sleepTimerFadesAndPauses() throws Exception {
-        ShadowMediaPlayer.setMediaInfoProvider(new ShadowMediaPlayer.MediaInfoProvider() {
+        PlayerEngine.audioFactory = SimAudio.factory(new SimAudio.Durations() {
             @Override
-            public ShadowMediaPlayer.MediaInfo get(DataSource ds) {
-                return new ShadowMediaPlayer.MediaInfo(3600000, 50); // long song: it won't end on its own
+            public long of(String uri) {
+                return 3600000; // long song: it won't end on its own
             }
-        });
+        }, new ArrayList<String>());
         List<Track> tracks = chart();
         PlayerEngine p = PlayerEngine.get(app);
         p.playList(tracks, 0, "Top");

@@ -457,6 +457,8 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                             return "Género";
                         case Library.Item.PODCAST:
                             return item.subtitle.isEmpty() ? "Podcast" : "Podcast · " + item.subtitle;
+                        case Library.Item.ARCHIVE:
+                            return item.subtitle.isEmpty() ? "Álbum libre" : "Álbum libre · " + item.subtitle;
                         default:
                             return "Playlist";
                     }
@@ -572,7 +574,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         m.add(0, 1, 0, lib.isLiked(t) ? "Quitar de Me gusta" : "Añadir a Me gusta");
         m.add(0, 2, 0, "Reproducir a continuación");
         m.add(0, 3, 0, "Añadir a playlist…");
-        if (!t.isLive() && !t.isEpisode()) m.add(0, 4, 0, "Ir al artista");
+        if (!t.isLive() && !t.isEpisode() && t.kind != Track.FULL) m.add(0, 4, 0, "Ir al artista");
         if (!t.remote) m.add(0, 5, 0, "Ir al álbum");
 
         if (from != null && from.kind == C_PLAYLIST) m.add(0, 6, 0, "Quitar de esta playlist");
@@ -953,6 +955,43 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         return box;
     }
 
+    /** Home: what is free and complete, and the switch that hides the 30-second previews. */
+    private View freeCard() {
+        LinearLayout card = Ui.column(this);
+        card.setBackground(Ui.rounded(Ui.CARD, Ui.dp(this, 10)));
+        int p = Ui.dp(this, 16);
+        card.setPadding(p, p, p, Ui.dp(this, 8));
+        card.addView(Ui.text(this, "Gratis y sin suscripción", 17, Ui.TEXT, true));
+        TextView body = Ui.text(this, "Sonora no tiene cuentas ni pagos. Suenan completas las canciones de Audius y del "
+                + "Internet Archive, tu música, las radios y los podcasts. Las de Deezer son vistas previas de 30 s.", 14, Ui.SUB, false);
+        body.setSingleLine(false);
+        body.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 4));
+        card.addView(body);
+        final android.widget.Switch only = new android.widget.Switch(this);
+        only.setText("Solo canciones completas");
+        only.setTextColor(Ui.TEXT);
+        only.setTextSize(15);
+        only.setChecked(lib.fullOnly());
+        int[][] states = {{android.R.attr.state_checked}, {}};
+        only.setThumbTintList(new android.content.res.ColorStateList(states, new int[]{Ui.GREEN, 0xFFB3B3B3}));
+        only.setTrackTintList(new android.content.res.ColorStateList(states, new int[]{0x8822C55E, 0x55FFFFFF}));
+        only.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(android.widget.CompoundButton b, boolean on) {
+                lib.setFullOnly(on);
+                if (on) lib.loadOnline();
+                Toast.makeText(MainActivity.this, on ? "Solo canciones completas: sin vistas previas"
+                        : "Vistas previas de Deezer visibles otra vez", Toast.LENGTH_SHORT).show();
+            }
+        });
+        only.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 4));
+        card.addView(only, Ui.lp(Ui.MATCH, Ui.WRAP));
+        LinearLayout.LayoutParams lp = Ui.lp(Ui.MATCH, Ui.WRAP);
+        lp.setMargins(Ui.dp(this, 16), Ui.dp(this, 16), Ui.dp(this, 16), 0);
+        card.setLayoutParams(lp);
+        return card;
+    }
+
     private View permissionCard() {
         LinearLayout card = Ui.column(this);
         card.setBackground(Ui.rounded(Ui.CARD, Ui.dp(this, 10)));
@@ -1015,7 +1054,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             List<Collection> quick = new ArrayList<>();
             quick.add(new Collection(C_LIKED, null));
             quick.add(new Collection(C_DEVICE, null));
-            quick.add(new Collection(C_ONLINE, "top"));
+            quick.add(new Collection(C_ONLINE, lib.fullOnly() ? "full-trending" : "top"));
             quick.add(new Collection(C_ONLINE, "radio"));
             if (!lib.localTracks().isEmpty()) quick.add(new Collection(C_RECENT, null));
             for (String name : lib.playlistNames()) {
@@ -1032,6 +1071,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 grid.addView(r);
             }
             col.addView(grid);
+            col.addView(freeCard());
 
             List<Track> played = lib.recentlyPlayed(15);
             if (!played.isEmpty()) {
@@ -1059,10 +1099,14 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             }
 
             // real content from the internet: charts, new releases, artists, playlists, radio…
-            for (Library.Section sec : lib.sections()) {
+            for (Library.Section sec : lib.visibleSections()) {
                 if (!sec.featured) continue;
                 Collection c = new Collection(C_ONLINE, sec.id);
-                col.addView(sectionHeader(c, sec.subtitle));
+                String sub = sec.subtitle;
+                if (Library.MIX.equals(sec.id) && sec.state == Library.READY && !lib.mixIsPersonal()) {
+                    sub = "Para empezar: lo que suena hoy. Dale me gusta a canciones y se adaptará a ti";
+                }
+                col.addView(sectionHeader(c, sub));
                 if (sec.state != Library.READY) {
                     col.addView(sectionStatus(sec));
                 } else if (sec.hasItems()) {
@@ -1381,7 +1425,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     private View browseGrid(final EditText input) {
         List<Collection> cats = new ArrayList<>();
-        for (Library.Section sec : lib.sections()) cats.add(new Collection(C_ONLINE, sec.id));
+        for (Library.Section sec : lib.visibleSections()) cats.add(new Collection(C_ONLINE, sec.id));
         cats.add(new Collection(C_DEVICE, null));
         cats.add(new Collection(C_LIKED, null));
         if (!lib.localTracks().isEmpty()) cats.add(new Collection(C_RECENT, null));
@@ -1529,7 +1573,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 items.add(new Collection(C_LIKED, null));
                 items.add(new Collection(C_DEVICE, null));
                 if (!lib.recentlyPlayed(1).isEmpty()) items.add(new Collection(C_HISTORY, null));
-                items.add(new Collection(C_ONLINE, "top"));
+                items.add(new Collection(C_ONLINE, lib.fullOnly() ? "full-trending" : "top"));
                 items.add(new Collection(C_ONLINE, "radio"));
                 for (String n : lib.playlistNames()) items.add(new Collection(C_PLAYLIST, n));
             } else if (filter == 3) {
