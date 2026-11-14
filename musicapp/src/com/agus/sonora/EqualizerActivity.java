@@ -29,6 +29,7 @@ public final class EqualizerActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle state) {
+        Ui.apply(this);
         super.onCreate(state);
         fx = Effects.get(this);
         info = Effects.info();
@@ -48,8 +49,7 @@ public final class EqualizerActivity extends Activity {
         top.addView(title, Ui.weight(1));
         final Switch on = new Switch(this);
         on.setChecked(fx.isEnabled());
-        on.setThumbTintList(ColorStateList.valueOf(Ui.GREEN));
-        on.setTrackTintList(ColorStateList.valueOf(0x661DB954));
+        Ui.tintSwitch(on);
         on.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton b, boolean checked) {
@@ -104,7 +104,7 @@ public final class EqualizerActivity extends Activity {
                 bar.setMax(Math.round((info.maxDb - info.minDb) * 2)); // half-dB steps
                 bar.setProgressTintList(ColorStateList.valueOf(Ui.GREEN));
                 bar.setThumbTintList(ColorStateList.valueOf(Ui.GREEN));
-                bar.setProgressBackgroundTintList(ColorStateList.valueOf(0x44FFFFFF));
+                bar.setProgressBackgroundTintList(ColorStateList.valueOf(Ui.TRACK));
                 bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
@@ -176,7 +176,7 @@ public final class EqualizerActivity extends Activity {
         bar.setProgress(initial / 10);
         bar.setProgressTintList(ColorStateList.valueOf(Ui.GREEN));
         bar.setThumbTintList(ColorStateList.valueOf(Ui.GREEN));
-        bar.setProgressBackgroundTintList(ColorStateList.valueOf(0x44FFFFFF));
+        bar.setProgressBackgroundTintList(ColorStateList.valueOf(Ui.TRACK));
         final TextView value = Ui.text(this, initial / 10 + "%", 13, Ui.TEXT, false);
         value.setGravity(Gravity.END);
         bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -226,7 +226,7 @@ public final class EqualizerActivity extends Activity {
         for (int i = 0; i < chips.size(); i++) {
             boolean sel = fx.isEnabled() && i == fx.preset();
             TextView c = chips.get(i);
-            c.setTextColor(sel ? 0xFF000000 : Ui.TEXT);
+            c.setTextColor(sel ? Ui.ON_ACCENT : Ui.TEXT);
             c.setBackground(Ui.ripple(Ui.rounded(sel ? Ui.GREEN : Ui.CARD, Ui.dp(this, 18))));
         }
     }

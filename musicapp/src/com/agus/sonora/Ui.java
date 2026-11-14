@@ -21,13 +21,98 @@ import java.util.Locale;
 /** Small view factory so screens can be built in code with a consistent dark look. */
 final class Ui {
 
-    static final int BG = 0xFF121212;
-    static final int SURFACE = 0xFF181818;
-    static final int CARD = 0xFF2A2A2A;
-    static final int GREEN = 0xFF1DB954;
-    static final int TEXT = 0xFFFFFFFF;
-    static final int SUB = 0xFFB3B3B3;
-    static final int MUTED = 0xFF7A7A7A;
+    // The palette of the current theme, set by apply() when a screen opens (dark by default).
+    static int BG = 0xFF121212;
+    static int SURFACE = 0xFF181818;
+    static int CARD = 0xFF2A2A2A;
+    /** The accent: Sonora green, or the system's color (Android 12+) if chosen in Ajustes. */
+    static int GREEN = 0xFF1DB954;
+    static int TEXT = 0xFFFFFFFF;
+    static int SUB = 0xFFB3B3B3;
+    static int MUTED = 0xFF7A7A7A;
+    /** Text and icons drawn on the accent color. */
+    static int ON_ACCENT = 0xFF000000;
+    static int NAV = 0xF0000000;
+    /** Unfilled part of progress bars, faint circles. */
+    static int TRACK = 0x4DFFFFFF;
+    static int RIPPLE = 0x33FFFFFF;
+    static int SEARCH_BG = 0xFFFFFFFF;
+    static boolean dark = true;
+
+    static final int BRAND = 0xFF1DB954;
+    /** Brand green dark enough to read on white. */
+    static final int BRAND_ON_LIGHT = 0xFF13863C;
+
+    /** Bumped whenever the theme changes, so open screens can rebuild themselves. */
+    static int version;
+
+    /**
+     * Picks the palette for the current theme and dresses the window (status and navigation
+     * bars). Call first thing in onCreate, before super.onCreate. Returns the version applied.
+     */
+    static int apply(android.app.Activity a) {
+        dark = Theme.isDark(a);
+        a.setTheme(dark ? R.style.AppTheme : R.style.AppThemeLight);
+        if (dark) {
+            BG = 0xFF121212;
+            SURFACE = 0xFF181818;
+            CARD = 0xFF2A2A2A;
+            TEXT = 0xFFFFFFFF;
+            SUB = 0xFFB3B3B3;
+            MUTED = 0xFF7A7A7A;
+            NAV = 0xF0000000;
+            TRACK = 0x4DFFFFFF;
+            RIPPLE = 0x33FFFFFF;
+            SEARCH_BG = 0xFFFFFFFF;
+        } else {
+            BG = 0xFFFFFFFF;
+            SURFACE = 0xFFF6F6F6;
+            CARD = 0xFFECECEC;
+            TEXT = 0xFF121212;
+            SUB = 0xFF5C5C5C;
+            MUTED = 0xFF8A8A8A;
+            NAV = 0xF5FFFFFF;
+            TRACK = 0x26000000;
+            RIPPLE = 0x22000000;
+            SEARCH_BG = 0xFFECECEC;
+        }
+        GREEN = Theme.accent(a, dark);
+        ON_ACCENT = luminance(GREEN) > 0.4 ? 0xFF000000 : 0xFFFFFFFF;
+        android.view.Window w = a.getWindow();
+        w.setBackgroundDrawable(new ColorDrawable(BG));
+        w.setStatusBarColor(dark ? 0xFF000000 : BG);
+        w.setNavigationBarColor(dark ? 0xFF000000 : BG);
+        View decor = w.getDecorView();
+        int flags = decor.getSystemUiVisibility();
+        int light = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        decor.setSystemUiVisibility(dark ? flags & ~light : flags | light);
+        return version;
+    }
+
+    /** True when the theme changed since a screen applied {@code applied}: it should recreate(). */
+    static boolean stale(int applied) {
+        return applied != version;
+    }
+
+    static double luminance(int c) {
+        double r = ((c >> 16) & 0xFF) / 255.0, g = ((c >> 8) & 0xFF) / 255.0, b = (c & 0xFF) / 255.0;
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    /** {@code color} with alpha {@code a} (0..255). */
+    static int alpha(int color, int a) {
+        return (color & 0x00FFFFFF) | (a << 24);
+    }
+
+    /**
+     * A background tinted by a cover's color that keeps text readable: darkened in the dark
+     * theme, a pale wash in the light one.
+     */
+    static int wash(int color) {
+        int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
+        if (dark) return 0xFF000000 | ((r * 45 / 100) << 16) | ((g * 45 / 100) << 8) | (b * 45 / 100);
+        return 0xFF000000 | ((255 - (255 - r) * 30 / 100) << 16) | ((255 - (255 - g) * 30 / 100) << 8) | (255 - (255 - b) * 30 / 100);
+    }
 
     static final int MATCH = LinearLayout.LayoutParams.MATCH_PARENT;
     static final int WRAP = LinearLayout.LayoutParams.WRAP_CONTENT;
@@ -65,7 +150,7 @@ final class Ui {
     /** A tappable icon with a round ripple. */
     static ImageView iconButton(Context c, int res, int sizeDp, int tint, View.OnClickListener l) {
         ImageView v = icon(c, res, sizeDp, tint);
-        v.setBackground(new RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), null, null));
+        v.setBackground(new RippleDrawable(ColorStateList.valueOf(RIPPLE), null, null));
         v.setOnClickListener(l);
         v.setClickable(true);
         return v;
@@ -81,8 +166,8 @@ final class Ui {
     /** Green when on, grey when off. */
     static void tintSwitch(android.widget.Switch sw) {
         int[][] states = {{android.R.attr.state_checked}, {}};
-        sw.setThumbTintList(new ColorStateList(states, new int[]{GREEN, 0xFFB3B3B3}));
-        sw.setTrackTintList(new ColorStateList(states, new int[]{(GREEN & 0x00FFFFFF) | 0x88000000, 0x55FFFFFF}));
+        sw.setThumbTintList(new ColorStateList(states, new int[]{GREEN, dark ? 0xFFB3B3B3 : 0xFFF2F2F2}));
+        sw.setTrackTintList(new ColorStateList(states, new int[]{alpha(GREEN, 0x88), dark ? 0x55FFFFFF : 0x40000000}));
     }
 
     static GradientDrawable oval(int color) {
@@ -95,7 +180,7 @@ final class Ui {
     /** Ripple on top of an optional background (bounded to it). */
     static Drawable ripple(Drawable content) {
         Drawable mask = content != null ? content : new ColorDrawable(0xFFFFFFFF);
-        return new RippleDrawable(ColorStateList.valueOf(0x22FFFFFF), content, mask);
+        return new RippleDrawable(ColorStateList.valueOf(RIPPLE), content, mask);
     }
 
     static LinearLayout row(Context c) {

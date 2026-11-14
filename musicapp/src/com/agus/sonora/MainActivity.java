@@ -54,6 +54,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     private Library lib;
     private PlayerEngine player;
     private Downloads downloads;
+    private int uiVersion;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private FrameLayout content;
@@ -82,6 +83,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     @Override
     protected void onCreate(Bundle state) {
+        uiVersion = Ui.apply(this);
         super.onCreate(state);
         lib = Library.get(this);
         player = PlayerEngine.get(this);
@@ -131,6 +133,10 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
     @Override
     protected void onResume() {
         super.onResume();
+        if (Ui.stale(uiVersion)) { // the theme changed in Ajustes
+            recreate();
+            return;
+        }
         handler.post(ticker);
         onPlayerChanged();
         lib.loadOnline(); // no-op for shelves already loaded or loading
@@ -277,7 +283,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     private View buildBottomNav() {
         LinearLayout nav = Ui.row(this);
-        nav.setBackgroundColor(0xF0000000);
+        nav.setBackgroundColor(Ui.NAV);
         nav.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 6));
         String[] labels = {"Inicio", "Buscar", "Podcasts", "Tu biblioteca"};
         int[] icons = {R.drawable.ic_home, R.drawable.ic_search, R.drawable.ic_podcast, R.drawable.ic_library};
@@ -309,7 +315,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         int m = Ui.dp(this, 8);
         outer.setMargins(m, 0, m, Ui.dp(this, 4));
         mini.setLayoutParams(outer);
-        mini.setBackground(Ui.ripple(Ui.rounded(0xFF3A2F3F, Ui.dp(this, 8))));
+        mini.setBackground(Ui.ripple(Ui.rounded(Ui.CARD, Ui.dp(this, 8))));
         mini.setClipToOutline(true);
 
         LinearLayout row = Ui.row(this);
@@ -343,7 +349,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         miniProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         miniProgress.setMax(1000);
         miniProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(Ui.TEXT));
-        miniProgress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(0x55FFFFFF));
+        miniProgress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(Ui.TRACK));
         LinearLayout.LayoutParams plp = Ui.lp(Ui.MATCH, Ui.dp(this, 2));
         plp.setMargins(Ui.dp(this, 8), 0, Ui.dp(this, 8), 0);
         mini.addView(miniProgress, plp);
@@ -374,7 +380,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             miniTitle.setText(t.title);
             miniArtist.setText(t.artist);
             Covers.load(this, t, miniCover, Ui.dp(this, 40));
-            GradientDrawable bg = Ui.rounded(darken(Covers.accent(t)), Ui.dp(this, 8));
+            GradientDrawable bg = Ui.rounded(Ui.wash(Covers.accent(t)), Ui.dp(this, 8));
             mini.setBackground(Ui.ripple(bg));
         }
         boolean liked = lib.isLiked(t);
@@ -587,7 +593,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     : col.kind == C_HISTORY ? R.drawable.ic_history
                     : col.kind == C_DOWNLOADS ? R.drawable.ic_download
                     : col.kind == C_DEVICE ? R.drawable.ic_library : R.drawable.ic_note;
-            ImageView glyph = Ui.icon(this, res, Math.max(24, sizeDp / 2), Ui.TEXT);
+            ImageView glyph = Ui.icon(this, res, Math.max(24, sizeDp / 2), 0xFFFFFFFF); // on colored art
             if (col.kind != C_LIKED) img.setImageBitmap(Covers.generated(col.title(), Ui.dp(this, sizeDp), false));
             f.addView(glyph, new FrameLayout.LayoutParams(Ui.dp(this, Math.max(24, sizeDp / 2)),
                     Ui.dp(this, Math.max(24, sizeDp / 2)), Gravity.CENTER));
@@ -835,7 +841,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             col.addView(title);
 
             LinearLayout box = Ui.row(MainActivity.this);
-            box.setBackground(Ui.rounded(Ui.TEXT, Ui.dp(MainActivity.this, 6)));
+            box.setBackground(Ui.rounded(Ui.SEARCH_BG, Ui.dp(MainActivity.this, 6)));
             box.setPadding(Ui.dp(MainActivity.this, 10), 0, Ui.dp(MainActivity.this, 10), 0);
             box.addView(Ui.icon(MainActivity.this, R.drawable.ic_search, 28, 0xFF121212));
             input = new EditText(MainActivity.this);
@@ -1081,7 +1087,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         body.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 12));
         card.addView(title);
         card.addView(body);
-        card.addView(pillButton("Permitir acceso", Ui.GREEN, 0xFF000000, new View.OnClickListener() {
+        card.addView(pillButton("Permitir acceso", Ui.GREEN, Ui.ON_ACCENT, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 requestAudioAgain();
@@ -1355,7 +1361,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             col.addView(title);
 
             LinearLayout box = Ui.row(MainActivity.this);
-            box.setBackground(Ui.rounded(Ui.TEXT, Ui.dp(MainActivity.this, 6)));
+            box.setBackground(Ui.rounded(Ui.SEARCH_BG, Ui.dp(MainActivity.this, 6)));
             box.setPadding(Ui.dp(MainActivity.this, 10), 0, Ui.dp(MainActivity.this, 10), 0);
             box.addView(Ui.icon(MainActivity.this, R.drawable.ic_search, 28, 0xFF121212));
             input = new EditText(MainActivity.this);
@@ -1632,7 +1638,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             for (int i = 0; i < names.length; i++) {
                 final int index = i;
                 boolean on = i == filter;
-                TextView chip = Ui.text(MainActivity.this, names[i], 13, on ? 0xFF000000 : Ui.TEXT, false);
+                TextView chip = Ui.text(MainActivity.this, names[i], 13, on ? Ui.ON_ACCENT : Ui.TEXT, false);
                 chip.setPadding(Ui.dp(MainActivity.this, 14), Ui.dp(MainActivity.this, 7), Ui.dp(MainActivity.this, 14), Ui.dp(MainActivity.this, 7));
                 chip.setBackground(Ui.ripple(Ui.rounded(on ? Ui.GREEN : Ui.CARD, Ui.dp(MainActivity.this, 16))));
                 chip.setOnClickListener(new View.OnClickListener() {
@@ -1787,7 +1793,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             if (followBtn == null) return;
             boolean on = lib.isFollowing(col.item);
             followBtn.setText(on ? "Siguiendo" : "Seguir");
-            followBtn.setTextColor(on ? Ui.TEXT : 0xFF000000);
+            followBtn.setTextColor(on ? Ui.TEXT : Ui.BG);
             followBtn.setBackground(Ui.ripple(on ? Ui.rounded(Ui.CARD, Ui.dp(MainActivity.this, 24))
                     : Ui.rounded(Ui.TEXT, Ui.dp(MainActivity.this, 24))));
         }
@@ -1811,7 +1817,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             }
             if (col.kind == C_ITEM) accent = Covers.accent(new Track("x", col.title(), col.title(), col.title(), 0, 0, true, 0));
             header.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{darken(accent), Ui.BG}));
+                    new int[]{Ui.wash(accent), Ui.BG}));
 
             LinearLayout top = Ui.row(MainActivity.this);
             top.setPadding(Ui.dp(MainActivity.this, 4), Ui.dp(MainActivity.this, 8), Ui.dp(MainActivity.this, 4), 0);
@@ -1823,7 +1829,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             }));
             top.addView(new View(MainActivity.this), new LinearLayout.LayoutParams(0, 1, 1));
             if (col.kind == C_ITEM && col.item.kind == Library.Item.PODCAST) {
-                followBtn = pillButton("Seguir", Ui.TEXT, 0xFF000000, new View.OnClickListener() {
+                followBtn = pillButton("Seguir", Ui.TEXT, Ui.BG, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         lib.toggleFollow(col.item);
@@ -1881,7 +1887,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 }
             });
             actions.addView(shuffleBtn);
-            playBtn = Ui.icon(MainActivity.this, R.drawable.ic_play, 56, 0xFF000000);
+            playBtn = Ui.icon(MainActivity.this, R.drawable.ic_play, 56, Ui.ON_ACCENT);
             playBtn.setBackground(Ui.ripple(Ui.oval(Ui.GREEN)));
             playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override

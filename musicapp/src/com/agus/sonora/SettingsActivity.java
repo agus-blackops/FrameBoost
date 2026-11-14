@@ -29,9 +29,11 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
     private Downloads downloads;
     private LinearLayout body;
     private ScrollView scroll;
+    private int uiVersion;
 
     @Override
     protected void onCreate(Bundle state) {
+        uiVersion = Ui.apply(this);
         super.onCreate(state);
         lib = Library.get(this);
         player = PlayerEngine.get(this);
@@ -76,6 +78,29 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
     void render() {
         final int y = scroll.getScrollY();
         body.removeAllViews();
+
+        section("Apariencia");
+        final int[] modes = {Theme.DARK, Theme.LIGHT, Theme.SYSTEM};
+        String[] modeNames = {"Oscuro", "Claro", "Según el sistema"};
+        int current = 0;
+        for (int i = 0; i < modes.length; i++) if (modes[i] == Theme.mode(this)) current = i;
+        choice("Tema", modeNames, current, null, new Choice() {
+            @Override
+            public void chose(int index) {
+                Theme.setMode(SettingsActivity.this, modes[index]);
+                if (Ui.stale(uiVersion)) recreate();
+            }
+        });
+        if (Theme.systemAccentAvailable()) {
+            toggle("Color de acento del sistema", "Usa el color de tu fondo de pantalla en lugar del verde de Sonora",
+                    Theme.systemAccent(this), new Toggle() {
+                        @Override
+                        public void set(boolean on) {
+                            Theme.setSystemAccent(SettingsActivity.this, on);
+                            if (Ui.stale(uiVersion)) recreate();
+                        }
+                    });
+        }
 
         section("Reproducción");
         toggle("Solo canciones completas", "Oculta las vistas previas de 30 s de Deezer en toda la app",

@@ -10,4 +10,13 @@
     <item name="android:statusBarColor">#FF000000</item>
     <item name="android:navigationBarColor">#FF000000</item>
   </style>
+  <style name="AppThemeLight" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <item name="android:windowBackground">#FFFFFFFF</item>
+    <item name="android:colorAccent">#FF13863C</item>
+    <item name="android:colorPrimary">#FFFFFFFF</item>
+    <item name="android:colorPrimaryDark">#FFFFFFFF</item>
+    <item name="android:statusBarColor">#FFFFFFFF</item>
+    <item name="android:navigationBarColor">#FFFFFFFF</item>
+    <item name="android:windowLightStatusBar">true</item>
+  </style>
 </resources>

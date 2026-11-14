@@ -36,6 +36,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     private ImageView cover;
     private TextView title;
     private TextView artist;
+    private int uiVersion;
     private TextView badge;
     /** For a 30-second preview: the same song, complete and free, when Audius has it. */
     private TextView fullButton;
@@ -77,6 +78,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
 
     @Override
     protected void onCreate(Bundle state) {
+        uiVersion = Ui.apply(this);
         super.onCreate(state);
         player = PlayerEngine.get(this);
         lib = Library.get(this);
@@ -149,7 +151,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         badge.setLetterSpacing(0.08f);
         badge.setPadding(0, Ui.dp(this, 4), 0, 0);
         texts.addView(badge);
-        fullButton = Ui.text(this, "", 13, 0xFF000000, true);
+        fullButton = Ui.text(this, "", 13, Ui.ON_ACCENT, true);
         fullButton.setBackground(Ui.ripple(Ui.rounded(Ui.GREEN, Ui.dp(this, 16))));
         fullButton.setPadding(Ui.dp(this, 14), Ui.dp(this, 6), Ui.dp(this, 14), Ui.dp(this, 6));
         fullButton.setVisibility(View.GONE);
@@ -170,7 +172,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         seek = new SeekBar(this);
         seek.setMax(1000);
         seek.setProgressTintList(ColorStateList.valueOf(Ui.TEXT));
-        seek.setProgressBackgroundTintList(ColorStateList.valueOf(0x4DFFFFFF));
+        seek.setProgressBackgroundTintList(ColorStateList.valueOf(Ui.TRACK));
         seek.setThumbTintList(ColorStateList.valueOf(Ui.TEXT));
         seek.setPadding(Ui.dp(this, 6), Ui.dp(this, 12), Ui.dp(this, 6), Ui.dp(this, 4));
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -228,7 +230,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         FrameLayout playBox = new FrameLayout(this);
         play = new ImageView(this);
         play.setImageResource(R.drawable.ic_play);
-        play.setColorFilter(0xFF000000);
+        play.setColorFilter(Ui.BG);
         play.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         int pp = Ui.dp(this, 18);
         play.setPadding(pp, pp, pp, pp);
@@ -320,6 +322,10 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     @Override
     protected void onResume() {
         super.onResume();
+        if (Ui.stale(uiVersion)) {
+            recreate();
+            return;
+        }
         handler.post(ticker);
     }
 
@@ -351,7 +357,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
     private TextView skipButton(String label, final int deltaMs) {
         TextView t = Ui.text(this, label, 15, Ui.TEXT, true);
         t.setGravity(Gravity.CENTER);
-        t.setBackground(Ui.ripple(Ui.oval(0x22FFFFFF)));
+        t.setBackground(Ui.ripple(Ui.oval(Ui.alpha(Ui.TEXT, 0x22))));
         t.setVisibility(View.GONE);
         t.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -535,7 +541,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
         for (int i = 0; i < lyricLines.size(); i++) {
             TextView tv = lyricLines.get(i);
             boolean on = i == now;
-            tv.setTextColor(on ? Ui.TEXT : i < now ? 0x66FFFFFF : 0x99B3B3B3);
+            tv.setTextColor(on ? Ui.TEXT : i < now ? Ui.alpha(Ui.TEXT, 0x66) : Ui.alpha(Ui.SUB, 0x99));
         }
         if (now >= 0) {
             final TextView cur = lyricLines.get(now);
@@ -613,7 +619,7 @@ public final class NowPlayingActivity extends Activity implements PlayerEngine.L
             title.setText(t.title);
             Covers.load(this, t, cover, Math.min(1024, getResources().getDisplayMetrics().widthPixels));
             root.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{MainActivity.darken(Covers.accent(t)), Ui.BG, Ui.BG}));
+                    new int[]{Ui.wash(Covers.accent(t)), Ui.BG, Ui.BG}));
         }
         String onAir = player.liveTitle(); // radios that announce the song on air
         artist.setText(onAir != null ? "Ahora suena: " + onAir : t.artist);

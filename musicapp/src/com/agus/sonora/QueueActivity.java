@@ -27,6 +27,7 @@ public final class QueueActivity extends Activity implements PlayerEngine.Listen
 
     @Override
     protected void onCreate(Bundle state) {
+        Ui.apply(this);
         super.onCreate(state);
         player = PlayerEngine.get(this);
         LinearLayout root = Ui.column(this);
