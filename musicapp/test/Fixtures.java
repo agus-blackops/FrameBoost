@@ -182,10 +182,14 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver, Net.Saver {
             if (!url.contains("app_name=Sonora")) throw new IOException("HTTP 400 missing app_name");
             return audius(url).getBytes("UTF-8");
         }
-        if (url.startsWith("https://archive.org/advancedsearch.php")) return archiveSearch().getBytes("UTF-8");
+        if (url.startsWith("https://archive.org/advancedsearch.php")) {
+            if (url.contains("zzzz")) return "{\"response\":{\"numFound\":0,\"docs\":[]}}".getBytes("UTF-8");
+            return archiveSearch().getBytes("UTF-8");
+        }
         if (url.startsWith("https://archive.org/metadata/")) return archiveMetadata(url).getBytes("UTF-8");
         if (url.contains("radio-browser")) {
             if (radioMirrorDown && url.startsWith("https://de1.")) throw new IOException("mirror down");
+            if (url.contains("name=zzzz")) return "[]".getBytes("UTF-8");
             return radios().getBytes("UTF-8");
         }
         if (url.startsWith("https://api.deezer.com/track/")) {
@@ -224,10 +228,15 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver, Net.Saver {
             }
             return feed.getBytes("UTF-8");
         }
+        if (url.contains("api.deezer.com/search/album")) {
+            if (url.contains("zzzz")) return "{\"data\":[],\"total\":0}".getBytes("UTF-8");
+            return items("album", 4).getBytes("UTF-8");
+        }
         if (url.contains("api.deezer.com/search/artist")) {
             if (offline) throw new IOException("offline");
             String name = java.net.URLDecoder.decode(url.substring(url.indexOf("q=") + 2), "UTF-8");
             artistLookups.add(name);
+            if (name.contains("zzzz")) return "{\"data\":[],\"total\":0}".getBytes("UTF-8");
             String[] known = {"The Living Tombstone", "CG5", "Black Gryph0n"};
             for (String k : known) {
                 if (k.equalsIgnoreCase(name)) {

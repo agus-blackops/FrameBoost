@@ -279,7 +279,8 @@ public class SmokeTest {
         layout(root);
         ListView results = findList(root);
         assertTrue("online results shown: " + results.getAdapter().getCount(), results.getAdapter().getCount() >= 15);
-        results.performItemClick(results.getAdapter().getView(0, null, results), 0, 0);
+        int firstSong = results.getHeaderViewsCount(); // artists, albums… come first (2.0)
+        results.performItemClick(results.getAdapter().getView(firstSong, null, results), firstSong, firstSong);
         settle();
         assertTrue(p.queueName().startsWith("Búsqueda"));
         input.setText("error");

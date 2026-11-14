@@ -1352,6 +1352,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         View browse;
         ListView list;
         TextView empty;
+        /** Artists, albums, podcasts and free albums found, above the songs. */
+        LinearLayout header;
+        Library.ItemSearch items;
+        String itemsFor = "";
+        String headerSig = "";
 
         @Override
         View create() {
@@ -1395,10 +1400,14 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                     trackMenu(t, anchor, null);
                 }
             });
+            header = Ui.column(MainActivity.this);
+            list.addHeaderView(header, null, false);
             list.setAdapter(adapter);
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    position -= list.getHeaderViewsCount();
+                    if (position < 0) return;
                     hideKeyboard();
                     lib.addSearch(query);
                     player.playList(adapter.tracks(), position, "Búsqueda: " + query);
@@ -1460,6 +1469,15 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             pending = new Runnable() {
                 @Override
                 public void run() {
+                    lib.searchItems(q, new Library.ItemSearchResults() {
+                        @Override
+                        public void onResults(Library.ItemSearch found) {
+                            if (!q.equals(query.trim())) return; // stale answer
+                            items = found;
+                            itemsFor = q;
+                            if (adapter != null && stack.peek() == SearchScreen.this) refresh();
+                        }
+                    });
                     lib.searchOnline(q, new Library.Results() {
                         @Override
                         public void onResults(List<Track> tracks, boolean failed) {
@@ -1492,11 +1510,35 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                 for (Track t : online) if (!res.contains(t)) res.add(t);
             }
             adapter.setTracks(res);
+            Library.ItemSearch found = !idle && q.equals(itemsFor) ? items : null;
+            fillHeader(found, !res.isEmpty());
+            boolean nothing = res.isEmpty() && (found == null || found.isEmpty());
             list.setVisibility(idle ? View.GONE : View.VISIBLE);
-            empty.setVisibility(!idle && res.isEmpty() ? View.VISIBLE : View.GONE);
+            empty.setVisibility(!idle && nothing ? View.VISIBLE : View.GONE);
             if (searching) empty.setText("Buscando \"" + q + "\"…");
             else if (onlineFailed && q.equals(onlineFor)) empty.setText("No hay conexión a internet. Solo se buscó en tu música.");
             else empty.setText("No se encontró nada para \"" + q + "\"");
+        }
+
+        /** Rows of artists, albums, podcasts and free albums, then the "Canciones" title. */
+        void fillHeader(Library.ItemSearch found, boolean songs) {
+            String sig = found == null ? "" : itemsFor + "|" + found.artists.size() + "|" + found.albums.size()
+                    + "|" + found.podcasts.size() + "|" + found.freeAlbums.size() + "|" + songs;
+            if (sig.equals(headerSig)) return;
+            headerSig = sig;
+            header.removeAllViews();
+            if (found == null || found.isEmpty()) return;
+            addRow("Artistas", found.artists);
+            addRow("Álbumes", found.albums);
+            addRow("Podcasts", found.podcasts);
+            addRow("Álbumes libres", found.freeAlbums);
+            if (songs) header.addView(sectionTitle("Canciones y radios"));
+        }
+
+        void addRow(String title, List<Library.Item> row) {
+            if (row.isEmpty()) return;
+            header.addView(sectionTitle(title));
+            header.addView(itemRow(row));
         }
 
         @Override

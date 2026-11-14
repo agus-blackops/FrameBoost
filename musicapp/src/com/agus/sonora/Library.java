@@ -950,6 +950,67 @@ public final class Library {
         });
     }
 
+    /** Search results that open a page: artists, albums, podcasts and free albums. */
+    public static final class ItemSearch {
+        public final List<Item> artists = new ArrayList<>();
+        public final List<Item> albums = new ArrayList<>();
+        public final List<Item> podcasts = new ArrayList<>();
+        public final List<Item> freeAlbums = new ArrayList<>();
+
+        public boolean isEmpty() {
+            return artists.isEmpty() && albums.isEmpty() && podcasts.isEmpty() && freeAlbums.isEmpty();
+        }
+    }
+
+    public interface ItemSearchResults {
+        void onResults(ItemSearch found);
+    }
+
+    /**
+     * Artists and albums from the catalog (skipped with "only complete songs": they lead to
+     * previews), podcasts, and free albums from the Internet Archive. Each source that fails is
+     * just left out. Results on the main thread.
+     */
+    public void searchItems(final String query, final ItemSearchResults cb) {
+        final boolean only = fullOnly();
+        Net.POOL.execute(new Runnable() {
+            @Override
+            public void run() {
+                final ItemSearch r = new ItemSearch();
+                String q = Net.enc(query);
+                if (!only) {
+                    try {
+                        r.artists.addAll(parseItems(Item.ARTIST, Net.getString(DEEZER + "/search/artist?limit=10&q=" + q)));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        r.albums.addAll(parseItems(Item.ALBUM, Net.getString(DEEZER + "/search/album?limit=10&q=" + q)));
+                    } catch (Exception ignored) {
+                    }
+                }
+                try {
+                    r.podcasts.addAll(parseItems(Item.PODCAST, Net.getString(APPLE_SEARCH + "&country=" + country() + "&term=" + q)));
+                } catch (Exception ignored) {
+                }
+                try {
+                    String clean = query.replaceAll("[\\\\\"():]", " ").trim();
+                    if (!clean.isEmpty()) {
+                        r.freeAlbums.addAll(parseArchiveItems(Net.getString(ARCHIVE + "/advancedsearch.php?q="
+                                + Net.enc("(" + clean + ") AND collection:(netlabels OR etree) AND mediatype:audio")
+                                + "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=creator&sort%5B%5D=downloads+desc&rows=10&output=json")));
+                    }
+                } catch (Exception ignored) {
+                }
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        cb.onResults(r);
+                    }
+                });
+            }
+        });
+    }
+
     /** Most popular songs of an artist on Deezer (or null while/if unavailable). */
     public List<Track> artistTop(String artist) {
         return artistTop.get(artist);
