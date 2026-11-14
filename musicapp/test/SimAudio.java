@@ -47,6 +47,10 @@ final class SimAudio implements Audio {
     private long since;
     private String next;
     private boolean nextLive;
+    private long nextFade;
+    /** Length of the last crossfade (tests). */
+    static volatile long lastFade = -1;
+    static volatile boolean skipSilence;
     private int openToken;
     private int endToken;
 
@@ -97,14 +101,17 @@ final class SimAudio implements Audio {
     private void schedule() {
         final int t = ++endToken;
         if (!running() || live || dur <= 0) return;
-        long left = (long) ((dur - position()) / rate());
+        long fade = next != null ? nextFade : 0;
+        long left = (long) ((dur - position() - fade) / rate());
         main.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (t != endToken || !running()) return;
                 if (next != null) {
                     String n = next;
+                    lastFade = nextFade; // with a crossfade the next song starts that much earlier
                     next = null;
+                    nextFade = 0;
                     openedLog.add(n);
                     long d = durations.of(n);
                     uri = n;
@@ -130,9 +137,16 @@ final class SimAudio implements Audio {
     }
 
     @Override
-    public void setNext(String u, boolean isLive) {
+    public void setNext(String u, boolean isLive, long fadeMs) {
         next = u;
         nextLive = isLive;
+        nextFade = u == null ? 0 : fadeMs;
+        schedule();
+    }
+
+    @Override
+    public void setSkipSilence(boolean skip) {
+        skipSilence = skip;
     }
 
     @Override

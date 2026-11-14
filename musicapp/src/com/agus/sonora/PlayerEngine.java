@@ -32,7 +32,7 @@ public final class PlayerEngine implements Audio.Events {
     public static final int REPEAT_ALL = 1;
     public static final int REPEAT_ONE = 2;
 
-    /** How long before the end of a song the next one is fetched and preloaded. */
+    /** How long before the end of a song (or of its crossfade) the next one is fetched and preloaded. */
     static final int PRELOAD_BEFORE_END_MS = 12000;
 
     /** Which audio player to use; tests replace it with a simulator. */
@@ -690,13 +690,13 @@ public final class PlayerEngine implements Audio.Events {
     private void maybePreloadNext() {
         if (!opened || !ready || plannedNext != null) return;
         long dur = audio.duration();
-        if (dur <= 0 || dur - audio.position() > PRELOAD_BEFORE_END_MS) return;
+        if (dur <= 0 || dur - audio.position() > PRELOAD_BEFORE_END_MS + crossfadeMs()) return;
         final Track next = nextToPreload();
         if (next == null) return;
         plannedNext = next;
         final int token = loadToken;
         if (!needsLink(next)) {
-            audio.setNext(uriOf(next), false);
+            audio.setNext(uriOf(next), false, fadeInto(next));
             return;
         }
         Net.POOL.execute(new Runnable() {
@@ -707,7 +707,7 @@ public final class PlayerEngine implements Audio.Events {
                     @Override
                     public void run() {
                         if (token != loadToken || plannedNext != next || !opened) return;
-                        if (ok) audio.setNext(uriOf(next), false);
+                        if (ok) audio.setNext(uriOf(next), false, fadeInto(next));
                         else plannedNext = null; // it will be tried (and reported) when its turn comes
                     }
                 });
@@ -715,11 +715,36 @@ public final class PlayerEngine implements Audio.Events {
         });
     }
 
+    /** Crossfade length into {@code next}: none between songs of the same album or recording. */
+    private long fadeInto(Track next) {
+        Track t = current();
+        if (Crossfade.sameRecording(t, next)) return 0;
+        return Crossfade.length(crossfadeMs(), audio.duration(), next.durationMs);
+    }
+
+    // ---------------------------------------------------------------- settings
+
+    /** Crossfade between songs, 0 (none: gapless) to 12 s. */
+    public int crossfadeMs() {
+        return prefs.getInt("crossfade", 0);
+    }
+
+    public void setCrossfade(int ms) {
+        prefs.edit().putInt("crossfade", Math.max(0, Math.min(12000, ms))).apply();
+        // re-plan the next song with the new length
+        if (plannedNext != null && opened) {
+            plannedNext = null;
+            audio.setNext(null, false, 0);
+            maybePreloadNext();
+        }
+        notifyChanged();
+    }
+
     /** After any change to the queue or the modes: forget a preloaded song that no longer follows. */
     private void checkPlannedNext() {
         if (plannedNext != null && plannedNext != nextToPreload()) {
             plannedNext = null;
-            if (opened) audio.setNext(null, false);
+            if (opened) audio.setNext(null, false, 0);
         }
     }
 

@@ -79,6 +79,21 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
                     }
                 });
 
+        String[] fades = new String[Crossfade.CHOICES_S.length];
+        int sel = 0;
+        for (int i = 0; i < fades.length; i++) {
+            fades[i] = Crossfade.CHOICES_S[i] == 0 ? "Sin fundido (las canciones se siguen sin pausa)"
+                    : Crossfade.CHOICES_S[i] + " segundos";
+            if (Crossfade.CHOICES_S[i] * 1000 == player.crossfadeMs()) sel = i;
+        }
+        choice("Fundido entre canciones", fades, sel, null, new Choice() {
+            @Override
+            public void chose(int index) {
+                player.setCrossfade(Crossfade.CHOICES_S[index] * 1000);
+            }
+        });
+        info(null, "No se aplica entre canciones del mismo álbum o concierto, para no cortar transiciones pensadas así.");
+
         section("Descargas");
         int n = downloads.tracks().size();
         int waiting = downloads.pending().size();
@@ -152,7 +167,7 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
 
     private LinearLayout texts(String title, String sub) {
         LinearLayout col = Ui.column(this);
-        col.addView(Ui.text(this, title, 16, Ui.TEXT, false));
+        if (title != null) col.addView(Ui.text(this, title, 16, Ui.TEXT, false));
         if (sub != null) {
             TextView s = Ui.text(this, sub, 13, Ui.SUB, false);
             s.setSingleLine(false);

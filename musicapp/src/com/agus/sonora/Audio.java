@@ -36,8 +36,11 @@ public interface Audio {
     /** Replaces everything with {@code uri}, starting at {@code startMs}; paused until {@link #setPlayWhenReady}. */
     void open(String uri, long startMs, boolean live);
 
-    /** Loads {@code uri} to play right after the current item; null removes any queued item. */
-    void setNext(String uri, boolean live);
+    /**
+     * Loads {@code uri} to play right after the current item; null removes any queued item.
+     * With {@code fadeMs} > 0 it starts that long before the current one ends, crossfading.
+     */
+    void setNext(String uri, boolean live, long fadeMs);
 
     void setPlayWhenReady(boolean play);
 
@@ -58,6 +61,9 @@ public interface Audio {
     void setSpeed(float speed);
 
     void setVolume(float volume);
+
+    /** Skips silent stretches (podcasts). */
+    void setSkipSilence(boolean skip);
 
     /** Drops the current and next items. */
     void stop();
