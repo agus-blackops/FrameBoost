@@ -31,6 +31,8 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver, Net.Saver {
     public final List<String> resolved = Collections.synchronizedList(new ArrayList<String>());
     public final AtomicInteger lyricLookups = new AtomicInteger();
     public volatile boolean offline;
+    /** Feeds include a newer episode (podcast alerts). */
+    public volatile boolean newEpisode;
     public volatile boolean radioMirrorDown = true;
     public volatile ImageMaker images;
 
@@ -214,7 +216,13 @@ public final class Fixtures implements Net.Fetcher, Net.Resolver, Net.Saver {
         if (url.startsWith("https://feeds.example.com/")) {
             feedFetches.incrementAndGet();
             if (url.contains("/999.xml")) throw new IOException("HTTP 500");
-            return rss("Podcast " + url.substring(url.lastIndexOf('/') + 1)).getBytes("UTF-8");
+            String feed = rss("Podcast " + url.substring(url.lastIndexOf('/') + 1));
+            if (newEpisode) { // a new episode came out
+                feed = feed.replaceFirst("<item>", "<item><title>Episodio 4: La vuelta</title><guid>g-4</guid>"
+                        + "<pubDate>Fri, 10 Oct 2025 08:00:00 +0000</pubDate><itunes:duration>30:00</itunes:duration>"
+                        + "<enclosure url=\"https://cdn.example.com/ep4.mp3\" type=\"audio/mpeg\"/></item><item>");
+            }
+            return feed.getBytes("UTF-8");
         }
         if (url.contains("api.deezer.com/search/artist")) {
             if (offline) throw new IOException("offline");

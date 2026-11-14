@@ -611,17 +611,37 @@ public final class Library {
                     @Override
                     public void run() {
                         if (result == null || result.isEmpty()) {
-                            itemStates.put(it.key(), FAILED);
+                            // a refresh that fails keeps the list it had
+                            itemStates.put(it.key(), itemTracks.containsKey(it.key()) ? READY : FAILED);
                         } else {
                             register(result);
+                            itemLoadedAt.put(it.key(), System.currentTimeMillis());
                             itemTracks.put(it.key(), result);
                             itemStates.put(it.key(), READY);
+                            if (it.kind == Item.PODCAST) visitPodcast(it);
                         }
                         notifyChanged();
                     }
                 });
             }
         });
+    }
+
+    private final Map<String, Long> itemLoadedAt = new HashMap<>();
+
+    /**
+     * Loads an item again (a podcast's feed changes): right away when {@code force}, otherwise
+     * only if it was loaded more than half an hour ago. The old list stays visible meanwhile.
+     */
+    public void refreshItem(Item it, boolean force) {
+        if (itemState(it) != READY) {
+            loadItemTracks(it);
+            return;
+        }
+        Long at = itemLoadedAt.get(it.key());
+        if (!force && at != null && System.currentTimeMillis() - at < 30 * 60 * 1000L) return;
+        itemStates.put(it.key(), IDLE);
+        loadItemTracks(it);
     }
 
     /** Forgets a failed load so it can be retried. */
@@ -765,9 +785,85 @@ public final class Library {
     }
 
     public void toggleFollow(Item it) {
-        if (followed.remove(it.key()) == null) followed.put(it.key(), it);
+        if (followed.remove(it.key()) == null) {
+            followed.put(it.key(), it);
+            // what's out today is not "new": only later episodes will be
+            long newest = newestEpisode(itemTracks(it));
+            if (newest > 0 && !seen.containsKey(it.key())) seen.put(it.key(), newest);
+        }
         save();
         notifyChanged();
+        PodcastCheckJob.schedule(app);
+    }
+
+    // ---------------------------------------------------------------- played and new episodes
+
+    /** Episodes listened to the end (or marked by hand). */
+    private final java.util.LinkedHashSet<String> played = new java.util.LinkedHashSet<>();
+    /** Podcast key -> publication date of the newest episode the user has seen in its page. */
+    private final Map<String, Long> seen = new HashMap<>();
+    /** The same, as it was when the page was opened: what the page shows as "Nuevo". */
+    private final Map<String, Long> seenOnOpen = new HashMap<>();
+
+    public boolean isPlayed(Track t) {
+        return t != null && played.contains(t.key);
+    }
+
+    public void setPlayed(Track t, boolean on) {
+        if (t == null || !t.isEpisode()) return;
+        if (on) {
+            played.remove(t.key);
+            played.add(t.key);
+            while (played.size() > 3000) played.remove(played.iterator().next());
+            progress.remove(t.key);
+        } else {
+            played.remove(t.key);
+        }
+        if (!byKey.containsKey(t.key)) byKey.put(t.key, t);
+        save();
+        notifyChanged();
+    }
+
+    /** "ep:4:123:guid" -> "4:123", the key of the podcast an episode belongs to. */
+    static String podcastKeyOf(Track ep) {
+        if (ep == null || !ep.key.startsWith("ep:")) return null;
+        String[] parts = ep.key.split(":", 4);
+        return parts.length < 4 ? null : parts[1] + ":" + parts[2];
+    }
+
+    static long newestEpisode(List<Track> eps) {
+        long newest = 0;
+        for (Track t : eps) newest = Math.max(newest, t.dateAdded);
+        return newest;
+    }
+
+    /** Out since the last visit to its podcast's page, and not listened to yet. */
+    public boolean isNew(Track t) {
+        if (t == null || !t.isEpisode() || isPlayed(t) || progress(t) > 0) return false;
+        String pk = podcastKeyOf(t);
+        Long ref = seenOnOpen.containsKey(pk) ? seenOnOpen.get(pk) : seen.get(pk);
+        return ref != null && t.dateAdded > ref;
+    }
+
+    /** New episodes of the podcasts you follow (for badges). */
+    public int newEpisodes(Item podcast) {
+        int n = 0;
+        for (Track t : itemTracks(podcast)) if (isNew(t)) n++;
+        return n;
+    }
+
+    /**
+     * Opening a podcast's page: it keeps showing what is new during this visit, and next time
+     * only what comes out later will be.
+     */
+    public void visitPodcast(Item podcast) {
+        Long before = seen.get(podcast.key());
+        if (before != null) seenOnOpen.put(podcast.key(), before);
+        long newest = newestEpisode(itemTracks(podcast));
+        if (newest > 0 && isFollowing(podcast) && (before == null || newest > before)) {
+            seen.put(podcast.key(), newest);
+            save();
+        }
     }
 
     public List<Item> followedPodcasts() {
@@ -782,6 +878,8 @@ public final class Library {
         boolean finished = dur > 0 && pos >= dur - 15000;
         if (finished) {
             progress.remove(t.key);
+            played.remove(t.key);
+            played.add(t.key);
         } else if (pos >= 5000) {
             progress.remove(t.key);
             progress.put(t.key, new long[]{pos, dur});
@@ -1665,6 +1763,14 @@ public final class Library {
                 JSONArray v = pr.getJSONArray(k);
                 progress.put(k, new long[]{v.getLong(0), v.getLong(1)});
             }
+            JSONArray pl = new JSONArray(prefs.getString("played", "[]"));
+            for (int i = 0; i < pl.length(); i++) played.add(pl.getString(i));
+            JSONObject se = new JSONObject(prefs.getString("seenEpisodes", "{}"));
+            Iterator<String> sk = se.keys();
+            while (sk.hasNext()) {
+                String k = sk.next();
+                seen.put(k, se.getLong(k));
+            }
             JSONArray sq = new JSONArray(prefs.getString("searches", "[]"));
             for (int i = 0; i < sq.length(); i++) searches.add(sq.getString(i));
             JSONObject remote = new JSONObject(prefs.getString("remote", "{}"));
@@ -1714,6 +1820,8 @@ public final class Library {
                     .putString("searches", new JSONArray(searches).toString())
                     .putString("followed", followedJson())
                     .putString("progress", progressJson())
+                    .putString("played", new JSONArray(played).toString())
+                    .putString("seenEpisodes", new JSONObject(seen).toString())
                     .putString("liked", new JSONArray(liked).toString())
                     .putString("playlists", p.toString())
                     .apply();

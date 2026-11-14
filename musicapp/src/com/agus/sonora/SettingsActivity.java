@@ -94,6 +94,22 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
         });
         info(null, "No se aplica entre canciones del mismo álbum o concierto, para no cortar transiciones pensadas así.");
 
+        section("Podcasts");
+        toggle("Saltar silencios", "En los episodios, pasa de largo los tramos sin sonido",
+                player.skipSilence(), new Toggle() {
+                    @Override
+                    public void set(boolean on) {
+                        player.setSkipSilence(on);
+                    }
+                });
+        toggle("Avisos de episodios nuevos", "Revisa los podcasts que sigues cada pocas horas y te avisa",
+                PodcastCheckJob.enabled(this), new Toggle() {
+                    @Override
+                    public void set(boolean on) {
+                        PodcastCheckJob.setEnabled(SettingsActivity.this, on);
+                    }
+                });
+
         section("Descargas");
         int n = downloads.tracks().size();
         int waiting = downloads.pending().size();

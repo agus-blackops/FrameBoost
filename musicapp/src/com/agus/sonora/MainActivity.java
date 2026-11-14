@@ -104,6 +104,28 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         onPlayerChanged();
         askPermissions();
         lib.reloadLocal();
+        PodcastCheckJob.schedule(this);
+        openFromIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        openFromIntent(intent);
+    }
+
+    /** A new-episode notification opens its podcast. */
+    private void openFromIntent(Intent intent) {
+        String json = intent == null ? null : intent.getStringExtra(EXTRA_PODCAST);
+        if (json == null) return;
+        intent.removeExtra(EXTRA_PODCAST);
+        try {
+            Library.Item podcast = Library.Item.fromJson(new org.json.JSONObject(json));
+            lib.refreshItem(podcast, true); // it has new episodes: don't show a stale list
+            open(new Collection(podcast));
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -376,6 +398,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     // ================================================================ collections
 
+    /** A podcast to open (JSON of a Library.Item), from a new-episode notification. */
+    static final String EXTRA_PODCAST = "podcast";
+
     private static final int C_LIKED = 0;
     private static final int C_DEVICE = 1;
     private static final int C_ONLINE = 2;
@@ -577,7 +602,12 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
 
     private void open(Collection c) {
         if (c.kind == C_ARTIST) lib.loadArtistTop(c.name, c.artistId);
-        if (c.kind == C_ITEM) lib.loadItemTracks(c.item);
+        if (c.kind == C_ITEM && c.item.kind == Library.Item.PODCAST) {
+            lib.refreshItem(c.item, false); // feeds change: reload if it's been a while
+            lib.visitPodcast(c.item);
+        } else if (c.kind == C_ITEM) {
+            lib.loadItemTracks(c.item);
+        }
         Library.Section sec = c.section();
         if (sec != null && (sec.state == Library.IDLE || sec.state == Library.FAILED)) lib.loadSection(sec);
         if (sec != null && sec.hasItems()) {
@@ -599,6 +629,7 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         if (!t.remote) m.add(0, 5, 0, "Ir al álbum");
 
         if (from != null && from.kind == C_PLAYLIST) m.add(0, 6, 0, "Quitar de esta playlist");
+        if (t.isEpisode()) m.add(0, 9, 0, lib.isPlayed(t) ? "Marcar como no escuchado" : "Marcar como escuchado");
         if (Downloads.canDownload(t)) {
             int st = downloads.state(t);
             if (st == Downloads.NONE || st == Downloads.FAILED) m.add(0, 7, 0, "Descargar");
@@ -635,6 +666,9 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
                         break;
                     case 8:
                         downloads.remove(t);
+                        break;
+                    case 9:
+                        lib.setPlayed(t, !lib.isPlayed(t));
                         break;
                     default:
                         return false;

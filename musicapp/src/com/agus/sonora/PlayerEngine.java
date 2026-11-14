@@ -638,6 +638,7 @@ public final class PlayerEngine implements Audio.Events {
         a.open(uriOf(t), t.isLive() ? 0 : pendingSeek, t.isLive());
         a.setSpeed(speed);
         a.setVolume(1f);
+        a.setSkipSilence(t.isEpisode() && skipSilence());
         a.setPlayWhenReady(playWhenReady);
         notifyChanged();
     }
@@ -723,6 +724,18 @@ public final class PlayerEngine implements Audio.Events {
     }
 
     // ---------------------------------------------------------------- settings
+
+    /** Podcasts: jump over silent stretches. */
+    public boolean skipSilence() {
+        return prefs.getBoolean("skipSilence", false);
+    }
+
+    public void setSkipSilence(boolean on) {
+        prefs.edit().putBoolean("skipSilence", on).apply();
+        Track t = current();
+        if (opened && t != null) audio.setSkipSilence(t.isEpisode() && on);
+        notifyChanged();
+    }
 
     /** Crossfade between songs, 0 (none: gapless) to 12 s. */
     public int crossfadeMs() {
