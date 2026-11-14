@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
-/** Handles the buttons on the playback notification. */
+/** Handles the buttons on the playback notification and the home-screen widget. */
 public final class MediaActionReceiver extends BroadcastReceiver {
 
     static final String PLAY_PAUSE = "com.agus.sonora.PLAY_PAUSE";
@@ -25,9 +25,15 @@ public final class MediaActionReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         PlayerEngine p = PlayerEngine.get(context);
         String a = intent.getAction();
-        if (PLAY_PAUSE.equals(a)) p.togglePlay();
-        else if (NEXT.equals(a)) p.next();
-        else if (PREV.equals(a)) p.previous();
-        else if (CLOSE.equals(a)) p.stop();
+        if (PLAY_PAUSE.equals(a)) {
+            if (p.current() == null) p.restoreSession(); // from the widget, with the app closed
+            p.togglePlay();
+        } else if (NEXT.equals(a)) {
+            p.next();
+        } else if (PREV.equals(a)) {
+            p.previous();
+        } else if (CLOSE.equals(a)) {
+            p.stop();
+        }
     }
 }

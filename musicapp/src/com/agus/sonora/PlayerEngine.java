@@ -861,6 +861,11 @@ public final class PlayerEngine implements Audio.Events {
     private void notifyChanged() {
         checkPlannedNext();
         if (pos >= 0) scheduleSave();
+        try {
+            SonoraWidget.refresh(app);
+        } catch (Exception ignored) {
+            // no launcher / widget host: nothing to update
+        }
         for (Listener l : listeners) l.onPlayerChanged();
     }
 }

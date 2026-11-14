@@ -1,5 +1,6 @@
 <resources>
   <string name="app_name">Sonora</string>
+  <string name="widget_description">Lo que suena en Sonora, con anterior, pausa y siguiente</string>
   <color name="brand">#FF1DB954</color>
   <color name="bg">#FF121212</color>
   <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">

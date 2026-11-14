@@ -4,23 +4,27 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
+import android.service.media.MediaBrowserService;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
+import android.media.browse.MediaBrowser;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
+
+import java.util.List;
 
 /**
  * Keeps the app alive while music plays, and exposes playback to the system: the media
- * notification, the lock screen, headset buttons and Bluetooth controls (via MediaSession).
+ * notification, the lock screen, headset buttons and Bluetooth controls (via MediaSession), and
+ * Android Auto and voice assistants, which browse and search Sonora through this service.
  */
-public final class PlaybackService extends Service implements PlayerEngine.Listener {
+public final class PlaybackService extends MediaBrowserService implements PlayerEngine.Listener {
 
     private static final String CHANNEL = "playback";
     private static final int NOTIFICATION_ID = 7;
@@ -45,11 +49,15 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
     private String artKey;
     private Bitmap art;
 
+    private AutoBrowser browser;
+    /** Session callbacks (package-private so tests can drive them). */
+    MediaSession.Callback callback;
+
     @Override
     public void onCreate() {
         super.onCreate();
-        running = true;
         engine = PlayerEngine.get(this);
+        browser = new AutoBrowser(this);
         nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel ch = new NotificationChannel(CHANNEL, "Reproducción",
@@ -58,10 +66,21 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
             nm.createNotificationChannel(ch);
         }
         session = new MediaSession(this, "Sonora");
-        session.setCallback(new MediaSession.Callback() {
+        callback = new MediaSession.Callback() {
             @Override
             public void onPlay() {
+                if (engine.current() == null) engine.restoreSession(); // a car asks to resume
                 engine.play();
+            }
+
+            @Override
+            public void onPlayFromMediaId(String mediaId, Bundle extras) {
+                browser.play(mediaId);
+            }
+
+            @Override
+            public void onPlayFromSearch(String query, Bundle extras) {
+                browser.playFromSearch(query);
             }
 
             @Override
@@ -88,11 +107,37 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
             public void onStop() {
                 engine.stop();
             }
-        });
+        };
+        session.setCallback(callback);
         setSessionFlags();
         session.setActive(true);
+        setSessionToken(session.getSessionToken());
+        updateSession();
         engine.addListener(this);
-        startForeground(NOTIFICATION_ID, build());
+        // Foreground only once something plays (onStartCommand): a car connecting with nothing
+        // playing must not show an empty notification.
+    }
+
+    @Override
+    public BrowserRoot onGetRoot(String clientPackageName, int clientUid, Bundle rootHints) {
+        if (!AutoBrowser.allowed(clientPackageName, getPackageName())) return null;
+        return new BrowserRoot(AutoBrowser.ROOT, AutoBrowser.rootHints());
+    }
+
+    @Override
+    public void onLoadChildren(final String parentId, final Result<List<MediaBrowser.MediaItem>> result) {
+        List<MediaBrowser.MediaItem> items = browser.children(parentId, new AutoBrowser.Loaded() {
+            @Override
+            public void done() {
+                notifyChildrenChanged(parentId);
+            }
+        });
+        if (items == null) {
+            // still loading: answer with what there is now; the car asks again when notified
+            result.sendResult(new java.util.ArrayList<MediaBrowser.MediaItem>());
+        } else {
+            result.sendResult(items);
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -105,17 +150,19 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
     public int onStartCommand(Intent intent, int flags, int startId) {
         running = true;
         startForeground(NOTIFICATION_ID, build());
+        updateSession();
         if (engine.current() == null) shutdown();
         return START_NOT_STICKY;
     }
 
     @Override
     public void onPlayerChanged() {
+        updateSession();
+        if (!running) return; // only browsed (a car), nothing playing yet
         if (engine.current() == null) {
             shutdown();
             return;
         }
-        updateSession();
         nm.notify(NOTIFICATION_ID, build());
     }
 
@@ -139,11 +186,6 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
         session.setActive(false);
         session.release();
         super.onDestroy();
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     private Bitmap artFor(final Track t) {
@@ -177,9 +219,19 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
         return onAir != null ? onAir : t.artist;
     }
 
+    static final long ACTIONS = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE
+            | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_SKIP_TO_NEXT
+            | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackState.ACTION_SEEK_TO
+            | PlaybackState.ACTION_STOP | PlaybackState.ACTION_PLAY_FROM_MEDIA_ID
+            | PlaybackState.ACTION_PLAY_FROM_SEARCH;
+
     private void updateSession() {
         Track t = engine.current();
-        if (t == null) return;
+        if (t == null) {
+            session.setPlaybackState(new PlaybackState.Builder().setActions(ACTIONS)
+                    .setState(PlaybackState.STATE_NONE, 0, 0f).build());
+            return;
+        }
         session.setMetadata(new MediaMetadata.Builder()
                 .putString(MediaMetadata.METADATA_KEY_TITLE, t.title)
                 .putString(MediaMetadata.METADATA_KEY_ARTIST, subtitle(t))
@@ -190,10 +242,7 @@ public final class PlaybackService extends Service implements PlayerEngine.Liste
         int state = engine.isBuffering() && engine.isActive() ? PlaybackState.STATE_BUFFERING
                 : engine.isPlaying() ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED;
         session.setPlaybackState(new PlaybackState.Builder()
-                .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE
-                        | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_SKIP_TO_NEXT
-                        | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackState.ACTION_SEEK_TO
-                        | PlaybackState.ACTION_STOP)
+                .setActions(ACTIONS)
                 .setState(state, engine.position(), engine.isPlaying() ? 1f : 0f)
                 .build());
     }
