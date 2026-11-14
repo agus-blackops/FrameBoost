@@ -3,7 +3,12 @@ package com.agus.sonora;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.widget.Toast;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -11,6 +16,9 @@ import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 
 /** Ajustes: playback, downloads, podcasts, appearance and your data, in one place. */
@@ -143,6 +151,40 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
             });
         }
 
+        section("Tus datos");
+        action("Exportar copia de seguridad", "Me gusta, playlists, podcasts, progreso, historial y ajustes en un archivo",
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        create(REQ_EXPORT, "application/json", Backup.fileName());
+                    }
+                });
+        action("Restaurar copia de seguridad", "Suma lo de la copia a lo que ya tienes; no borra nada", new Runnable() {
+            @Override
+            public void run() {
+                pick(REQ_RESTORE, "application/json", "text/plain", "application/octet-stream");
+            }
+        });
+        action("Importar playlist (M3U)", "De otra app o de la computadora: busca cada canción en tu música", new Runnable() {
+            @Override
+            public void run() {
+                pick(REQ_M3U, "audio/x-mpegurl", "audio/mpegurl", "application/vnd.apple.mpegurl",
+                        "application/x-mpegurl", "text/plain", "application/octet-stream");
+            }
+        });
+        action("Importar podcasts (OPML)", "Tus suscripciones desde otra app de podcasts", new Runnable() {
+            @Override
+            public void run() {
+                pick(REQ_OPML_IN, "text/x-opml", "text/xml", "application/xml", "text/plain", "application/octet-stream");
+            }
+        });
+        action("Exportar podcasts (OPML)", "Para llevar tus suscripciones a otra app", new Runnable() {
+            @Override
+            public void run() {
+                create(REQ_OPML_OUT, "text/x-opml", "podcasts-sonora.opml");
+            }
+        });
+
         section("Acerca de");
         info("Sonora " + version(), "Sin cuentas, sin anuncios y sin suscripción. Tus datos se guardan solo en este teléfono.");
         info("Licencias", "Reproductor Media3 (ExoPlayer) y Guava · Apache 2.0");
@@ -153,6 +195,114 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
                 scroll.scrollTo(0, y);
             }
         });
+    }
+
+    // ---------------------------------------------------------------- files (no permissions needed)
+
+    static final int REQ_EXPORT = 1;
+    static final int REQ_RESTORE = 2;
+    static final int REQ_M3U = 3;
+    static final int REQ_OPML_IN = 4;
+    static final int REQ_OPML_OUT = 5;
+
+    void create(int req, String mime, String name) {
+        Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                .setType(mime).putExtra(Intent.EXTRA_TITLE, name);
+        startActivityForResult(i, req);
+    }
+
+    void pick(int req, String... mimes) {
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("*/*").putExtra(Intent.EXTRA_MIME_TYPES, mimes);
+        startActivityForResult(i, req);
+    }
+
+    @Override
+    protected void onActivityResult(int req, int result, Intent data) {
+        super.onActivityResult(req, result, data);
+        if (result != RESULT_OK || data == null || data.getData() == null) return;
+        handleFile(req, data.getData());
+    }
+
+    /** Does what was asked with the file the user picked or created. */
+    void handleFile(int req, Uri uri) {
+        Library lib = Library.get(this);
+        try {
+            switch (req) {
+                case REQ_EXPORT:
+                    write(uri, Backup.export(this));
+                    toast("Copia de seguridad guardada");
+                    break;
+                case REQ_RESTORE:
+                    report("Copia restaurada", Backup.restore(this, read(uri)).summary());
+                    render();
+                    break;
+                case REQ_M3U: {
+                    String name = Backup.playlistName(displayName(uri));
+                    Library.ImportResult r = lib.importM3u(name, Backup.parseM3u(read(uri)));
+                    String msg = r.playlists == 0 ? "No se encontró ninguna de sus canciones en tu música."
+                            : "Playlist creada con " + Ui.songs(r.playlistSongs) + "."
+                            + (r.missing > 0 ? " " + (r.missing == 1 ? "1 canción no se encontró." : r.missing + " no se encontraron.") : "");
+                    report("Importar playlist", msg);
+                    break;
+                }
+                case REQ_OPML_IN: {
+                    Library.ImportResult r = lib.followAll(Backup.parseOpml(read(uri)));
+                    report("Importar podcasts", r.podcasts == 0 ? "Ya seguías todos los podcasts del archivo."
+                            : "Ahora sigues " + (r.podcasts == 1 ? "1 podcast nuevo." : r.podcasts + " podcasts nuevos."));
+                    break;
+                }
+                case REQ_OPML_OUT: {
+                    int n = 0;
+                    for (Library.Item it : lib.followedPodcasts()) if (it.feed != null) n++;
+                    write(uri, Backup.exportOpml(lib.followedPodcasts()));
+                    toast(n == 1 ? "1 podcast exportado" : n + " podcasts exportados");
+                    break;
+                }
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            report("No se pudo", e.getMessage() == null ? "El archivo no se pudo leer." : e.getMessage());
+        }
+    }
+
+    String read(Uri uri) throws Exception {
+        try (InputStream in = getContentResolver().openInputStream(uri)) {
+            if (in == null) throw new Exception("El archivo no se pudo abrir.");
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = in.read(buf)) > 0) {
+                out.write(buf, 0, n);
+                if (out.size() > 20 * 1024 * 1024) throw new Exception("El archivo es demasiado grande.");
+            }
+            return new String(out.toByteArray(), "UTF-8");
+        }
+    }
+
+    void write(Uri uri, String text) throws Exception {
+        try (OutputStream out = getContentResolver().openOutputStream(uri, "wt")) {
+            if (out == null) throw new Exception("El archivo no se pudo crear.");
+            out.write(text.getBytes("UTF-8"));
+        }
+    }
+
+    String displayName(Uri uri) {
+        if ("file".equals(uri.getScheme())) return uri.getLastPathSegment();
+        try (Cursor c = getContentResolver().query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (c != null && c.moveToFirst()) return c.getString(0);
+        } catch (Exception ignored) {
+        }
+        return uri.getLastPathSegment();
+    }
+
+    void toast(String s) {
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+    }
+
+    void report(String title, String msg) {
+        new AlertDialog.Builder(this).setTitle(title).setMessage(msg).setPositiveButton("Aceptar", null).show();
     }
 
     String version() {

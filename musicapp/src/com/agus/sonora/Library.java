@@ -1718,6 +1718,282 @@ public final class Library {
         }
     }
 
+    // ---------------------------------------------------------------- backup and import
+
+    /** What a restore or an import added. */
+    public static final class ImportResult {
+        public int liked, playlists, playlistSongs, podcasts, missing;
+
+        public String summary() {
+            List<String> parts = new ArrayList<>();
+            if (liked > 0) parts.add(Ui.songs(liked) + " en Me gusta");
+            if (playlists > 0) parts.add(playlists == 1 ? "1 playlist" : playlists + " playlists");
+            if (playlistSongs > 0 && playlists == 0) parts.add(Ui.songs(playlistSongs) + " en playlists");
+            if (podcasts > 0) parts.add(podcasts == 1 ? "1 podcast seguido" : podcasts + " podcasts seguidos");
+            String s = parts.isEmpty() ? "No había nada nuevo para agregar" : "Se agregó: " + String.join(", ", parts);
+            if (missing > 0) s += ". " + (missing == 1 ? "1 canción" : missing + " canciones")
+                    + " de tu teléfono no se encontraron en este";
+            return s + ".";
+        }
+    }
+
+    /** A song of your own files, found again on this phone by title and artist. */
+    private Track findLocal(String title, String artist) {
+        String t = fold(title).trim(), a = artist == null ? "" : fold(artist).trim();
+        Track byTitle = null;
+        for (Track l : local) {
+            if (!fold(l.title).trim().equals(t)) continue;
+            if (fold(l.artist).trim().equals(a)) return l;
+            if (byTitle == null && (a.isEmpty() || "artista desconocido".equals(a))) byTitle = l;
+        }
+        return byTitle;
+    }
+
+    /** Everything that is yours, as JSON: likes, playlists, podcasts, progress, history. */
+    JSONObject exportData() throws Exception {
+        java.util.LinkedHashSet<String> keys = new java.util.LinkedHashSet<>(liked);
+        for (List<String> l : playlists.values()) keys.addAll(l);
+        keys.addAll(history);
+        keys.addAll(progress.keySet());
+        JSONObject tracks = new JSONObject();
+        for (String k : keys) {
+            Track t = byKey.get(k);
+            if (t == null) continue;
+            JSONObject o = t.toJson();
+            if (!t.remote) o.put("local", true).put("url", "");
+            tracks.put(k, o);
+        }
+        JSONObject pls = new JSONObject();
+        JSONArray order = new JSONArray();
+        for (Map.Entry<String, List<String>> e : playlists.entrySet()) {
+            pls.put(e.getKey(), new JSONArray(e.getValue()));
+            order.put(e.getKey());
+        }
+        return new JSONObject()
+                .put("liked", new JSONArray(liked))
+                .put("playlists", pls)
+                .put("playlistOrder", order)
+                .put("history", new JSONArray(history))
+                .put("searches", new JSONArray(searches))
+                .put("followed", new JSONArray(followedJson()))
+                .put("played", new JSONArray(played))
+                .put("progress", new JSONObject(progressJson()))
+                .put("seenEpisodes", new JSONObject(seen))
+                .put("tracks", tracks);
+    }
+
+    /**
+     * Adds a backup to what is already here (nothing is removed): likes, playlists (merged by
+     * name), followed podcasts, played episodes and where you stopped. Songs of your own files
+     * are matched on this phone by title and artist.
+     */
+    ImportResult importData(JSONObject o) throws Exception {
+        ImportResult r = new ImportResult();
+        Map<String, String> keyMap = new HashMap<>();
+        JSONObject tracks = o.optJSONObject("tracks");
+        if (tracks != null) {
+            Iterator<String> it = tracks.keys();
+            while (it.hasNext()) {
+                String k = it.next();
+                JSONObject tj = tracks.getJSONObject(k);
+                if (tj.optBoolean("local")) {
+                    Track l = findLocal(tj.optString("title"), tj.optString("artist"));
+                    if (l != null) keyMap.put(k, l.key);
+                } else {
+                    Track t = Track.fromJson(tj);
+                    if (!byKey.containsKey(t.key)) byKey.put(t.key, t);
+                    keyMap.put(k, t.key);
+                }
+            }
+        }
+        java.util.Set<String> missingKeys = new java.util.HashSet<>();
+        JSONArray lk = o.optJSONArray("liked");
+        if (lk != null) {
+            for (int i = 0; i < lk.length(); i++) {
+                String k = keyMap.get(lk.getString(i));
+                if (k == null) {
+                    missingKeys.add(lk.getString(i));
+                } else if (!liked.contains(k)) {
+                    liked.add(k);
+                    r.liked++;
+                }
+            }
+        }
+        JSONObject pls = o.optJSONObject("playlists");
+        JSONArray order = o.optJSONArray("playlistOrder");
+        if (pls != null) {
+            List<String> names = new ArrayList<>();
+            if (order != null) for (int i = 0; i < order.length(); i++) names.add(order.getString(i));
+            Iterator<String> pi = pls.keys();
+            while (pi.hasNext()) {
+                String n = pi.next();
+                if (!names.contains(n)) names.add(n);
+            }
+            for (String name : names) {
+                JSONArray a = pls.optJSONArray(name);
+                if (a == null || name.equals("__order")) continue;
+                List<String> keys = playlists.get(name);
+                if (keys == null) {
+                    keys = new ArrayList<>();
+                    playlists.put(name, keys);
+                    r.playlists++;
+                }
+                for (int i = 0; i < a.length(); i++) {
+                    String k = keyMap.get(a.getString(i));
+                    if (k == null) {
+                        missingKeys.add(a.getString(i));
+                    } else if (!keys.contains(k)) {
+                        keys.add(k);
+                        r.playlistSongs++;
+                    }
+                }
+            }
+        }
+        JSONArray fo = o.optJSONArray("followed");
+        if (fo != null) {
+            for (int i = 0; i < fo.length(); i++) {
+                Item it = Item.fromJson(fo.getJSONObject(i));
+                if (!followed.containsKey(it.key())) {
+                    followed.put(it.key(), it);
+                    r.podcasts++;
+                }
+            }
+        }
+        JSONArray pl = o.optJSONArray("played");
+        if (pl != null) for (int i = 0; i < pl.length(); i++) played.add(pl.getString(i));
+        JSONObject pr = o.optJSONObject("progress");
+        if (pr != null) {
+            Iterator<String> pk = pr.keys();
+            while (pk.hasNext()) {
+                String k = pk.next();
+                JSONArray v = pr.getJSONArray(k);
+                if (!progress.containsKey(k)) progress.put(k, new long[]{v.getLong(0), v.getLong(1)});
+            }
+        }
+        JSONObject se = o.optJSONObject("seenEpisodes");
+        if (se != null) {
+            Iterator<String> sk = se.keys();
+            while (sk.hasNext()) {
+                String k = sk.next();
+                if (!seen.containsKey(k)) seen.put(k, se.getLong(k));
+            }
+        }
+        JSONArray hi = o.optJSONArray("history");
+        if (hi != null) {
+            for (int i = 0; i < hi.length() && history.size() < HISTORY_MAX; i++) {
+                String k = keyMap.get(hi.getString(i));
+                if (k != null && !history.contains(k)) history.add(k);
+            }
+        }
+        JSONArray sq = o.optJSONArray("searches");
+        if (sq != null) {
+            for (int i = 0; i < sq.length() && searches.size() < 10; i++) {
+                if (!searches.contains(sq.getString(i))) searches.add(sq.getString(i));
+            }
+        }
+        r.missing = missingKeys.size();
+        save();
+        notifyChanged();
+        PodcastCheckJob.schedule(app);
+        return r;
+    }
+
+    /** One line of an M3U playlist. */
+    static final class M3uEntry {
+        final String title, artist, location;
+        final long durationMs;
+
+        M3uEntry(String title, String artist, String location, long durationMs) {
+            this.title = title;
+            this.artist = artist;
+            this.location = location;
+            this.durationMs = durationMs;
+        }
+    }
+
+    /**
+     * Creates a playlist from an M3U file: links (http) are added as they are, and files are
+     * matched to your music by the "#EXTINF" artist and title, or by the "Artist - Title" file name.
+     */
+    ImportResult importM3u(String name, List<M3uEntry> entries) {
+        ImportResult r = new ImportResult();
+        String base = name == null || name.trim().isEmpty() ? "Playlist importada" : name.trim();
+        String unique = base;
+        for (int n = 2; playlists.containsKey(unique) || unique.equals("__order"); n++) unique = base + " (" + n + ")";
+        List<String> keys = new ArrayList<>();
+        for (M3uEntry e : entries) {
+            Track t = null;
+            String loc = e.location.trim();
+            if (loc.startsWith("http://") || loc.startsWith("https://")) {
+                t = byKey.get("url:" + loc);
+                if (t == null) {
+                    t = Track.full("url:" + loc, e.title != null ? e.title : fileTitle(loc), e.artist, "Playlist importada",
+                            e.durationMs, null, null, loc);
+                    byKey.put(t.key, t);
+                }
+            } else {
+                if (e.title != null) t = findLocal(e.title, e.artist);
+                if (t == null) {
+                    String[] guess = guessFromFileName(loc);
+                    t = findLocal(guess[1], guess[0]);
+                }
+            }
+            if (t == null) {
+                r.missing++;
+            } else if (!keys.contains(t.key)) {
+                keys.add(t.key);
+                r.playlistSongs++;
+            }
+        }
+        if (!keys.isEmpty()) {
+            playlists.put(unique, keys);
+            r.playlists = 1;
+            save();
+            notifyChanged();
+        }
+        return r;
+    }
+
+    private static String fileTitle(String loc) {
+        String f = loc.replace('\\', '/');
+        f = f.substring(f.lastIndexOf('/') + 1);
+        int q = f.indexOf('?');
+        if (q >= 0) f = f.substring(0, q);
+        int dot = f.lastIndexOf('.');
+        try {
+            f = java.net.URLDecoder.decode(dot > 0 ? f.substring(0, dot) : f, "UTF-8");
+        } catch (Exception ignored) {
+        }
+        return f.replace('_', ' ').trim();
+    }
+
+    /** "Música/Soda Stereo - De Música Ligera.mp3" -> {artist, title}. */
+    static String[] guessFromFileName(String loc) {
+        String base = fileTitle(loc);
+        int dash = base.indexOf(" - ");
+        if (dash > 0) return new String[]{base.substring(0, dash).trim(), base.substring(dash + 3).trim()};
+        return new String[]{"", base};
+    }
+
+    /** Follows the podcasts of an OPML file (feeds the app doesn't know get a stable id). */
+    ImportResult followAll(List<Item> podcasts) {
+        ImportResult r = new ImportResult();
+        java.util.Set<String> feeds = new java.util.HashSet<>();
+        for (Item it : followed.values()) if (it.feed != null) feeds.add(it.feed);
+        for (Item it : podcasts) {
+            if (followed.containsKey(it.key()) || (it.feed != null && feeds.contains(it.feed))) continue;
+            followed.put(it.key(), it);
+            if (it.feed != null) feeds.add(it.feed);
+            r.podcasts++;
+        }
+        if (r.podcasts > 0) {
+            save();
+            notifyChanged();
+            PodcastCheckJob.schedule(app);
+        }
+        return r;
+    }
+
     private List<Track> resolve(List<String> keys) {
         List<Track> out = new ArrayList<>();
         for (String k : keys) {
