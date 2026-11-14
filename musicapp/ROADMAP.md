@@ -1,6 +1,6 @@
 # Roadmap de Sonora
 
-Estado: **v1.9** · Android 8.0+ · Java + Media3 (compilado desde su código) · ~2,3 MB
+Estado: **v2.0** · Android 8.0+ · Java + Media3 (compilado desde su código) · ~2,4 MB
 
 Este documento separa lo que **está hecho y probado**, lo que **está hecho pero sin verificar en un teléfono real**, y lo que **falta**. Los tamaños son de esfuerzo relativo (S = días, M = 1–2 semanas, L = más), no fechas: no hay equipo ni calendario detrás.
 
@@ -17,8 +17,9 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 | 1.6.1 / 1.6.2 | Fandoms y gaming (The Living Tombstone y más); versión para PC |
 | 1.7 | Icono nuevo (adaptable y temático) generado en Rust |
 | 1.9 | Música completa gratis (Audius, Internet Archive), modo "Solo canciones completas", "Escuchar completa", Mezcla de descubrimiento, motor Media3 (sin pausas entre canciones, radios HLS, "ahora suena") |
+| 2.0 | Descargas sin conexión, fundido entre canciones, podcasts (escuchados, "Nuevo", avisos, saltar silencios), copia de seguridad / M3U / OPML, tema claro y acento del sistema, widget, Android Auto, búsqueda unificada, pantalla Ajustes |
 
-**Probado** (59 pruebas automáticas en un simulador, con respuestas de ejemplo; se repiten con `./test/run-tests.sh`): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia, casos sin conexión, fuentes completas, mezcla, y el **reproductor Media3 real** con archivos WAV.
+**Probado** (101 pruebas automáticas en un simulador, con respuestas de ejemplo; se repiten con `./test/run-tests.sh`): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia, casos sin conexión, fuentes completas, mezcla, y el **reproductor Media3 real** con archivos WAV.
 
 **Sin verificar en un dispositivo real** (el entorno donde se construyó no tiene emulador ni acceso a las APIs):
 - Que las APIs reales (Deezer, Apple Podcasts, radio-browser, LRCLIB) respondan como las respuestas de ejemplo.
@@ -26,6 +27,7 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 - Cambio de velocidad, audio en segundo plano y botones de auriculares/Bluetooth en distintas marcas.
 - Episodios con enlaces que redirigen o servidores lentos.
 - Las APIs reales de **Audius** y del **Internet Archive** (1.9) y el streaming real con Media3.
+- Descargas reales, el widget en un lanzador real, Android Auto en un auto y los avisos de podcasts con el ahorro de batería de cada marca (2.0).
 
 ---
 
@@ -35,7 +37,7 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 2. **Nunca se corrió en un teléfono real.** Todo lo anterior puede esconder fallos de compatibilidad.
 3. **La clave de firma está en el repositorio con contraseña conocida.** Sirve para instalar el APK, no para publicar.
 4. ~~Las pruebas no se pueden correr desde el repositorio.~~ Resuelto en la 1.9: `./test/run-tests.sh`. Falta conectarlo a una integración continua.
-5. **La interfaz está armada en código** (`MainActivity` ~1.850 líneas, `Library` ~1.200): funciona, pero es difícil de mantener.
+5. **La interfaz está armada en código** (`MainActivity` ~2.060 líneas, `Library` ~2.180): funciona, pero es difícil de mantener.
 6. **Datos en SharedPreferences como JSON.** Aguanta cientos de elementos, no miles.
 7. **Textos en español escritos en el código**, sin `strings.xml` ni otros idiomas.
 8. **Sin descripciones de accesibilidad** (TalkBack) en los iconos.
@@ -77,31 +79,27 @@ La v1.8 "Cimientos" (sección 3) sigue pendiente: la 1.9 se adelantó a pedido. 
 
 ---
 
-## 5. Después — v2.0 "Pulido y plataforma"
+## 5. ✅ Hecho en la 2.0 — "Pulido y plataforma" (y lo que quedó)
 
-**Reproducción**
-- ✅ ~~Migrar a Media3/ExoPlayer~~ (1.9). Falta: caché de audio y fundido cruzado (crossfade). *(M)*
-- Normalización de volumen y "saltar silencios" en podcasts. *(M)*
+**Hecho**
+- ✅ Descargas sin conexión (canciones completas y episodios), con gestor de espacio y "solo con Wi-Fi".
+- ✅ Fundido entre canciones (crossfade), sin fundido dentro de un mismo álbum.
+- ✅ Podcasts: escuchados, "Nuevo", avisos de episodios nuevos, saltar silencios, importar/exportar OPML.
+- ✅ Copia de seguridad y restauración (JSON) e importar playlists M3U.
+- ✅ Tema claro / oscuro / según el sistema y color de acento del sistema (Android 12+).
+- ✅ Widget de pantalla de inicio y Android Auto (con búsqueda por voz).
+- ✅ Búsqueda unificada: canciones, radios, artistas, álbumes, podcasts y álbumes libres.
 
-**Podcasts**
-- Avisos de episodios nuevos, marcar como escuchado, cola de episodios, capítulos. *(M)*
-- Importar/exportar suscripciones (OPML). *(S)*
-
-**Descubrimiento**
-- ✅ ~~Mezcla de descubrimiento~~ (1.9). Siguiente: más mezclas (por estado de ánimo o por género) y "radio" a partir de una canción. *(M)*
-- Búsqueda unificada: canciones, álbumes, artistas, podcasts y radios en una sola pantalla. *(M)*
-
-**Datos**
-- Pasar a **base de datos (Room/SQLite)**; copia de seguridad y restauración de playlists (JSON/M3U). *(M)*
-- Importar playlists desde archivos M3U. *(S)*
-
-**Plataforma**
-- Widget de pantalla de inicio, Android Auto, Chromecast, Wear OS. *(L, por partes)*
-- Modo tableta y horizontal; tema claro y colores dinámicos del sistema. *(M)*
-- Reconstruir la interfaz con **Jetpack Compose** o dividir `MainActivity` en pantallas independientes. *(L)*
-
-**Social (opcional)**
-- Compartir una canción o playlist con un enlace; registro de lo escuchado en Last.fm. *(M)*
+**Quedó para después**
+- **Chromecast y Wear OS**: necesitan las librerías de Google Play, que el entorno de construcción no puede descargar. *(L)*
+- **Reescribir la interfaz** (Jetpack Compose o dividir `MainActivity`, hoy ~2.060 líneas): Compose necesita el compilador de Kotlin. *(L)*
+- **Base de datos (SQLite)** en lugar de JSON en preferencias: aguanta cientos de elementos, no decenas de miles. *(M)*
+- **Normalización de volumen** (que todas las canciones suenen igual de fuerte). *(M)*
+- **Capítulos de podcasts** y cola de episodios. *(M)*
+- **Más mezclas** (por estado de ánimo o género) y "radio" a partir de una canción. *(M)*
+- **Modo tableta y horizontal**. *(M)*
+- **Compartir con enlace y Last.fm** (necesita una clave de desarrollador). *(M)*
+- **Volver a Android 5–7**: compilar con D8 (ver límites). *(S, con el permiso de usar D8)*
 
 ---
 
@@ -126,8 +124,8 @@ La v1.8 "Cimientos" (sección 3) sigue pendiente: la 1.9 se adelantó a pedido. 
 
 ## 8. Orden recomendado
 
-1. **1.8 Cimientos** → confiabilidad y pruebas reales.
-2. **1.9 Música completa** → fuentes legales completas + descargas de podcasts.
-3. **2.0** en el orden que dicte el uso real: primero Media3 (gapless/crossfade), luego descubrimiento, luego plataformas (Auto/widget).
+1. **1.8 Cimientos** (sigue pendiente; la 1.9 y la 2.0 se adelantaron a pedido) → **probar en teléfonos reales** es lo más importante ahora: la app creció mucho sin haber corrido nunca en uno. Integración continua con `./test/run-tests.sh`.
+2. Lo que salga de esas pruebas reales (APIs, descargas, Android Auto, widget, avisos).
+3. Después, lo que pida el uso: base de datos, normalización de volumen, más mezclas.
 
-*Última revisión: v1.9.*
+*Última revisión: v2.0.*

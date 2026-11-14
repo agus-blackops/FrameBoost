@@ -1,16 +1,55 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v1.9, **Android 8.0+**, ~2,3 MB).
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v2.0, **Android 8.0+**, ~2,4 MB). Se instala encima de las versiones anteriores sin perder nada.
 
-| Inicio | Mezcla de descubrimiento | Álbum libre | Canción completa | Vista previa → completa |
-|---|---|---|---|---|
-| ![](docs/19-inicio.png) | ![](docs/19-mezcla.png) | ![](docs/19-album-libre.png) | ![](docs/19-completa.png) | ![](docs/19-vista-previa.png) |
+| Inicio | Tema claro | Buscar todo | Descargas | Ajustes | Reproductor |
+|---|---|---|---|---|---|
+| ![](docs/20-inicio-dark.png) | ![](docs/20-inicio-light.png) | ![](docs/20-buscar-dark.png) | ![](docs/20-descargas-light.png) | ![](docs/20-ajustes-dark.png) | ![](docs/20-reproduciendo-light.png) |
+
+![Widget de pantalla de inicio](docs/20-widget-dark.png)
 
 *(Capturas generadas en el simulador con datos de ejemplo; en el teléfono se ven las portadas y listas reales.)*
 
 Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
 
 **Versión para computadora (Windows / macOS / Linux): [`../sonora-pc`](../sonora-pc/README.md).**
+
+## Novedades de la 2.0 — Pulido y plataforma
+- **Descargas sin conexión**:
+  - **Qué se descarga:** canciones completas (Audius, Internet Archive) y episodios de podcast. Las vistas previas de Deezer no se descargan.
+  - **Cómo:** botón "descargar todo" en cada página, o "Descargar" en el menú de cada canción. Las filas muestran "Descargada", "Descargando 40 %", "En cola" o "Esperando Wi-Fi".
+  - **Dónde verlas:** colección **Descargas** en Tu biblioteca.
+  - **Sin internet:** lo descargado suena siempre, porque el reproductor abre el archivo.
+  - **Opciones:** "solo con Wi-Fi" (activado por defecto) y el espacio usado, con "Borrar todas", en Ajustes.
+- **Fundido entre canciones** (Ajustes): sin fundido o de 2 a 12 s, con curvas de igual potencia.
+  - Nunca dura más de un tercio de la canción (en una vista previa, 10 s como máximo).
+  - Entre canciones del mismo álbum o concierto no hay fundido: siguen pasando sin pausa.
+- **Podcasts**:
+  - Episodios **escuchados**: se marcan solos al terminar, o a mano desde el menú.
+  - **"Nuevo"** en lo que salió desde tu última visita.
+  - **Avisos de episodios nuevos** de los podcasts que sigues: se revisan cada pocas horas y al tocar el aviso se abre el podcast.
+  - **Saltar silencios** (Media3), solo en episodios.
+- **Tus datos** (Ajustes, con el selector de archivos del sistema y sin permisos):
+  - **Copia de seguridad**: exportar y restaurar Me gusta, playlists, podcasts, progreso, historial y ajustes. Restaurar **suma** a lo que ya tienes, sin borrar nada. Tus archivos se reencuentran en el teléfono nuevo por título y artista.
+  - **Importar playlists M3U** de otras apps o de la computadora.
+  - **Importar y exportar podcasts en OPML**, el formato que leen todas las apps de podcasts.
+- **Tema oscuro, claro o según el sistema**, y **color de acento del sistema** (el de tu fondo de pantalla, en Android 12 o más nuevo). En modo claro el verde es más oscuro para que se lea sobre blanco.
+- **Widget de pantalla de inicio**: portada, título y artista, más anterior, pausa y siguiente. Con la app cerrada, "reproducir" retoma donde quedaste.
+- **Android Auto y asistentes de voz**:
+  - **Navegar en el auto:** Te gusta, Mezcla, Descargas, Canciones completas, Radios, tus playlists y tus podcasts.
+  - **Reproducir:** al tocar una canción suena esa lista desde esa canción.
+  - **Búsqueda por voz:** "pon … en Sonora".
+  - Usa la API del propio Android, sin librerías de Google. Solo pueden navegar las apps de auto y de voz.
+- **Buscar todo de una vez**: además de canciones y radios, ahora aparecen filas de **artistas, álbumes, podcasts y álbumes libres**, cada una con su página.
+- **Ajustes**: nueva pantalla (engranaje en Inicio y en Tu biblioteca) que reúne todas las opciones.
+
+### Lo que no se pudo comprobar en la 2.0
+- **En aparatos reales:** nada de esto se probó en un teléfono, un auto ni un lanzador real.
+  - Android Auto se probó con el navegador de contenido del simulador (raíz, listas, reproducir, voz), no en un auto.
+  - El widget se probó con el administrador de widgets del simulador.
+- **Descargas:** se probaron con un descargador simulado (progreso, cancelar a mitad, reintentar, Wi-Fi, reinicio). El descargador real, que sigue redirecciones y escribe a disco, no se probó contra servidores de verdad.
+- **Fundido:** el **paso entre los dos reproductores reales de Media3** sí se probó. El sonido del fundido en sí no se puede escuchar en el simulador; su matemática tiene pruebas propias.
+- **Avisos de podcasts:** las descargas de la app avanzan mientras la app está abierta o sonando. Los avisos usan el programador de tareas de Android, que decide el momento exacto; en algunos teléfonos el ahorro de batería puede retrasarlos.
 
 ## Novedades de la 1.9 — Música completa, Media3, Mezcla de descubrimiento y sin suscripción
 - **Música completa, gratis y sin cuenta**:
@@ -90,7 +129,7 @@ La primera vez, `build.sh` llama a `tools/build-media3.sh`, que **compila Media3
 
 ## Pruebas
 ```bash
-./build.sh && ./test/run-tests.sh          # todas (59)
+./build.sh && ./test/run-tests.sh          # todas (101)
 ./test/run-tests.sh FullMusicTest          # una clase
 ```
 Corren en la JVM con Robolectric, sin emulador. El script prepara todo la primera vez (Robolectric y la imagen de Android desde Maven Central; `androidx.test` compilado desde su código). Antes las pruebas solo existían en la sesión de trabajo; ahora se pueden repetir desde el repositorio.
@@ -98,4 +137,12 @@ Corren en la JVM con Robolectric, sin emulador. El script prepara todo la primer
 - `SmokeTest`, `BigUpdateTest`, `ContentTest`: lo de la 1.0 a la 1.6 (secciones, reproducción con enlace renovado, radios, búsqueda, playlists, persistencia, sin conexión, temporizador, cola, sesión, letras, ecualizador, podcasts, álbumes).
 - `FullMusicTest`: lo de la 1.9 (Audius, Internet Archive, "Solo canciones completas", "Escuchar completa", paso sin pausa, repetir una y "al terminar", mezcla de descubrimiento, radio "ahora suena").
 - `Media3Test`: el **ExoPlayer real** reproduciendo archivos WAV.
+- 2.0:
+  - `DownloadsTest`: descargas y Ajustes.
+  - `CrossfadeTest`: el fundido, incluidos los dos reproductores reales de Media3.
+  - `PodcastsTest`: escuchados, "Nuevo", avisos y saltar silencios.
+  - `BackupTest`: copia de seguridad, M3U y OPML.
+  - `ThemeTest`: el tema.
+  - `AutoWidgetTest`: el widget y Android Auto.
+  - `SearchTest`: la búsqueda unificada.
 - Las demás usan `SimAudio`, un reproductor simulado con tiempos deterministas, y `Fixtures.java`, con respuestas con la forma de las APIs reales.
