@@ -222,6 +222,13 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         onLibraryChanged();
     }
 
+    /** Only a percentage moved: refresh the visible rows, never rebuild the screen. */
+    @Override
+    public void onDownloadProgress(Track t, int percent) {
+        Screen s = stack.peek();
+        if (s != null) s.onDownloadProgress();
+    }
+
     @Override
     public void onPlayerChanged() {
         updateMini();
@@ -243,6 +250,10 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         }
 
         void onPlayerChanged() {
+        }
+
+        /** Download percentages changed; screens that list songs refresh their rows. */
+        void onDownloadProgress() {
         }
     }
 
@@ -1550,6 +1561,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
         void onPlayerChanged() {
             if (adapter != null) adapter.notifyDataSetChanged();
         }
+
+        @Override
+        void onDownloadProgress() {
+            if (adapter != null) adapter.notifyDataSetChanged();
+        }
     }
 
     private View browseGrid(final EditText input) {
@@ -2045,6 +2061,11 @@ public final class MainActivity extends Activity implements PlayerEngine.Listene
             emptyView.setVisibility(tracks.isEmpty() ? View.VISIBLE : View.GONE);
             ((TextView) emptyView).setText(emptyText());
             onPlayerChanged();
+        }
+
+        @Override
+        void onDownloadProgress() {
+            if (adapter != null) adapter.notifyDataSetChanged();
         }
 
         @Override

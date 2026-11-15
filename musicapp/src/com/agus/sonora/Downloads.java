@@ -29,8 +29,15 @@ import java.util.concurrent.Executors;
 final class Downloads {
 
     interface Listener {
+        /** Something was queued, finished, failed or removed. */
         void onDownloadsChanged();
+
+        /** Only the percentage of the running download moved (cheap to show). */
+        void onDownloadProgress(Track t, int percent);
     }
+
+    /** Progress is told in steps of this many points, not on every byte. */
+    static final int PROGRESS_STEP = 5;
 
     /** Whether the current connection is metered (mobile data); pluggable for tests. */
     interface Metered {
@@ -62,6 +69,8 @@ final class Downloads {
         long addedAt;
         int state;
         int percent;
+        /** Last percentage the listeners were told. */
+        int toldPercent;
         /** Set on the main thread when removed; read by the download thread. */
         volatile boolean cancelled;
 
@@ -142,6 +151,23 @@ final class Downloads {
         List<Track> out = new ArrayList<>();
         for (Entry e : entries.values()) if (e.state != DONE) out.add(e.track);
         return out;
+    }
+
+    /** The download in progress, or null. */
+    Track running() {
+        return running == null ? null : running.track;
+    }
+
+    /** Queued or running (not waiting for Wi-Fi, not failed). */
+    int active() {
+        int n = 0;
+        for (Entry e : entries.values()) if (e.state == QUEUED || e.state == RUNNING) n++;
+        return n;
+    }
+
+    /** Stops everything not finished yet (the notification's "Cancelar"). */
+    void cancelPending() {
+        for (Entry e : new ArrayList<>(entries.values())) if (e.state != DONE) remove(e.track);
     }
 
     long bytesUsed() {
@@ -241,6 +267,8 @@ final class Downloads {
         running = e;
         e.state = RUNNING;
         e.percent = 0;
+        e.toldPercent = 0;
+        DownloadService.ensureStarted(app); // keeps going when you leave the app
         if (e.file == null) e.file = fileName(e.track);
         final File out = new File(dir(), e.file);
         final String url = e.track.kind == Track.EPISODE && e.track.resolvedUrl != null
@@ -257,9 +285,13 @@ final class Downloads {
                             main.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (running == e) {
+                                    if (running == e && pct != e.percent) {
+                                        int told = e.toldPercent;
                                         e.percent = pct;
-                                        notifyChanged();
+                                        if (pct - told >= PROGRESS_STEP || pct == 100) {
+                                            e.toldPercent = pct;
+                                            for (Listener l : listeners) l.onDownloadProgress(e.track, pct);
+                                        }
                                     }
                                 }
                             });

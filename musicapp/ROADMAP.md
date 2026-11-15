@@ -1,6 +1,6 @@
 # Roadmap de Sonora
 
-Estado: **v2.0** · Android 8.0+ · Java + Media3 (compilado desde su código) · ~2,4 MB
+Estado: **v2.0.1** · Android 8.0+ · Java + Media3 (compilado desde su código) · ~2,4 MB
 
 Este documento separa lo que **está hecho y probado**, lo que **está hecho pero sin verificar en un teléfono real**, y lo que **falta**. Los tamaños son de esfuerzo relativo (S = días, M = 1–2 semanas, L = más), no fechas: no hay equipo ni calendario detrás.
 
@@ -18,8 +18,9 @@ Este documento separa lo que **está hecho y probado**, lo que **está hecho per
 | 1.7 | Icono nuevo (adaptable y temático) generado en Rust |
 | 1.9 | Música completa gratis (Audius, Internet Archive), modo "Solo canciones completas", "Escuchar completa", Mezcla de descubrimiento, motor Media3 (sin pausas entre canciones, radios HLS, "ahora suena") |
 | 2.0 | Descargas sin conexión, fundido entre canciones, podcasts (escuchados, "Nuevo", avisos, saltar silencios), copia de seguridad / M3U / OPML, tema claro y acento del sistema, widget, Android Auto, búsqueda unificada, pantalla Ajustes |
+| 2.0.1 | Descargas en segundo plano con notificación y Cancelar; el progreso ya no rehace pantallas; el widget no consulta al sistema sin necesidad |
 
-**Probado** (101 pruebas automáticas en un simulador, con respuestas de ejemplo; se repiten con `./test/run-tests.sh`): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia, casos sin conexión, fuentes completas, mezcla, y el **reproductor Media3 real** con archivos WAV.
+**Probado** (106 pruebas automáticas en un simulador, con respuestas de ejemplo; se repiten con `./test/run-tests.sh`): flujos de pantallas, reproducción, cola, sesión, historial, letras, podcasts, persistencia, casos sin conexión, fuentes completas, mezcla, y el **reproductor Media3 real** con archivos WAV.
 
 **Sin verificar en un dispositivo real** (el entorno donde se construyó no tiene emulador ni acceso a las APIs):
 - Que las APIs reales (Deezer, Apple Podcasts, radio-browser, LRCLIB) respondan como las respuestas de ejemplo.
@@ -128,4 +129,4 @@ La v1.8 "Cimientos" (sección 3) sigue pendiente: la 1.9 se adelantó a pedido. 
 2. Lo que salga de esas pruebas reales (APIs, descargas, Android Auto, widget, avisos).
 3. Después, lo que pida el uso: base de datos, normalización de volumen, más mezclas.
 
-*Última revisión: v2.0.*
+*Última revisión: v2.0.1.*

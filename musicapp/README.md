@@ -1,6 +1,6 @@
 # Sonora — reproductor de música estilo Spotify (Android)
 
-APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v2.0, **Android 8.0+**, ~2,4 MB). Se instala encima de las versiones anteriores sin perder nada.
+APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v2.0.1, **Android 8.0+**, ~2,4 MB). Se instala encima de las versiones anteriores sin perder nada.
 
 | Inicio | Tema claro | Buscar todo | Descargas | Ajustes | Reproductor |
 |---|---|---|---|---|---|
@@ -13,6 +13,11 @@ APK listo para instalar: [`dist/Sonora.apk`](dist/Sonora.apk) (v2.0, **Android 8
 Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
 
 **Versión para computadora (Windows / macOS / Linux): [`../sonora-pc`](../sonora-pc/README.md).**
+
+## Novedades de la 2.0.1 — correcciones
+- **Las descargas siguen aunque salgas de la app.** Antes corrían solo mientras Android mantenía viva la app, y un episodio largo podía quedar a medias hasta volver a abrirla. Ahora hay una notificación **"Descargando · …"** con el progreso, cuántas quedan y un botón **Cancelar**. Desaparece sola cuando termina la cola.
+- **El progreso ya no rehace pantallas enteras.** Antes, cada 1 % de descarga reconstruía la pantalla abierta (en Inicio, toda la página; en Ajustes, los interruptores mientras los tocabas). Ahora el progreso se avisa de 5 en 5 y solo refresca las filas visibles.
+- **El widget ya no consulta al sistema en cada cambio del reproductor** si no tienes ningún widget puesto.
 
 ## Novedades de la 2.0 — Pulido y plataforma
 - **Descargas sin conexión**:
@@ -49,7 +54,7 @@ Hoja de ruta: [`ROADMAP.md`](ROADMAP.md).
   - El widget se probó con el administrador de widgets del simulador.
 - **Descargas:** se probaron con un descargador simulado (progreso, cancelar a mitad, reintentar, Wi-Fi, reinicio). El descargador real, que sigue redirecciones y escribe a disco, no se probó contra servidores de verdad.
 - **Fundido:** el **paso entre los dos reproductores reales de Media3** sí se probó. El sonido del fundido en sí no se puede escuchar en el simulador; su matemática tiene pruebas propias.
-- **Avisos de podcasts:** las descargas de la app avanzan mientras la app está abierta o sonando. Los avisos usan el programador de tareas de Android, que decide el momento exacto; en algunos teléfonos el ahorro de batería puede retrasarlos.
+- **Avisos de podcasts:** usan el programador de tareas de Android, que decide el momento exacto; en algunos teléfonos el ahorro de batería puede retrasarlos.
 
 ## Novedades de la 1.9 — Música completa, Media3, Mezcla de descubrimiento y sin suscripción
 - **Música completa, gratis y sin cuenta**:
@@ -129,7 +134,7 @@ La primera vez, `build.sh` llama a `tools/build-media3.sh`, que **compila Media3
 
 ## Pruebas
 ```bash
-./build.sh && ./test/run-tests.sh          # todas (101)
+./build.sh && ./test/run-tests.sh          # todas (106)
 ./test/run-tests.sh FullMusicTest          # una clase
 ```
 Corren en la JVM con Robolectric, sin emulador. El script prepara todo la primera vez (Robolectric y la imagen de Android desde Maven Central; `androidx.test` compilado desde su código). Antes las pruebas solo existían en la sesión de trabajo; ahora se pueden repetir desde el repositorio.
@@ -145,4 +150,5 @@ Corren en la JVM con Robolectric, sin emulador. El script prepara todo la primer
   - `ThemeTest`: el tema.
   - `AutoWidgetTest`: el widget y Android Auto.
   - `SearchTest`: la búsqueda unificada.
+- 2.0.1: `Fixes201Test` (servicio de descargas y su notificación, progreso liviano, widget).
 - Las demás usan `SimAudio`, un reproductor simulado con tiempos deterministas, y `Fixtures.java`, con respuestas con la forma de las APIs reales.

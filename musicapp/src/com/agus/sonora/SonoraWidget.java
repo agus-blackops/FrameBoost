@@ -19,14 +19,27 @@ import android.widget.RemoteViews;
 public final class SonoraWidget extends AppWidgetProvider {
 
     private static String lastSignature;
+    /** Whether any widget is on a home screen (null: not asked yet). Avoids asking the system on every player event. */
+    private static Boolean present;
     private static String artKey;
     private static Bitmap art;
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     @Override
     public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
+        present = true;
         lastSignature = null;
         refresh(c);
+    }
+
+    @Override
+    public void onEnabled(Context c) {
+        present = true;
+    }
+
+    @Override
+    public void onDisabled(Context c) {
+        present = false; // the last one was removed
     }
 
     static int[] ids(Context c) {
@@ -38,7 +51,9 @@ public final class SonoraWidget extends AppWidgetProvider {
     /** Redraws the widgets if there are any and something visible changed. Main thread. */
     static void refresh(Context context) {
         final Context c = context.getApplicationContext();
+        if (Boolean.FALSE.equals(present)) return;
         int[] ids = ids(c);
+        present = ids.length > 0;
         if (ids.length == 0) return;
         PlayerEngine p = PlayerEngine.get(c);
         final Track t = p.current();
@@ -96,6 +111,7 @@ public final class SonoraWidget extends AppWidgetProvider {
 
     /** Tests. */
     static void resetForTest() {
+        present = null;
         lastSignature = null;
         artKey = null;
         art = null;

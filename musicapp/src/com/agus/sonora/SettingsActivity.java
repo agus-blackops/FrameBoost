@@ -74,6 +74,11 @@ public final class SettingsActivity extends Activity implements Downloads.Listen
         render();
     }
 
+    @Override
+    public void onDownloadProgress(Track t, int percent) {
+        // only totals are shown here: nothing to redraw until a download finishes
+    }
+
     /** Rebuilds the list, keeping the scroll position. */
     void render() {
         final int y = scroll.getScrollY();
